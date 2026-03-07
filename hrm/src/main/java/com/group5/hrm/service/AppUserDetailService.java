@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +31,7 @@ public class AppUserDetailService implements UserDetailsService {
        List<Role> userRoles =  userRoleRepository.getRolesByUserId(existingUser.getId());
 
        List<GrantedAuthority> grantedAuthorities = userRoles.stream()
-               .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getCode())).toList();
+               .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getCode())).collect(Collectors.toList());
 
         return org.springframework.security.core.userdetails.User.builder()
                 .username(existingUser.getUsername())
