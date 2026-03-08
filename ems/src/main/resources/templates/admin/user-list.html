@@ -100,7 +100,7 @@
                 <span class="text-sm font-medium">Role &amp; Permission</span>
             </a>
             <!-- Active page -->
-            <a th:href="@{/users}"
+            <a th:href="@{/admin/users}"
                class="flex items-center gap-3 px-3 py-2.5 bg-primary text-white rounded-lg shadow-sm shadow-primary/20">
                 <span class="material-symbols-outlined text-[22px]">group</span>
                 <span class="text-sm font-medium">User Accounts</span>
@@ -144,7 +144,7 @@
 
         <!-- Header: Search & Filters (submit GET form để server filter) -->
         <header class="h-16 bg-white dark:bg-slate-900 border-b border-primary/10 flex items-center justify-between px-8 shrink-0">
-            <form th:action="@{/users}" method="get" class="flex items-center gap-4" id="filter-form">
+            <form th:action="@{/admin/users}" method="get" class="flex items-center gap-4" id="filter-form">
 
                 <!-- Search -->
                 <div class="relative">
@@ -162,7 +162,7 @@
                         class="pl-3 pr-8 py-1.5 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary text-slate-600"
                         onchange="this.form.submit()">
                     <option value="" th:selected="${roleFilter == null or roleFilter == ''}">All Roles</option>
-                    <option th:text="${r.getCode()}" th:each="r :${roles}"    th:selected="${roleFilter == ${r.getCode()}}">Admin</option>
+                    <option th:each="r : ${roles != null ? roles : T(java.util.Collections).emptyList()}" th:text="${r.getCode()}" th:value="${r.getCode()}" th:selected="${roleFilter != null and roleFilter == r.getCode()}">Admin</option>
                 </select>
 
                 <!-- Filter by Status -->
@@ -241,7 +241,7 @@
 
                                 <!-- Sortable: User name -->
                                 <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">
-                                    <a th:href="@{/users(keyword=${keyword},role=${roleFilter},status=${statusFilter},sort='fullName',dir=${sortField=='fullName' and sortDir=='asc'?'desc':'asc'},page=0)}"
+                                    <a th:href="@{/admin/users(keyword=${keyword ?: ''},role=${roleFilter ?: ''},status=${statusFilter ?: ''},sort='fullName',dir=${(sortField == 'fullName' and sortDir == 'asc') ? 'desc' : 'asc'},page=0)}"
                                        class="flex items-center gap-1 hover:text-primary transition-colors">
                                         User
                                         <span class="material-symbols-outlined text-base"
@@ -253,7 +253,7 @@
 
                                 <!-- Sortable: Role -->
                                 <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">
-                                    <a th:href="@{/users(keyword=${keyword},role=${roleFilter},status=${statusFilter},sort='role',dir=${sortField=='role' and sortDir=='asc'?'desc':'asc'},page=0)}"
+                                    <a th:href="@{/admin/users(keyword=${keyword ?: ''},role=${roleFilter ?: ''},status=${statusFilter ?: ''},sort='role',dir=${(sortField == 'role' and sortDir == 'asc') ? 'desc' : 'asc'},page=0)}"
                                        class="flex items-center gap-1 hover:text-primary transition-colors">
                                         Role
                                         <span class="material-symbols-outlined text-base"
@@ -265,7 +265,7 @@
 
                                 <!-- Sortable: Last Login -->
                                 <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">
-                                    <a th:href="@{/users(keyword=${keyword},role=${roleFilter},status=${statusFilter},sort='lastLogin',dir=${sortField=='lastLogin' and sortDir=='asc'?'desc':'asc'},page=0)}"
+                                    <a th:href="@{/admin/users(keyword=${keyword ?: ''},role=${roleFilter ?: ''},status=${statusFilter ?: ''},sort='lastLogin',dir=${(sortField == 'lastLogin' and sortDir == 'asc') ? 'desc' : 'asc'},page=0)}"
                                        class="flex items-center gap-1 hover:text-primary transition-colors">
                                         Last Login
                                         <span class="material-symbols-outlined text-base"
@@ -291,9 +291,16 @@
                                 </td>
                             </tr>
 
-                            <!-- Data rows — lặp qua danh sách users -->
-                            <tr th:each="user : ${users}"
+                            <!-- Data rows — null-safe: tránh th:each trên null -->
+                            <tr th:each="user : ${users != null ? users : T(java.util.Collections).emptyList()}"
                                 th:data-id="${user.id}"
+                                th:data-first-name="${user.firstName}"
+                                th:data-last-name="${user.lastName}"
+                                th:data-email="${user.email}"
+                                th:data-role="${user.role}"
+                                th:data-department-name="${user.departmentName}"
+                                th:data-status="${user.status}"
+                                th:data-full-name="${user.fullName}"
                                 class="hover:bg-primary/5 transition-colors group">
 
                                 <!-- Checkbox -->
@@ -309,19 +316,14 @@
                                              th:src="${user.avatarUrl}"
                                              th:alt="${user.fullName}"
                                              onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
-                                        <!-- Fallback initials (hiển thị khi ảnh lỗi) -->
+                                        <!-- Fallback initials (UserDTO.getInitials() đã xử lý null) -->
                                         <div class="w-8 h-8 rounded-full bg-primary/10 text-primary font-bold text-xs items-center justify-center hidden"
-                                             th:text="${#strings.length(user.fullName) >= 2
-                                       ? #strings.toUpperCase(#strings.substring(user.fullName,0,1))
-                                         + #strings.toUpperCase(#strings.substring(user.fullName,#strings.indexOf(user.fullName,' ')+1,#strings.indexOf(user.fullName,' ')+2))
-                                       : #strings.toUpperCase(#strings.substring(user.fullName,0,2))}">
-                                            AB
-                                        </div>
+                                             th:text="${user.initials}">AB</div>
                                         <div>
                                             <p class="text-sm font-semibold text-slate-900 dark:text-white leading-tight"
                                                th:text="${user.fullName}">Full Name</p>
                                             <p class="text-[11px] text-slate-400 leading-tight"
-                                               th:text="'#UID-' + ${#strings.leftPad('' + user.id, 4, '0')}">#UID-0001</p>
+                                               th:text="'#UID-' + ${user.id != null ? T(java.lang.String).format('%04d', user.id) : ''}">#UID-0001</p>
                                         </div>
                                     </div>
                                 </td>
@@ -383,25 +385,18 @@
                                 <!-- Actions -->
                                 <td class="px-6 py-4 text-right">
                                     <div class="flex items-center justify-end gap-1">
-                                        <!-- Edit: mở modal và nhét data vào -->
+                                        <!-- Edit: đọc data từ data-* trên <tr>, tránh string trong onclick -->
                                         <button type="button"
                                                 class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-primary hover:bg-primary/5 transition-colors"
                                                 title="Edit"
-                                                th:onclick="|openEditModal(
-                                ${user.id},
-                                '[[${user.firstName}]]',
-                                '[[${user.lastName}]]',
-                                '[[${user.email}]]',
-                                '[[${user.role}]]',
-                                '[[${user.departmentName}]]',
-                                '[[${user.status}]]')|">
+                                                onclick="openEditModalFromRow(this)">
                                             <span class="material-symbols-outlined text-[18px]">edit</span>
                                         </button>
-                                        <!-- Delete: mở confirm modal -->
+                                        <!-- Delete -->
                                         <button type="button"
                                                 class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors"
                                                 title="Delete"
-                                                th:onclick="|openDeleteModal(${user.id}, '[[${user.fullName}]]')|">
+                                                onclick="openDeleteModalFromRow(this)">
                                             <span class="material-symbols-outlined text-[18px]">delete</span>
                                         </button>
                                     </div>
@@ -415,34 +410,34 @@
                     <div class="px-6 py-4 border-t border-primary/5 bg-slate-50/50 dark:bg-slate-800/30 flex items-center justify-between">
                         <!-- Info text -->
                         <span class="text-sm text-slate-500"
-                              th:text="|Showing ${currentPage * pageSize + 1} to ${T(java.lang.Math).min((currentPage + 1) * pageSize, totalElements)} of ${totalElements} users|">
+                              th:text="|Showing ${totalElements != null and totalElements == 0 ? 0 : currentPage * pageSize + 1} to ${totalElements != null and totalElements == 0 ? 0 : (totalElements != null and (currentPage + 1) * pageSize <= totalElements ? (currentPage + 1) * pageSize : totalElements)} of ${totalElements != null ? totalElements : 0} users|">
               Showing 1 to 10 of 0 users
             </span>
 
                         <!-- Page buttons -->
                         <div class="flex items-center gap-2">
                             <!-- Prev -->
-                            <a th:href="@{/users(keyword=${keyword},role=${roleFilter},status=${statusFilter},sort=${sortField},dir=${sortDir},page=${currentPage - 1})}"
+                            <a th:href="@{/admin/users(keyword=${keyword ?: ''},role=${roleFilter ?: ''},status=${statusFilter ?: ''},sort=${sortField ?: 'fullName'},dir=${sortDir ?: 'asc'},page=${currentPage - 1})}"
                                th:classappend="${currentPage == 0 ? 'opacity-40 pointer-events-none' : ''}"
                                class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 transition-colors">
                                 <span class="material-symbols-outlined text-lg">chevron_left</span>
                             </a>
 
-                            <!-- Numbered pages — render tối đa 5 trang xung quanh currentPage -->
-                            <th:block th:each="pageNum : ${#numbers.sequence(
+                            <!-- Numbered pages — chỉ render khi totalPages > 0, tránh sequence(0,-1) gây lỗi -->
+                            <th:block th:if="${totalPages > 0}">
+                                <th:block th:each="pageNum : ${#numbers.sequence(
                     T(java.lang.Math).max(0, currentPage - 2),
-                    T(java.lang.Math).min(totalPages - 1, currentPage + 2))}">
-                                <a th:href="@{/users(keyword=${keyword},role=${roleFilter},status=${statusFilter},sort=${sortField},dir=${sortDir},page=${pageNum})}"
-                                   th:text="${pageNum + 1}"
-                                   th:classappend="${pageNum == currentPage
-                     ? 'bg-primary text-white font-bold'
-                     : 'hover:bg-primary/10 font-medium'}"
-                                   class="w-8 h-8 flex items-center justify-center rounded-lg text-sm transition-colors">
-                                </a>
+                    T(java.lang.Math).min(T(java.lang.Integer).valueOf(totalPages - 1), T(java.lang.Integer).valueOf(currentPage + 2)))}">
+                                    <a th:href="@{/admin/users(keyword=${keyword ?: ''},role=${roleFilter ?: ''},status=${statusFilter ?: ''},sort=${sortField ?: 'fullName'},dir=${sortDir ?: 'asc'},page=${pageNum})}"
+                                       th:text="${pageNum + 1}"
+                                       th:classappend="${pageNum == currentPage ? 'bg-primary text-white font-bold' : 'hover:bg-primary/10 font-medium'}"
+                                       class="w-8 h-8 flex items-center justify-center rounded-lg text-sm transition-colors">
+                                    </a>
+                                </th:block>
                             </th:block>
 
                             <!-- Next -->
-                            <a th:href="@{/users(keyword=${keyword},role=${roleFilter},status=${statusFilter},sort=${sortField},dir=${sortDir},page=${currentPage + 1})}"
+                            <a th:href="@{/admin/users(keyword=${keyword ?: ''},role=${roleFilter ?: ''},status=${statusFilter ?: ''},sort=${sortField ?: 'fullName'},dir=${sortDir ?: 'asc'},page=${currentPage + 1})}"
                                th:classappend="${currentPage + 1 >= totalPages ? 'opacity-40 pointer-events-none' : ''}"
                                class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 transition-colors">
                                 <span class="material-symbols-outlined text-lg">chevron_right</span>
@@ -528,7 +523,7 @@
                         <!-- Render dynamic department list từ model -->
                         <select id="field-dept" name="departmentName"
                                 class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-primary">
-                            <option th:each="dept : ${departments}"
+                            <option th:each="dept : ${departments != null ? departments : T(java.util.Collections).emptyList()}"
                                     th:value="${dept}"
                                     th:text="${dept}">Department</option>
                         </select>
@@ -613,6 +608,17 @@
         document.getElementById('field-dept').value  = dept;
         document.getElementById('field-status').value= status;
         document.getElementById('modal-overlay').classList.remove('hidden');
+    }
+
+    function openEditModalFromRow(btn) {
+        var row = btn.closest('tr');
+        var d = row.dataset;
+        openEditModal(d.id || '', d.firstName || '', d.lastName || '', d.email || '', d.role || '', d.departmentName || '', d.status || '');
+    }
+
+    function openDeleteModalFromRow(btn) {
+        var row = btn.closest('tr');
+        openDeleteModal(row.dataset.id || '', row.dataset.fullName || '');
     }
 
     function closeModal() {

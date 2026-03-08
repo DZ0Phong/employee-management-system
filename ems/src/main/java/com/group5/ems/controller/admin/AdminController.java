@@ -41,7 +41,7 @@ public class AdminController {
             @RequestParam(defaultValue = "") String status,
             @RequestParam(defaultValue = "fullName") String sort,
             @RequestParam(defaultValue = "asc") String dir,
-            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int pageSize,
             Model model) {
         //get current user
@@ -68,7 +68,7 @@ public class AdminController {
         model.addAttribute("departments", adminService.getDepartmentName());
 
         //paging
-        Page<UserDTO> users = adminService.getUsersFilter(keyword,role,status,sort,dir,page,pageSize);
+        Page<UserDTO> users = adminService.getUsersFilter(keyword, role, status, sort, dir, page, pageSize);
         model.addAttribute("users", users);
         model.addAttribute("currentPage", users.getNumber());
         model.addAttribute("pageSize", users.getSize());

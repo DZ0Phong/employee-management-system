@@ -58,34 +58,32 @@ public class AdminService {
                                         String statusFilter,
                                         String sortFilter,
                                         String sortDir,
-                                        int size,
-                                        int pageSize){
-        //check sort fil
-        if(!sortFilter.equals("fullName") || !sortFilter.equals("role") || !sortFilter.equals("lastLogin") || sortFilter == null || sortFilter.isEmpty()){
+                                        int page,
+                                        int pageSize) {
+        // page = chỉ số trang (0-based), pageSize = số dòng mỗi trang
+        if (pageSize < 1) pageSize = 10;
+        if (page < 0) page = 0;
+
+        // Chỉ chấp nhận fullName hoặc lastLogin; mặc định fullName
+        if (sortFilter == null || sortFilter.isEmpty()
+                || (!"fullName".equals(sortFilter) && !"role".equals(sortFilter) && !"lastLogin".equals(sortFilter))) {
             sortFilter = "fullName";
         }
-
-        //check sort direction
-        if(!sortDir.equals("asc") || !sortDir.equals("desc") || sortDir == null || sortDir.isEmpty()){
+        if (sortDir == null || sortDir.isEmpty()
+                || (!"asc".equalsIgnoreCase(sortDir) && !"desc".equalsIgnoreCase(sortDir))) {
             sortDir = "asc";
         }
 
-        String entitySortField = "lastLogin".equals(sortFilter) ? "lastLoginAt" : sortFilter;
-
-        //create sort dir
+        String entitySortField = "lastLogin".equals(sortFilter) ? "lastLoginAt" : "fullName".equals(sortFilter) ? "fullName" : "fullName";
         Sort.Direction sortDirection = Sort.Direction.fromString(sortDir);
         Sort sort = Sort.by(sortDirection, entitySortField);
 
-        //tạo phân trang
-        Pageable pageable = PageRequest.of(pageSize, size, sort);
-
-        Specification<User> spec = UserSpecification.withFilters(keyword, statusFilter,roleFilter);
-
+        Pageable pageable = PageRequest.of(page, pageSize, sort);
+        Specification<User> spec = UserSpecification.withFilters(keyword, statusFilter, roleFilter);
         Page<User> userPage = userRepository.findAll(spec, pageable);
 
-        //return method reference
         return userPage.map(this::toUserDTO);
-     }
+    }
 
      public long getStatusTotal(){
         return userRepository.count();
@@ -97,7 +95,7 @@ public class AdminService {
         return userRepository.countByStatus("INACTIVE");
      }
     public long getStatusSuspended(){
-        return userRepository.countByStatus("SUSPENDED");
+        return userRepository.countByStatus("LOCKED");
      }
 
      public List<String> getDepartmentName(){
@@ -120,30 +118,30 @@ public class AdminService {
 
 
 
-    public UserDTO toUserDTO(User user){
-        //get name
-        String[] splitName = user.getFullName().split("\\s+");
-        String firstName = splitName[splitName.length-1];
-        String lastName = String.join(" ", Arrays.copyOfRange(splitName, 0, splitName.length - 1));
+    public UserDTO toUserDTO(User user) {
+        String firstName = "";
+        String lastName = "";
+        if (user.getFullName() != null && !user.getFullName().isBlank()) {
+            String[] splitName = user.getFullName().trim().split("\\s+");
+            if (splitName.length > 0) {
+                firstName = splitName[splitName.length - 1];
+                lastName = splitName.length > 1 ? String.join(" ", Arrays.copyOfRange(splitName, 0, splitName.length - 1)) : "";
+            }
+        }
 
-        //get status
         String status = user.getStatus();
-        String statusDB = "";
-        if("ACTIVE".equalsIgnoreCase(status)){
-            statusDB = "Active";
-        }
-        else if("INACTIVE".equalsIgnoreCase(status)){
-            statusDB = "Inactive";
-        }
-        else if("LOCKED".equalsIgnoreCase(status)){
-            statusDB = "Suspended";
-        }
+        String statusDB = status != null ? status : "";
+        if ("ACTIVE".equalsIgnoreCase(status)) statusDB = "Active";
+        else if ("INACTIVE".equalsIgnoreCase(status)) statusDB = "Inactive";
+        else if ("LOCKED".equalsIgnoreCase(status)) statusDB = "Suspended";
 
-        //get role
         Role role = userRoleRepository.getRoleByUserId(user.getId());
+        String roleCode = (role != null && role.getCode() != null) ? role.getCode() : "";
+        String deptName = (user.getEmployee() != null && user.getEmployee().getDepartment() != null)
+                ? user.getEmployee().getDepartment().getName() : "";
 
-
-        UserDTO userDTO = UserDTO.builder()
+        return UserDTO.builder()
+                .id(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .fullName(user.getFullName())
@@ -156,11 +154,8 @@ public class AdminService {
                 .lastLoginAt(user.getLastLoginAt())
                 .createdAt(user.getCreatedAt())
                 .updatedAt(user.getUpdatedAt())
-                .role(role.getCode() != null ? role.getCode() : "")
-                .departmentName(user.getEmployee() != null && user.getEmployee().getDepartment() != null ? user.getEmployee().getDepartment().getName() : "")
+                .role(roleCode)
+                .departmentName(deptName)
                 .build();
-
-
-        return userDTO;
     }
 }
