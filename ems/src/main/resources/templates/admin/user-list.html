@@ -1,403 +1,369 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title>HRM Pro - User Accounts</title>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-    <script id="tailwind-config">
+    <script>
         tailwind.config = {
             darkMode: "class",
             theme: {
                 extend: {
-                    colors: {
-                        "primary": "#1414b8",
-                        "background-light": "#f6f6f8",
-                        "background-dark": "#111121",
-                    },
-                    fontFamily: { "display": ["Inter"] },
-                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                    colors: { primary: "#1414b8", "primary-light": "#e8e8fb", "bg-light": "#f6f6f8" },
+                    fontFamily: { display: ["Inter"] },
                 },
             },
-        }
+        };
     </script>
     <style>
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-        }
-        #modal-overlay { transition: opacity 0.2s ease; }
-        #modal-overlay.hidden { opacity: 0; pointer-events: none; }
-        #modal-box { transition: transform 0.2s ease, opacity 0.2s ease; }
-        #modal-overlay.hidden #modal-box { transform: scale(0.95); opacity: 0; }
-        tbody tr { transition: background 0.15s; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .fill-icon { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+
+        @keyframes fadeSlideUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+        .anim{animation:fadeSlideUp .5s ease both}
+        .anim-1{animation-delay:.04s}.anim-2{animation-delay:.10s}.anim-3{animation-delay:.16s}
+        .anim-4{animation-delay:.22s}.anim-5{animation-delay:.28s}.anim-6{animation-delay:.34s}
+
+        @keyframes gradientShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+        .gradient-card{background:linear-gradient(135deg,#1414b8,#3b3bea,#6366f1,#1414b8);background-size:300% 300%;animation:gradientShift 6s ease infinite}
+
+        .dot-grid{background-image:radial-gradient(circle,#1414b820 1px,transparent 1px);background-size:24px 24px}
+
+        .card-hover{transition:transform .2s ease,box-shadow .2s ease}
+        .card-hover:hover{transform:translateY(-2px);box-shadow:0 12px 32px -8px #1414b820}
+
+        .nav-active{box-shadow:inset 3px 0 0 #1414b8}
+
+        @keyframes pulseDot{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.6);opacity:.5}}
+        .pulse-dot{animation:pulseDot 2s ease-in-out infinite}
+
+        .stat-num{font-feature-settings:"tnum";font-variant-numeric:tabular-nums}
+        .uid-chip{font-feature-settings:"tnum"}
+
+        ::-webkit-scrollbar{width:5px;height:5px}
+        ::-webkit-scrollbar-track{background:transparent}
+        ::-webkit-scrollbar-thumb{background:#1414b840;border-radius:99px}
+
+        /* overlays */
+        .overlay{transition:opacity .22s ease}
+        .overlay.hidden{opacity:0;pointer-events:none}
+
+        @keyframes modalIn{from{transform:scale(.95) translateY(10px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+        .modal-box{animation:modalIn .22s ease both}
+
+        /* side panel */
+        #detail-panel{transition:transform .25s cubic-bezier(.4,0,.2,1);transform:translateX(100%)}
+        #detail-panel.open{transform:translateX(0)}
+
+        /* toast */
+        @keyframes toastIn{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+        @keyframes toastOut{from{opacity:1}to{opacity:0}}
+        .toast{animation:toastIn .3s ease both}
+        .toast.out{animation:toastOut .3s ease both}
+
+        /* table rows */
+        tbody tr{transition:background .12s;cursor:pointer}
+        @keyframes rowIn{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:translateX(0)}}
+        tbody tr{animation:rowIn .35s ease both}
+        tbody tr:nth-child(1){animation-delay:.30s}tbody tr:nth-child(2){animation-delay:.36s}
+        tbody tr:nth-child(3){animation-delay:.42s}tbody tr:nth-child(4){animation-delay:.48s}
+        tbody tr:nth-child(5){animation-delay:.54s}tbody tr:nth-child(n+6){animation-delay:.60s}
     </style>
 </head>
 
-<!--
-  ════════════════════════════════════════════════════════════════════════
-  CONTROLLER CẦN TRUYỀN VÀO MODEL CÁC BIẾN SAU:
-  ────────────────────────────────────────────────────────────────────────
-  • users          : Page<UserDTO>   — danh sách user đã phân trang
-  • statTotal      : long            — tổng số user
-  • statActive     : long            — số user Active
-  • statInactive   : long            — số user Inactive
-  • statSuspended  : long            — số user Suspended
-  • currentPage    : int             — trang hiện tại (0-based hoặc 1-based tuỳ cấu hình)
-  • totalPages     : int             — tổng số trang
-  • pageSize       : int             — số dòng mỗi trang
-  • totalElements  : long            — tổng số bản ghi sau filter
-  • keyword        : String          — từ khoá search hiện tại (có thể null)
-  • roleFilter     : String          — role đang lọc (có thể null)
-  • statusFilter   : String          — status đang lọc (có thể null)
-  • sortField      : String          — field đang sort (có thể null)
-  • sortDir        : String          — "asc" hoặc "desc"
-  • departments    : List<String>    — danh sách tên department để hiển thị trong dropdown
-  • currentUser    : UserDTO         — user đang đăng nhập (hiển thị ở sidebar)
-  ────────────────────────────────────────────────────────────────────────
-  UserDTO gồm các field:
-    id, fullName (hoặc firstName + lastName), email,
-    role, departmentName, lastLoginDisplay, status, avatarUrl
-  ════════════════════════════════════════════════════════════════════════
--->
-
-<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen">
+<body class="bg-bg-light font-display text-slate-900 min-h-screen">
 <div class="flex h-screen overflow-hidden">
 
-    <!-- ── Sidebar ──────────────────────────────────────────────────────── -->
-    <aside class="w-72 bg-white dark:bg-slate-900 border-r border-primary/10 flex flex-col shrink-0">
-        <div class="p-6 flex items-center gap-3">
-            <div class="w-10 h-10 rounded-lg bg-primary flex items-center justify-center text-white">
-                <span class="material-symbols-outlined">corporate_fare</span>
+    <!-- SIDEBAR -->
+    <aside class="w-72 bg-white border-r border-slate-100 flex flex-col shrink-0 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-40 h-40 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+        <div class="px-6 py-6 flex items-center gap-3 relative z-10">
+            <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white shadow-md shadow-primary/30">
+                <span class="material-symbols-outlined text-[22px]">corporate_fare</span>
             </div>
             <div>
-                <h1 class="text-lg font-bold tracking-tight">HRM Pro</h1>
-                <p class="text-xs text-slate-500 dark:text-slate-400">Administrator</p>
+                <h1 class="text-base font-black tracking-tight text-slate-900">HRM Pro</h1>
+                <p class="text-[11px] text-slate-400 font-medium">Workspace Management</p>
             </div>
         </div>
-
-        <nav class="flex-1 px-4 py-2 space-y-1 overflow-y-auto">
-            <a th:href="@{/dashboard}"
-               class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-primary/5 rounded-lg transition-colors">
-                <span class="material-symbols-outlined text-[22px]">dashboard</span>
+        <nav class="flex-1 px-3 space-y-0.5 overflow-y-auto">
+            <p class="px-3 pb-1 pt-1 text-[10px] font-bold text-slate-300 uppercase tracking-widest">Main</p>
+            <a th:href="@{/dashboard}" class="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:bg-slate-50 rounded-xl transition-all group">
+                <span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-primary transition-colors">dashboard</span>
                 <span class="text-sm font-medium">Dashboard</span>
             </a>
-            <a th:href="@{/companies}"
-               class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-primary/5 rounded-lg transition-colors">
-                <span class="material-symbols-outlined text-[22px]">domain</span>
-                <span class="text-sm font-medium">Company Management</span>
+            <a th:href="@{/companies}" class="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:bg-slate-50 rounded-xl transition-all group">
+                <span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-primary transition-colors">domain</span>
+                <span class="text-sm font-medium">Company</span>
             </a>
-            <a th:href="@{/departments}"
-               class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-primary/5 rounded-lg transition-colors">
-                <span class="material-symbols-outlined text-[22px]">account_tree</span>
-                <span class="text-sm font-medium">Department Management</span>
+            <a th:href="@{/departments}" class="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:bg-slate-50 rounded-xl transition-all group">
+                <span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-primary transition-colors">account_tree</span>
+                <span class="text-sm font-medium">Departments</span>
             </a>
-            <a th:href="@{/roles}"
-               class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-primary/5 rounded-lg transition-colors">
-                <span class="material-symbols-outlined text-[22px]">admin_panel_settings</span>
-                <span class="text-sm font-medium">Role &amp; Permission</span>
+            <a th:href="@{/roles}" class="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:bg-slate-50 rounded-xl transition-all group">
+                <span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-primary transition-colors">admin_panel_settings</span>
+                <span class="text-sm font-medium">Roles &amp; Permissions</span>
             </a>
-            <!-- Active page -->
-            <a th:href="@{/admin/users}"
-               class="flex items-center gap-3 px-3 py-2.5 bg-primary text-white rounded-lg shadow-sm shadow-primary/20">
-                <span class="material-symbols-outlined text-[22px]">group</span>
-                <span class="text-sm font-medium">User Accounts</span>
+            <a th:href="@{/admin/users}" class="nav-active flex items-center gap-3 px-3 py-2.5 bg-primary-light text-primary rounded-xl transition-all">
+                <span class="material-symbols-outlined fill-icon text-[20px]">group</span>
+                <span class="text-sm font-semibold">User Accounts</span>
+                <span class="ml-auto w-2 h-2 rounded-full bg-emerald-400 pulse-dot"></span>
             </a>
-            <a th:href="@{/logs}"
-               class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-primary/5 rounded-lg transition-colors">
-                <span class="material-symbols-outlined text-[22px]">receipt_long</span>
+            <p class="px-3 pb-1 pt-4 text-[10px] font-bold text-slate-300 uppercase tracking-widest">System</p>
+            <a th:href="@{/logs}" class="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:bg-slate-50 rounded-xl transition-all group">
+                <span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-primary transition-colors">receipt_long</span>
                 <span class="text-sm font-medium">System Logs</span>
+                <span class="ml-auto text-[10px] font-bold text-rose-500 bg-rose-50 px-1.5 py-0.5 rounded-md">3</span>
             </a>
-            <div class="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800">
-                <a th:href="@{/settings}"
-                   class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-primary/5 rounded-lg transition-colors">
-                    <span class="material-symbols-outlined text-[22px]">settings</span>
-                    <span class="text-sm font-medium">Settings</span>
-                </a>
-            </div>
+            <a th:href="@{/settings}" class="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:bg-slate-50 rounded-xl transition-all group">
+                <span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-primary transition-colors">settings</span>
+                <span class="text-sm font-medium">Settings</span>
+            </a>
         </nav>
-
-        <!-- Current logged-in user info -->
-        <div class="p-4 bg-slate-50 dark:bg-slate-800/50 m-4 rounded-xl border border-slate-100 dark:border-slate-800">
-            <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary overflow-hidden">
-                    <img class="w-full h-full object-cover"
-                         th:src="${currentUser?.avatarUrl}"
-                         th:alt="${currentUser?.fullName}"
-                         onerror="this.style.display='none'"/>
+        <div class="p-4">
+            <div class="bg-slate-50 border border-slate-100 rounded-2xl p-3 flex items-center gap-3">
+                <div class="w-9 h-9 rounded-full overflow-hidden bg-primary/10 flex items-center justify-center text-primary font-bold text-sm shrink-0">
+                    <img th:src="${currentUser?.avatarUrl}" th:alt="${currentUser?.fullName}" class="w-full h-full object-cover" onerror="this.style.display='none'"/>
                 </div>
                 <div class="flex-1 min-w-0">
-                    <p class="text-xs font-semibold truncate" th:text="${currentUser?.fullName}">Alex Rivera</p>
-                    <a th:href="@{/logout}" class="text-[10px] text-slate-500 hover:text-primary transition-colors">Log out</a>
+                    <p class="text-xs font-bold text-slate-800 truncate" th:text="${currentUser?.fullName}">Alex Rivera</p>
+                    <p class="text-[11px] text-slate-400 truncate" th:text="${currentUser?.email}">alex@company.com</p>
                 </div>
-                <a th:href="@{/logout}">
-                    <span class="material-symbols-outlined text-slate-400 text-sm">logout</span>
+                <a th:href="@{/logout}" class="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors">
+                    <span class="material-symbols-outlined text-sm">logout</span>
                 </a>
             </div>
         </div>
     </aside>
 
-    <!-- ── Main Content ──────────────────────────────────────────────────── -->
-    <main class="flex-1 flex flex-col min-w-0 overflow-hidden bg-background-light">
+    <!-- MAIN -->
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden relative">
 
-        <!-- Header: Search & Filters (submit GET form để server filter) -->
-        <header class="h-16 bg-white dark:bg-slate-900 border-b border-primary/10 flex items-center justify-between px-8 shrink-0">
-            <form th:action="@{/admin/users}" method="get" class="flex items-center gap-4" id="filter-form">
-
-                <!-- Search -->
-                <div class="relative">
-                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xl">search</span>
-                    <input name="keyword"
-                           th:value="${keyword}"
-                           class="pl-10 pr-4 py-1.5 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary w-64 transition-all"
-                           placeholder="Search users..."
-                           type="text"
-                           oninput="debounceSubmit()"/>
-                </div>
-
-                <!-- Filter by Role -->
-                <select name="role"
-                        class="pl-3 pr-8 py-1.5 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary text-slate-600"
-                        onchange="this.form.submit()">
-                    <option value="" th:selected="${roleFilter == null or roleFilter == ''}">All Roles</option>
-                    <option th:each="r : ${roles != null ? roles : T(java.util.Collections).emptyList()}" th:text="${r.getCode()}" th:value="${r.getCode()}" th:selected="${roleFilter != null and roleFilter == r.getCode()}">Admin</option>
-                </select>
-
-                <!-- Filter by Status -->
-                <select name="status"
-                        class="pl-3 pr-8 py-1.5 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary text-slate-600"
-                        onchange="this.form.submit()">
-                    <option value="" th:selected="${statusFilter == null or statusFilter == ''}">All Status</option>
-                    <option value="Active"    th:selected="${statusFilter == 'Active'}">Active</option>
-                    <option value="Inactive"  th:selected="${statusFilter == 'Inactive'}">Inactive</option>
-                    <option value="Suspended" th:selected="${statusFilter == 'Suspended'}">Suspended</option>
-                </select>
-
-                <!-- Preserve sort params khi submit filter -->
-                <input type="hidden" name="sort"    th:value="${sortField}"/>
-                <input type="hidden" name="dir"     th:value="${sortDir}"/>
-                <input type="hidden" name="page"    value="0"/>
-            </form>
-
-            <div class="flex items-center gap-4">
-                <button class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600">
-                    <span class="material-symbols-outlined">notifications</span>
+        <header class="h-16 bg-white border-b border-slate-100 flex items-center justify-between px-8 shrink-0">
+            <div>
+                <h2 class="text-base font-black text-slate-900 leading-tight">User Accounts</h2>
+                <p class="text-xs text-slate-400">Manage system users and access rights</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <button class="relative w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-50 text-slate-500 transition-colors">
+                    <span class="material-symbols-outlined text-[20px]">notifications</span>
+                    <span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 border-2 border-white"></span>
                 </button>
-                <button class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600">
-                    <span class="material-symbols-outlined">help_outline</span>
+                <button class="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-50 text-slate-500 transition-colors">
+                    <span class="material-symbols-outlined text-[20px]">help_outline</span>
                 </button>
+                <div class="w-8 h-8 rounded-full bg-primary/10 text-primary font-bold text-xs flex items-center justify-center ml-1">AR</div>
             </div>
         </header>
 
-        <!-- Scrollable Area -->
-        <div class="flex-1 overflow-y-auto p-8">
-            <div class="flex flex-col gap-6 max-w-7xl mx-auto">
+        <div class="flex-1 overflow-y-auto p-8 dot-grid">
+            <div class="max-w-7xl mx-auto space-y-6">
 
-                <!-- Page Action Bar -->
-                <div class="flex flex-wrap items-end justify-between gap-4">
+                <!-- Title + CTA -->
+                <div class="anim anim-1 flex flex-wrap items-center justify-between gap-4">
                     <div>
-                        <h2 class="text-3xl font-black text-slate-900 dark:text-white tracking-tight">User Accounts</h2>
-                        <p class="text-slate-500 dark:text-slate-400 mt-1">Manage all system users and their access rights</p>
+                        <h3 class="text-3xl font-black text-slate-900 tracking-tight">All Users</h3>
+                        <p class="text-sm text-slate-400 mt-0.5">
+                            <span th:text="${totalElements != null ? totalElements : 0}">0</span> total accounts across all departments
+                        </p>
                     </div>
-                    <button onclick="openModal()"
-                            class="flex items-center gap-2 px-5 py-2.5 bg-primary text-white text-sm font-bold rounded-lg shadow-lg shadow-primary/30 hover:bg-primary/90 transition-all active:scale-95">
-                        <span class="material-symbols-outlined text-xl">person_add</span>
-                        <span>Add User</span>
+                    <button onclick="openAddModal()"
+                            class="flex items-center gap-2 px-5 py-2.5 bg-primary text-white text-sm font-bold rounded-xl shadow-lg shadow-primary/25 hover:bg-primary/90 transition-all active:scale-95">
+                        <span class="material-symbols-outlined text-[20px]">person_add</span>
+                        Add New User
                     </button>
                 </div>
 
-                <!-- Stats Quick View — bind từ model -->
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-primary/5 shadow-sm">
-                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Users</p>
-                        <h3 class="text-2xl font-bold mt-1" th:text="${statTotal}">0</h3>
+                <!-- Stat cards -->
+                <div class="grid grid-cols-4 gap-4">
+                    <div class="anim anim-2 card-hover gradient-card rounded-2xl p-5 text-white relative overflow-hidden">
+                        <div class="absolute inset-0 opacity-10" style="background:url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22><circle cx=%2230%22 cy=%2230%22 r=%2220%22 fill=%22none%22 stroke=%22white%22 stroke-width=%221%22/></svg>')"></div>
+                        <div class="relative">
+                            <div class="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center mb-3"><span class="material-symbols-outlined fill-icon text-[20px]">groups</span></div>
+                            <p class="text-white/70 text-[10px] font-bold uppercase tracking-wider">Total Users</p>
+                            <p class="text-3xl font-black stat-num mt-0.5" th:text="${statTotal}">0</p>
+                        </div>
                     </div>
-                    <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-primary/5 shadow-sm">
-                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Active Users</p>
-                        <h3 class="text-2xl font-bold mt-1 text-emerald-500" th:text="${statActive}">0</h3>
+                    <div class="anim anim-3 card-hover bg-white rounded-2xl p-5 border border-slate-100 shadow-sm relative overflow-hidden">
+                        <div class="absolute bottom-0 right-0 w-16 h-16 bg-emerald-50 rounded-tl-3xl pointer-events-none"></div>
+                        <div class="relative">
+                            <div class="w-9 h-9 bg-emerald-50 rounded-xl flex items-center justify-center mb-3"><span class="material-symbols-outlined fill-icon text-emerald-500 text-[20px]">verified</span></div>
+                            <p class="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Active</p>
+                            <p class="text-3xl font-black stat-num mt-0.5 text-emerald-600" th:text="${statActive}">0</p>
+                        </div>
                     </div>
-                    <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-primary/5 shadow-sm">
-                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Inactive</p>
-                        <h3 class="text-2xl font-bold mt-1 text-slate-400" th:text="${statInactive}">0</h3>
+                    <div class="anim anim-4 card-hover bg-white rounded-2xl p-5 border border-slate-100 shadow-sm relative overflow-hidden">
+                        <div class="absolute bottom-0 right-0 w-16 h-16 bg-slate-50 rounded-tl-3xl pointer-events-none"></div>
+                        <div class="relative">
+                            <div class="w-9 h-9 bg-slate-100 rounded-xl flex items-center justify-center mb-3"><span class="material-symbols-outlined text-slate-500 text-[20px]">person_off</span></div>
+                            <p class="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Inactive</p>
+                            <p class="text-3xl font-black stat-num mt-0.5 text-slate-600" th:text="${statInactive}">0</p>
+                        </div>
                     </div>
-                    <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-primary/5 shadow-sm">
-                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Suspended</p>
-                        <h3 class="text-2xl font-bold mt-1 text-rose-500" th:text="${statSuspended}">0</h3>
+                    <div class="anim anim-5 card-hover bg-white rounded-2xl p-5 border border-slate-100 shadow-sm relative overflow-hidden">
+                        <div class="absolute bottom-0 right-0 w-16 h-16 bg-rose-50 rounded-tl-3xl pointer-events-none"></div>
+                        <div class="relative">
+                            <div class="w-9 h-9 bg-rose-50 rounded-xl flex items-center justify-center mb-3"><span class="material-symbols-outlined fill-icon text-rose-500 text-[20px]">block</span></div>
+                            <p class="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Suspended</p>
+                            <p class="text-3xl font-black stat-num mt-0.5 text-rose-500" th:text="${statSuspended}">0</p>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Table -->
-                <div class="bg-white dark:bg-slate-900 rounded-xl border border-primary/10 shadow-sm overflow-hidden">
+                <!-- Table card -->
+                <div class="anim anim-6 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                    <!-- Toolbar -->
+                    <div class="flex flex-wrap items-center justify-between gap-3 px-6 py-4 border-b border-slate-50">
+                        <form th:action="@{/admin/users}" method="get" class="flex flex-wrap items-center gap-2" id="filter-form">
+                            <div class="relative">
+                                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 text-[18px]">search</span>
+                                <input name="keyword" th:value="${keyword}"
+                                       class="pl-9 pr-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-xs text-slate-700 focus:ring-2 focus:ring-primary focus:border-transparent w-56 transition-all placeholder:text-slate-300"
+                                       placeholder="Search name, email…" type="text" oninput="debounceSubmit()"/>
+                            </div>
+                            <select name="role" class="px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl text-xs text-slate-600 focus:ring-2 focus:ring-primary" onchange="this.form.submit()">
+                                <option value="" th:selected="${roleFilter == null or roleFilter == ''}">All Roles</option>
+                                <option th:each="r : ${roles != null ? roles : T(java.util.Collections).emptyList()}"
+                                        th:text="${r.name}" th:value="${r.getCode()}"
+                                        th:selected="${roleFilter != null and roleFilter == r.getCode()}"></option>
+                            </select>
+                            <select name="status" class="px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl text-xs text-slate-600 focus:ring-2 focus:ring-primary" onchange="this.form.submit()">
+                                <option value="" th:selected="${statusFilter == null or statusFilter == ''}">All Status</option>
+                                <option value="Active"    th:selected="${statusFilter == 'Active'}">Active</option>
+                                <option value="Inactive"  th:selected="${statusFilter == 'Inactive'}">Inactive</option>
+                                <option value="Suspended" th:selected="${statusFilter == 'Suspended'}">Suspended</option>
+                            </select>
+                            <input type="hidden" name="sort" th:value="${sortField}"/>
+                            <input type="hidden" name="dir"  th:value="${sortDir}"/>
+                            <input type="hidden" name="page" value="0"/>
+                        </form>
+                        <button class="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-500 bg-slate-50 border border-slate-100 rounded-xl hover:bg-slate-100 transition-colors">
+                            <span class="material-symbols-outlined text-[16px]">download</span>Export
+                        </button>
+                    </div>
+
+                    <!-- Table -->
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
+                        <table class="w-full text-left">
                             <thead>
-                            <tr class="bg-slate-50 dark:bg-slate-800/50 border-b border-primary/5">
-                                <th class="px-6 py-4">
-                                    <input type="checkbox" id="check-all"
-                                           class="rounded border-slate-300 text-primary focus:ring-primary"/>
-                                </th>
-
-                                <!-- Sortable: User name -->
-                                <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">
-                                    <a th:href="@{/admin/users(keyword=${keyword ?: ''},role=${roleFilter ?: ''},status=${statusFilter ?: ''},sort='fullName',dir=${(sortField == 'fullName' and sortDir == 'asc') ? 'desc' : 'asc'},page=0)}"
-                                       class="flex items-center gap-1 hover:text-primary transition-colors">
-                                        User
-                                        <span class="material-symbols-outlined text-base"
-                                              th:text="${sortField=='fullName'?(sortDir=='asc'?'arrow_upward':'arrow_downward'):'unfold_more'}">unfold_more</span>
+                            <tr class="bg-slate-50/80 border-b border-slate-100">
+                                <th class="px-6 py-3.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                    <a th:href="@{/admin/users(keyword=${keyword?:''},role=${roleFilter?:''},status=${statusFilter?:''},sort='fullName',dir=${(sortField=='fullName' and sortDir=='asc')?'desc':'asc'},page=0)}" class="flex items-center gap-1 hover:text-primary transition-colors">
+                                        User <span class="material-symbols-outlined text-sm" th:text="${sortField=='fullName'?(sortDir=='asc'?'arrow_upward':'arrow_downward'):'unfold_more'}">unfold_more</span>
                                     </a>
                                 </th>
-
-                                <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Email</th>
-
-                                <!-- Sortable: Role -->
-                                <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">
-                                    <a th:href="@{/admin/users(keyword=${keyword ?: ''},role=${roleFilter ?: ''},status=${statusFilter ?: ''},sort='role',dir=${(sortField == 'role' and sortDir == 'asc') ? 'desc' : 'asc'},page=0)}"
-                                       class="flex items-center gap-1 hover:text-primary transition-colors">
-                                        Role
-                                        <span class="material-symbols-outlined text-base"
-                                              th:text="${sortField=='role'?(sortDir=='asc'?'arrow_upward':'arrow_downward'):'unfold_more'}">unfold_more</span>
+                                <th class="px-4 py-3.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Email</th>
+                                <th class="px-4 py-3.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                    <a th:href="@{/admin/users(keyword=${keyword?:''},role=${roleFilter?:''},status=${statusFilter?:''},sort='role',dir=${(sortField=='role' and sortDir=='asc')?'desc':'asc'},page=0)}" class="flex items-center gap-1 hover:text-primary transition-colors">
+                                        Role <span class="material-symbols-outlined text-sm" th:text="${sortField=='role'?(sortDir=='asc'?'arrow_upward':'arrow_downward'):'unfold_more'}">unfold_more</span>
                                     </a>
                                 </th>
-
-                                <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Department</th>
-
-                                <!-- Sortable: Last Login -->
-                                <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">
-                                    <a th:href="@{/admin/users(keyword=${keyword ?: ''},role=${roleFilter ?: ''},status=${statusFilter ?: ''},sort='lastLogin',dir=${(sortField == 'lastLogin' and sortDir == 'asc') ? 'desc' : 'asc'},page=0)}"
-                                       class="flex items-center gap-1 hover:text-primary transition-colors">
-                                        Last Login
-                                        <span class="material-symbols-outlined text-base"
-                                              th:text="${sortField=='lastLogin'?(sortDir=='asc'?'arrow_upward':'arrow_downward'):'unfold_more'}">unfold_more</span>
+                                <th class="px-4 py-3.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Department</th>
+                                <th class="px-4 py-3.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                    <a th:href="@{/admin/users(keyword=${keyword?:''},role=${roleFilter?:''},status=${statusFilter?:''},sort='lastLogin',dir=${(sortField=='lastLogin' and sortDir=='asc')?'desc':'asc'},page=0)}" class="flex items-center gap-1 hover:text-primary transition-colors">
+                                        Last Login <span class="material-symbols-outlined text-sm" th:text="${sortField=='lastLogin'?(sortDir=='asc'?'arrow_upward':'arrow_downward'):'unfold_more'}">unfold_more</span>
                                     </a>
                                 </th>
-
-                                <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
-                                <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Action</th>
+                                <th class="px-4 py-3.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status</th>
+                                <th class="px-4 py-3.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right">Actions</th>
                             </tr>
                             </thead>
+                            <tbody class="divide-y divide-slate-50">
 
-                            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-
-                            <!-- Empty state -->
+                            <!-- Empty -->
                             <tr th:if="${users == null or users.isEmpty()}">
-                                <td colspan="8" class="px-6 py-16 text-center">
-                                    <div class="flex flex-col items-center gap-3 text-slate-400">
-                                        <span class="material-symbols-outlined text-5xl">manage_accounts</span>
-                                        <p class="text-sm font-medium">No users found</p>
-                                        <p class="text-xs">Try adjusting your search or filter criteria</p>
+                                <td colspan="7" class="px-6 py-20 text-center">
+                                    <div class="flex flex-col items-center gap-3">
+                                        <div class="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center">
+                                            <span class="material-symbols-outlined text-slate-300 text-4xl">manage_accounts</span>
+                                        </div>
+                                        <p class="text-sm font-bold text-slate-500">No users found</p>
+                                        <p class="text-xs text-slate-400">Try adjusting your search or filter criteria</p>
+                                        <button onclick="openAddModal()" class="mt-1 text-xs font-semibold text-primary hover:underline flex items-center gap-1">
+                                            <span class="material-symbols-outlined text-sm">add</span> Add first user
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
 
-                            <!-- Data rows — null-safe: tránh th:each trên null -->
+                            <!-- Rows -->
                             <tr th:each="user : ${users != null ? users : T(java.util.Collections).emptyList()}"
                                 th:data-id="${user.id}"
-                                th:data-first-name="${user.firstName}"
-                                th:data-last-name="${user.lastName}"
+                                th:data-username="${user.username}"
                                 th:data-email="${user.email}"
+                                th:data-full-name="${user.fullName}"
+                                th:data-phone="${user.phone}"
+                                th:data-status="${user.status}"
                                 th:data-role="${user.role}"
                                 th:data-department-name="${user.departmentName}"
-                                th:data-status="${user.status}"
-                                th:data-full-name="${user.fullName}"
-                                class="hover:bg-primary/5 transition-colors group">
+                                th:data-initials="${user.initials}"
+                                th:data-last-login="${user.lastLoginDisplay}"
+                                class="hover:bg-primary/[3%] group"
+                                onclick="openDetailPanel(this)">
 
-                                <!-- Checkbox -->
-                                <td class="px-6 py-4">
-                                    <input type="checkbox" class="row-check rounded border-slate-300 text-primary focus:ring-primary"
-                                           th:data-id="${user.id}"/>
-                                </td>
-
-                                <!-- Avatar + Name + UID -->
-                                <td class="px-6 py-4">
+                                <td class="px-6 py-3.5">
                                     <div class="flex items-center gap-3">
-                                        <img class="w-8 h-8 rounded-full object-cover border-2 border-white shadow-sm"
-                                             th:src="${user.avatarUrl}"
-                                             th:alt="${user.fullName}"
-                                             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
-                                        <!-- Fallback initials (UserDTO.getInitials() đã xử lý null) -->
-                                        <div class="w-8 h-8 rounded-full bg-primary/10 text-primary font-bold text-xs items-center justify-center hidden"
-                                             th:text="${user.initials}">AB</div>
+                                        <div class="relative shrink-0">
+                                            <img class="w-9 h-9 rounded-xl object-cover border border-slate-100 shadow-sm"
+                                                 th:src="${user.avatarUrl}" th:alt="${user.fullName}"
+                                                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+                                            <div class="w-9 h-9 rounded-xl bg-primary/10 text-primary font-bold text-xs items-center justify-center hidden" th:text="${user.initials}">AB</div>
+                                            <span th:if="${user.status=='Active'}"    class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 border-2 border-white"></span>
+                                            <span th:if="${user.status=='Suspended'}" class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-rose-500 border-2 border-white"></span>
+                                        </div>
                                         <div>
-                                            <p class="text-sm font-semibold text-slate-900 dark:text-white leading-tight"
-                                               th:text="${user.fullName}">Full Name</p>
-                                            <p class="text-[11px] text-slate-400 leading-tight"
-                                               th:text="'#UID-' + ${user.id != null ? T(java.lang.String).format('%04d', user.id) : ''}">#UID-0001</p>
+                                            <p class="text-sm font-semibold text-slate-800 leading-tight group-hover:text-primary transition-colors" th:text="${user.fullName}">Full Name</p>
+                                            <p class="text-[10px] text-slate-400 uid-chip leading-tight" th:text="'#' + ${user.id != null ? T(java.lang.String).format('%04d', user.id) : '0000'}">#0001</p>
                                         </div>
                                     </div>
                                 </td>
 
-                                <!-- Email -->
-                                <td class="px-6 py-4 text-sm text-slate-500" th:text="${user.email}">email@company.com</td>
+                                <td class="px-4 py-3.5 text-xs text-slate-500" th:text="${user.email}">email@co.com</td>
 
-                                <!-- Role badge -->
-                                <td class="px-6 py-4">
-                                    <!--/* Admin */-->
-                                    <span th:if="${user.role == 'Admin'}"
-                                          class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-primary/10 text-primary"
-                                          th:text="${user.role}">Admin</span>
-                                    <!--/* Manager */-->
-                                    <span th:if="${user.role == 'Manager'}"
-                                          class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-orange-100 text-orange-600"
-                                          th:text="${user.role}">Manager</span>
-                                    <!--/* Developer */-->
-                                    <span th:if="${user.role == 'Developer'}"
-                                          class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-sky-100 text-sky-600"
-                                          th:text="${user.role}">Developer</span>
-                                    <!--/* Designer */-->
-                                    <span th:if="${user.role == 'Designer'}"
-                                          class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-purple-100 text-purple-600"
-                                          th:text="${user.role}">Designer</span>
-                                    <!--/* Analyst */-->
-                                    <span th:if="${user.role == 'Analyst'}"
-                                          class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-teal-100 text-teal-600"
-                                          th:text="${user.role}">Analyst</span>
-                                    <!--/* HR */-->
-                                    <span th:if="${user.role == 'HR'}"
-                                          class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-pink-100 text-pink-600"
-                                          th:text="${user.role}">HR</span>
-                                    <!--/* Fallback nếu role khác */-->
-                                    <span th:unless="${user.role == 'Admin' or user.role == 'Manager' or user.role == 'Developer'
-                                       or user.role == 'Designer' or user.role == 'Analyst' or user.role == 'HR'}"
-                                          class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-slate-100 text-slate-600"
-                                          th:text="${user.role}">Other</span>
+                                <td class="px-4 py-3.5">
+                                    <span th:if="${user.role=='Admin'}"     class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-primary/10 text-primary"><span class="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span><span th:text="${user.role}">Admin</span></span>
+                                    <span th:if="${user.role=='Manager'}"   class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-orange-100 text-orange-600"><span class="w-1.5 h-1.5 rounded-full bg-orange-500 inline-block"></span><span th:text="${user.role}">Manager</span></span>
+                                    <span th:if="${user.role=='Developer'}" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-sky-100 text-sky-600"><span class="w-1.5 h-1.5 rounded-full bg-sky-500 inline-block"></span><span th:text="${user.role}">Developer</span></span>
+                                    <span th:if="${user.role=='Designer'}"  class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-purple-100 text-purple-600"><span class="w-1.5 h-1.5 rounded-full bg-purple-500 inline-block"></span><span th:text="${user.role}">Designer</span></span>
+                                    <span th:if="${user.role=='Analyst'}"   class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-teal-100 text-teal-600"><span class="w-1.5 h-1.5 rounded-full bg-teal-500 inline-block"></span><span th:text="${user.role}">Analyst</span></span>
+                                    <span th:if="${user.role=='HR'}"        class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-pink-100 text-pink-600"><span class="w-1.5 h-1.5 rounded-full bg-pink-500 inline-block"></span><span th:text="${user.role}">HR</span></span>
+                                    <span th:unless="${user.role=='Admin' or user.role=='Manager' or user.role=='Developer' or user.role=='Designer' or user.role=='Analyst' or user.role=='HR'}"
+                                          class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-slate-100 text-slate-500"><span class="w-1.5 h-1.5 rounded-full bg-slate-400 inline-block"></span><span th:text="${user.role}">Other</span></span>
                                 </td>
 
-                                <!-- Department -->
-                                <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-300"
-                                    th:text="${user.departmentName}">Engineering</td>
-
-                                <!-- Last Login -->
-                                <td class="px-6 py-4 text-sm text-slate-500"
-                                    th:text="${user.lastLoginDisplay}">2 min ago</td>
-
-                                <!-- Status badge -->
-                                <td class="px-6 py-4">
-                    <span th:if="${user.status == 'Active'}"
-                          class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400">Active</span>
-                                    <span th:if="${user.status == 'Inactive'}"
-                                          class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400">Inactive</span>
-                                    <span th:if="${user.status == 'Suspended'}"
-                                          class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400">Suspended</span>
+                                <td class="px-4 py-3.5">
+                    <span class="inline-flex items-center gap-1.5 text-xs text-slate-600">
+                      <span class="material-symbols-outlined text-slate-300 text-sm">account_tree</span>
+                      <span th:text="${user.departmentName}">Engineering</span>
+                    </span>
                                 </td>
 
-                                <!-- Actions -->
-                                <td class="px-6 py-4 text-right">
+                                <td class="px-4 py-3.5">
+                    <span class="inline-flex items-center gap-1.5 text-xs text-slate-400">
+                      <span class="material-symbols-outlined text-slate-300 text-sm">schedule</span>
+                      <span th:text="${user.lastLoginDisplay}">2 min ago</span>
+                    </span>
+                                </td>
+
+                                <td class="px-4 py-3.5">
+                                    <span th:if="${user.status=='Active'}"    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block pulse-dot"></span>Active</span>
+                                    <span th:if="${user.status=='Inactive'}"  class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-500"><span class="w-1.5 h-1.5 rounded-full bg-slate-400 inline-block"></span>Inactive</span>
+                                    <span th:if="${user.status=='Suspended'}" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-100 text-rose-600"><span class="w-1.5 h-1.5 rounded-full bg-rose-500 inline-block"></span>Suspended</span>
+                                </td>
+
+                                <!-- stop row click -->
+                                <td class="px-4 py-3.5 text-right" onclick="event.stopPropagation()">
                                     <div class="flex items-center justify-end gap-1">
-                                        <!-- Edit: đọc data từ data-* trên <tr>, tránh string trong onclick -->
-                                        <button type="button"
-                                                class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-primary hover:bg-primary/5 transition-colors"
-                                                title="Edit"
-                                                onclick="openEditModalFromRow(this)">
-                                            <span class="material-symbols-outlined text-[18px]">edit</span>
+                                        <button type="button" onclick="openEditModalFromRow(this)"
+                                                class="w-8 h-8 flex items-center justify-center rounded-xl text-slate-400 hover:text-primary hover:bg-primary-light transition-colors" title="Edit">
+                                            <span class="material-symbols-outlined text-[17px]">edit</span>
                                         </button>
-                                        <!-- Delete -->
-                                        <button type="button"
-                                                class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors"
-                                                title="Delete"
-                                                onclick="openDeleteModalFromRow(this)">
-                                            <span class="material-symbols-outlined text-[18px]">delete</span>
+                                        <button type="button" onclick="openDeleteModalFromRow(this)"
+                                                class="w-8 h-8 flex items-center justify-center rounded-xl text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors" title="Delete">
+                                            <span class="material-symbols-outlined text-[17px]">delete</span>
                                         </button>
                                     </div>
                                 </td>
@@ -407,257 +373,324 @@
                     </div>
 
                     <!-- Pagination -->
-                    <div class="px-6 py-4 border-t border-primary/5 bg-slate-50/50 dark:bg-slate-800/30 flex items-center justify-between">
-                        <!-- Info text -->
-                        <span class="text-sm text-slate-500"
-                              th:text="|Showing ${totalElements != null and totalElements == 0 ? 0 : currentPage * pageSize + 1} to ${totalElements != null and totalElements == 0 ? 0 : (totalElements != null and (currentPage + 1) * pageSize <= totalElements ? (currentPage + 1) * pageSize : totalElements)} of ${totalElements != null ? totalElements : 0} users|">
-              Showing 1 to 10 of 0 users
+                    <div class="px-6 py-4 border-t border-slate-50 bg-slate-50/40 flex items-center justify-between">
+            <span class="text-xs text-slate-400"
+                  th:text="|Showing ${totalElements != null and totalElements == 0 ? 0 : currentPage * pageSize + 1}–${totalElements != null and totalElements == 0 ? 0 : (totalElements != null and (currentPage + 1) * pageSize <= totalElements ? (currentPage + 1) * pageSize : totalElements)} of ${totalElements != null ? totalElements : 0} users|">
+              Showing 1–10 of 0 users
             </span>
-
-                        <!-- Page buttons -->
-                        <div class="flex items-center gap-2">
-                            <!-- Prev -->
-                            <a th:href="@{/admin/users(keyword=${keyword ?: ''},role=${roleFilter ?: ''},status=${statusFilter ?: ''},sort=${sortField ?: 'fullName'},dir=${sortDir ?: 'asc'},page=${currentPage - 1})}"
-                               th:classappend="${currentPage == 0 ? 'opacity-40 pointer-events-none' : ''}"
-                               class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 transition-colors">
-                                <span class="material-symbols-outlined text-lg">chevron_left</span>
+                        <div class="flex items-center gap-1.5">
+                            <a th:href="@{/admin/users(keyword=${keyword?:''},role=${roleFilter?:''},status=${statusFilter?:''},sort=${sortField?:'fullName'},dir=${sortDir?:'asc'},page=${currentPage-1})}"
+                               th:classappend="${currentPage==0?'opacity-30 pointer-events-none':''}"
+                               class="w-8 h-8 flex items-center justify-center rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-colors text-slate-500">
+                                <span class="material-symbols-outlined text-[18px]">chevron_left</span>
                             </a>
-
-                            <!-- Numbered pages — chỉ render khi totalPages > 0, tránh sequence(0,-1) gây lỗi -->
                             <th:block th:if="${totalPages > 0}">
-                                <th:block th:each="pageNum : ${#numbers.sequence(
-                    T(java.lang.Math).max(0, currentPage - 2),
-                    T(java.lang.Math).min(T(java.lang.Integer).valueOf(totalPages - 1), T(java.lang.Integer).valueOf(currentPage + 2)))}">
-                                    <a th:href="@{/admin/users(keyword=${keyword ?: ''},role=${roleFilter ?: ''},status=${statusFilter ?: ''},sort=${sortField ?: 'fullName'},dir=${sortDir ?: 'asc'},page=${pageNum})}"
-                                       th:text="${pageNum + 1}"
-                                       th:classappend="${pageNum == currentPage ? 'bg-primary text-white font-bold' : 'hover:bg-primary/10 font-medium'}"
-                                       class="w-8 h-8 flex items-center justify-center rounded-lg text-sm transition-colors">
+                                <th:block th:each="pageNum : ${#numbers.sequence(T(java.lang.Math).max(0,currentPage-2),T(java.lang.Math).min(T(java.lang.Integer).valueOf(totalPages-1),T(java.lang.Integer).valueOf(currentPage+2)))}">
+                                    <a th:href="@{/admin/users(keyword=${keyword?:''},role=${roleFilter?:''},status=${statusFilter?:''},sort=${sortField?:'fullName'},dir=${sortDir?:'asc'},page=${pageNum})}"
+                                       th:text="${pageNum+1}"
+                                       th:class="${pageNum==currentPage?'w-8 h-8 flex items-center justify-center rounded-xl bg-primary text-white text-xs font-bold shadow-md shadow-primary/25':'w-8 h-8 flex items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 text-xs font-medium hover:bg-primary/5 transition-colors'}">
                                     </a>
                                 </th:block>
                             </th:block>
-
-                            <!-- Next -->
-                            <a th:href="@{/admin/users(keyword=${keyword ?: ''},role=${roleFilter ?: ''},status=${statusFilter ?: ''},sort=${sortField ?: 'fullName'},dir=${sortDir ?: 'asc'},page=${currentPage + 1})}"
-                               th:classappend="${currentPage + 1 >= totalPages ? 'opacity-40 pointer-events-none' : ''}"
-                               class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 transition-colors">
-                                <span class="material-symbols-outlined text-lg">chevron_right</span>
+                            <a th:href="@{/admin/users(keyword=${keyword?:''},role=${roleFilter?:''},status=${statusFilter?:''},sort=${sortField?:'fullName'},dir=${sortDir?:'asc'},page=${currentPage+1})}"
+                               th:classappend="${currentPage+1>=totalPages?'opacity-30 pointer-events-none':''}"
+                               class="w-8 h-8 flex items-center justify-center rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-colors text-slate-500">
+                                <span class="material-symbols-outlined text-[18px]">chevron_right</span>
                             </a>
                         </div>
                     </div>
-                </div><!-- /table card -->
+                </div>
 
             </div>
         </div>
+
+        <!-- DETAIL SIDE PANEL -->
+        <div id="detail-panel" class="absolute top-0 right-0 h-full w-80 bg-white border-l border-slate-100 shadow-2xl z-40 flex flex-col">
+            <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100 shrink-0">
+                <p class="text-sm font-black text-slate-800">User Detail</p>
+                <button onclick="closeDetailPanel()" class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-400 transition-colors">
+                    <span class="material-symbols-outlined text-[18px]">close</span>
+                </button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-5 space-y-5">
+                <div class="flex flex-col items-center gap-3 pt-2">
+                    <div class="relative">
+                        <div class="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center text-primary font-black text-2xl border-2 border-white shadow-lg">
+                            <span id="dp-initials">AB</span>
+                        </div>
+                        <span id="dp-status-dot" class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white bg-emerald-400"></span>
+                    </div>
+                    <div class="text-center">
+                        <p id="dp-name" class="text-base font-black text-slate-800">Full Name</p>
+                        <p id="dp-uid" class="text-xs text-slate-400 uid-chip">#0001</p>
+                    </div>
+                    <div id="dp-status-badge" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block pulse-dot"></span>Active
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 rounded-2xl divide-y divide-slate-100 overflow-hidden">
+                    <div class="flex items-center gap-3 px-4 py-3">
+                        <span class="material-symbols-outlined text-slate-300 text-[18px]">mail</span>
+                        <div><p class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Email</p><p id="dp-email" class="text-xs font-semibold text-slate-700 mt-0.5">—</p></div>
+                    </div>
+                    <div class="flex items-center gap-3 px-4 py-3">
+                        <span class="material-symbols-outlined text-slate-300 text-[18px]">admin_panel_settings</span>
+                        <div><p class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Role</p><p id="dp-role" class="text-xs font-semibold text-slate-700 mt-0.5">—</p></div>
+                    </div>
+                    <div class="flex items-center gap-3 px-4 py-3">
+                        <span class="material-symbols-outlined text-slate-300 text-[18px]">account_tree</span>
+                        <div><p class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Department</p><p id="dp-dept" class="text-xs font-semibold text-slate-700 mt-0.5">—</p></div>
+                    </div>
+                    <div class="flex items-center gap-3 px-4 py-3">
+                        <span class="material-symbols-outlined text-slate-300 text-[18px]">schedule</span>
+                        <div><p class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Last Login</p><p id="dp-login" class="text-xs font-semibold text-slate-700 mt-0.5">—</p></div>
+                    </div>
+                </div>
+            </div>
+            <div class="px-5 py-4 border-t border-slate-100 flex gap-2 shrink-0">
+                <button onclick="openEditFromPanel()"
+                        class="flex-1 flex items-center justify-center gap-2 py-2.5 bg-primary text-white text-xs font-bold rounded-xl hover:bg-primary/90 transition-all active:scale-95">
+                    <span class="material-symbols-outlined text-[16px]">edit</span>Edit User
+                </button>
+                <button onclick="openDeleteFromPanel()"
+                        class="w-10 h-10 flex items-center justify-center rounded-xl border border-slate-200 text-slate-400 hover:text-rose-500 hover:bg-rose-50 hover:border-rose-200 transition-colors">
+                    <span class="material-symbols-outlined text-[18px]">delete</span>
+                </button>
+            </div>
+        </div>
+
     </main>
 </div>
 
-<!-- ── Add / Edit User Modal ─────────────────────────────────────────────── -->
-<div id="modal-overlay"
-     class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm hidden">
-    <div id="modal-box" class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden">
-        <div class="flex items-center justify-between px-6 py-5 border-b border-slate-100 dark:border-slate-800">
-            <h3 id="modal-title" class="text-lg font-bold">Add New User</h3>
-            <button onclick="closeModal()"
-                    class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500">
-                <span class="material-symbols-outlined text-xl">close</span>
+<!-- ADD / EDIT MODAL -->
+<div id="modal-overlay" class="overlay hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+    <div id="modal-box" class="modal-box bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden border border-slate-100">
+        <div class="flex items-center justify-between px-6 py-5 border-b border-slate-100">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-primary-light flex items-center justify-center">
+                    <span class="material-symbols-outlined fill-icon text-primary text-[20px]" id="modal-icon">person_add</span>
+                </div>
+                <h3 id="modal-title" class="text-base font-black text-slate-800">Add New User</h3>
+            </div>
+            <button onclick="closeModal()" class="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-400">
+                <span class="material-symbols-outlined text-[20px]">close</span>
             </button>
         </div>
-
-        <!--
-          Form POST → /users/save
-          Controller nhận @ModelAttribute UserDTO userDTO
-          Hidden field "id" = null khi Add, = userId khi Edit
-        -->
-        <form th:action="@{/users/save}" method="post" id="user-form">
+        <form th:action="@{/admin/users/save}" method="post" id="user-form">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
             <input type="hidden" name="id" id="field-id" value=""/>
-
             <div class="p-6 space-y-4">
-                <div class="flex items-center gap-4">
-                    <div class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xl overflow-hidden">
-                        <span class="material-symbols-outlined text-3xl">person</span>
-                    </div>
-                    <div>
-                        <p class="text-sm font-semibold text-slate-700">Profile Photo</p>
-                        <p class="text-xs text-slate-400">Avatar URL sẽ được sinh tự động</p>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">First Name <span class="text-rose-500">*</span></label>
-                        <input id="field-first" name="firstName" type="text" required
-                               class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
-                               placeholder="John"/>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">Last Name</label>
-                        <input id="field-last" name="lastName" type="text"
-                               class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
-                               placeholder="Doe"/>
-                    </div>
-                </div>
-
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Email Address <span class="text-rose-500">*</span></label>
-                    <input id="field-email" name="email" type="email" required
-                           class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
-                           placeholder="john.doe@company.com"/>
+                    <label class="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Username <span class="text-rose-400">*</span></label>
+                    <input id="field-username" name="username" type="text" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-primary focus:border-transparent transition-all placeholder:text-slate-300" placeholder="johndoe"/>
                 </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">Role</label>
-                        <select id="field-role" name="role"
-                                class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-primary">
-                            <option value="Admin">Admin</option>
-                            <option value="Manager">Manager</option>
-                            <option value="Developer">Developer</option>
-                            <option value="Designer">Designer</option>
-                            <option value="Analyst">Analyst</option>
-                            <option value="HR">HR</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">Department</label>
-                        <!-- Render dynamic department list từ model -->
-                        <select id="field-dept" name="departmentName"
-                                class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-primary">
-                            <option th:each="dept : ${departments != null ? departments : T(java.util.Collections).emptyList()}"
-                                    th:value="${dept}"
-                                    th:text="${dept}">Department</option>
-                        </select>
-                    </div>
-                </div>
-
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Status</label>
-                    <select id="field-status" name="status"
-                            class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-primary">
+                    <label class="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Email <span class="text-rose-400">*</span></label>
+                    <div class="relative">
+                        <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300 text-[18px]">mail</span>
+                        <input id="field-email" name="email" type="email" required class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-primary focus:border-transparent transition-all placeholder:text-slate-300" placeholder="john.doe@company.com"/>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Password <span id="pwd-required" class="text-rose-400">*</span></label>
+                    <input id="field-password" name="password" type="password" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-primary focus:border-transparent transition-all placeholder:text-slate-300" placeholder="••••••••"/>
+                    <p id="pwd-hint" class="text-[11px] text-slate-400 mt-1 hidden">Leave blank to keep current password</p>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Full Name <span class="text-rose-400">*</span></label>
+                    <input id="field-fullName" name="fullName" type="text" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-primary focus:border-transparent transition-all placeholder:text-slate-300" placeholder="John Doe"/>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Phone</label>
+                    <input id="field-phone" name="phone" type="text" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-primary focus:border-transparent transition-all placeholder:text-slate-300" placeholder="+84 123 456 789"/>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Status</label>
+                    <select id="field-status" name="status" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-primary">
                         <option value="Active">Active</option>
                         <option value="Inactive">Inactive</option>
                         <option value="Suspended">Suspended</option>
                     </select>
                 </div>
             </div>
-
-            <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
-                <button type="button" onclick="closeModal()"
-                        class="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
-                    Cancel
-                </button>
-                <button type="submit"
-                        class="px-5 py-2 bg-primary text-white text-sm font-bold rounded-lg hover:bg-primary/90 transition-all active:scale-95">
-                    Save User
+            <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-100 bg-slate-50/50">
+                <button type="button" onclick="closeModal()" class="px-5 py-2.5 text-sm font-semibold text-slate-500 hover:bg-slate-100 rounded-xl transition-colors">Cancel</button>
+                <button type="submit" class="flex items-center gap-2 px-5 py-2.5 bg-primary text-white text-sm font-bold rounded-xl shadow-md shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95">
+                    <span class="material-symbols-outlined text-[18px]">save</span>Save User
                 </button>
             </div>
         </form>
     </div>
 </div>
 
-<!-- ── Confirm Delete Modal ──────────────────────────────────────────────── -->
-<div id="delete-modal"
-     class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm hidden">
-    <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-sm mx-4 p-6 text-center">
-        <div class="w-14 h-14 rounded-full bg-rose-100 flex items-center justify-center mx-auto mb-4">
-            <span class="material-symbols-outlined text-rose-500 text-3xl">delete_forever</span>
-        </div>
-        <h3 class="text-lg font-bold mb-1">Delete User</h3>
-        <p class="text-sm text-slate-500 mb-6">
-            Are you sure you want to delete <strong id="delete-name"></strong>? This action cannot be undone.
-        </p>
-        <div class="flex gap-3">
-            <button onclick="closeDeleteModal()"
-                    class="flex-1 px-4 py-2 text-sm font-semibold border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                Cancel
-            </button>
-            <!-- POST to /users/delete/{id} -->
-            <form id="delete-form" th:action="@{/users/delete/__${0}__}" method="post" style="flex:1">
-                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                <button type="submit"
-                        class="w-full px-4 py-2 bg-rose-500 text-white text-sm font-bold rounded-lg hover:bg-rose-600 transition-all active:scale-95">
-                    Delete
-                </button>
-            </form>
+<!-- DELETE MODAL -->
+<div id="delete-modal" class="overlay hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+    <div class="modal-box bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 overflow-hidden border border-slate-100">
+        <div class="p-6 text-center">
+            <div class="w-16 h-16 rounded-2xl bg-rose-100 flex items-center justify-center mx-auto mb-4">
+                <span class="material-symbols-outlined fill-icon text-rose-500 text-4xl">delete_forever</span>
+            </div>
+            <h3 class="text-lg font-black text-slate-800 mb-1">Delete User?</h3>
+            <p class="text-sm text-slate-400 mb-6">
+                You're about to permanently delete<br/>
+                <strong id="delete-name" class="text-slate-700"></strong>.<br/>
+                <span class="text-xs text-rose-400">This action cannot be undone.</span>
+            </p>
+            <div class="flex gap-3">
+                <button onclick="closeDeleteModal()" class="flex-1 px-4 py-2.5 text-sm font-semibold border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors text-slate-600">Cancel</button>
+                <form id="delete-form" th:action="@{/users/delete/__${0}__}" method="post" class="flex-1">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <button type="submit" class="w-full px-4 py-2.5 bg-rose-500 text-white text-sm font-bold rounded-xl hover:bg-rose-600 transition-all active:scale-95 flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined text-[17px]">delete</span>Delete
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- ── JavaScript (chỉ UI, không còn data logic) ────────────────────────── -->
+<!-- TOAST -->
+<div id="toast-container" class="fixed bottom-6 right-6 z-[60] flex flex-col gap-2 pointer-events-none"></div>
+
 <script>
-    // ─── Modal: Add ────────────────────────────────────────────────────────
-    function openModal() {
+    let _row = null; // currently viewed row in detail panel
+
+    // ── Toast ────────────────────────────────────────────────────
+    function showToast(msg, type) {
+        type = type || 'success';
+        const cfg = {
+            success: { bg:'bg-emerald-600', icon:'check_circle' },
+            error:   { bg:'bg-rose-600',    icon:'error'        },
+            info:    { bg:'bg-primary',     icon:'info'         },
+        };
+        const c = cfg[type] || cfg.success;
+        const el = document.createElement('div');
+        el.className = 'toast pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-2xl shadow-xl text-sm font-semibold text-white ' + c.bg;
+        el.innerHTML = '<span class="material-symbols-outlined fill-icon text-[20px]">'+c.icon+'</span>' + msg;
+        document.getElementById('toast-container').appendChild(el);
+        setTimeout(function(){ el.classList.add('out'); setTimeout(function(){ el.remove(); }, 350); }, 3000);
+    }
+
+    // ── Add modal ─────────────────────────────────────────────────
+    function openAddModal() {
         document.getElementById('modal-title').textContent = 'Add New User';
-        document.getElementById('field-id').value    = '';
-        document.getElementById('field-first').value = '';
-        document.getElementById('field-last').value  = '';
-        document.getElementById('field-email').value = '';
-        document.getElementById('field-role').value  = 'Developer';
-        document.getElementById('field-status').value= 'Active';
+        document.getElementById('modal-icon').textContent  = 'person_add';
+        document.getElementById('field-id').value       = '';
+        document.getElementById('field-username').value = '';
+        document.getElementById('field-email').value    = '';
+        document.getElementById('field-password').value = '';
+        document.getElementById('field-fullName').value = '';
+        document.getElementById('field-phone').value    = '';
+        document.getElementById('field-status').value   = 'Active';
+        document.getElementById('field-password').required = true;
+        document.getElementById('pwd-required').classList.remove('hidden');
+        document.getElementById('pwd-hint').classList.add('hidden');
         document.getElementById('modal-overlay').classList.remove('hidden');
     }
 
-    // ─── Modal: Edit (data được truyền qua th:onclick inline) ─────────────
-    function openEditModal(id, firstName, lastName, email, role, dept, status) {
+    // ── Edit modal ────────────────────────────────────────────────
+    function openEditModal(id, username, email, fullName, phone, status) {
         document.getElementById('modal-title').textContent = 'Edit User';
-        document.getElementById('field-id').value    = id;
-        document.getElementById('field-first').value = firstName;
-        document.getElementById('field-last').value  = lastName;
-        document.getElementById('field-email').value = email;
-        document.getElementById('field-role').value  = role;
-        document.getElementById('field-dept').value  = dept;
-        document.getElementById('field-status').value= status;
+        document.getElementById('modal-icon').textContent  = 'edit';
+        document.getElementById('field-id').value       = id;
+        document.getElementById('field-username').value = username || '';
+        document.getElementById('field-email').value    = email || '';
+        document.getElementById('field-password').value = '';
+        document.getElementById('field-fullName').value = fullName || '';
+        document.getElementById('field-phone').value    = phone || '';
+        document.getElementById('field-status').value   = status || 'Active';
+        document.getElementById('field-password').required = false;
+        document.getElementById('pwd-required').classList.add('hidden');
+        document.getElementById('pwd-hint').classList.remove('hidden');
         document.getElementById('modal-overlay').classList.remove('hidden');
     }
 
     function openEditModalFromRow(btn) {
-        var row = btn.closest('tr');
-        var d = row.dataset;
-        openEditModal(d.id || '', d.firstName || '', d.lastName || '', d.email || '', d.role || '', d.departmentName || '', d.status || '');
+        var d = btn.closest('tr').dataset;
+        openEditModal(d.id||'', d.username||'', d.email||'', d.fullName||'', d.phone||'', d.status||'');
     }
 
-    function openDeleteModalFromRow(btn) {
-        var row = btn.closest('tr');
-        openDeleteModal(row.dataset.id || '', row.dataset.fullName || '');
+    function openEditFromPanel() {
+        if (!_row) return;
+        var d = _row.dataset;
+        closeDetailPanel();
+        openEditModal(d.id||'', d.username||'', d.email||'', d.fullName||'', d.phone||'', d.status||'');
     }
 
     function closeModal() {
         document.getElementById('modal-overlay').classList.add('hidden');
     }
 
-    // ─── Delete modal ──────────────────────────────────────────────────────
+    // ── Delete modal ──────────────────────────────────────────────
     function openDeleteModal(id, name) {
         document.getElementById('delete-name').textContent = name;
-        // Cập nhật action của delete form
         document.getElementById('delete-form').action = '/users/delete/' + id;
         document.getElementById('delete-modal').classList.remove('hidden');
+    }
+
+    function openDeleteModalFromRow(btn) {
+        var d = btn.closest('tr').dataset;
+        openDeleteModal(d.id||'', d.fullName||'');
+    }
+
+    function openDeleteFromPanel() {
+        if (!_row) return;
+        var d = _row.dataset;
+        closeDetailPanel();
+        openDeleteModal(d.id||'', d.fullName||'');
     }
 
     function closeDeleteModal() {
         document.getElementById('delete-modal').classList.add('hidden');
     }
 
-    // ─── Check-all checkbox ────────────────────────────────────────────────
-    document.getElementById('check-all').addEventListener('change', function () {
-        document.querySelectorAll('.row-check').forEach(c => c.checked = this.checked);
-    });
+    // ── Detail panel ──────────────────────────────────────────────
+    var statusCfg = {
+        'Active':    { badge:'bg-emerald-100 text-emerald-700', dot:'bg-emerald-500', statusDot:'bg-emerald-400' },
+        'Inactive':  { badge:'bg-slate-100 text-slate-500',     dot:'bg-slate-400',   statusDot:'bg-slate-400'   },
+        'Suspended': { badge:'bg-rose-100 text-rose-600',       dot:'bg-rose-500',    statusDot:'bg-rose-500'    },
+    };
 
-    // ─── Đóng modal khi click ngoài overlay ───────────────────────────────
-    document.getElementById('modal-overlay').addEventListener('click', function (e) {
-        if (e.target === this) closeModal();
-    });
-    document.getElementById('delete-modal').addEventListener('click', function (e) {
-        if (e.target === this) closeDeleteModal();
-    });
+    function openDetailPanel(row) {
+        _row = row;
+        var d = row.dataset;
+        document.getElementById('dp-initials').textContent = d.initials || '?';
+        document.getElementById('dp-name').textContent     = d.fullName || '—';
+        document.getElementById('dp-uid').textContent      = '#' + String(d.id||'0').padStart(4,'0');
+        document.getElementById('dp-email').textContent    = d.email || '—';
+        document.getElementById('dp-role').textContent     = d.role  || '—';
+        document.getElementById('dp-dept').textContent     = d.departmentName || '—';
+        document.getElementById('dp-login').textContent    = d.lastLogin || '—';
 
-    // ─── Debounce search (submit form sau 400ms không gõ) ─────────────────
-    let debounceTimer;
-    function debounceSubmit() {
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(() => {
-            document.getElementById('filter-form').submit();
-        }, 400);
+        var st = statusCfg[d.status] || statusCfg['Inactive'];
+        var badge = document.getElementById('dp-status-badge');
+        badge.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold ' + st.badge;
+        badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full ' + st.dot + ' inline-block"></span>' + (d.status||'—');
+        document.getElementById('dp-status-dot').className = 'absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ' + st.statusDot;
+
+        document.getElementById('detail-panel').classList.add('open');
     }
+
+    function closeDetailPanel() {
+        document.getElementById('detail-panel').classList.remove('open');
+        _row = null;
+    }
+
+    // ── Backdrop close ────────────────────────────────────────────
+    document.getElementById('modal-overlay').addEventListener('click', function(e){ if(e.target===e.currentTarget) closeModal(); });
+    document.getElementById('delete-modal').addEventListener('click',  function(e){ if(e.target===e.currentTarget) closeDeleteModal(); });
+
+    // ── Debounce search ───────────────────────────────────────────
+    var _dt;
+    function debounceSubmit(){ clearTimeout(_dt); _dt=setTimeout(function(){ document.getElementById('filter-form').submit(); },400); }
+
+    // ── Flash success toast from Spring redirect ──────────────────
+    // Controller nên truyền flash attribute "successMsg"
+    (function(){
+        var msg = /*[[${successMsg}]]*/ null;
+        if (msg) showToast(msg, 'success');
+    })();
 </script>
 </body>
 </html>
