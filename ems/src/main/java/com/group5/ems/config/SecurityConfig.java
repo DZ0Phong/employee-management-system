@@ -20,22 +20,20 @@ public class SecurityConfig {
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http.authorizeHttpRequests(auth -> auth
-                .requestMatchers("/guest","/login").permitAll()
+                .requestMatchers("/guest", "/login").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/employee/**").hasRole("EMPLOYEE")
-                .requestMatchers("/deptmanager/**").hasRole("DEPT_MANAGER")
+                .requestMatchers("/dept-manager/**").hasRole("DEPT_MANAGER")
                 .requestMatchers("/hrmanager/**").hasRole("HR_MANAGER")
                 .requestMatchers("/hr/**").hasRole("HR")
-                .anyRequest().authenticated()
-        ).formLogin(form -> form
+                .anyRequest().authenticated()).formLogin(form -> form
                         .loginPage("/login")
-                        .successHandler(customeLoginSuccessHandler).permitAll()
-                );
-//                .logout(logout -> logout
-//                        .logoutUrl("/logout")
-//                        .logoutSuccessUrl("/")
-//                        .permitAll()
-//                );
+                        .successHandler(customeLoginSuccessHandler).permitAll());
+        // .logout(logout -> logout
+        // .logoutUrl("/logout")
+        // .logoutSuccessUrl("/")
+        // .permitAll()
+        // );
 
         return http.build();
     }
@@ -45,6 +43,5 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
 
     }
-
 
 }

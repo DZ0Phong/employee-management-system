@@ -32,6 +32,8 @@ public class AdminService {
     private final DepartmentRepository departmentRepository;
     private final EmployeeRepository employeeRepository;
 
+
+
     public List<User> findAll(){
         return userRepository.findAll();
     }
