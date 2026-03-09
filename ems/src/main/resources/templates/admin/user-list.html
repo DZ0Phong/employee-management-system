@@ -132,9 +132,13 @@
                     <p class="text-xs font-bold text-slate-800 truncate" th:text="${currentUser?.fullName}">Alex Rivera</p>
                     <p class="text-[11px] text-slate-400 truncate" th:text="${currentUser?.email}">alex@company.com</p>
                 </div>
-                <a th:href="@{/logout}" class="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors">
-                    <span class="material-symbols-outlined text-sm">logout</span>
-                </a>
+                <form th:action="@{/logout}" method="post" class="inline">
+                    <button type="submit"
+                            class="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors">
+                        <span class="material-symbols-outlined text-sm">logout</span>
+                    </button>
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                </form>
             </div>
         </div>
     </aside>
