@@ -1,5 +1,542 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"/><title>HR Manager</title></head>
-<body><p>HR Manager</p></body>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap"
+          rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap"
+          rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1414b8",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#111121",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+    <title th:text="${pageTitle} ?: 'HRM Pro - Manager Dashboard'">HRM Pro - Manager Dashboard</title>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100">
+<div class="flex h-screen overflow-hidden">
+
+    <!-- Sidebar Navigation -->
+    <aside class="w-72 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col">
+        <div class="p-6 flex items-center gap-3">
+            <div class="size-10 bg-primary rounded-xl flex items-center justify-center text-white">
+                <span class="material-symbols-outlined">corporate_fare</span>
+            </div>
+            <div>
+                <h1 class="text-lg font-bold leading-none">HRM Pro</h1>
+                <p class="text-xs text-slate-500 dark:text-slate-400">HR Manager Portal</p>
+            </div>
+        </div>
+
+        <nav class="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
+            <!-- Active nav item uses th:classappend to highlight current page -->
+            <a th:href="@{/dashboard}"
+               th:classappend="${activePage == 'dashboard'} ? 'bg-primary/10 text-primary font-semibold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'"
+               class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors">
+                <span class="material-symbols-outlined">dashboard</span>
+                <span class="text-sm">Dashboard</span>
+            </a>
+            <a th:href="@{/employees}"
+               th:classappend="${activePage == 'employees'} ? 'bg-primary/10 text-primary font-semibold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'"
+               class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors">
+                <span class="material-symbols-outlined">group</span>
+                <span class="text-sm">Employee Overview</span>
+            </a>
+            <a th:href="@{/recruitment}"
+               th:classappend="${activePage == 'recruitment'} ? 'bg-primary/10 text-primary font-semibold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'"
+               class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors">
+                <span class="material-symbols-outlined">person_add</span>
+                <span class="text-sm">Recruitment Overview</span>
+            </a>
+            <a th:href="@{/payroll}"
+               th:classappend="${activePage == 'payroll'} ? 'bg-primary/10 text-primary font-semibold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'"
+               class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors">
+                <span class="material-symbols-outlined">payments</span>
+                <span class="text-sm">Payroll Approval</span>
+            </a>
+            <a th:href="@{/leave}"
+               th:classappend="${activePage == 'leave'} ? 'bg-primary/10 text-primary font-semibold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'"
+               class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors">
+                <span class="material-symbols-outlined">calendar_today</span>
+                <span class="text-sm">Leave Approval</span>
+            </a>
+            <a th:href="@{/analytics}"
+               th:classappend="${activePage == 'analytics'} ? 'bg-primary/10 text-primary font-semibold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'"
+               class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors">
+                <span class="material-symbols-outlined">monitoring</span>
+                <span class="text-sm">HR Analytics Dashboard</span>
+            </a>
+            <a th:href="@{/reports}"
+               th:classappend="${activePage == 'reports'} ? 'bg-primary/10 text-primary font-semibold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'"
+               class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors">
+                <span class="material-symbols-outlined">description</span>
+                <span class="text-sm">Reports</span>
+            </a>
+        </nav>
+
+        <!-- User Profile -->
+        <div class="p-4 border-t border-slate-200 dark:border-slate-800">
+            <div
+                    class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition-colors">
+                <img class="size-10 rounded-full border border-slate-200 dark:border-slate-700"
+                     th:src="${currentUser?.avatarUrl} ?: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDdR0mD22uQwBOmq9pmcc45KPxyEgVlXzaEF7FjCGJxUItyzt9bLfgIeMibwDMsUBlV8QPznDvuKhJtS833noloArtkQaSCfAvW1nI8uUePYKCVJOToAgNnLT3PkHkiFxRfqfxRYJVc03PtvBls7vd5ma1jLbMsqZu47ayhTgDcUUooGz7TackeyuMKm1Oztodh0rTdTm4qiQ4N3J9kkf59pv0kqNLxs3Y1wLjc1jAtSBQqgEKWJq_bA9UuepJDPcFCUdr39qx3XxE'"
+                     th:alt="${currentUser?.fullName} ?: 'User Avatar'" alt="User Avatar" />
+                <div class="overflow-hidden">
+                    <p class="text-sm font-semibold truncate"
+                       th:text="${currentUser?.fullName} ?: 'Alex Henderson'">Alex Henderson</p>
+                    <p class="text-xs text-slate-500 truncate"
+                       th:text="${currentUser?.jobTitle} ?: 'Senior HR Manager'">Senior HR Manager</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col overflow-hidden">
+
+        <!-- Header -->
+        <header
+                class="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-8 shrink-0">
+            <div class="flex items-center gap-4 flex-1 max-w-xl">
+                <div class="relative w-full">
+                        <span
+                                class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+                    <input
+                            class="w-full bg-slate-100 dark:bg-slate-800 border-none rounded-lg py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/20 transition-all"
+                            th:placeholder="#{search.placeholder} ?: 'Search employees, documents, or reports...'"
+                            type="text" name="q" th:value="${searchQuery}" />
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <button
+                        class="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg relative transition-colors">
+                    <span class="material-symbols-outlined">notifications</span>
+                    <!-- Show badge only when there are unread notifications -->
+                    <span th:if="${unreadNotifications > 0}"
+                          class="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
+                </button>
+                <button
+                        class="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
+                    <span class="material-symbols-outlined">settings</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Dashboard Body -->
+        <div class="flex-1 overflow-y-auto p-8 space-y-8">
+
+            <!-- Page Title -->
+            <div class="flex justify-between items-end">
+                <div>
+                    <h2 class="text-3xl font-black tracking-tight">Dashboard Overview</h2>
+                    <p class="text-slate-500 dark:text-slate-400 mt-1"
+                       th:text="'Welcome back, ' + (${currentUser?.firstName} ?: 'Alex') + &quot;. Here&#39;s what&#39;s happening today.&quot;">
+                        Welcome back, Alex. Here's what's happening today.
+                    </p>
+                </div>
+                <div class="flex gap-3">
+                    <a th:href="@{/reports/export(format='pdf')}"
+                       class="flex items-center gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                        <span class="material-symbols-outlined text-lg">download</span> Export PDF
+                    </a>
+                    <a th:href="@{/requests/new}"
+                       class="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors">
+                        <span class="material-symbols-outlined text-lg">add</span> New Request
+                    </a>
+                </div>
+            </div>
+
+            <!-- KPI Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+
+                <!-- Total Headcount -->
+                <div
+                        class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex justify-between items-start mb-4">
+                        <div
+                                class="size-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center text-blue-600 dark:text-blue-400">
+                            <span class="material-symbols-outlined">groups</span>
+                        </div>
+                        <span th:text="${kpi?.headcountChange} ?: '+2.5%'"
+                              th:classappend="${kpi?.headcountChangePositive} ? 'text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10' : 'text-rose-500 bg-rose-50 dark:bg-rose-500/10'"
+                              class="text-xs font-bold px-2 py-1 rounded">+2.5%</span>
+                    </div>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Total Headcount</p>
+                    <h3 class="text-3xl font-bold mt-1" th:text="${kpi?.totalHeadcount} ?: '1,248'">1,248</h3>
+                </div>
+
+                <!-- Open Requisitions -->
+                <div
+                        class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex justify-between items-start mb-4">
+                        <div
+                                class="size-10 bg-amber-100 dark:bg-amber-900/30 rounded-lg flex items-center justify-center text-amber-600 dark:text-amber-400">
+                            <span class="material-symbols-outlined">work_outline</span>
+                        </div>
+                        <span th:text="${kpi?.requisitionsChange} ?: '-10%'"
+                              th:classappend="${kpi?.requisitionsChangePositive} ? 'text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10' : 'text-rose-500 bg-rose-50 dark:bg-rose-500/10'"
+                              class="text-xs font-bold px-2 py-1 rounded">-10%</span>
+                    </div>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Open Requisitions</p>
+                    <h3 class="text-3xl font-bold mt-1" th:text="${kpi?.openRequisitions} ?: '24'">24</h3>
+                </div>
+
+                <!-- Monthly Turnover -->
+                <div
+                        class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex justify-between items-start mb-4">
+                        <div
+                                class="size-10 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                            <span class="material-symbols-outlined">trending_down</span>
+                        </div>
+                        <span th:text="${kpi?.turnoverChange} ?: '+0.1%'"
+                              th:classappend="${kpi?.turnoverChangePositive} ? 'text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10' : 'text-rose-500 bg-rose-50 dark:bg-rose-500/10'"
+                              class="text-xs font-bold px-2 py-1 rounded">+0.1%</span>
+                    </div>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Monthly Turnover</p>
+                    <h3 class="text-3xl font-bold mt-1" th:text="${kpi?.monthlyTurnover} ?: '1.2%'">1.2%</h3>
+                </div>
+
+                <!-- Average Tenure -->
+                <div
+                        class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex justify-between items-start mb-4">
+                        <div
+                                class="size-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center text-purple-600 dark:text-purple-400">
+                            <span class="material-symbols-outlined">timer</span>
+                        </div>
+                        <span th:text="${kpi?.tenureChange} ?: '-0.2%'"
+                              th:classappend="${kpi?.tenureChangePositive} ? 'text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10' : 'text-rose-500 bg-rose-50 dark:bg-rose-500/10'"
+                              class="text-xs font-bold px-2 py-1 rounded">-0.2%</span>
+                    </div>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Average Tenure</p>
+                    <h3 class="text-3xl font-bold mt-1" th:text="${kpi?.avgTenure} ?: '4.5 Yrs'">4.5 Yrs</h3>
+                </div>
+            </div>
+
+            <!-- Chart & Upcoming Events -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+                <!-- Hiring vs Attrition Chart -->
+                <div
+                        class="lg:col-span-2 bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex justify-between items-center mb-8">
+                        <div>
+                            <h4 class="text-lg font-bold">Hiring vs. Attrition</h4>
+                            <p class="text-sm text-slate-500">Employee lifecycle trends over the last 6 months</p>
+                        </div>
+                        <div class="flex items-center gap-4 text-sm font-medium">
+                            <div class="flex items-center gap-2">
+                                <span class="size-3 rounded-full bg-primary"></span>
+                                <span>Hiring</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="size-3 rounded-full bg-slate-300 dark:bg-slate-600"></span>
+                                <span>Attrition</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="h-64 relative">
+                        <!-- SVG Chart — replace with Chart.js or Recharts if using dynamic data -->
+                        <svg class="w-full h-full overflow-visible" preserveAspectRatio="none"
+                             viewBox="0 0 100 100">
+                            <defs>
+                                <linearGradient id="gradientPrimary" x1="0" x2="0" y1="0" y2="1">
+                                    <stop offset="0%" stop-color="#1414b8" stop-opacity="0.2"></stop>
+                                    <stop offset="100%" stop-color="#1414b8" stop-opacity="0"></stop>
+                                </linearGradient>
+                            </defs>
+                            <line class="stroke-slate-100 dark:stroke-slate-800" stroke-width="0.5" x1="0" x2="100"
+                                  y1="20" y2="20"></line>
+                            <line class="stroke-slate-100 dark:stroke-slate-800" stroke-width="0.5" x1="0" x2="100"
+                                  y1="40" y2="40"></line>
+                            <line class="stroke-slate-100 dark:stroke-slate-800" stroke-width="0.5" x1="0" x2="100"
+                                  y1="60" y2="60"></line>
+                            <line class="stroke-slate-100 dark:stroke-slate-800" stroke-width="0.5" x1="0" x2="100"
+                                  y1="80" y2="80"></line>
+                            <path class="stroke-primary" d="M0,70 Q10,30 20,50 T40,20 T60,60 T80,30 T100,40"
+                                  fill="none" stroke-width="2"></path>
+                            <path d="M0,70 Q10,30 20,50 T40,20 T60,60 T80,30 T100,40 L100,100 L0,100 Z"
+                                  fill="url(#gradientPrimary)"></path>
+                            <path class="stroke-slate-400 dark:stroke-slate-500"
+                                  d="M0,85 Q15,70 30,80 T60,70 T90,85 T100,75" fill="none" stroke-dasharray="4"
+                                  stroke-width="2"></path>
+                        </svg>
+                        <div class="flex justify-between mt-4 text-xs font-semibold text-slate-400">
+                            <!-- Render month labels dynamically if provided, else fallback -->
+                            <th:block th:if="${chartMonths != null}" th:each="month : ${chartMonths}">
+                                <span th:text="${month}">Jan</span>
+                            </th:block>
+                            <th:block th:unless="${chartMonths != null}">
+                                <span>Jan</span>
+                                <span>Feb</span>
+                                <span>Mar</span>
+                                <span>Apr</span>
+                                <span>May</span>
+                                <span>Jun</span>
+                            </th:block>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upcoming Events -->
+                <div
+                        class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <h4 class="text-lg font-bold mb-6">Upcoming Events</h4>
+                    <div class="space-y-6">
+
+                        <!-- Dynamic events list -->
+                        <th:block th:if="${upcomingEvents != null}" th:each="event : ${upcomingEvents}">
+                            <div class="flex gap-4">
+                                <div th:classappend="'bg-' + event.colorClass + '-50 dark:bg-' + event.colorClass + '-900/20 text-' + event.colorClass + '-600 dark:text-' + event.colorClass + '-400'"
+                                     class="p-3 rounded-lg flex flex-col items-center justify-center min-w-[60px]">
+                                    <span class="text-sm font-bold" th:text="${event.month}">OCT</span>
+                                    <span class="text-xl font-black" th:text="${event.day}">12</span>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-bold" th:text="${event.title}">Event Title</p>
+                                    <p class="text-xs text-slate-500 mt-1 flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-xs">schedule</span>
+                                        <span th:text="${event.time}">09:00 AM</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </th:block>
+
+                        <!-- Fallback static events if no data provided -->
+                        <th:block th:unless="${upcomingEvents != null}">
+                            <div class="flex gap-4">
+                                <div
+                                        class="bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 p-3 rounded-lg flex flex-col items-center justify-center min-w-[60px]">
+                                    <span class="text-sm font-bold">OCT</span>
+                                    <span class="text-xl font-black">12</span>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-bold">New Employee Orientation</p>
+                                    <p class="text-xs text-slate-500 mt-1 flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-xs">schedule</span> 09:00 AM -
+                                        11:00 AM
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="flex gap-4">
+                                <div
+                                        class="bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 p-3 rounded-lg flex flex-col items-center justify-center min-w-[60px]">
+                                    <span class="text-sm font-bold">OCT</span>
+                                    <span class="text-xl font-black">14</span>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-bold">Q3 Performance Reviews</p>
+                                    <p class="text-xs text-slate-500 mt-1 flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-xs">schedule</span> All Day
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="flex gap-4">
+                                <div
+                                        class="bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 p-3 rounded-lg flex flex-col items-center justify-center min-w-[60px]">
+                                    <span class="text-sm font-bold">OCT</span>
+                                    <span class="text-xl font-black">15</span>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-bold">Benefits Enrollment Ends</p>
+                                    <p class="text-xs text-slate-500 mt-1 flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-xs">schedule</span> 05:00 PM
+                                        Deadline
+                                    </p>
+                                </div>
+                            </div>
+                        </th:block>
+                    </div>
+
+                    <a th:href="@{/calendar}"
+                       class="block w-full mt-8 py-2 text-sm font-bold text-primary hover:bg-primary/5 rounded-lg transition-colors border border-primary/20 text-center">
+                        View Calendar
+                    </a>
+                </div>
+            </div>
+
+            <!-- Recent Activity Table -->
+            <div
+                    class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+                <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+                    <h4 class="text-lg font-bold">Recent Activity</h4>
+                    <div class="flex gap-2">
+                        <!-- Filter buttons — active state driven by 'activityFilter' model attribute -->
+                        <a th:href="@{/dashboard(filter='all')}"
+                           th:classappend="${activityFilter == 'all' or activityFilter == null} ? 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'"
+                           class="px-3 py-1.5 text-xs font-bold rounded-md transition-colors">All</a>
+                        <a th:href="@{/dashboard(filter='pending')}"
+                           th:classappend="${activityFilter == 'pending'} ? 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'"
+                           class="px-3 py-1.5 text-xs font-bold rounded-md transition-colors">Pending</a>
+                        <a th:href="@{/dashboard(filter='approved')}"
+                           th:classappend="${activityFilter == 'approved'} ? 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'"
+                           class="px-3 py-1.5 text-xs font-bold rounded-md transition-colors">Approved</a>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-slate-50 dark:bg-slate-800/50">
+                        <tr>
+                            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">
+                                Employee</th>
+                            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">
+                                Action</th>
+                            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">Date
+                            </th>
+                            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">
+                                Status</th>
+                            <th
+                                    class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 text-right">
+                                Action</th>
+                        </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+
+                        <!-- Dynamic rows -->
+                        <th:block th:if="${recentActivities != null}" th:each="activity : ${recentActivities}">
+                            <tr>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <!-- Avatar: initials or photo -->
+                                        <img th:if="${activity.employee.avatarUrl != null}"
+                                             th:src="${activity.employee.avatarUrl}"
+                                             th:alt="${activity.employee.fullName}"
+                                             class="size-8 rounded-full object-cover" />
+                                        <div th:unless="${activity.employee.avatarUrl != null}"
+                                             class="size-8 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-500 text-xs"
+                                             th:text="${activity.employee.initials}">SR</div>
+                                        <div>
+                                            <p class="text-sm font-bold"
+                                               th:text="${activity.employee.fullName}">Employee Name</p>
+                                            <p class="text-xs text-slate-500"
+                                               th:text="${activity.employee.jobTitle}">Job Title</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-sm" th:text="${activity.actionLabel}">Action</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                            <span class="text-sm"
+                                                  th:text="${#temporals.format(activity.date, 'MMM dd, yyyy')}">Oct 10,
+                                                2023</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <!-- Status badge with dynamic colour -->
+                                    <span th:text="${activity.statusLabel}"
+                                          th:classappend="${activity.status == 'PENDING'} ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' :
+                                                          (${activity.status == 'APPROVED'} ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' :
+                                                          'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400')"
+                                          class="px-2.5 py-1 text-xs font-bold rounded-full">Status</span>
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <a th:href="@{/activities/{id}/review(id=${activity.id})}"
+                                       class="text-primary font-bold text-sm hover:underline transition-all">Review</a>
+                                </td>
+                            </tr>
+                        </th:block>
+
+                        <!-- Fallback static rows if no model data -->
+                        <th:block th:unless="${recentActivities != null}">
+                            <tr>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                                class="size-8 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-500 text-xs">
+                                            SR</div>
+                                        <div>
+                                            <p class="text-sm font-bold">Sarah Rodriguez</p>
+                                            <p class="text-xs text-slate-500">Marketing Specialist</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4"><span class="text-sm">Sick Leave Request</span></td>
+                                <td class="px-6 py-4"><span class="text-sm">Oct 10, 2023</span></td>
+                                <td class="px-6 py-4">
+                                            <span
+                                                    class="px-2.5 py-1 text-xs font-bold rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">Pending</span>
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <a href="#"
+                                       class="text-primary font-bold text-sm hover:underline transition-all">Review</a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                                class="size-8 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-500 text-xs">
+                                            MJ</div>
+                                        <div>
+                                            <p class="text-sm font-bold">Marcus Johnson</p>
+                                            <p class="text-xs text-slate-500">Product Designer</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4"><span class="text-sm">Bonus Approval</span></td>
+                                <td class="px-6 py-4"><span class="text-sm">Oct 09, 2023</span></td>
+                                <td class="px-6 py-4">
+                                            <span
+                                                    class="px-2.5 py-1 text-xs font-bold rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400">Approved</span>
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <a href="#"
+                                       class="text-primary font-bold text-sm hover:underline transition-all">Review</a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                                class="size-8 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-500 text-xs">
+                                            EL</div>
+                                        <div>
+                                            <p class="text-sm font-bold">Elena Lee</p>
+                                            <p class="text-xs text-slate-500">Data Analyst</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4"><span class="text-sm">Hiring Contract</span></td>
+                                <td class="px-6 py-4"><span class="text-sm">Oct 08, 2023</span></td>
+                                <td class="px-6 py-4">
+                                            <span
+                                                    class="px-2.5 py-1 text-xs font-bold rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">In
+                                                Progress</span>
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <a href="#"
+                                       class="text-primary font-bold text-sm hover:underline transition-all">Review</a>
+                                </td>
+                            </tr>
+                        </th:block>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</div>
+</body>
+
 </html>
