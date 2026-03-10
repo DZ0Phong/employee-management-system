@@ -29,7 +29,7 @@ public class LeaveServiceImpl {
 
     @Transactional(readOnly = true)
     public List<LeaveBalanceDTO> getLeaveBalances(Long employeeId) {
-        List<Request> allLeaves = requestRepository.findAttendanceRequestsByEmployeeId(employeeId);
+        List<Request> allLeaves = requestRepository.findByEmployeeIdAndLeaveTypeIsNotNull(employeeId);
 
         // Tính balance cho từng loại leave
         List<LeaveBalanceDTO> balances = new ArrayList<>();
@@ -42,7 +42,7 @@ public class LeaveServiceImpl {
 
     @Transactional(readOnly = true)
     public List<LeaveRequestDTO> getLeaveHistory(Long employeeId) {
-        return requestRepository.findAttendanceRequestsByEmployeeIdOrderByCreatedAtDesc(employeeId)
+        return requestRepository.findByEmployeeIdAndLeaveTypeIsNotNull(employeeId)
                 .stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
