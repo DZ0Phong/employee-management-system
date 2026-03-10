@@ -33,7 +33,7 @@ public class CustomeLoginSuccessHandler implements AuthenticationSuccessHandler 
                     return;
                 }
                 case "ROLE_HR_MANAGER" -> {
-                    response.sendRedirect("/hr-manager/dashboard");
+                    response.sendRedirect("/hrmanager/dashboard");
                     return;
                 }
                 case "ROLE_HR" -> {

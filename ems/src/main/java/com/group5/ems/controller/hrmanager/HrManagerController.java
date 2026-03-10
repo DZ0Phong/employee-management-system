@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/hrmanager")
 public class HrManagerController {
     
-    @GetMapping({"", "/", "/index"})
+    @GetMapping({"", "/", "/dashboard"})
     public String index() {
-        return "hrmanager/index";
+        return "hrmanager/dashboard";
     }
 }
