@@ -111,8 +111,8 @@ public class DashboardServiceImpl implements DashboardService {
         // Tính số ngày leave đã APPROVED dựa trên leaveFrom / leaveTo
         double used = employee.getRequests().stream()
                 .filter(r -> "APPROVED".equals(r.getStatus()))
-                .filter(r -> r.getLeaveFrom() != null && r.getLeaveTo() != null)
-                .mapToDouble(r -> ChronoUnit.DAYS.between(r.getLeaveFrom(), r.getLeaveTo()) + 1)
+                .filter(r -> r.getStartDate().toLocalDate() != null && r.getEndDate().toLocalDate() != null)
+                .mapToDouble(r -> ChronoUnit.DAYS.between(r.getStartDate().toLocalDate(), r.getEndDate().toLocalDate()) + 1)
                 .sum();
 
         return Math.max(0, total - used);
