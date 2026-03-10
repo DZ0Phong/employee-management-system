@@ -29,20 +29,20 @@ public class LeaveServiceImpl {
 
     @Transactional(readOnly = true)
     public List<LeaveBalanceDTO> getLeaveBalances(Long employeeId) {
-        List<Request> allLeaves = requestRepository.findByEmployeeIdAndLeaveTypeIsNotNull(employeeId);
+        List<Request> allLeaves = requestRepository.findAttendanceRequestsByEmployeeId(employeeId);
 
         // Tính balance cho từng loại leave
         List<LeaveBalanceDTO> balances = new ArrayList<>();
-        balances.add(buildBalance("ANNUAL_LEAVE", 12.0, allLeaves));
-        balances.add(buildBalance("SICK_LEAVE", 10.0, allLeaves));
-        balances.add(buildBalance("PERSONAL_LEAVE", 5.0, allLeaves));
+        balances.add(buildBalance("ANNUAL_LEAVE", "LEAVE_ANNUAL", 12.0, allLeaves));
+        balances.add(buildBalance("SICK_LEAVE", "LEAVE_SICK", 10.0, allLeaves));
+        balances.add(buildBalance("PERSONAL_LEAVE", "LEAVE_UNPAID", 5.0, allLeaves));
 
         return balances;
     }
 
     @Transactional(readOnly = true)
     public List<LeaveRequestDTO> getLeaveHistory(Long employeeId) {
-        return requestRepository.findByEmployeeIdAndLeaveTypeIsNotNullOrderByCreatedAtDesc(employeeId)
+        return requestRepository.findAttendanceRequestsByEmployeeIdOrderByCreatedAtDesc(employeeId)
                 .stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
@@ -66,9 +66,10 @@ public class LeaveServiceImpl {
         Request request = new Request();
         request.setEmployeeId(employeeId);
         request.setRequestTypeId(requestType.getId());
-        request.setLeaveType(dto.getLeaveType());
-        request.setLeaveFrom(dto.getLeaveFrom());
-        request.setLeaveTo(dto.getLeaveTo());
+        if (dto.getLeaveFrom() != null)
+            request.setStartDate(dto.getLeaveFrom().atStartOfDay());
+        if (dto.getLeaveTo() != null)
+            request.setEndDate(dto.getLeaveTo().atStartOfDay());
         request.setContent(dto.getContent());
         request.setTitle(dto.getLeaveType().replace("_", " ") + " request");
         request.setStatus("PENDING");
@@ -80,12 +81,13 @@ public class LeaveServiceImpl {
 
     // ── Helper methods ──────────────────────────────────────
 
-    private LeaveBalanceDTO buildBalance(String leaveType, double total, List<Request> allLeaves) {
+    private LeaveBalanceDTO buildBalance(String leaveType, String expectedCode, double total, List<Request> allLeaves) {
         double used = allLeaves.stream()
-                .filter(r -> leaveType.equals(r.getLeaveType()))
+                .filter(r -> r.getRequestType() != null && expectedCode.equals(r.getRequestType().getCode()))
                 .filter(r -> "APPROVED".equals(r.getStatus()))
-                .filter(r -> r.getLeaveFrom() != null && r.getLeaveTo() != null)
-                .mapToDouble(r -> ChronoUnit.DAYS.between(r.getLeaveFrom(), r.getLeaveTo()) + 1)
+                .filter(r -> r.getStartDate() != null && r.getEndDate() != null)
+                .mapToDouble(
+                        r -> ChronoUnit.DAYS.between(r.getStartDate().toLocalDate(), r.getEndDate().toLocalDate()) + 1)
                 .sum();
 
         double remaining = Math.max(0, total - used);
@@ -101,11 +103,17 @@ public class LeaveServiceImpl {
     }
 
     private LeaveRequestDTO mapToDTO(Request req) {
+        String leaveType = switch (req.getRequestType() != null ? req.getRequestType().getCode() : "") {
+            case "LEAVE_SICK" -> "SICK_LEAVE";
+            case "LEAVE_UNPAID" -> "PERSONAL_LEAVE";
+            default -> "ANNUAL_LEAVE";
+        };
+
         return LeaveRequestDTO.builder()
                 .id(req.getId())
-                .leaveType(req.getLeaveType())
-                .leaveFrom(req.getLeaveFrom())
-                .leaveTo(req.getLeaveTo())
+                .leaveType(leaveType)
+                .leaveFrom(req.getStartDate() != null ? req.getStartDate().toLocalDate() : null)
+                .leaveTo(req.getEndDate() != null ? req.getEndDate().toLocalDate() : null)
                 .content(req.getContent())
                 .status(req.getStatus())
                 .rejectedReason(req.getRejectedReason())
