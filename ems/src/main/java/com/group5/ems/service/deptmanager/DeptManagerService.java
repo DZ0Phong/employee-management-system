@@ -71,4 +71,81 @@ public class DeptManagerService {
 
         return data;
     }
+
+    public Map<String, Object> getTeamMockData() {
+        Map<String, Object> data = new HashMap<>();
+
+        Map<String, String> manager = new HashMap<>();
+        manager.put("name", "Marcus Thorne");
+        manager.put("role", "Operations Manager");
+        manager.put("avatarUrl",
+                "https://lh3.googleusercontent.com/aida-public/AB6AXuBqwQXs0h175jU3uh3FhKRdzGE3Nl1I6Pgzyq7GXasySRzzcXSBy5POHZeZM_tH82Vlp9Hu_GjbhkuXoZU_Clt4cUru6YspBR1wTGQAbsE50KrLXGV6NtJgi7Bg6O4fABG6g3akaXqIfIGP_-qzg1jgQHlDW-7asQ2QMS0Dpifs_E-AcNgemm3DJnnc8wk8rbkUYAF_BLdX2Smm03gADNQP1M44hUyN5SjpN07FF9GbSZUM9rGMQ-vd4wTleWw8FCvWohN7qCxsk9E");
+        data.put("manager", manager);
+
+        List<Map<String, String>> members = new ArrayList<>();
+
+        Map<String, String> member1 = new HashMap<>();
+        member1.put("name", "John Smith");
+        member1.put("email", "john.smith@hrmpro.com");
+        member1.put("role", "Senior Analyst");
+        member1.put("rating", "Exceeds Expectations");
+        member1.put("ratingClass", "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400");
+        member1.put("status", "Active");
+        member1.put("statusDot", "bg-green-500");
+        member1.put("avatarUrl",
+                "https://lh3.googleusercontent.com/aida-public/AB6AXuAx3bm_6ROku45Qad2UC6L8WqGYQTSxbQfGbrIsZyy-UW0G-0eeaUe05OzGGUPVXtUgSAXYY1km4lsQ8OMlKocQqnLvoWylgqv8HhjdOhc-kA7_Y9WGXOHncHiVIom2GDXi5UFfTRWNw-kIM5Tj5rLVJx3alhzAv1liLktNE8Zt65-kYJuInGPkWm85aD_STgeoCKnakLN1ZpxNfG-GLOhHh26_zxMgT8NQ21STEfw2DrFNb7ygWY6IQKmzRFuP-NmzVNfiEHO9zvA");
+        members.add(member1);
+
+        Map<String, String> member2 = new HashMap<>();
+        member2.put("name", "Sarah Chen");
+        member2.put("email", "s.chen@hrmpro.com");
+        member2.put("role", "Project Coordinator");
+        member2.put("rating", "Meets Expectations");
+        member2.put("ratingClass", "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400");
+        member2.put("status", "On Leave");
+        member2.put("statusDot", "bg-amber-500");
+        member2.put("avatarUrl",
+                "https://lh3.googleusercontent.com/aida-public/AB6AXuA7G1b01aHHL0AJL0yUVoFZMCKU9bDDMteeaCXpHNE9SpXfXv6Z7-6xBidTFosgqi23DHGBl-nVCRdYX6RBMQy2B4aCg16AQq38KdtKZ_rIiuNEKa-YgfktCU6yTarPxouN0nWllLaZvLSa8VexvbMBYQY_VLQTIa6Qk1rrqPPnaiHqvDsTosCDx_Xxukef-DFybP0rhm6nLiCE-s6SbSLN2of9xinrPm5uzAAWsJ4YvlQQGOOgnAwLWjjgCJKsAy04FfHVI7FFSIY");
+        members.add(member2);
+
+        Map<String, String> member3 = new HashMap<>();
+        member3.put("name", "Michael Ross");
+        member3.put("email", "m.ross@hrmpro.com");
+        member3.put("role", "Junior Developer");
+        member3.put("rating", "Developing");
+        member3.put("ratingClass", "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400");
+        member3.put("status", "Active");
+        member3.put("statusDot", "bg-green-500");
+        member3.put("avatarUrl",
+                "https://lh3.googleusercontent.com/aida-public/AB6AXuDSyHUdl6eG9dyfarZDFUD5MXvV0zQ0JX7jTznxXDo8wxPkSRn71gj--7CMISBlaXuXXVHEy-nOfVMmSuFeeb98p5OSJXBu1rhs19LctISJn2fZh-ORSbw65N7R1ciXAViqhwGaEIuSjqFgxRTLWqes0ax240fVJh6jMEJrLTto_n7wHAo-7MfIPsIlHM666cZRI0D7WE9HGuJ7jBNyYHYxinysZBUf0UNEhsFYrNpoFgQGrWPFgacsEoRo7JOBBuHr_8frtV26R8c");
+        members.add(member3);
+
+        Map<String, String> member4 = new HashMap<>();
+        member4.put("name", "Elena Rodriguez");
+        member4.put("email", "elena.r@hrmpro.com");
+        member4.put("role", "UX Designer");
+        member4.put("rating", "Exceeds Expectations");
+        member4.put("ratingClass", "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400");
+        member4.put("status", "Active");
+        member4.put("statusDot", "bg-green-500");
+        member4.put("avatarUrl",
+                "https://lh3.googleusercontent.com/aida-public/AB6AXuAS1uGqByS-wP9J8zYCks7y6MjZq7qF7nC86UkV8vq1BsbcBmqMUKwKMds9dzUCiIg_-cxrVxFcAMw7KeRpfWEMJveSbCbtIfC-LaH8bJ6nTihi2Y-Md-1uOyK6HPRHeTGoRWTpuvN6MKBFhypgjT_0aQg0aPGNQIr214vJv3X6SGSCin5IYml7kb6sE0uJAADiFOFIFww5-bohosFolP19XdlA1HUIcsDgpOUT9PHeWD2Du6i6JsoRJALpr5kLY7HnLJNibrnvJ6Y");
+        members.add(member4);
+
+        Map<String, String> member5 = new HashMap<>();
+        member5.put("name", "David Kim");
+        member5.put("email", "d.kim@hrmpro.com");
+        member5.put("role", "QA Engineer");
+        member5.put("rating", "Meets Expectations");
+        member5.put("ratingClass", "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400");
+        member5.put("status", "Active");
+        member5.put("statusDot", "bg-green-500");
+        member5.put("avatarUrl",
+                "https://lh3.googleusercontent.com/aida-public/AB6AXuCWP5ma7zd2kxZX7A5nvpWTD4qdUdCPiQNjCwhDWrwQeMzUcbgL-TJzk18xVoK_xx9DscNHneOTKzKdceHe0rucBqYJuNIWph3_GHHKmaw36JUFjtLcrb0Eg235qQEsB8J_yJqNerqK1U10gurvspYV2FDpjXiWtRrxbdr77BKcGv3PuQIyx5Z9kOlsAyepNYWAAWehtgfpQdhgYPLt2xFzDvSLo1HDuz2a0ue9gxWOsRM6grbqCloLYUMubcTBJMZnlEEOBkjYtTQ");
+        members.add(member5);
+
+        data.put("teamMembers", members);
+
+        return data;
+    }
 }

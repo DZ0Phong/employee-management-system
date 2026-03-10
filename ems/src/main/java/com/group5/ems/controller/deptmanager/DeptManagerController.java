@@ -20,6 +20,15 @@ public class DeptManagerController {
         model.addAllAttributes(deptManagerService.getDashboardMockData());
 
         // Return the thymeleaf template
-        return "deptmanager/index";
+        return "deptmanager/dashboard";
+    }
+
+    @GetMapping("/team")
+    public String myTeam(Model model) {
+        // Fetch mock data for the team page
+        model.addAllAttributes(deptManagerService.getTeamMockData());
+
+        // Return the thymeleaf template
+        return "deptmanager/team";
     }
 }
