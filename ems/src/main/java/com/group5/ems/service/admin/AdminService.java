@@ -35,7 +35,19 @@ public class AdminService {
 
     private final List<String> departmentSortList = List.of("name", "code" ,"createdAt");
 
-    public Page<DepartmentDTO> getDepartments(String keyword,
+    public long getAllDepartmentsCount()
+    {
+        return departmentRepository.count();
+    }
+    public long getAllEmployeesCount()
+    {
+        return employeeRepository.count();
+    }
+    public long getAllParents(){
+        return departmentRepository.countAllParentId();
+    }
+
+    public Page<DepartmentDTO> getDepartmentsFilter(String keyword,
                                               String sortField,
                                               String sortDir,
                                               int page,
@@ -64,7 +76,8 @@ public class AdminService {
            departmentPage = departmentRepository.findByNameContainingIgnoreCaseOrCodeIgnoreCase(keyword,keyword,pageable);
         }
 
-        Page<DepartmentDTO> dept = departmentPage.map(this::to)
+        Page<DepartmentDTO> dept = departmentPage.map(this::toDepartmentDTO);
+        return dept;
     }
 
     public DepartmentDTO toDepartmentDTO(Department department){
