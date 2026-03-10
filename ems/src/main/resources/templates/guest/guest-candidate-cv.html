@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>HRM Pro - My CVs</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script>
+        tailwind.config = {
+            darkMode:"class",
+            theme:{ extend:{ colors:{ primary:"#1414b8","primary-light":"#e8e8fb","bg-light":"#f6f6f8" }, fontFamily:{ display:["Inter"] } } }
+        };
+    </script>
+    <style>
+        .material-symbols-outlined { font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24; }
+        .fill-icon { font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24; }
+
+        @keyframes gradientShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+        .gradient-card{background:linear-gradient(135deg,#1414b8,#3b3bea,#6366f1,#1414b8);background-size:300% 300%;animation:gradientShift 6s ease infinite}
+
+        @keyframes fadeSlideUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+        .anim{opacity:0;animation:fadeSlideUp .55s ease forwards}
+        .anim-1{animation-delay:.05s}.anim-2{animation-delay:.12s}.anim-3{animation-delay:.19s}
+        .anim-4{animation-delay:.26s}.anim-5{animation-delay:.33s}
+
+        .dot-grid{background-image:radial-gradient(circle,#1414b820 1px,transparent 1px);background-size:24px 24px}
+        .card-hover{transition:transform .2s ease,box-shadow .2s ease}
+        .card-hover:hover{transform:translateY(-3px);box-shadow:0 16px 40px -8px #1414b820}
+        .nav-active{box-shadow:0 0 0 1px #1414b830,inset 3px 0 0 #1414b8}
+
+        ::-webkit-scrollbar{width:5px;height:5px}
+        ::-webkit-scrollbar-track{background:transparent}
+        ::-webkit-scrollbar-thumb{background:#1414b840;border-radius:99px}
+
+        @keyframes cardIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+        .cv-card{animation:cardIn .4s ease both}
+        .cv-card:nth-child(1){animation-delay:.15s}.cv-card:nth-child(2){animation-delay:.22s}
+        .cv-card:nth-child(3){animation-delay:.29s}.cv-card:nth-child(4){animation-delay:.36s}
+        .cv-card:nth-child(n+5){animation-delay:.43s}
+
+        .overlay{transition:opacity .22s ease}
+        .overlay.hidden{opacity:0;pointer-events:none}
+        @keyframes modalIn{from{transform:scale(.95) translateY(10px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+        .modal-box{animation:modalIn .22s ease both}
+
+        @keyframes toastIn{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+        @keyframes toastOut{from{opacity:1}to{opacity:0}}
+        .toast{animation:toastIn .3s ease both}
+        .toast.out{animation:toastOut .3s ease both}
+    </style>
+</head>
+
+<body class="bg-bg-light font-display text-slate-900 min-h-screen">
+<div class="flex h-screen overflow-hidden">
+
+    <!-- ── SIDEBAR ──────────────────────────────────────── -->
+    <aside class="w-72 bg-white border-r border-slate-100 flex flex-col shrink-0 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-40 h-40 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+        <div class="px-6 py-6 flex items-center gap-3 relative z-10">
+            <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white shadow-md shadow-primary/30">
+                <span class="material-symbols-outlined text-[22px]">corporate_fare</span>
+            </div>
+            <div>
+                <h1 class="text-base font-black tracking-tight text-slate-900">HRM Pro</h1>
+                <p class="text-[11px] text-slate-400 font-medium">Recruitment Portal</p>
+            </div>
+        </div>
+        <nav class="flex-1 px-3 space-y-0.5 overflow-y-auto">
+            <p class="px-3 pb-1 pt-1 text-[10px] font-bold text-slate-300 uppercase tracking-widest">Recruitment</p>
+            <a th:href="@{/guest/jobs}" href="guest-jobs.html"
+               class="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:bg-slate-50 rounded-xl transition-all group">
+                <span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-primary transition-colors">work</span>
+                <span class="text-sm font-medium">Job Openings</span>
+            </a>
+            <a th:href="@{/guest/candidates}" href="guest-candidates.html"
+               class="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:bg-slate-50 rounded-xl transition-all group">
+                <span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-primary transition-colors">person_search</span>
+                <span class="text-sm font-medium">Candidates</span>
+            </a>
+            <a th:href="@{/guest/info}" href="guest-company-info.html"
+               class="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:bg-slate-50 rounded-xl transition-all group">
+                <span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-primary transition-colors">business</span>
+                <span class="text-sm font-medium">Company Info</span>
+            </a>
+            <p class="px-3 pb-1 pt-4 text-[10px] font-bold text-slate-300 uppercase tracking-widest">Tools</p>
+            <a href="#" onclick="openUploadModal(); return false;"
+               class="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:bg-slate-50 rounded-xl transition-all group">
+                <span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-primary transition-colors">upload_file</span>
+                <span class="text-sm font-medium">Upload CV</span>
+            </a>
+            <a href="#"
+               class="nav-active flex items-center gap-3 px-3 py-2.5 bg-primary-light text-primary rounded-xl transition-all">
+                <span class="material-symbols-outlined fill-icon text-[20px]">folder_open</span>
+                <span class="text-sm font-semibold">My CVs</span>
+                <span class="ml-auto text-[10px] font-bold bg-primary text-white px-1.5 py-0.5 rounded-md"
+                      th:text="${cvs != null ? cvs.size() : 0}">0</span>
+            </a>
+        </nav>
+        <div class="p-4">
+            <div class="bg-slate-50 border border-slate-100 rounded-2xl p-3 flex items-center gap-3">
+                <div class="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm shrink-0">G</div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-xs font-bold text-slate-800 truncate">Guest User</p>
+                    <p class="text-[11px] text-slate-400 truncate">Public Access</p>
+                </div>
+                <form th:action="@{/logout}" method="post" class="inline">
+                    <button type="submit" class="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors">
+                        <span class="material-symbols-outlined text-sm">logout</span>
+                    </button>
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                </form>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ── MAIN ──────────────────────────────────────────── -->
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <header class="h-16 bg-white border-b border-slate-100 flex items-center justify-between px-8 shrink-0">
+            <div>
+                <h2 class="text-base font-black text-slate-900 leading-tight">My CVs</h2>
+                <p class="text-xs text-slate-400">
+                    Candidate #<span th:text="${candidateId != null ? T(java.lang.String).format('%04d', candidateId) : '—'}">0000</span>
+                    · Manage your uploaded resumes
+                </p>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="openUploadModal()" class="flex items-center gap-2 px-4 py-2 bg-primary text-white text-xs font-bold rounded-xl shadow-md shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95">
+                    <span class="material-symbols-outlined text-[16px]">upload_file</span>Upload New CV
+                </button>
+                <button class="relative w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-50 text-slate-500 transition-colors">
+                    <span class="material-symbols-outlined text-[20px]">notifications</span>
+                </button>
+                <div class="w-8 h-8 rounded-full bg-primary/10 text-primary font-bold text-xs flex items-center justify-center ml-1">G</div>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-8 dot-grid">
+            <div class="max-w-7xl mx-auto space-y-6">
+
+                <!-- Title -->
+                <div class="anim anim-1 flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                        <h3 class="text-3xl font-black text-slate-900 tracking-tight">Uploaded CVs</h3>
+                        <p class="text-sm text-slate-400 mt-0.5">
+                            <span th:text="${cvs != null ? cvs.size() : 0}">0</span> documents uploaded
+                        </p>
+                    </div>
+                    <a th:href="@{/guest/applications/{id}(id=${candidateId})}"
+                       class="flex items-center gap-2 px-4 py-2.5 border border-slate-200 bg-white text-sm font-semibold text-slate-600 rounded-xl hover:bg-slate-50 transition-colors shadow-sm">
+                        <span class="material-symbols-outlined text-[18px]">description</span>My Applications
+                    </a>
+                </div>
+
+                <!-- Stat bar -->
+                <div class="anim anim-2 gradient-card rounded-2xl p-5 text-white relative overflow-hidden">
+                    <div class="absolute inset-0 opacity-10" style="background:url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22><circle cx=%2230%22 cy=%2230%22 r=%2220%22 fill=%22none%22 stroke=%22white%22 stroke-width=%221%22/></svg>')"></div>
+                    <div class="relative flex items-center justify-between flex-wrap gap-4">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                                <span class="material-symbols-outlined fill-icon text-[26px]">folder_open</span>
+                            </div>
+                            <div>
+                                <p class="text-white/70 text-xs font-semibold">Total CVs Uploaded</p>
+                                <p class="text-3xl font-black" th:text="${cvs != null ? cvs.size() : 0}">0</p>
+                            </div>
+                        </div>
+                        <button onclick="openUploadModal()"
+                                class="flex items-center gap-2 px-5 py-2.5 bg-white text-primary text-sm font-black rounded-xl shadow-md hover:bg-white/90 transition-all active:scale-95">
+                            <span class="material-symbols-outlined text-[18px]">add</span>Add New CV
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Empty -->
+                <div th:if="${cvs == null or cvs.isEmpty()}" class="anim anim-3 bg-white rounded-2xl border border-slate-100 shadow-sm py-20 text-center">
+                    <div class="flex flex-col items-center gap-3">
+                        <div class="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-slate-300 text-4xl">description</span>
+                        </div>
+                        <p class="text-sm font-bold text-slate-500">No CVs uploaded yet</p>
+                        <p class="text-xs text-slate-400">Upload your resume to apply for jobs</p>
+                        <button onclick="openUploadModal()" class="mt-1 text-xs font-bold text-primary hover:underline flex items-center gap-1">
+                            <span class="material-symbols-outlined text-sm">upload</span>Upload your first CV
+                        </button>
+                    </div>
+                </div>
+
+                <!-- CV Cards Grid -->
+                <div th:if="${cvs != null and !cvs.isEmpty()}"
+                     class="anim anim-3 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+
+                    <div th:each="cv, iterStat : ${cvs}"
+                         class="cv-card card-hover bg-white rounded-2xl border border-slate-100 shadow-sm p-5 flex flex-col gap-4">
+
+                        <!-- File icon + name -->
+                        <div class="flex items-start gap-4">
+                            <!-- Icon based on extension -->
+                            <div class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
+                                 th:classappend="${cv.fileName != null and cv.fileName.endsWith('.pdf')} ? 'bg-rose-50' : 'bg-sky-50'">
+                                <span class="material-symbols-outlined fill-icon text-[26px]"
+                                      th:classappend="${cv.fileName != null and cv.fileName.endsWith('.pdf')} ? 'text-rose-500' : 'text-sky-500'"
+                                      th:text="${cv.fileName != null and cv.fileName.endsWith('.pdf')} ? 'picture_as_pdf' : 'article'">picture_as_pdf</span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-bold text-slate-800 leading-tight truncate" th:text="${cv.fileName != null ? cv.fileName : 'Unnamed file'}">resume.pdf</p>
+                                <p class="text-[10px] text-slate-400 mt-0.5">
+                                    CV #<span th:text="${iterStat.index + 1}">1</span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- File type badge -->
+                        <div class="flex items-center gap-2">
+                            <span th:if="${cv.fileName != null and cv.fileName.endsWith('.pdf')}"
+                                  class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-rose-100 text-rose-600">
+                                <span class="material-symbols-outlined text-[12px]">picture_as_pdf</span>PDF Document
+                            </span>
+                            <span th:if="${cv.fileName != null and (cv.fileName.endsWith('.doc') or cv.fileName.endsWith('.docx'))}"
+                                  class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-sky-100 text-sky-600">
+                                <span class="material-symbols-outlined text-[12px]">article</span>Word Document
+                            </span>
+                            <span th:unless="${cv.fileName != null and (cv.fileName.endsWith('.pdf') or cv.fileName.endsWith('.doc') or cv.fileName.endsWith('.docx'))}"
+                                  class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-slate-100 text-slate-500">
+                                <span class="material-symbols-outlined text-[12px]">insert_drive_file</span>Document
+                            </span>
+                        </div>
+
+                        <!-- Path info -->
+                        <div class="bg-slate-50 rounded-xl px-3 py-2.5 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-slate-300 text-[15px]">folder</span>
+                            <span class="text-[11px] text-slate-500 truncate font-medium" th:text="${cv.filePath != null ? cv.filePath : 'No path'}">path/to/file</span>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="flex items-center gap-2 pt-1 border-t border-slate-100">
+                            <a th:href="${cv.filePath != null ? cv.filePath : '#'}"
+                               target="_blank"
+                               class="flex-1 flex items-center justify-center gap-1.5 py-2 bg-primary-light text-primary text-xs font-bold rounded-xl hover:bg-primary/20 transition-colors">
+                                <span class="material-symbols-outlined text-[15px]">visibility</span>View
+                            </a>
+                            <a th:href="${cv.filePath != null ? cv.filePath : '#'}"
+                               th:download="${cv.fileName}"
+                               class="flex-1 flex items-center justify-center gap-1.5 py-2 border border-slate-200 text-slate-600 text-xs font-bold rounded-xl hover:bg-slate-50 transition-colors">
+                                <span class="material-symbols-outlined text-[15px]">download</span>Download
+                            </a>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- UPLOAD CV MODAL -->
+<div id="upload-modal" class="overlay hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+    <div class="modal-box bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden border border-slate-100">
+        <div class="flex items-center justify-between px-6 py-5 border-b border-slate-100">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-primary-light flex items-center justify-center">
+                    <span class="material-symbols-outlined fill-icon text-primary text-[20px]">upload_file</span>
+                </div>
+                <h3 class="text-base font-black text-slate-800">Upload CV / Resume</h3>
+            </div>
+            <button onclick="closeUploadModal()" class="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-400">
+                <span class="material-symbols-outlined text-[20px]">close</span>
+            </button>
+        </div>
+        <form th:action="@{/guest/upload-cv}" method="post" enctype="multipart/form-data">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Candidate ID <span class="text-rose-400">*</span></label>
+                    <input name="candidateId" type="number" required th:value="${candidateId}"
+                           class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-primary focus:border-transparent transition-all placeholder:text-slate-300"
+                           placeholder="Your Candidate ID"/>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">File <span class="text-rose-400">*</span></label>
+                    <label for="cv-file" class="block border-2 border-dashed border-slate-200 rounded-xl p-6 text-center cursor-pointer hover:border-primary/40 hover:bg-primary/[2%] transition-all group">
+                        <span class="material-symbols-outlined text-slate-300 text-[40px] group-hover:text-primary/40 transition-colors block mb-2">cloud_upload</span>
+                        <p class="text-sm font-bold text-slate-500 group-hover:text-primary transition-colors">Click to upload or drag & drop</p>
+                        <p class="text-xs text-slate-400 mt-1">PDF, DOC, DOCX · Max 10MB</p>
+                        <input id="cv-file" name="file" type="file" required accept=".pdf,.doc,.docx" class="hidden" onchange="updateFileName(this)"/>
+                    </label>
+                    <p id="file-name" class="text-xs text-emerald-600 font-medium mt-2 hidden flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[14px]">check_circle</span>
+                        <span id="file-name-text"></span>
+                    </p>
+                </div>
+            </div>
+            <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-100 bg-slate-50/50">
+                <button type="button" onclick="closeUploadModal()" class="px-5 py-2.5 text-sm font-semibold text-slate-500 hover:bg-slate-100 rounded-xl transition-colors">Cancel</button>
+                <button type="submit" class="flex items-center gap-2 px-5 py-2.5 bg-primary text-white text-sm font-bold rounded-xl shadow-md shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95">
+                    <span class="material-symbols-outlined text-[18px]">upload</span>Upload CV
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="toast-container" class="fixed bottom-6 right-6 z-[60] flex flex-col gap-2 pointer-events-none"></div>
+
+<script>
+    function openUploadModal()  { document.getElementById('upload-modal').classList.remove('hidden'); }
+    function closeUploadModal() { document.getElementById('upload-modal').classList.add('hidden'); }
+    document.getElementById('upload-modal').addEventListener('click', function(e){ if(e.target===e.currentTarget) closeUploadModal(); });
+
+    function updateFileName(input) {
+        if (input.files.length > 0) {
+            document.getElementById('file-name-text').textContent = input.files[0].name;
+            document.getElementById('file-name').classList.remove('hidden');
+        }
+    }
+
+    function showToast(msg, type) {
+        type = type || 'success';
+        const cfg = { success:{bg:'bg-emerald-600',icon:'check_circle'}, error:{bg:'bg-rose-600',icon:'error'}, info:{bg:'bg-primary',icon:'info'} };
+        const c = cfg[type] || cfg.success;
+        const el = document.createElement('div');
+        el.className = 'toast pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-2xl shadow-xl text-sm font-semibold text-white ' + c.bg;
+        el.innerHTML = '<span class="material-symbols-outlined fill-icon text-[20px]">'+c.icon+'</span>' + msg;
+        document.getElementById('toast-container').appendChild(el);
+        setTimeout(function(){ el.classList.add('out'); setTimeout(function(){ el.remove(); }, 350); }, 3000);
+    }
+</script>
+<script th:if="${message}" th:inline="javascript">
+    showToast([[${message}]], 'info');
+</script>
+</body>
+</html>

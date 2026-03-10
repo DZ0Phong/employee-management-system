@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>HRM Pro - Job Detail</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script>
+        tailwind.config = {
+            darkMode:"class",
+            theme:{ extend:{ colors:{ primary:"#1414b8","primary-light":"#e8e8fb","bg-light":"#f6f6f8" }, fontFamily:{ display:["Inter"] } } }
+        };
+    </script>
+    <style>
+        .material-symbols-outlined { font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24; }
+        .fill-icon { font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24; }
+
+        @keyframes gradientShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+        .gradient-card{background:linear-gradient(135deg,#1414b8,#3b3bea,#6366f1,#1414b8);background-size:300% 300%;animation:gradientShift 6s ease infinite}
+
+        @keyframes fadeSlideUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+        .anim{opacity:0;animation:fadeSlideUp .55s ease forwards}
+        .anim-1{animation-delay:.05s}.anim-2{animation-delay:.12s}.anim-3{animation-delay:.19s}
+        .anim-4{animation-delay:.26s}.anim-5{animation-delay:.33s}
+
+        .dot-grid{background-image:radial-gradient(circle,#1414b820 1px,transparent 1px);background-size:24px 24px}
+        .card-hover{transition:transform .2s ease,box-shadow .2s ease}
+        .card-hover:hover{transform:translateY(-2px);box-shadow:0 12px 32px -8px #1414b825}
+        .nav-active{box-shadow:0 0 0 1px #1414b830,inset 3px 0 0 #1414b8}
+
+        @keyframes pulseDot{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.5);opacity:.6}}
+        .pulse-dot{animation:pulseDot 2s ease-in-out infinite}
+
+        ::-webkit-scrollbar{width:5px;height:5px}
+        ::-webkit-scrollbar-track{background:transparent}
+        ::-webkit-scrollbar-thumb{background:#1414b840;border-radius:99px}
+
+        .overlay{transition:opacity .22s ease}
+        .overlay.hidden{opacity:0;pointer-events:none}
+        @keyframes modalIn{from{transform:scale(.95) translateY(10px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+        .modal-box{animation:modalIn .22s ease both}
+
+        @keyframes toastIn{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+        @keyframes toastOut{from{opacity:1}to{opacity:0}}
+        .toast{animation:toastIn .3s ease both}
+        .toast.out{animation:toastOut .3s ease both}
+    </style>
+</head>
+
+<body class="bg-bg-light font-display text-slate-900 min-h-screen">
+<div class="flex h-screen overflow-hidden">
+
+    <!-- ── SIDEBAR ──────────────────────────────────────── -->
+    <aside class="w-72 bg-white border-r border-slate-100 flex flex-col shrink-0 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-40 h-40 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+        <div class="px-6 py-6 flex items-center gap-3 relative z-10">
+            <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white shadow-md shadow-primary/30">
+                <span class="material-symbols-outlined text-[22px]">corporate_fare</span>
+            </div>
+            <div>
+                <h1 class="text-base font-black tracking-tight text-slate-900">HRM Pro</h1>
+                <p class="text-[11px] text-slate-400 font-medium">Recruitment Portal</p>
+            </div>
+        </div>
+        <nav class="flex-1 px-3 space-y-0.5 overflow-y-auto">
+            <p class="px-3 pb-1 pt-1 text-[10px] font-bold text-slate-300 uppercase tracking-widest">Recruitment</p>
+            <a th:href="@{/guest/jobs}" href="guest-jobs.html"
+               class="nav-active flex items-center gap-3 px-3 py-2.5 bg-primary-light text-primary rounded-xl transition-all">
+                <span class="material-symbols-outlined fill-icon text-[20px]">work</span>
+                <span class="text-sm font-semibold">Job Openings</span>
+            </a>
+            <a th:href="@{/guest/candidates}" href="guest-candidates.html"
+               class="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:bg-slate-50 rounded-xl transition-all group">
+                <span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-primary transition-colors">person_search</span>
+                <span class="text-sm font-medium">Candidates</span>
+            </a>
+            <a th:href="@{/guest/info}" href="guest-company-info.html"
+               class="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:bg-slate-50 rounded-xl transition-all group">
+                <span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-primary transition-colors">business</span>
+                <span class="text-sm font-medium">Company Info</span>
+            </a>
+            <p class="px-3 pb-1 pt-4 text-[10px] font-bold text-slate-300 uppercase tracking-widest">Tools</p>
+            <a href="#" class="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:bg-slate-50 rounded-xl transition-all group">
+                <span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-primary transition-colors">upload_file</span>
+                <span class="text-sm font-medium">Upload CV</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:bg-slate-50 rounded-xl transition-all group">
+                <span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-primary transition-colors">description</span>
+                <span class="text-sm font-medium">Applications</span>
+            </a>
+        </nav>
+        <div class="p-4">
+            <div class="bg-slate-50 border border-slate-100 rounded-2xl p-3 flex items-center gap-3">
+                <div class="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm shrink-0">G</div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-xs font-bold text-slate-800 truncate">Guest User</p>
+                    <p class="text-[11px] text-slate-400 truncate">Public Access</p>
+                </div>
+                <form th:action="@{/logout}" method="post" class="inline">
+                    <button type="submit" class="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors">
+                        <span class="material-symbols-outlined text-sm">logout</span>
+                    </button>
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                </form>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ── MAIN ──────────────────────────────────────────── -->
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <header class="h-16 bg-white border-b border-slate-100 flex items-center justify-between px-8 shrink-0">
+            <div class="flex items-center gap-3">
+                <a th:href="@{/guest/jobs}" href="guest-jobs.html"
+                   class="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-slate-50 text-slate-400 transition-colors">
+                    <span class="material-symbols-outlined text-[20px]">arrow_back</span>
+                </a>
+                <div>
+                    <h2 class="text-base font-black text-slate-900 leading-tight" th:text="${job != null ? job.title : 'Job Detail'}">Job Detail</h2>
+                    <p class="text-xs text-slate-400">Job opening details and requirements</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button class="relative w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-50 text-slate-500 transition-colors">
+                    <span class="material-symbols-outlined text-[20px]">notifications</span>
+                </button>
+                <button class="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-50 text-slate-500 transition-colors">
+                    <span class="material-symbols-outlined text-[20px]">help_outline</span>
+                </button>
+                <div class="w-8 h-8 rounded-full bg-primary/10 text-primary font-bold text-xs flex items-center justify-center ml-1">G</div>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-8 dot-grid">
+            <div class="max-w-5xl mx-auto space-y-6">
+
+                <!-- Job Hero -->
+                <div class="anim anim-1 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                    <div class="h-24 gradient-card relative">
+                        <div class="absolute inset-0 opacity-10" style="background:url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22><circle cx=%2230%22 cy=%2230%22 r=%2220%22 fill=%22none%22 stroke=%22white%22 stroke-width=%221%22/></svg>')"></div>
+                    </div>
+                    <div class="px-8 pb-6 relative">
+                        <div class="flex items-end justify-between -mt-7 mb-5">
+                            <div class="w-14 h-14 rounded-2xl bg-white border-4 border-white shadow-lg flex items-center justify-center bg-primary-light">
+                                <span class="material-symbols-outlined fill-icon text-primary text-[28px]">work</span>
+                            </div>
+                            <div class="flex items-center gap-2 mt-8">
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block pulse-dot"></span>Open
+                                </span>
+                                <button onclick="openApplyModal()"
+                                        class="flex items-center gap-2 px-5 py-2 bg-primary text-white text-xs font-bold rounded-xl shadow-md shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95">
+                                    <span class="material-symbols-outlined text-[16px]">send</span>Apply Now
+                                </button>
+                            </div>
+                        </div>
+                        <h3 class="text-2xl font-black text-slate-800" th:text="${job != null ? job.title : '—'}">Senior Frontend Developer</h3>
+                        <div class="flex items-center flex-wrap gap-4 mt-3">
+                            <span class="inline-flex items-center gap-1.5 text-sm text-slate-500">
+                                <span class="material-symbols-outlined text-slate-300 text-[16px]">account_tree</span>
+                                <span th:text="${job?.departmentName != null ? job.departmentName : 'Engineering'}">Engineering</span>
+                            </span>
+                            <span th:if="${job?.location != null}" class="inline-flex items-center gap-1.5 text-sm text-slate-500">
+                                <span class="material-symbols-outlined text-slate-300 text-[16px]">location_on</span>
+                                <span th:text="${job.location}">Ho Chi Minh City</span>
+                            </span>
+                            <span th:if="${job?.type != null}" class="inline-flex items-center gap-1.5 text-sm text-slate-500">
+                                <span class="material-symbols-outlined text-slate-300 text-[16px]">schedule</span>
+                                <span th:text="${job.type}">Full-time</span>
+                            </span>
+                            <span th:if="${job?.salary != null}" class="inline-flex items-center gap-1.5 text-sm text-slate-500">
+                                <span class="material-symbols-outlined text-slate-300 text-[16px]">payments</span>
+                                <span th:text="${job.salary}">$2000–$3500</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                    <!-- Main content -->
+                    <div class="lg:col-span-2 space-y-4">
+
+                        <!-- Description -->
+                        <div class="anim anim-2 bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+                            <div class="flex items-center gap-3 mb-4">
+                                <div class="w-8 h-8 rounded-xl bg-primary-light flex items-center justify-center shrink-0">
+                                    <span class="material-symbols-outlined text-primary text-[18px]">description</span>
+                                </div>
+                                <h4 class="text-sm font-black text-slate-800">Job Description</h4>
+                            </div>
+                            <div class="text-sm text-slate-600 leading-relaxed prose prose-sm max-w-none"
+                                 th:utext="${job?.description != null ? job.description : 'No description available.'}">
+                                <p>No description provided.</p>
+                            </div>
+                        </div>
+
+                        <!-- Requirements -->
+                        <div class="anim anim-3 bg-white rounded-2xl border border-slate-100 shadow-sm p-6" th:if="${job?.requirements != null}">
+                            <div class="flex items-center gap-3 mb-4">
+                                <div class="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
+                                    <span class="material-symbols-outlined text-amber-500 text-[18px]">checklist</span>
+                                </div>
+                                <h4 class="text-sm font-black text-slate-800">Requirements</h4>
+                            </div>
+                            <div class="text-sm text-slate-600 leading-relaxed" th:utext="${job.requirements}">
+                                Requirements here.
+                            </div>
+                        </div>
+
+                        <!-- Benefits -->
+                        <div class="anim anim-4 bg-white rounded-2xl border border-slate-100 shadow-sm p-6" th:if="${job?.benefits != null}">
+                            <div class="flex items-center gap-3 mb-4">
+                                <div class="w-8 h-8 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
+                                    <span class="material-symbols-outlined text-emerald-500 text-[18px]">volunteer_activism</span>
+                                </div>
+                                <h4 class="text-sm font-black text-slate-800">Benefits &amp; Perks</h4>
+                            </div>
+                            <div class="text-sm text-slate-600 leading-relaxed" th:utext="${job.benefits}">
+                                Benefits here.
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Sidebar info -->
+                    <div class="space-y-4">
+
+                        <!-- Quick info card -->
+                        <div class="anim anim-2 bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+                            <h4 class="text-sm font-black text-slate-800 mb-4">Position Details</h4>
+                            <div class="space-y-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
+                                        <span class="material-symbols-outlined text-slate-500 text-[16px]">account_tree</span>
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Department</p>
+                                        <p class="text-xs font-semibold text-slate-700 mt-0.5" th:text="${job?.departmentName != null ? job.departmentName : '—'}">Engineering</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-3" th:if="${job?.type != null}">
+                                    <div class="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
+                                        <span class="material-symbols-outlined text-slate-500 text-[16px]">schedule</span>
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Job Type</p>
+                                        <p class="text-xs font-semibold text-slate-700 mt-0.5" th:text="${job.type}">Full-time</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-3" th:if="${job?.location != null}">
+                                    <div class="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
+                                        <span class="material-symbols-outlined text-slate-500 text-[16px]">location_on</span>
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Location</p>
+                                        <p class="text-xs font-semibold text-slate-700 mt-0.5" th:text="${job.location}">Ho Chi Minh City</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-3" th:if="${job?.salary != null}">
+                                    <div class="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
+                                        <span class="material-symbols-outlined text-slate-500 text-[16px]">payments</span>
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Salary Range</p>
+                                        <p class="text-xs font-semibold text-slate-700 mt-0.5" th:text="${job.salary}">Negotiable</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-3" th:if="${job?.deadline != null}">
+                                    <div class="w-8 h-8 rounded-xl bg-rose-50 flex items-center justify-center shrink-0">
+                                        <span class="material-symbols-outlined text-rose-400 text-[16px]">event</span>
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Deadline</p>
+                                        <p class="text-xs font-semibold text-rose-600 mt-0.5" th:text="${job.deadline}">March 31, 2026</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Apply CTA -->
+                        <div class="anim anim-3 gradient-card rounded-2xl p-5 text-white relative overflow-hidden">
+                            <div class="absolute inset-0 opacity-10" style="background:url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22><circle cx=%2230%22 cy=%2230%22 r=%2220%22 fill=%22none%22 stroke=%22white%22 stroke-width=%221%22/></svg>')"></div>
+                            <div class="relative">
+                                <p class="text-white/80 text-xs font-semibold mb-2">Interested in this role?</p>
+                                <p class="text-sm font-black mb-4">Submit your application today!</p>
+                                <button onclick="openApplyModal()"
+                                        class="w-full flex items-center justify-center gap-2 py-2.5 bg-white text-primary text-sm font-black rounded-xl shadow-md hover:bg-white/90 transition-all active:scale-95">
+                                    <span class="material-symbols-outlined text-[18px]">send</span>Apply Now
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Share -->
+                        <div class="anim anim-4 bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+                            <h4 class="text-xs font-black text-slate-600 mb-3">Share This Job</h4>
+                            <div class="flex items-center gap-2">
+                                <button onclick="copyLink()" class="flex-1 flex items-center justify-center gap-2 py-2 border border-slate-200 text-xs font-semibold text-slate-500 rounded-xl hover:bg-slate-50 transition-colors">
+                                    <span class="material-symbols-outlined text-[15px]">link</span>Copy Link
+                                </button>
+                                <button class="w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 text-slate-400 hover:bg-slate-50 transition-colors">
+                                    <span class="material-symbols-outlined text-[17px]">share</span>
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- APPLY MODAL -->
+<div id="modal-overlay" class="overlay hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+    <div class="modal-box bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden border border-slate-100">
+        <div class="flex items-center justify-between px-6 py-5 border-b border-slate-100">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-primary-light flex items-center justify-center">
+                    <span class="material-symbols-outlined fill-icon text-primary text-[20px]">send</span>
+                </div>
+                <h3 class="text-base font-black text-slate-800">Apply for Position</h3>
+            </div>
+            <button onclick="closeModal()" class="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-400">
+                <span class="material-symbols-outlined text-[20px]">close</span>
+            </button>
+        </div>
+        <form th:action="@{/guest/upload-cv}" method="post" enctype="multipart/form-data">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <input type="hidden" name="jobId" th:value="${job?.id}"/>
+            <div class="p-6 space-y-4">
+                <!-- Job being applied for -->
+                <div class="p-3.5 bg-primary-light rounded-xl flex items-center gap-3">
+                    <span class="material-symbols-outlined fill-icon text-primary text-[20px]">work</span>
+                    <div>
+                        <p class="text-[10px] font-bold text-primary/70 uppercase tracking-wide">Applying for</p>
+                        <p class="text-sm font-black text-primary" th:text="${job?.title}">Job Title</p>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Candidate ID <span class="text-rose-400">*</span></label>
+                    <input name="candidateId" type="number" required
+                           class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-primary focus:border-transparent transition-all placeholder:text-slate-300"
+                           placeholder="Your Candidate ID"/>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Upload CV / Resume <span class="text-rose-400">*</span></label>
+                    <div class="relative">
+                        <input name="file" type="file" required accept=".pdf,.doc,.docx"
+                               class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-primary focus:border-transparent transition-all file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-primary-light file:text-primary hover:file:bg-primary/20"/>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mt-1">Accepted formats: PDF, DOC, DOCX · Max 10MB</p>
+                </div>
+            </div>
+            <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-100 bg-slate-50/50">
+                <button type="button" onclick="closeModal()" class="px-5 py-2.5 text-sm font-semibold text-slate-500 hover:bg-slate-100 rounded-xl transition-colors">Cancel</button>
+                <button type="submit" class="flex items-center gap-2 px-5 py-2.5 bg-primary text-white text-sm font-bold rounded-xl shadow-md shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95">
+                    <span class="material-symbols-outlined text-[18px]">send</span>Submit Application
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="toast-container" class="fixed bottom-6 right-6 z-[60] flex flex-col gap-2 pointer-events-none"></div>
+
+<script>
+    function openApplyModal() { document.getElementById('modal-overlay').classList.remove('hidden'); }
+    function closeModal() { document.getElementById('modal-overlay').classList.add('hidden'); }
+    document.getElementById('modal-overlay').addEventListener('click', function(e){ if(e.target===e.currentTarget) closeModal(); });
+
+    function copyLink() {
+        navigator.clipboard.writeText(window.location.href);
+        showToast('Link copied to clipboard!', 'success');
+    }
+
+    function showToast(msg, type) {
+        type = type || 'success';
+        const cfg = { success:{bg:'bg-emerald-600',icon:'check_circle'}, error:{bg:'bg-rose-600',icon:'error'}, info:{bg:'bg-primary',icon:'info'} };
+        const c = cfg[type] || cfg.success;
+        const el = document.createElement('div');
+        el.className = 'toast pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-2xl shadow-xl text-sm font-semibold text-white ' + c.bg;
+        el.innerHTML = '<span class="material-symbols-outlined fill-icon text-[20px]">'+c.icon+'</span>' + msg;
+        document.getElementById('toast-container').appendChild(el);
+        setTimeout(function(){ el.classList.add('out'); setTimeout(function(){ el.remove(); }, 350); }, 3000);
+    }
+</script>
+<script th:if="${message}" th:inline="javascript">
+    showToast([[${message}]], 'info');
+</script>
+</body>
+</html>
