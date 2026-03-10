@@ -16,7 +16,11 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
 
     List<Request> findByStatus(String status);
     
-    @Query("SELECT r FROM Request r WHERE r.status = 'PENDING' OR " +
+    @Query("SELECT r FROM Request r " +
+           "JOIN FETCH r.employee e " +
+           "JOIN FETCH e.user u " +
+           "LEFT JOIN FETCH e.position p " +
+           "WHERE r.status = 'PENDING' OR " +
            "(r.approvedAt IS NOT NULL AND r.approvedAt >= :since) " +
            "ORDER BY r.createdAt DESC")
     List<Request> findRecentActivities(@Param("since") LocalDateTime since);

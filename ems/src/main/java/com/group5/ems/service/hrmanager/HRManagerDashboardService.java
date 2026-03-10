@@ -18,8 +18,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.transaction.annotation.Transactional;
+
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class HRManagerDashboardService {
     
     private final EmployeeRepository employeeRepository;
@@ -91,17 +94,25 @@ public class HRManagerDashboardService {
     
     private RecentActivityDTO mapToRecentActivityDTO(Request request) {
         // Lấy thông tin employee
-        Employee employee = employeeRepository.findById(request.getEmployeeId()).orElse(null);
+        Employee employee = request.getEmployee(); // Sử dụng relationship thay vì findById
         
         String employeeName = "Unknown";
         String employeePosition = "N/A";
         String employeeInitials = "N/A";
         
-        if (employee != null && employee.getUser() != null) {
-            employeeName = employee.getUser().getFullName();
-            employeeInitials = getInitials(employeeName);
-            // Có thể lấy position từ employee.getPosition() nếu có relationship
-            employeePosition = "Employee"; // Tạm thời
+        if (employee != null) {
+            // Lấy thông tin từ User (đã được eager load)
+            if (employee.getUser() != null) {
+                employeeName = employee.getUser().getFullName();
+                employeeInitials = getInitials(employeeName);
+            }
+            
+            // Lấy position từ employee.getPosition() nếu có relationship
+            if (employee.getPosition() != null) {
+                employeePosition = employee.getPosition().getName(); // Giả sử Position có field name
+            } else {
+                employeePosition = "Employee"; // Fallback
+            }
         }
         
         return new RecentActivityDTO(
