@@ -12,5 +12,8 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
     List<Request> findByEmployeeIdAndStatus(Long employeeId, String status);
 
     List<Request> findByStatus(String status);
+
+    List<Request> findByEmployeeIdAndLeaveTypeIsNotNull(Long employeeId);
+    List<Request> findByEmployeeIdAndLeaveTypeIsNotNullOrderByCreatedAtDesc(Long employeeId);
 }
 

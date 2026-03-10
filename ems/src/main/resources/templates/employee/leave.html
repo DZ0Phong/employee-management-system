@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>HRM Pro - My Leave Management</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#1414b8",
+            "background-light": "#f6f6f8",
+            "background-dark": "#111121",
+          },
+          fontFamily: { "display": ["Inter"] },
+          borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+        },
+      },
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100">
+<div class="flex min-h-screen">
+
+  <!-- Sidebar (từ Dashboard) -->
+  <aside class="w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col fixed h-full">
+    <div class="p-6 flex items-center gap-3">
+      <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white">
+        <span class="material-symbols-outlined">corporate_fare</span>
+      </div>
+      <div>
+        <h1 class="text-slate-900 dark:text-white font-bold text-lg leading-tight">HRM Pro</h1>
+        <p class="text-slate-500 dark:text-slate-400 text-xs">Employee Portal</p>
+      </div>
+    </div>
+    <nav class="flex-1 px-4 space-y-1">
+      <a th:href="@{/employee/dashboard}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+        <span class="material-symbols-outlined">dashboard</span>
+        <span class="text-sm font-medium">Dashboard</span>
+      </a>
+      <a th:href="@{/employee/profile}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+        <span class="material-symbols-outlined">person</span>
+        <span class="text-sm font-medium">My Profile</span>
+      </a>
+      <a th:href="@{/employee/attendance}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+        <span class="material-symbols-outlined">schedule</span>
+        <span class="text-sm font-medium">My Attendance</span>
+      </a>
+      <a th:href="@{/employee/leave}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary text-white">
+        <span class="material-symbols-outlined">calendar_today</span>
+        <span class="text-sm font-medium">My Leave</span>
+      </a>
+      <a th:href="@{/employee/payroll}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+        <span class="material-symbols-outlined">payments</span>
+        <span class="text-sm font-medium">My Payroll</span>
+      </a>
+      <a th:href="@{/employee/performance}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+        <span class="material-symbols-outlined">trending_up</span>
+        <span class="text-sm font-medium">My Performance</span>
+      </a>
+    </nav>
+    <div class="px-4 pb-2">
+      <a th:href="@{/employee/settings}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+        <span class="material-symbols-outlined">settings</span>
+        <span class="text-sm font-medium">Settings</span>
+      </a>
+    </div>
+    <div class="p-4 border-t border-slate-200 dark:border-slate-800">
+      <div class="flex items-center gap-3 px-2">
+        <div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
+          <span class="material-symbols-outlined text-slate-600 dark:text-slate-300">person</span>
+        </div>
+        <div class="flex-1 overflow-hidden">
+          <p class="text-sm font-medium truncate" th:text="${currentUser?.fullName ?: 'Employee'}"></p>
+          <p class="text-xs text-slate-500 truncate">Employee</p>
+        </div>
+        <a th:href="@{/logout}" class="text-slate-400 hover:text-red-500 transition-colors">
+          <span class="material-symbols-outlined text-sm">logout</span>
+        </a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1 ml-64 p-8">
+    <!-- Flash Messages -->
+    <div th:if="${success}" class="mb-6 p-4 bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700 rounded-lg flex items-center gap-3">
+      <span class="material-symbols-outlined text-green-600 dark:text-green-400">check_circle</span>
+      <p class="text-green-800 dark:text-green-300" th:text="${success}"></p>
+    </div>
+    <div th:if="${error}" class="mb-6 p-4 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-lg flex items-center gap-3">
+      <span class="material-symbols-outlined text-red-600 dark:text-red-400">error</span>
+      <p class="text-red-800 dark:text-red-300" th:text="${error}"></p>
+    </div>
+
+    <!-- Header Section -->
+    <div class="flex flex-wrap justify-between items-end gap-4 mb-8">
+      <div class="max-w-2xl">
+        <h2 class="text-3xl font-black tracking-tight mb-2">My Leave</h2>
+        <p class="text-slate-600 dark:text-slate-400">Manage your leave requests, view balances, and track your history in one place.</p>
+      </div>
+      <button onclick="openLeaveModal()" class="flex items-center gap-2 px-6 py-3 bg-primary text-white text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform">
+        <span class="material-symbols-outlined">add_circle</span>
+        <span>Request Leave</span>
+      </button>
+    </div>
+
+    <!-- Leave Balances -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+      <div th:each="balance : ${balances}" class="bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden group">
+        <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
+          <span class="material-symbols-outlined text-6xl"
+                th:classappend="${balance.leaveType == 'ANNUAL_LEAVE'} ? 'text-primary' : (${balance.leaveType == 'SICK_LEAVE'} ? 'text-red-500' : 'text-amber-500')"
+                th:text="${balance.leaveType == 'ANNUAL_LEAVE'} ? 'beach_access' : (${balance.leaveType == 'SICK_LEAVE'} ? 'medical_services' : 'person_celebrate')"></span>
+        </div>
+        <p class="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1"
+           th:text="${balance.leaveType == 'ANNUAL_LEAVE'} ? 'Annual Leave' : (${balance.leaveType == 'SICK_LEAVE'} ? 'Sick Leave' : 'Personal Leave')"></p>
+        <div class="flex items-baseline gap-2">
+          <span class="text-3xl font-bold"
+                th:classappend="${balance.leaveType == 'SICK_LEAVE'} ? 'text-red-600' : (${balance.leaveType == 'PERSONAL_LEAVE'} ? 'text-amber-600' : '')"
+                th:text="${balance.remainingDays}"></span>
+          <span class="text-slate-400 text-sm">days left</span>
+        </div>
+        <div class="mt-4 w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+          <div class="h-full rounded-full"
+               th:classappend="${balance.leaveType == 'ANNUAL_LEAVE'} ? 'bg-primary' : (${balance.leaveType == 'SICK_LEAVE'} ? 'bg-red-500' : 'bg-amber-500')"
+               th:style="'width: ' + ${balance.usagePercentage} + '%'"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Leave History Table -->
+    <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+      <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+        <h3 class="text-lg font-bold">Leave History</h3>
+        <div class="flex gap-2">
+          <button class="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-500">
+            <span class="material-symbols-outlined text-xl">filter_list</span>
+          </button>
+          <button class="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-500">
+            <span class="material-symbols-outlined text-xl">search</span>
+          </button>
+        </div>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left">
+          <thead>
+          <tr class="bg-slate-50/50 dark:bg-slate-800/50">
+            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Leave Type</th>
+            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Dates</th>
+            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Reason</th>
+            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
+            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Action</th>
+          </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+          <tr th:if="${#lists.isEmpty(leaveHistory)}" class="hover:bg-slate-50 dark:hover:bg-slate-800/30">
+            <td colspan="5" class="px-6 py-8 text-center text-slate-500">No leave requests found</td>
+          </tr>
+          <tr th:each="leave : ${leaveHistory}" class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+            <td class="px-6 py-5">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded flex items-center justify-center"
+                     th:classappend="${leave.leaveType == 'ANNUAL_LEAVE'} ? 'bg-primary/10 text-primary' : (${leave.leaveType == 'SICK_LEAVE'} ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-600')">
+                  <span class="material-symbols-outlined text-lg"
+                        th:text="${leave.leaveType == 'ANNUAL_LEAVE'} ? 'beach_access' : (${leave.leaveType == 'SICK_LEAVE'} ? 'medical_services' : 'person_celebrate')"></span>
+                </div>
+                <span class="font-medium"
+                      th:text="${leave.leaveType == 'ANNUAL_LEAVE'} ? 'Annual Leave' : (${leave.leaveType == 'SICK_LEAVE'} ? 'Sick Leave' : 'Personal Leave')"></span>
+              </div>
+            </td>
+            <td class="px-6 py-5">
+              <div class="text-sm">
+                <p class="font-medium" th:text="${#temporals.format(leave.leaveFrom, 'MMM dd')} + ' - ' + ${#temporals.format(leave.leaveTo, 'MMM dd, yyyy')}"></p>
+                <p class="text-slate-400 text-xs" th:text="${leave.daysCount} + ' day' + (${leave.daysCount > 1} ? 's' : '')"></p>
+              </div>
+            </td>
+            <td class="px-6 py-5">
+              <p class="text-sm text-slate-600 dark:text-slate-400" th:text="${leave.content}"></p>
+            </td>
+            <td class="px-6 py-5">
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold"
+                    th:classappend="${leave.status == 'APPROVED'} ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : (${leave.status == 'REJECTED'} ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400')">
+                <span class="w-1.5 h-1.5 rounded-full"
+                      th:classappend="${leave.status == 'APPROVED'} ? 'bg-green-500' : (${leave.status == 'REJECTED'} ? 'bg-red-500' : 'bg-amber-500 animate-pulse')"></span>
+                <span th:text="${leave.status}"></span>
+              </span>
+            </td>
+            <td class="px-6 py-5 text-right">
+              <button class="text-slate-400 hover:text-primary transition-colors">
+                <span class="material-symbols-outlined">more_vert</span>
+              </button>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="p-4 bg-slate-50 dark:bg-slate-800/30 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+        <p class="text-xs text-slate-500">Showing 1-3 of 12 entries</p>
+        <div class="flex gap-1">
+          <button class="p-2 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+            <span class="material-symbols-outlined text-sm">chevron_left</span>
+          </button>
+          <button class="p-2 rounded bg-primary text-white text-xs font-bold px-3">1</button>
+          <button class="p-2 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors text-xs px-3">2</button>
+          <button class="p-2 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+            <span class="material-symbols-outlined text-sm">chevron_right</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Leave Request Modal -->
+<div id="leaveModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+  <div class="bg-white dark:bg-slate-900 rounded-xl max-w-md w-full shadow-2xl">
+    <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+      <h3 class="text-xl font-bold">Request Leave</h3>
+      <button onclick="closeLeaveModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <form th:action="@{/employee/leave/request}" method="post" class="p-6 space-y-4">
+      <div>
+        <label class="block text-sm font-medium mb-2">Leave Type</label>
+        <select name="leaveType" required class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary">
+          <option value="ANNUAL_LEAVE">Annual Leave</option>
+          <option value="SICK_LEAVE">Sick Leave</option>
+          <option value="PERSONAL_LEAVE">Personal Leave</option>
+        </select>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium mb-2">From Date</label>
+          <input type="date" name="leaveFrom" required class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary">
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-2">To Date</label>
+          <input type="date" name="leaveTo" required class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary">
+        </div>
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-2">Reason</label>
+        <textarea name="content" rows="4" required class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary" placeholder="Please provide a reason for your leave request..."></textarea>
+      </div>
+      <div class="flex gap-3 pt-4">
+        <button type="button" onclick="closeLeaveModal()" class="flex-1 px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+          Cancel
+        </button>
+        <button type="submit" class="flex-1 px-4 py-2 rounded-lg bg-primary text-white font-medium hover:bg-primary/90 transition-colors">
+          Submit Request
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function openLeaveModal() {
+    document.getElementById('leaveModal').classList.remove('hidden');
+  }
+
+  function closeLeaveModal() {
+    document.getElementById('leaveModal').classList.add('hidden');
+  }
+
+  // Close modal when clicking outside
+  document.getElementById('leaveModal')?.addEventListener('click', function(e) {
+    if (e.target === this) {
+      closeLeaveModal();
+    }
+  });
+</script>
+
+</body></html>
