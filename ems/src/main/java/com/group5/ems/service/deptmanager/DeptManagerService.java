@@ -148,4 +148,92 @@ public class DeptManagerService {
 
         return data;
     }
+
+    public Map<String, Object> getDepartmentMockData() {
+        Map<String, Object> data = new HashMap<>();
+
+        Map<String, String> manager = new HashMap<>();
+        manager.put("name", "Marcus Thorne");
+        manager.put("role", "Operations Manager");
+        manager.put("avatarUrl",
+                "https://lh3.googleusercontent.com/aida-public/AB6AXuBqwQXs0h175jU3uh3FhKRdzGE3Nl1I6Pgzyq7GXasySRzzcXSBy5POHZeZM_tH82Vlp9Hu_GjbhkuXoZU_Clt4cUru6YspBR1wTGQAbsE50KrLXGV6NtJgi7Bg6O4fABG6g3akaXqIfIGP_-qzg1jgQHlDW-7asQ2QMS0Dpifs_E-AcNgemm3DJnnc8wk8rbkUYAF_BLdX2Smm03gADNQP1M44hUyN5SjpN07FF9GbSZUM9rGMQ-vd4wTleWw8FCvWohN7qCxsk9E");
+        data.put("manager", manager);
+
+        // Core Department Details
+        Map<String, String> department = new HashMap<>();
+        department.put("name", "Operations");
+        department.put("code", "OPS-001");
+        department.put("description",
+                "Ensures smooth execution of core business processes, resource allocation, and daily administrative activities.");
+        department.put("manager", "Marcus Thorne");
+        department.put("totalEmployees", "24");
+        department.put("openPositions", "3");
+        department.put("budgetUtilization", "85%");
+        data.put("department", department);
+
+        // Sub-departments / Teams
+        List<Map<String, String>> teams = new ArrayList<>();
+
+        Map<String, String> team1 = new HashMap<>();
+        team1.put("name", "Logistics & Supply");
+        team1.put("headcount", "12");
+        team1.put("lead", "Sarah Chen");
+        teams.add(team1);
+
+        Map<String, String> team2 = new HashMap<>();
+        team2.put("name", "Facilities Management");
+        team2.put("headcount", "8");
+        team2.put("lead", "David Kim");
+        teams.add(team2);
+
+        Map<String, String> team3 = new HashMap<>();
+        team3.put("name", "Quality Assurance");
+        team3.put("headcount", "4");
+        team3.put("lead", "Elena Rodriguez");
+        teams.add(team3);
+
+        data.put("teams", teams);
+
+        // Required Positions in Department
+        List<Map<String, String>> positions = new ArrayList<>();
+
+        Map<String, String> pos1 = new HashMap<>();
+        pos1.put("title", "Operations Manager");
+        pos1.put("headcount", "1");
+        pos1.put("status", "Filled");
+        pos1.put("statusClass", "bg-green-100 text-green-700");
+        positions.add(pos1);
+
+        Map<String, String> pos2 = new HashMap<>();
+        pos2.put("title", "Team Lead");
+        pos2.put("headcount", "3");
+        pos2.put("status", "Filled");
+        pos2.put("statusClass", "bg-green-100 text-green-700");
+        positions.add(pos2);
+
+        Map<String, String> pos3 = new HashMap<>();
+        pos3.put("title", "Logistics Coordinator");
+        pos3.put("headcount", "5");
+        pos3.put("status", "Recruiting (2)");
+        pos3.put("statusClass", "bg-amber-100 text-amber-700");
+        positions.add(pos3);
+
+        Map<String, String> pos4 = new HashMap<>();
+        pos4.put("title", "Quality Inspector");
+        pos4.put("headcount", "4");
+        pos4.put("status", "Filled");
+        pos4.put("statusClass", "bg-green-100 text-green-700");
+        positions.add(pos4);
+
+        Map<String, String> pos5 = new HashMap<>();
+        pos5.put("title", "Facilities Admin");
+        pos5.put("headcount", "2");
+        pos5.put("status", "Recruiting (1)");
+        pos5.put("statusClass", "bg-amber-100 text-amber-700");
+        positions.add(pos5);
+
+        data.put("positions", positions);
+
+        return data;
+    }
 }

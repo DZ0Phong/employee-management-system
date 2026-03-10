@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>HRM Pro - Department Overview</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1414b8",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#111121",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+    <div class="layout-container flex h-full grow flex-col">
+        <!-- Top Navigation Bar -->
+        <header class="flex items-center justify-between whitespace-nowrap border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-10 py-3">
+            <div class="flex items-center gap-8">
+                <div class="flex items-center gap-4 text-primary">
+                    <div class="size-8 flex items-center justify-center bg-primary/10 rounded-lg">
+                        <span class="material-symbols-outlined text-primary">rocket_launch</span>
+                    </div>
+                    <h2 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">HRM Pro</h2>
+                </div>
+                <label class="flex flex-col min-w-40 h-10 max-w-64">
+                    <div class="flex w-full flex-1 items-stretch rounded-lg h-full">
+                        <div class="text-slate-500 flex border-none bg-slate-100 dark:bg-slate-800 items-center justify-center pl-4 rounded-l-lg" data-icon="search">
+                            <span class="material-symbols-outlined text-[20px]">search</span>
+                        </div>
+                        <input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-slate-900 dark:text-white focus:outline-0 focus:ring-0 border-none bg-slate-100 dark:bg-slate-800 focus:border-none h-full placeholder:text-slate-500 px-4 rounded-l-none border-l-0 pl-2 text-base font-normal" placeholder="Search department..." value=""/>
+                    </div>
+                </label>
+            </div>
+            <div class="flex flex-1 justify-end gap-4">
+                <div class="flex gap-2">
+                    <button class="flex items-center justify-center rounded-lg size-10 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                        <span class="material-symbols-outlined">notifications</span>
+                    </button>
+                    <button class="flex items-center justify-center rounded-lg size-10 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                        <span class="material-symbols-outlined">settings</span>
+                    </button>
+                    <form th:action="@{/logout}" method="post" class="m-0">
+                        <button type="submit" class="flex items-center justify-center rounded-lg size-10 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-800/40 transition-colors" title="Logout">
+                            <span class="material-symbols-outlined">logout</span>
+                        </button>
+                    </form>
+                </div>
+                <div class="bg-primary/20 bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-primary" data-alt="Profile picture of the department manager" th:style="'background-image: url(' + ${manager.avatarUrl} + ');'"></div>
+            </div>
+        </header>
+
+        <div class="flex flex-1">
+            <!-- Sidebar Menu -->
+            <aside class="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col p-4 gap-6">
+                <div class="flex items-center gap-3 px-2">
+                    <div class="bg-primary bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" data-alt="Manager profile photo in sidebar" th:style="'background-image: url(' + ${manager.avatarUrl} + ');'"></div>
+                    <div class="flex flex-col overflow-hidden">
+                        <h1 class="text-slate-900 dark:text-white text-sm font-bold leading-none truncate" th:text="${manager.name}">Marcus Thorne</h1>
+                        <p class="text-slate-500 text-xs font-medium mt-1 truncate" th:text="${manager.role}">Operations Manager</p>
+                    </div>
+                </div>
+
+                <nav class="flex flex-col gap-1">
+                    <a class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors" th:href="@{/dept-manager/dashboard}">
+                        <span class="material-symbols-outlined text-[22px]">dashboard</span>
+                        <span class="text-sm font-semibold">Dashboard</span>
+                    </a>
+                    <a class="flex items-center gap-3 px-3 py-2.5 bg-primary/10 text-primary rounded-lg transition-colors" th:href="@{/dept-manager/department}">
+                        <span class="material-symbols-outlined text-[22px] fill-1">groups_2</span>
+                        <span class="text-sm font-semibold">My Department</span>
+                    </a>
+                    <a class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors" th:href="@{/dept-manager/team}">
+                        <span class="material-symbols-outlined text-[22px]">person</span>
+                        <span class="text-sm font-semibold">Team Members</span>
+                    </a>
+                    <a class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors" href="#">
+                        <span class="material-symbols-outlined text-[22px]">event_busy</span>
+                        <span class="text-sm font-semibold">Leave Approval</span>
+                    </a>
+                    <a class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors" href="#">
+                        <span class="material-symbols-outlined text-[22px]">how_to_reg</span>
+                        <span class="text-sm font-semibold">Attendance Review</span>
+                    </a>
+                    <a class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors" href="#">
+                        <span class="material-symbols-outlined text-[22px]">insights</span>
+                        <span class="text-sm font-semibold">Performance Review</span>
+                    </a>
+                </nav>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="flex-1 flex flex-col bg-background-light dark:bg-background-dark p-8">
+                <div class="max-w-6xl mx-auto w-full">
+                    <div class="flex flex-wrap items-end justify-between gap-4 mb-8">
+                        <div class="flex flex-col gap-1">
+                            <h2 class="text-slate-900 dark:text-white text-3xl font-black tracking-tight">Department Overview</h2>
+                            <p class="text-slate-500 text-base">Here is the structural and statistical view of the <span class="text-primary font-semibold" th:text="${department.name}">Operations</span> department.</p>
+                        </div>
+                        <div class="flex gap-3">
+                            <button class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-sm font-bold rounded-lg shadow-sm">
+                                <span class="material-symbols-outlined text-[20px]">edit</span>
+                                Edit Details
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Department Info Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm md:col-span-2 flex flex-col justify-center">
+                            <div class="flex items-center gap-4 mb-4">
+                                <div class="size-16 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                                    <span class="material-symbols-outlined text-3xl">domain</span>
+                                </div>
+                                <div>
+                                    <h3 class="text-2xl font-black text-slate-900 dark:text-white leading-none" th:text="${department.name} + ' (' + ${department.code} + ')'">Operations (OPS-001)</h3>
+                                    <p class="text-sm text-slate-500 mt-1 font-medium">Led by <span th:text="${department.manager}">Marcus Thorne</span></p>
+                                </div>
+                            </div>
+                            <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed" th:text="${department.description}">
+                                Ensures smooth execution of core business processes, resource allocation, and daily administrative activities.
+                            </p>
+                        </div>
+
+                        <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+                            <div>
+                                <h4 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">Key Metrics</h4>
+                                <div class="space-y-4">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-slate-600 dark:text-slate-400 text-sm font-medium">Headcount</span>
+                                        <span class="text-slate-900 dark:text-white font-bold" th:text="${department.totalEmployees}">24</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-slate-600 dark:text-slate-400 text-sm font-medium">Open Vacancies</span>
+                                        <span class="text-red-500 font-bold" th:text="${department.openPositions}">3</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-slate-600 dark:text-slate-400 text-sm font-medium">Budget Utilization</span>
+                                        <span class="text-green-500 font-bold" th:text="${department.budgetUtilization}">85%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <!-- Sub-teams list -->
+                        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+                            <div class="px-6 py-5 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+                                <h4 class="text-lg font-bold text-slate-900 dark:text-white">Sub-Departments / Teams</h4>
+                                <span class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs font-bold px-2.5 py-1 rounded-full" th:text="${teams.size()} + ' Teams'">3 Teams</span>
+                            </div>
+                            <div class="divide-y divide-slate-100 dark:divide-slate-800">
+                                <div th:each="team : ${teams}" class="p-6 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                    <div class="flex items-center gap-4">
+                                        <div class="size-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 flex items-center justify-center">
+                                            <span class="material-symbols-outlined">hub</span>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-bold text-slate-900 dark:text-white leading-none mb-1" th:text="${team.name}">Logistics & Supply</p>
+                                            <p class="text-xs text-slate-500 font-medium">Lead: <span class="text-slate-700 dark:text-slate-300" th:text="${team.lead}">Sarah Chen</span></p>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-lg font-black text-slate-900 dark:text-white leading-none" th:text="${team.headcount}">12</p>
+                                        <p class="text-xs text-slate-500 mt-1">Members</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Approved Positions list -->
+                        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+                            <div class="px-6 py-5 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+                                <h4 class="text-lg font-bold text-slate-900 dark:text-white">Approved Positions</h4>
+                                <button class="text-primary text-sm font-bold flex items-center gap-1 hover:underline">
+                                    Request New <span class="material-symbols-outlined text-[16px]">add</span>
+                                </button>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
+                                            <th class="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Title</th>
+                                            <th class="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Quota</th>
+                                            <th class="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                                        <tr th:each="pos : ${positions}" class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                                            <td class="px-6 py-4 text-sm font-bold text-slate-900 dark:text-white" th:text="${pos.title}">Team Lead</td>
+                                            <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 font-medium text-center" th:text="${pos.headcount}">3</td>
+                                            <td class="px-6 py-4 text-right">
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold" th:classappend="${pos.statusClass}" th:text="${pos.status}">
+                                                    Filled
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </main>
+        </div>
+    </div>
+</div>
+</body>
+</html>
