@@ -35,6 +35,7 @@ public class AdminService {
     private final EmployeeRepository employeeRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Transactional
     public void saveUser(SaveUserRequest req){
         if(req.getUsername().isBlank() ||req.getEmail().isBlank() ||req.getFullName().isBlank()){
             throw new IllegalArgumentException("User name, email and full name are required");
@@ -222,7 +223,7 @@ public class AdminService {
         else if ("LOCKED".equalsIgnoreCase(status)) statusDB = "Suspended";
 
         Role role = userRoleRepository.getRoleByUserId(user.getId());
-        String roleCode = (role != null && role.getCode() != null) ? role.getCode() : "";
+        String roleCode = (role != null && role.getName() != null) ? role.getName() : "";
         String deptName = (user.getEmployee() != null && user.getEmployee().getDepartment() != null)
                 ? user.getEmployee().getDepartment().getName() : "";
 
