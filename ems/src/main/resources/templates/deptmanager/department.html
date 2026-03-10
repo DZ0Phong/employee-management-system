@@ -73,7 +73,7 @@
 
         <div class="flex flex-1">
             <!-- Sidebar Menu -->
-            <aside class="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col p-4 gap-6">
+            <aside class="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col p-4 gap-6 shrink-0">
                 <div class="flex items-center gap-3 px-2">
                     <div class="bg-primary bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" data-alt="Manager profile photo in sidebar" th:style="'background-image: url(' + ${manager.avatarUrl} + ');'"></div>
                     <div class="flex flex-col overflow-hidden">
@@ -83,27 +83,27 @@
                 </div>
 
                 <nav class="flex flex-col gap-1">
-                    <a class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors" th:href="@{/dept-manager/dashboard}">
+                    <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800" th:href="@{/dept-manager/dashboard}">
                         <span class="material-symbols-outlined text-[22px]">dashboard</span>
                         <span class="text-sm font-semibold">Dashboard</span>
                     </a>
-                    <a class="flex items-center gap-3 px-3 py-2.5 bg-primary/10 text-primary rounded-lg transition-colors" th:href="@{/dept-manager/department}">
+                    <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors bg-primary/10 text-primary" th:href="@{/dept-manager/department}">
                         <span class="material-symbols-outlined text-[22px] fill-1">groups_2</span>
                         <span class="text-sm font-semibold">My Department</span>
                     </a>
-                    <a class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors" th:href="@{/dept-manager/team}">
+                    <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800" th:href="@{/dept-manager/team}">
                         <span class="material-symbols-outlined text-[22px]">person</span>
                         <span class="text-sm font-semibold">Team Members</span>
                     </a>
-                    <a class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors" href="#">
+                    <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800" href="#">
                         <span class="material-symbols-outlined text-[22px]">event_busy</span>
                         <span class="text-sm font-semibold">Leave Approval</span>
                     </a>
-                    <a class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors" href="#">
+                    <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800" href="#">
                         <span class="material-symbols-outlined text-[22px]">how_to_reg</span>
                         <span class="text-sm font-semibold">Attendance Review</span>
                     </a>
-                    <a class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors" href="#">
+                    <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800" href="#">
                         <span class="material-symbols-outlined text-[22px]">insights</span>
                         <span class="text-sm font-semibold">Performance Review</span>
                     </a>

@@ -29,54 +29,41 @@
 <body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100">
 <div class="flex h-screen overflow-hidden">
     <!-- Sidebar -->
-    <aside class="w-64 flex flex-col bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800">
-        <div class="p-6 flex items-center gap-3 border-b border-slate-200 dark:border-slate-800">
-            <div class="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-white">
-                <span class="material-symbols-outlined">corporate_fare</span>
-            </div>
-            <div>
-                <h1 class="text-lg font-bold text-slate-900 dark:text-white leading-none">HRM Pro</h1>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-wider">Dept Manager</p>
+    <aside class="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col p-4 gap-6 shrink-0">
+        <div class="flex items-center gap-3 px-2">
+            <div class="bg-primary bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" data-alt="Manager profile photo in sidebar" th:style="'background-image: url(' + ${manager.avatarUrl} + ');'"></div>
+            <div class="flex flex-col overflow-hidden">
+                <h1 class="text-slate-900 dark:text-white text-sm font-bold leading-none truncate" th:text="${manager.name}">Marcus Thorne</h1>
+                <p class="text-slate-500 text-xs font-medium mt-1 truncate" th:text="${manager.role}">Operations Manager</p>
             </div>
         </div>
-        <nav class="flex-1 overflow-y-auto p-4 space-y-1">
-            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary" th:href="@{/dept-manager/dashboard}">
-                <span class="material-symbols-outlined">dashboard</span>
+
+        <nav class="flex flex-col gap-1">
+            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors bg-primary/10 text-primary" th:href="@{/dept-manager/dashboard}">
+                <span class="material-symbols-outlined text-[22px] fill-1">dashboard</span>
                 <span class="text-sm font-semibold">Dashboard</span>
             </a>
-            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" th:href="@{/dept-manager/department}">
-                <span class="material-symbols-outlined">groups_2</span>
-                <span class="text-sm font-medium">My Department</span>
+            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800" th:href="@{/dept-manager/department}">
+                <span class="material-symbols-outlined text-[22px]">groups_2</span>
+                <span class="text-sm font-semibold">My Department</span>
             </a>
-            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" th:href="@{/dept-manager/team}">
-                <span class="material-symbols-outlined">person</span>
-                <span class="text-sm font-medium">Team Members</span>
+            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800" th:href="@{/dept-manager/team}">
+                <span class="material-symbols-outlined text-[22px]">person</span>
+                <span class="text-sm font-semibold">Team Members</span>
             </a>
-            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" th:href="@{/dept-manager/leave-approval}">
-                <span class="material-symbols-outlined">event_busy</span>
-                <span class="text-sm font-medium">Leave Approval</span>
+            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800" href="#">
+                <span class="material-symbols-outlined text-[22px]">event_busy</span>
+                <span class="text-sm font-semibold">Leave Approval</span>
             </a>
-            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" th:href="@{/dept-manager/attendance}">
-                <span class="material-symbols-outlined">how_to_reg</span>
-                <span class="text-sm font-medium">Attendance Review</span>
+            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800" href="#">
+                <span class="material-symbols-outlined text-[22px]">how_to_reg</span>
+                <span class="text-sm font-semibold">Attendance Review</span>
             </a>
-            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" th:href="@{/dept-manager/performance}">
-                <span class="material-symbols-outlined">insights</span>
-                <span class="text-sm font-medium">Performance Review</span>
+            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800" href="#">
+                <span class="material-symbols-outlined text-[22px]">insights</span>
+                <span class="text-sm font-semibold">Performance Review</span>
             </a>
         </nav>
-        <div class="p-4 border-t border-slate-200 dark:border-slate-800">
-            <div class="flex items-center gap-3 p-2">
-                <div class="size-10 rounded-full bg-slate-200 dark:bg-slate-700 bg-cover bg-center" data-alt="Profile photo of the department manager" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDdPhGMiAuUVMrhgqJVFn7WwuSwOLn9a730wH2usyu4spUNv9xdN6YBAMA1bABIftIBnWGbN4ZOta3fvUqdmQRPhCb4JMMxyVITyF3CXo6Srgkl9jI21MbXolPsVUwxgExfg-52F2HuTfQ6J4o8bqtfvprk6ikOWkdiJjTsXS_uWawAu1l8WErbThrS0pmx91Dh6uDOoITamBraDKhrQ9er2LfexZBrhboZh3DcLncMTsqT9CZHa9SHfcD8lEFBXDC8zmwPLNHkISk')"></div>
-                <div class="flex-1 min-w-0">
-                    <p class="text-sm font-bold truncate" th:text="${manager != null ? manager.name : 'Alex Johnson'}">Alex Johnson</p>
-                    <p class="text-xs text-slate-500 truncate" th:text="${manager != null ? manager.role : 'Manager'}">Manager</p>
-                </div>
-                <button class="text-slate-400 hover:text-primary">
-                    <span class="material-symbols-outlined">settings</span>
-                </button>
-            </div>
-        </div>
     </aside>
 
     <!-- Main Content -->
