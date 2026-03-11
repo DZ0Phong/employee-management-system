@@ -17,27 +17,21 @@ public class DeptManagerController {
     @GetMapping({ "", "/", "/dashboard" })
     public String dashboard(Model model) {
         // Fetch mock data
-        model.addAllAttributes(deptManagerService.getDashboardMockData());
+        model.addAttribute("data", deptManagerService.getDashboardMockData());
 
         // Return the thymeleaf template
         return "deptmanager/dashboard";
     }
 
-    @GetMapping("/team")
-    public String myTeam(Model model) {
-        // Fetch mock data for the team page
-        model.addAllAttributes(deptManagerService.getTeamMockData());
-
-        // Return the thymeleaf template
+    @GetMapping("/my-team")
+    public String team(Model model) {
+        model.addAttribute("data", deptManagerService.getTeamMockData());
         return "deptmanager/team";
     }
 
-    @GetMapping("/department")
-    public String myDepartment(Model model) {
-        // Fetch mock data for the department organizational page
-        model.addAllAttributes(deptManagerService.getDepartmentMockData());
-
-        // Return the thymeleaf template
+    @GetMapping("/my-department")
+    public String department(Model model) {
+        model.addAttribute("data", deptManagerService.getDepartmentMockData());
         return "deptmanager/department";
     }
 }

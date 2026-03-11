@@ -3,236 +3,258 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>HRM Pro - Team Management</title>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-    <script id="tailwind-config">
+    <title>HRM Pro - My Team</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script>
         tailwind.config = {
             darkMode: "class",
             theme: {
                 extend: {
                     colors: {
-                        "primary": "#1414b8",
-                        "background-light": "#f6f6f8",
-                        "background-dark": "#111121",
+                        primary: "#1414b8",
+                        "primary-light": "#e8e8fb",
+                        "bg-light": "#f6f6f8",
                     },
-                    fontFamily: {
-                        "display": ["Inter"]
-                    },
-                    borderRadius: {
-                        "DEFAULT": "0.25rem",
-                        "lg": "0.5rem",
-                        "xl": "0.75rem",
-                        "full": "9999px"
-                    },
+                    fontFamily: { display: ["Inter"] },
                 },
             },
-        }
+        };
     </script>
+    <style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .fill-icon { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+
+        @keyframes fadeSlideUp {
+            from { opacity: 0; transform: translateY(18px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .anim { opacity: 0; animation: fadeSlideUp 0.55s ease forwards; }
+        .anim-1 { animation-delay: 0.05s; }
+        .anim-2 { animation-delay: 0.12s; }
+        .anim-3 { animation-delay: 0.19s; }
+
+        .dot-grid {
+            background-image: radial-gradient(circle, #1414b820 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #1414b840; border-radius: 99px; }
+
+        .nav-active { box-shadow: 0 0 0 1px #1414b830, inset 3px 0 0 #1414b8; }
+        .card-hover { transition: transform .2s ease, box-shadow .2s ease; }
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 12px 32px -8px #1414b825; }
+        .stat-num { font-feature-settings: "tnum"; font-variant-numeric: tabular-nums; }
+    </style>
 </head>
-<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased">
-<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
-    <div class="layout-container flex h-full grow flex-col">
-        <!-- Top Navigation Bar -->
-        <header class="flex items-center justify-between whitespace-nowrap border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-10 py-3">
-            <div class="flex items-center gap-8">
-                <div class="flex items-center gap-4 text-primary">
-                    <div class="size-8 flex items-center justify-center bg-primary/10 rounded-lg">
-                        <span class="material-symbols-outlined text-primary">rocket_launch</span>
-                    </div>
-                    <h2 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">HRM Pro</h2>
-                </div>
-                <label class="flex flex-col min-w-40 h-10 max-w-64">
-                    <div class="flex w-full flex-1 items-stretch rounded-lg h-full">
-                        <div class="text-slate-500 flex border-none bg-slate-100 dark:bg-slate-800 items-center justify-center pl-4 rounded-l-lg" data-icon="search">
-                            <span class="material-symbols-outlined text-[20px]">search</span>
-                        </div>
-                        <input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-slate-900 dark:text-white focus:outline-0 focus:ring-0 border-none bg-slate-100 dark:bg-slate-800 focus:border-none h-full placeholder:text-slate-500 px-4 rounded-l-none border-l-0 pl-2 text-base font-normal" placeholder="Search team..." value=""/>
-                    </div>
-                </label>
+
+<body class="bg-bg-light font-display text-slate-900 min-h-screen">
+<div class="flex h-screen overflow-hidden">
+
+    <!-- ─── Sidebar ───────────────────────────── -->
+    <aside class="w-[280px] bg-white border-r border-slate-100 flex flex-col shrink-0">
+        <!-- Logo -->
+        <div class="h-16 flex items-center px-6 border-b border-slate-50 shrink-0">
+            <div class="w-8 h-8 rounded-xl bg-primary flex items-center justify-center mr-3 shadow-lg shadow-primary/20">
+                <span class="material-symbols-outlined text-white text-[18px]">hr_space</span>
             </div>
-            <div class="flex flex-1 justify-end gap-4">
-                <div class="flex gap-2">
-                    <button class="flex items-center justify-center rounded-lg size-10 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-                        <span class="material-symbols-outlined">notifications</span>
-                    </button>
-                    <button class="flex items-center justify-center rounded-lg size-10 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-                        <span class="material-symbols-outlined">settings</span>
-                    </button>
-                    <!-- Form for logout -->
-                    <form th:action="@{/logout}" method="post" class="m-0">
-                        <!-- Thêm CSRF token nếu cần thiết (Thymeleaf tự động thêm) -->
-                        <button type="submit" class="flex items-center justify-center rounded-lg size-10 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-800/40 transition-colors" title="Logout">
-                            <span class="material-symbols-outlined">logout</span>
+            <span class="font-black text-xl tracking-tight text-slate-900">HRM<span class="text-primary">Pro</span></span>
+        </div>
+
+        <div class="flex-1 overflow-y-auto px-4 py-6 space-y-8 scrollbar-hide">
+            
+            <!-- Menu -->
+            <div>
+                <p class="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Department Module</p>
+                <nav class="space-y-1">
+                    <a th:href="@{/dept-manager/dashboard}" class="group flex items-center justify-between px-3 py-2 rounded-xl text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-colors">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-[20px] group-hover:fill-icon transition-all">dashboard</span>
+                            <span class="text-sm font-medium">Dashboard</span>
+                        </div>
+                    </a>
+                    
+                    <a th:href="@{/dept-manager/my-department}" class="group flex items-center justify-between px-3 py-2 rounded-xl text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-colors">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-[20px] group-hover:fill-icon transition-all">domain</span>
+                            <span class="text-sm font-medium">My Department</span>
+                        </div>
+                    </a>
+
+                    <a th:href="@{/dept-manager/my-team}" class="nav-active flex items-center justify-between px-3 py-2 rounded-xl bg-primary/5 text-primary transition-colors">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-[20px] fill-icon">groups</span>
+                            <span class="text-sm font-semibold">My Team</span>
+                        </div>
+                    </a>
+                    
+                    <a href="#" class="group flex items-center justify-between px-3 py-2 rounded-xl text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-colors">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-[20px] group-hover:fill-icon transition-all">assignment_turned_in</span>
+                            <span class="text-sm font-medium">Approvals</span>
+                        </div>
+                    </a>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Manager Card footer -->
+        <div class="p-4 border-t border-slate-50 shrink-0">
+            <div th:if="${data.manager != null}" class="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors border border-transparent hover:border-slate-100">
+                <img th:src="${data.manager.avatarUrl}" class="w-10 h-10 rounded-full object-cover ring-2 ring-white shadow-sm" alt="Avatar"/>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-bold text-slate-800 truncate" th:text="${data.manager.name}"></p>
+                    <p class="text-[11px] font-medium text-slate-400 truncate" th:text="${data.manager.role}"></p>
+                </div>
+                <span class="material-symbols-outlined text-slate-300">more_vert</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ─── Main ───────────────────────────────────────────────── -->
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
+
+        <!-- Topbar -->
+        <header class="h-16 bg-white border-b border-slate-100 flex items-center justify-between px-8 shrink-0">
+            <div>
+                <h2 class="text-base font-black text-slate-900 leading-tight">My Team</h2>
+            </div>
+            <div class="flex items-center gap-2">
+                <!-- Search pill -->
+                <div class="hidden md:flex items-center gap-2 bg-slate-50 border border-slate-100 rounded-xl px-3 py-1.5 mr-2">
+                    <span class="material-symbols-outlined text-slate-300 text-base">search</span>
+                    <input class="bg-transparent border-none text-xs text-slate-600 focus:outline-none w-48 placeholder-slate-300" placeholder="Search team members..." type="text"/>
+                </div>
+
+                <button class="relative w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-50 text-slate-500 transition-colors">
+                    <span class="material-symbols-outlined text-[20px]">notifications</span>
+                    <span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 border-2 border-white"></span>
+                </button>
+                 <form th:action="@{/logout}" method="post"
+                        class="w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 hover:text-rose-500 hover:bg-rose-50 transition-colors">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <button type="submit" class="w-full h-full flex items-center justify-center">
+                            <span class="material-symbols-outlined text-[20px]">logout</span>
                         </button>
                     </form>
-                </div>
-                <div class="bg-primary/20 bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-primary" data-alt="Profile picture of the department manager" th:style="'background-image: url(' + ${manager.avatarUrl} + ');'"></div>
             </div>
         </header>
 
-        <div class="flex flex-1">
-            <!-- Sidebar Menu -->
-            <aside class="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col p-4 gap-6 shrink-0">
-                <div class="flex items-center gap-3 px-2">
-                    <div class="bg-primary bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" data-alt="Manager profile photo in sidebar" th:style="'background-image: url(' + ${manager.avatarUrl} + ');'"></div>
-                    <div class="flex flex-col overflow-hidden">
-                        <h1 class="text-slate-900 dark:text-white text-sm font-bold leading-none truncate" th:text="${manager.name}">Marcus Thorne</h1>
-                        <p class="text-slate-500 text-xs font-medium mt-1 truncate" th:text="${manager.role}">Operations Manager</p>
+        <!-- Scrollable content -->
+        <div class="flex-1 overflow-y-auto p-8 dot-grid">
+            <div class="max-w-6xl mx-auto space-y-6">
+
+                <div class="flex flex-wrap items-end justify-between gap-4 mb-8">
+                    <div class="flex flex-col gap-1">
+                        <h2 class="text-slate-900 dark:text-white text-3xl font-black tracking-tight">Team Directory</h2>
+                        <p class="text-slate-500 text-sm">Managing <strong th:text="${data.teamMembers != null ? data.teamMembers.size() : 0}">0</strong> team members</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <button class="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-lg shadow-sm hover:bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">file_download</span>
+                            Export
+                        </button>
+                        <button class="flex items-center gap-2 px-5 py-2 bg-primary text-white text-sm font-bold rounded-lg shadow-lg hover:bg-primary/90 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">person_add</span>
+                            Add Member
+                        </button>
                     </div>
                 </div>
 
-                <nav class="flex flex-col gap-1">
-                    <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800" th:href="@{/dept-manager/dashboard}">
-                        <span class="material-symbols-outlined text-[22px]">dashboard</span>
-                        <span class="text-sm font-semibold">Dashboard</span>
-                    </a>
-                    <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800" th:href="@{/dept-manager/department}">
-                        <span class="material-symbols-outlined text-[22px]">groups_2</span>
-                        <span class="text-sm font-semibold">My Department</span>
-                    </a>
-                    <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors bg-primary/10 text-primary" th:href="@{/dept-manager/team}">
-                        <span class="material-symbols-outlined text-[22px] fill-1">person</span>
-                        <span class="text-sm font-semibold">Team Members</span>
-                    </a>
-                    <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800" href="#">
-                        <span class="material-symbols-outlined text-[22px]">event_busy</span>
-                        <span class="text-sm font-semibold">Leave Approval</span>
-                    </a>
-                    <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800" href="#">
-                        <span class="material-symbols-outlined text-[22px]">how_to_reg</span>
-                        <span class="text-sm font-semibold">Attendance Review</span>
-                    </a>
-                    <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800" href="#">
-                        <span class="material-symbols-outlined text-[22px]">insights</span>
-                        <span class="text-sm font-semibold">Performance Review</span>
-                    </a>
-                </nav>
-            </aside>
-
-            <!-- Main Content -->
-            <main class="flex-1 flex flex-col bg-background-light dark:bg-background-dark p-8">
-                <div class="max-w-6xl mx-auto w-full">
-                    <div class="flex flex-wrap items-end justify-between gap-4 mb-8">
-                        <div class="flex flex-col gap-1">
-                            <h2 class="text-slate-900 dark:text-white text-3xl font-black tracking-tight">Team Members</h2>
-                            <p class="text-slate-500 text-base">You are managing <span th:text="${teamMembers.size()}">0</span> employees in the <span class="text-primary font-semibold">Operations</span> department.</p>
+                <!-- Stats Overview -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="anim bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-100 dark:border-slate-800 flex items-center gap-4 shadow-sm">
+                        <div class="size-12 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center text-emerald-600">
+                            <span class="material-symbols-outlined text-2xl">trending_up</span>
                         </div>
-                        <div class="flex gap-3">
-                            <button class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-sm font-bold rounded-lg shadow-sm">
-                                <span class="material-symbols-outlined text-[20px]">file_download</span>
-                                Export List
-                            </button>
-                            <button class="flex items-center gap-2 px-5 py-2 bg-primary text-white text-sm font-bold rounded-lg shadow-lg shadow-primary/20">
-                                <span class="material-symbols-outlined text-[20px]">person_add</span>
-                                Add Member
-                            </button>
+                        <div>
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Top Performers</p>
+                            <p class="text-2xl font-black text-slate-900 dark:text-white leading-none mt-1 stat-num">12</p>
                         </div>
                     </div>
+                    <div class="anim anim-1 bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-100 dark:border-slate-800 flex items-center gap-4 shadow-sm">
+                        <div class="size-12 rounded-xl bg-rose-50 dark:bg-rose-900/20 flex items-center justify-center text-rose-600">
+                            <span class="material-symbols-outlined text-2xl">flight_takeoff</span>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">On Leave</p>
+                            <p class="text-2xl font-black text-slate-900 dark:text-white leading-none mt-1 stat-num">3</p>
+                        </div>
+                    </div>
+                    <div class="anim anim-2 bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-100 dark:border-slate-800 flex items-center gap-4 shadow-sm">
+                        <div class="size-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                            <span class="material-symbols-outlined text-2xl">badge</span>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Recent Hires</p>
+                            <p class="text-2xl font-black text-slate-900 dark:text-white leading-none mt-1 stat-num">2</p>
+                        </div>
+                    </div>
+                </div>
 
-                    <!-- Employee Table Card -->
-                    <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse">
-                                <thead>
-                                    <tr class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
-                                        <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Name</th>
-                                        <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Role</th>
-                                        <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Performance Rating</th>
-                                        <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
-                                        <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-                                    <tr th:each="member : ${teamMembers}" class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
-                                        <td class="px-6 py-4">
-                                            <div class="flex items-center gap-3">
-                                                <div class="size-10 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
-                                                    <img th:alt="${member.name}" th:data-alt="'Portrait of employee ' + ${member.name}" th:src="${member.avatarUrl}"/>
-                                                </div>
-                                                <div>
-                                                    <p class="text-sm font-bold text-slate-900 dark:text-white leading-none" th:text="${member.name}">Name</p>
-                                                    <p class="text-xs text-slate-500 mt-1" th:text="${member.email}">Email</p>
-                                                </div>
+                <!-- Employee Table Card -->
+                <div class="anim anim-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden shadow-sm">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50/70 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
+                                    <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Name</th>
+                                    <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Role</th>
+                                    <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Rating</th>
+                                    <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-50 dark:divide-slate-800">
+                                <tr th:each="member : ${data.teamMembers}" class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-3.5">
+                                            <div class="size-10 rounded-full bg-slate-100 dark:bg-slate-700 overflow-hidden shrink-0 border border-slate-200">
+                                                <img class="w-full h-full object-cover" th:alt="${member.name}" th:src="${member.avatarUrl}"/>
                                             </div>
-                                        </td>
-                                        <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400" th:text="${member.role}">Role</td>
-                                        <td class="px-6 py-4">
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold" th:classappend="${member.ratingClass}" th:text="${member.rating}">
-                                                Rating
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
-                                                <span class="size-1.5 rounded-full" th:classappend="${member.statusDot}"></span>
-                                                [[${member.status}]]
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 text-right">
-                                            <button class="text-slate-400 hover:text-primary transition-colors">
-                                                <span class="material-symbols-outlined">more_vert</span>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        
-                        <!-- Pagination -->
-                        <div class="flex items-center justify-between px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-800">
-                            <p class="text-sm text-slate-500 font-medium">Showing <span class="text-slate-900 dark:text-white font-bold" th:text="'1 to ' + ${teamMembers.size()}">1 to 5</span> of 24 members</p>
-                            <div class="flex items-center gap-1">
-                                <button class="size-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 text-slate-400 hover:bg-white dark:hover:bg-slate-700 transition-colors">
-                                    <span class="material-symbols-outlined text-[18px]">chevron_left</span>
-                                </button>
-                                <button class="size-8 flex items-center justify-center rounded-lg bg-primary text-white text-xs font-bold">1</button>
-                                <button class="size-8 flex items-center justify-center rounded-lg text-slate-600 dark:text-slate-400 text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">2</button>
-                                <button class="size-8 flex items-center justify-center rounded-lg text-slate-600 dark:text-slate-400 text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">3</button>
-                                <button class="size-8 flex items-center justify-center rounded-lg text-slate-600 dark:text-slate-400 text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">...</button>
-                                <button class="size-8 flex items-center justify-center rounded-lg text-slate-600 dark:text-slate-400 text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">5</button>
-                                <button class="size-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 text-slate-400 hover:bg-white dark:hover:bg-slate-700 transition-colors">
-                                    <span class="material-symbols-outlined text-[18px]">chevron_right</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Stats Overview -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-                        <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center gap-4">
-                            <div class="size-12 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center text-green-600">
-                                <span class="material-symbols-outlined">trending_up</span>
-                            </div>
-                            <div>
-                                <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Top Performers</p>
-                                <p class="text-2xl font-black text-slate-900 dark:text-white leading-none mt-1">12</p>
-                            </div>
-                        </div>
-                        <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center gap-4">
-                            <div class="size-12 rounded-full bg-amber-100 dark:bg-amber-900/20 flex items-center justify-center text-amber-600">
-                                <span class="material-symbols-outlined">travel</span>
-                            </div>
-                            <div>
-                                <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">On Leave Today</p>
-                                <p class="text-2xl font-black text-slate-900 dark:text-white leading-none mt-1">3</p>
-                            </div>
-                        </div>
-                        <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center gap-4">
-                            <div class="size-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                                <span class="material-symbols-outlined">badge</span>
-                            </div>
-                            <div>
-                                <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">New Hires</p>
-                                <p class="text-2xl font-black text-slate-900 dark:text-white leading-none mt-1">2</p>
-                            </div>
-                        </div>
+                                            <div>
+                                                <p class="text-sm font-bold text-slate-800 dark:text-white leading-tight" th:text="${member.name}">Name</p>
+                                                <p class="text-xs text-slate-500 font-medium mt-0.5" th:text="${member.email}">Email</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400" th:text="${member.role}">Role</td>
+                                    <td class="px-6 py-4">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-slate-100 text-slate-700" th:classappend="${member.ratingClass}" th:text="${member.rating}">
+                                            Rating
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <span class="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 dark:text-slate-300">
+                                            <span class="size-2 rounded-full" th:classappend="${member.statusDot}"></span>
+                                            [[${member.status}]]
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 text-right">
+                                        <button class="w-8 h-8 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors inline-flex items-center justify-center">
+                                            <span class="material-symbols-outlined text-[20px]">more_vert</span>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr th:if="${data.teamMembers == null or data.teamMembers.isEmpty()}">
+                                    <td colspan="5" class="px-6 py-12 text-center text-slate-400 text-sm">
+                                        <div class="flex flex-col items-center justify-center gap-2">
+                                            <span class="material-symbols-outlined text-4xl text-slate-200">group_off</span>
+                                            <p>No team members found.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-            </main>
+
+            </div>
         </div>
-    </div>
+    </main>
 </div>
 </body>
 </html>
