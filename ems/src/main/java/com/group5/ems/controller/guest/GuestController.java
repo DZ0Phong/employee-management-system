@@ -4,20 +4,27 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.group5.ems.dto.request.ApplyJobRequestDTO;
+import com.group5.ems.dto.request.ContactRequestDTO;
 import com.group5.ems.dto.response.ApplicationResponseDTO;
+import com.group5.ems.entity.CandidateCv;
 import com.group5.ems.entity.Department;
 import com.group5.ems.entity.JobPost;
+import com.group5.ems.repository.CandidateCvRepository;
+import com.group5.ems.service.guest.EmailService;
 import com.group5.ems.service.guest.GuestService;
 
 import lombok.RequiredArgsConstructor;
@@ -28,6 +35,8 @@ import lombok.RequiredArgsConstructor;
 public class GuestController {
 
         private final GuestService guestService;
+        private final CandidateCvRepository candidateCvRepository;
+        private final EmailService emailService;
 
         // =============================
         // COMPANY INFO
@@ -63,8 +72,8 @@ public class GuestController {
 
         @PostMapping(value = "/apply-full", consumes = "multipart/form-data")
         @ResponseBody
-        public ApplicationResponseDTO applyFull( @ModelAttribute
-                        ApplyJobRequestDTO request) throws Exception {
+        public ApplicationResponseDTO applyFull(
+                        @ModelAttribute ApplyJobRequestDTO request) throws Exception {
 
                 return guestService.applyJobFullFlow(request);
         }
@@ -214,6 +223,20 @@ public class GuestController {
                 return "guest/contact";
         }
 
+        @PostMapping("/contact/send")
+        @ResponseBody
+        public String sendContact(@RequestBody ContactRequestDTO request) {
+
+                emailService.sendContactEmail(
+                                request.getSenderName(),
+                                request.getSenderEmail(),
+                                request.getSenderPhone(),
+                                request.getTopic(),
+                                request.getMessage());
+
+                return "success";
+        }
+
         // =============================
         // TRACK APPLICATION
         // =============================
@@ -225,5 +248,27 @@ public class GuestController {
                         @PathVariable String token) {
 
                 return guestService.trackApplicationDTO(token);
+        }
+
+        @PostMapping("/test-upload")
+        @ResponseBody
+        public String testUpload(@RequestParam("file") MultipartFile file) {
+                System.out.println(file.getOriginalFilename());
+                return "ok";
+        }
+
+        @GetMapping("/cv/{id}")
+        @ResponseBody
+        public ResponseEntity<byte[]> downloadCv(@PathVariable Long id) {
+
+                CandidateCv cv = candidateCvRepository
+                                .findById(id)
+                                .orElseThrow(() -> new RuntimeException("CV not found"));
+
+                return ResponseEntity.ok()
+                                .header("Content-Disposition",
+                                                "attachment; filename=\"" + cv.getFileName() + "\"")
+                                .header("Content-Type", cv.getFileType())
+                                .body(cv.getFileData());
         }
 }
