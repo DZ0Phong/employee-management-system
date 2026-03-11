@@ -4,10 +4,14 @@ import java.math.BigDecimal;
 
 import org.springframework.web.multipart.MultipartFile;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 public class ApplyJobRequestDTO {
+
+    private Long jobId;
 
     private String fullName;
     private String email;
@@ -18,5 +22,4 @@ public class ApplyJobRequestDTO {
     private BigDecimal expectedSalary;
 
     private MultipartFile file;
-    private Long jobId;
 }
