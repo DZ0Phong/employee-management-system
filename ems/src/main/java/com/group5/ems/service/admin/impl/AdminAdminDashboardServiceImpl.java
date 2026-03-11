@@ -7,7 +7,12 @@ import com.group5.ems.service.admin.AdminDashboardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.format.TextStyle;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 @Service
 @RequiredArgsConstructor
@@ -77,5 +82,49 @@ public class AdminAdminDashboardServiceImpl implements AdminDashboardService {
     @Override
     public List<Object[]> getAllDepartmentsPercentage() {
         return employeeRepository.countEmployeeByDepartmentName();
+    }
+
+    @Override
+    public List<String> getHeadcountMonths(int months) {
+        List<String> out =  new ArrayList<>();
+        YearMonth now = YearMonth.now();
+        for (int i = months - 1; i >= 0; i--) {
+            YearMonth ym = now.minusMonths(i);
+            out.add(ym.getMonth().getDisplayName(TextStyle.SHORT, Locale.ENGLISH)); // "Apr"
+        }
+        return out;
+    }
+
+    @Override
+    public List<Integer> getHeadcountTotal(int months) {
+        List<Integer> out = new ArrayList<>();
+        YearMonth now = YearMonth.now();
+        for (int i = months - 1; i >= 0; i--) {
+            LocalDate asOf = now.minusMonths(i).atEndOfMonth();
+            out.add((int) employeeRepository.hiredDateUpTo(asOf));
+        }
+        return out;
+    }
+
+    @Override
+    public List<Integer> getHeadcountActive(int months) {
+        List<Integer> out = new ArrayList<>();
+        YearMonth now = YearMonth.now();
+        for (int i = months - 1; i >= 0; i--) {
+            LocalDate asOf = now.minusMonths(i).atEndOfMonth();
+            out.add((int) employeeRepository.countHireUpToByStatus(asOf, "ACTIVE"));
+        }
+        return out;
+    }
+
+    @Override
+    public List<Integer> getHeadcountSuspended(int months) {
+        List<Integer> out = new ArrayList<>();
+        YearMonth now = YearMonth.now();
+        for (int i = months - 1; i >= 0; i--) {
+            LocalDate asOf = now.minusMonths(i).atEndOfMonth();
+            out.add((int) employeeRepository.countHireUpToByStatus(asOf, "LOCKED"));
+        }
+        return out;
     }
 }

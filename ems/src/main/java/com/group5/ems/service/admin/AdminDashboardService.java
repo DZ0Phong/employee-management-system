@@ -15,4 +15,8 @@ public interface AdminDashboardService {
     int getAllDepartmentsCount();
     List<String> getAllDepartmentsName();
     List<Object []> getAllDepartmentsPercentage();
+    List<String> getHeadcountMonths(int months);
+    List<Integer> getHeadcountTotal(int months);
+    List<Integer> getHeadcountActive(int months);
+    List<Integer> getHeadcountSuspended(int months);
 }
