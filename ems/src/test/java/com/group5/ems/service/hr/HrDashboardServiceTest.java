@@ -1,7 +1,7 @@
 package com.group5.ems.service.hr;
 
 import com.group5.ems.dto.response.HrDashboardMetricsDTO;
-import com.group5.ems.dto.response.HrDashboardMetricsDto;
+import com.group5.ems.dto.response.HrDashboardMetricsDTO;
 import com.group5.ems.repository.EmployeeRepository;
 import com.group5.ems.repository.JobPostRepository;
 import com.group5.ems.repository.RequestRepository;
