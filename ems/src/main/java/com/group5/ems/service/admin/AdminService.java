@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class AdminService {
 
     private final UserRepository userRepository;
@@ -89,6 +90,7 @@ public class AdminService {
         return dept;
     }
 
+    @Transactional(readOnly = true)
     public DepartmentDTO toDepartmentDTO(Department department){
         Department parent = department.getParent();
         String parentName = "";
