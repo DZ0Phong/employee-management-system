@@ -8,6 +8,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Controller
 @RequestMapping("/admin")
 @RequiredArgsConstructor
@@ -28,6 +31,21 @@ public class DashBoardController {
         model.addAttribute("statActiveRate", adminDashboardService.getActiveRate());
         model.addAttribute("statInactiveRate", adminDashboardService.getInactiveRate());
         model.addAttribute("statSuspendedRate", adminDashboardService.getSuspendedRate());
+        model.addAttribute("deptCount", adminService.getAllDepartmentsCount());
+
+        List<Object []> data = adminDashboardService.getAllDepartmentsPercentage();
+        List<String> depChartLabel = new ArrayList<>();
+        List<Integer> depCharData = new ArrayList<>();
+        for (Object [] row : data) {
+            depChartLabel.add(row[0].toString());
+            depCharData.add(Integer.parseInt(row[1].toString()));
+        }
+
+        model.addAttribute("deptChartLabels", depChartLabel);
+        model.addAttribute("deptChartData", depCharData);
+        model.addAttribute("deptChartColors", List.of(
+                "#1414b8","#38bdf8","#a78bfa","#2dd4bf","#f472b6","#fb923c","#94a3b8","#6366f1"
+        ));
 
         adminService.getUserDTO().ifPresent(u -> model.addAttribute("currentUser", u));
         return "admin/dashboard";

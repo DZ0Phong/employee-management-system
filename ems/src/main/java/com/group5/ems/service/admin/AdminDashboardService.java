@@ -1,5 +1,7 @@
 package com.group5.ems.service.admin;
 
+import java.util.List;
+
 public interface AdminDashboardService {
     int getAllActiveEmployees();
     int getAllInactiveEmployees();
@@ -11,4 +13,6 @@ public interface AdminDashboardService {
     Double getSuspendedRate();
     long getNewThisYear();
     int getAllDepartmentsCount();
+    List<String> getAllDepartmentsName();
+    List<Object []> getAllDepartmentsPercentage();
 }

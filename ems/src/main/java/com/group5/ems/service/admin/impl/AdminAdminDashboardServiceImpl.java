@@ -1,10 +1,13 @@
 package com.group5.ems.service.admin.impl;
 
+import com.group5.ems.entity.Department;
 import com.group5.ems.repository.DepartmentRepository;
 import com.group5.ems.repository.EmployeeRepository;
 import com.group5.ems.service.admin.AdminDashboardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -63,5 +66,16 @@ public class AdminAdminDashboardServiceImpl implements AdminDashboardService {
     @Override
     public int getAllDepartmentsCount() {
         return departmentRepository.findAll().size();
+    }
+
+    @Override
+    public List<String> getAllDepartmentsName() {
+        List<Department> department = departmentRepository.findAll();
+        return department.stream().map(Department::getName).toList();
+    }
+
+    @Override
+    public List<Object[]> getAllDepartmentsPercentage() {
+        return employeeRepository.countEmployeeByDepartmentName();
     }
 }
