@@ -1,4 +1,4 @@
-package com.group5.ems.service;
+package com.group5.ems.service.employee;
 
 import com.group5.ems.dto.response.ActivityDTO;
 import com.group5.ems.dto.response.EmployeeDashboardDTO;

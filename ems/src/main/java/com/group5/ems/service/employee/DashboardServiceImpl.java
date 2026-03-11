@@ -5,7 +5,7 @@ import com.group5.ems.dto.response.EmployeeDashboardDTO;
 import com.group5.ems.dto.response.EmployeeInfoDTO;
 import com.group5.ems.entity.*;
 import com.group5.ems.repository.*;
-import com.group5.ems.service.DashboardService;
+import com.group5.ems.service.employee.DashboardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

@@ -10,7 +10,7 @@ import com.group5.ems.entity.Employee;
 import com.group5.ems.entity.User;
 import com.group5.ems.repository.EmployeeRepository;
 import com.group5.ems.repository.UserRepository;
-import com.group5.ems.service.DashboardService;
+import com.group5.ems.service.employee.DashboardService;
 import com.group5.ems.service.employee.LeaveServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
