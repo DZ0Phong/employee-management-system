@@ -356,7 +356,7 @@
                                 <h3 class="text-sm font-black text-slate-800">By Department</h3>
                                 <p class="text-xs text-slate-400 mt-0.5">Distribution breakdown</p>
                             </div>
-                            <button class="text-xs text-primary font-semibold hover:underline">View all</button>
+                            <a class="text-xs text-primary font-semibold hover:underline" th:href="@{/admin/departments}">View all</a>
                         </div>
                         <div class="relative h-36 flex items-center justify-center">
                             <canvas id="deptChart"></canvas>
@@ -380,7 +380,7 @@
                                 <h3 class="text-sm font-black text-slate-800">Recent Users</h3>
                                 <p class="text-xs text-slate-400 mt-0.5">Last 5 new accounts</p>
                             </div>
-                            <a href="#" class="text-xs text-primary font-semibold hover:underline flex items-center gap-1">
+                            <a th:href="@{/admin/users}" class="text-xs text-primary font-semibold hover:underline flex items-center gap-1">
                                 View all <span class="material-symbols-outlined text-sm">arrow_forward</span>
                             </a>
                         </div>
@@ -595,6 +595,9 @@
     </main>
 </div>
 
+<!-- Toast container -->
+<div id="toast-container" class="fixed bottom-6 right-6 z-[60] flex flex-col gap-2 pointer-events-none"></div>
+
 <script th:inline="javascript">
     /*<![CDATA[*/
     // Data injected from backend (fallbacks keep page usable)
@@ -607,6 +610,32 @@
     const deptData   = /*[[${deptChartData}]]*/   [35, 22, 18, 25, 8, 6, 5, 4];
     const deptColors = /*[[${deptChartColors}]]*/ ['#1414b8','#38bdf8','#a78bfa','#2dd4bf','#f472b6','#fb923c','#94a3b8','#6366f1'];
     /*]]>*/
+
+    // ─── Toast helper ──────────────────────────────────────────────
+    function showToast(msg, type) {
+        var cfg = {
+            success: { bg:'bg-emerald-600', icon:'check_circle' },
+            error:   { bg:'bg-rose-600',    icon:'error' },
+            info:    { bg:'bg-primary',     icon:'info' }
+        };
+        var c = cfg[type || 'success'];
+        var el = document.createElement('div');
+        el.className = 'toast pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-2xl shadow-xl text-sm font-semibold text-white ' + c.bg;
+        el.innerHTML = '<span class="material-symbols-outlined fill-icon text-[20px]">' + c.icon + '</span>' + msg;
+        document.getElementById('toast-container').appendChild(el);
+        setTimeout(function () {
+            el.classList.add('out');
+            setTimeout(function () { el.remove(); }, 300);
+        }, 3000);
+    }
+
+    // ─── Flash messages from controller ────────────────────────────
+    (function () {
+        var success = /*[[${successMsg}]]*/ null;
+        var error   = /*[[${errorMsg}]]*/ null;
+        if (success) showToast(success, 'success');
+        if (error)   showToast(error, 'error');
+    })();
 
     // ─── Dept breakdown list (computed on FE) ──────────────────────
     (function renderDeptBreakdown() {

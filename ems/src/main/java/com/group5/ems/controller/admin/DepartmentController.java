@@ -71,15 +71,26 @@ public class DepartmentController {
 
     @PostMapping("/departments/save")
     public String saveDepartment(@ModelAttribute("deptForm") DepartmentFormDTO form, RedirectAttributes ra) {
-        adminService.saveDepartment(form);
-        ra.addFlashAttribute("successMsg", (form.getId() == null) ? "Department created" : "Department updated");
+        try {
+            adminService.saveDepartment(form);
+            ra.addFlashAttribute("successMsg", (form.getId() == null) ? "Department created" : "Department updated");
+            return "redirect:/admin/departments";
+        }
+        catch (Exception e) {
+            ra.addFlashAttribute("errorMsg", e.getMessage());
+        }
         return "redirect:/admin/departments";
     }
 
     @PostMapping("/departments/delete/{id}")
     public String deleteDepartment(@PathVariable Long id, RedirectAttributes ra) {
-        adminService.deleteDepartment(id);
-        ra.addFlashAttribute("successMsg", "Department deleted");
+        try {
+            adminService.deleteDepartment(id);
+            ra.addFlashAttribute("successMsg", "Department deleted");
+        }
+        catch (IllegalArgumentException e) {
+            ra.addFlashAttribute("errorMsg", e.getMessage());
+        }
         return "redirect:/admin/departments";
     }
 }

@@ -857,8 +857,10 @@
 
     // ── Flash message from controller ─────────────────────────────
     (function () {
-        var msg = /*[[${successMsg}]]*/ null;
-        if (msg) showToast(msg, 'success');
+        var success = /*[[${successMsg}]]*/ null;
+        var error   = /*[[${errorMsg}]]*/ null;
+        if (success) showToast(success, 'success');
+        if (error)   showToast(error, 'error');
     })();
 
     // ── Tab switch ────────────────────────────────────────────────
