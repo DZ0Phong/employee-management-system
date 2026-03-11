@@ -35,7 +35,6 @@ public class GuestService {
     private final CompanyInfoRepository companyInfoRepository;
     private final CandidateCvRepository candidateCvRepository;
     private final ApplicationRepository applicationRepository;
-    private final FileStorageService fileStorageService;
     private final DepartmentRepository departmentRepository;
 
     // =============================
@@ -145,16 +144,15 @@ public class GuestService {
             throw new IllegalArgumentException("File is empty");
         }
 
-        String fileName = fileStorageService.uploadFile(file);
-
         CandidateCv cv = new CandidateCv();
+
         cv.setCandidateId(candidateId);
         cv.setFileName(file.getOriginalFilename());
-        cv.setFilePath(fileName);
+        cv.setFileType(file.getContentType());
+        cv.setFileData(file.getBytes());
 
         return candidateCvRepository.save(cv);
     }
-
     // view candidate cvs
     public List<CandidateCv> getCandidateCvs(Long candidateId) {
         return candidateCvRepository.findByCandidateId(candidateId);
