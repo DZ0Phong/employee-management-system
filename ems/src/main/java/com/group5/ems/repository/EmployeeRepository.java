@@ -1,6 +1,8 @@
 package com.group5.ems.repository;
 
+import com.group5.ems.dto.response.UserDTO;
 import com.group5.ems.entity.Employee;
+import com.group5.ems.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -45,5 +47,6 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
     @Query("select count(e) from Employee  e join e.user u where e.hireDate <= :date and u.status = :status")
     long countHireUpToByStatus(@Param("date") LocalDate localDate,@Param("status") String status);
+
 }
 

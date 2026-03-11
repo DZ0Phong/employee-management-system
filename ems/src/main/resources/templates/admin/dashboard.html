@@ -395,81 +395,61 @@
                             </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-50">
-                            <!-- row -->
-                            <tr class="hover:bg-primary/[3%] transition-colors">
-                                <td class="px-6 py-3">
-                                    <div class="flex items-center gap-2.5">
-                                        <div class="w-7 h-7 rounded-full bg-primary/10 text-primary font-bold text-[11px] flex items-center justify-center">LN</div>
-                                        <div>
-                                            <p class="text-xs font-semibold text-slate-800">Linh Nguyen</p>
-                                            <p class="text-[10px] text-slate-400">linh@company.com</p>
-                                        </div>
-                                    </div>
+                            <!-- Empty state -->
+                            <tr th:if="${recentUsers == null or #lists.isEmpty(recentUsers)}">
+                                <td colspan="5" class="px-6 py-6 text-center text-xs text-slate-400">
+                                    No recent users.
                                 </td>
-                                <td class="px-4 py-3"><span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-sky-100 text-sky-600">Developer</span></td>
-                                <td class="px-4 py-3 text-xs text-slate-500">Engineering</td>
-                                <td class="px-4 py-3"><span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Active</span></td>
-                                <td class="px-4 py-3 text-[11px] text-slate-400">2 hours ago</td>
                             </tr>
-                            <tr class="hover:bg-primary/[3%] transition-colors">
+
+                            <!-- Rows -->
+                            <tr th:each="r : ${recentUsers}" class="hover:bg-primary/[3%] transition-colors">
                                 <td class="px-6 py-3">
                                     <div class="flex items-center gap-2.5">
-                                        <div class="w-7 h-7 rounded-full bg-orange-100 text-orange-600 font-bold text-[11px] flex items-center justify-center">MT</div>
+                                        <div class="w-7 h-7 rounded-full bg-primary/10 text-primary font-bold text-[11px] flex items-center justify-center overflow-hidden">
+                                            <img th:if="${r.avatarUrl != null}"
+                                                 th:src="${r.avatarUrl}"
+                                                 th:alt="${r.fullName}"
+                                                 class="w-full h-full object-cover"
+                                                 onerror="this.style.display='none'"/>
+                                            <span th:text="${r.initials ?: 'U'}">U</span>
+                                        </div>
                                         <div>
-                                            <p class="text-xs font-semibold text-slate-800">Minh Tran</p>
-                                            <p class="text-[10px] text-slate-400">minh@company.com</p>
+                                            <p th:text="${r.fullName}" class="text-xs font-semibold text-slate-800">Full Name</p>
+                                            <p th:text="${r.email}" class="text-[10px] text-slate-400">email@company.com</p>
                                         </div>
                                     </div>
                                 </td>
-                                <td class="px-4 py-3"><span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-orange-100 text-orange-600">Manager</span></td>
-                                <td class="px-4 py-3 text-xs text-slate-500">Sales</td>
-                                <td class="px-4 py-3"><span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Active</span></td>
-                                <td class="px-4 py-3 text-[11px] text-slate-400">Yesterday</td>
-                            </tr>
-                            <tr class="hover:bg-primary/[3%] transition-colors">
-                                <td class="px-6 py-3">
-                                    <div class="flex items-center gap-2.5">
-                                        <div class="w-7 h-7 rounded-full bg-purple-100 text-purple-600 font-bold text-[11px] flex items-center justify-center">AH</div>
-                                        <div>
-                                            <p class="text-xs font-semibold text-slate-800">An Hoang</p>
-                                            <p class="text-[10px] text-slate-400">an@company.com</p>
-                                        </div>
-                                    </div>
+
+                                <td class="px-4 py-3">
+                                    <span th:text="${r.role}"
+                                          class="text-[10px] font-semibold px-2 py-0.5 rounded"
+                                          th:classappend="${r.role}=='ADMIN' ? ' bg-purple-100 text-purple-600'
+                                                : (${r.role}=='MANAGER' ? ' bg-amber-100 text-amber-700'
+                                                : (${r.role}=='EMPLOYEE' ? ' bg-sky-100 text-sky-600'
+                                                : ' bg-slate-100 text-slate-500'))">
+                                        Role
+                                    </span>
                                 </td>
-                                <td class="px-4 py-3"><span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-purple-100 text-purple-600">Designer</span></td>
-                                <td class="px-4 py-3 text-xs text-slate-500">Design</td>
-                                <td class="px-4 py-3"><span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">Inactive</span></td>
-                                <td class="px-4 py-3 text-[11px] text-slate-400">2 days ago</td>
-                            </tr>
-                            <tr class="hover:bg-primary/[3%] transition-colors">
-                                <td class="px-6 py-3">
-                                    <div class="flex items-center gap-2.5">
-                                        <div class="w-7 h-7 rounded-full bg-teal-100 text-teal-600 font-bold text-[11px] flex items-center justify-center">PL</div>
-                                        <div>
-                                            <p class="text-xs font-semibold text-slate-800">Phuong Le</p>
-                                            <p class="text-[10px] text-slate-400">phuong@company.com</p>
-                                        </div>
-                                    </div>
+
+                                <td th:text="${r.departmentName ?: '—'}"
+                                    class="px-4 py-3 text-xs text-slate-500">—</td>
+
+                                <td class="px-4 py-3">
+                                    <span th:text="${r.status ?: '—'}"
+                                          class="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                                          th:classappend="${r.status}=='Active' ? ' bg-emerald-100 text-emerald-700'
+                                                : (${r.status}=='Inactive' ? ' bg-slate-100 text-slate-600'
+                                                : (${r.status}=='Suspended' ? ' bg-rose-100 text-rose-600'
+                                                : ' bg-slate-100 text-slate-500'))">
+                                        —
+                                    </span>
                                 </td>
-                                <td class="px-4 py-3"><span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-teal-100 text-teal-600">Analyst</span></td>
-                                <td class="px-4 py-3 text-xs text-slate-500">Operations</td>
-                                <td class="px-4 py-3"><span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Active</span></td>
-                                <td class="px-4 py-3 text-[11px] text-slate-400">3 days ago</td>
-                            </tr>
-                            <tr class="hover:bg-primary/[3%] transition-colors">
-                                <td class="px-6 py-3">
-                                    <div class="flex items-center gap-2.5">
-                                        <div class="w-7 h-7 rounded-full bg-rose-100 text-rose-500 font-bold text-[11px] flex items-center justify-center">HD</div>
-                                        <div>
-                                            <p class="text-xs font-semibold text-slate-800">Hung Do</p>
-                                            <p class="text-[10px] text-slate-400">hung@company.com</p>
-                                        </div>
-                                    </div>
+
+                                <td class="px-4 py-3 text-[11px] text-slate-400"
+                                    th:text="${r.createdAt != null ? #temporals.format(r.createdAt, 'yyyy-MM-dd HH:mm') : '—'}">
+                                    —
                                 </td>
-                                <td class="px-4 py-3"><span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-primary/10 text-primary">Admin</span></td>
-                                <td class="px-4 py-3 text-xs text-slate-500">IT</td>
-                                <td class="px-4 py-3"><span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-rose-100 text-rose-600">Suspended</span></td>
-                                <td class="px-4 py-3 text-[11px] text-slate-400">1 week ago</td>
                             </tr>
                             </tbody>
                         </table>

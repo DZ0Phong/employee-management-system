@@ -1,5 +1,7 @@
 package com.group5.ems.service.admin;
 
+import com.group5.ems.dto.response.UserDTO;
+
 import java.util.List;
 
 public interface AdminDashboardService {
@@ -19,4 +21,5 @@ public interface AdminDashboardService {
     List<Integer> getHeadcountTotal(int months);
     List<Integer> getHeadcountActive(int months);
     List<Integer> getHeadcountSuspended(int months);
+    List<UserDTO> getTop5RecentUser();
 }

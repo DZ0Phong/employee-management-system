@@ -1,6 +1,7 @@
 package com.group5.ems.repository;
 
 import com.group5.ems.entity.Role;
+import com.group5.ems.entity.User;
 import com.group5.ems.entity.UserRole;
 import com.group5.ems.entity.UserRoleId;
 import org.springframework.data.jpa.repository.JpaRepository;

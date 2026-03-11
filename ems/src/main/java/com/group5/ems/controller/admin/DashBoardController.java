@@ -58,6 +58,9 @@ public class DashBoardController {
 
 
         adminService.getUserDTO().ifPresent(u -> model.addAttribute("currentUser", u));
+
+        model.addAttribute("recentUsers", adminDashboardService.getTop5RecentUser());
+
         return "admin/dashboard";
     }
 
