@@ -1,6 +1,6 @@
 package com.group5.ems.service.admin;
 
-import com.group5.ems.dto.request.SaveUserRequest;
+import com.group5.ems.dto.request.SaveUserRequestDTO;
 import com.group5.ems.dto.response.DepartmentDTO;
 import com.group5.ems.dto.response.UserDTO;
 import com.group5.ems.entity.*;
@@ -127,7 +127,7 @@ public class AdminService {
     }
 
     @Transactional
-    public void saveUser(SaveUserRequest req){
+    public void saveUser(SaveUserRequestDTO req){
         if(req.getUsername().isBlank() ||req.getEmail().isBlank() ||req.getFullName().isBlank()){
             throw new IllegalArgumentException("User name, email and full name are required");
         }
@@ -170,7 +170,7 @@ public class AdminService {
     }
 
 
-    private void applyCommonFields(User user, SaveUserRequest req) {
+    private void applyCommonFields(User user, SaveUserRequestDTO req) {
         user.setUsername(req.getUsername().trim());
         user.setEmail(req.getEmail().trim());
         user.setFullName(req.getFullName().trim());
