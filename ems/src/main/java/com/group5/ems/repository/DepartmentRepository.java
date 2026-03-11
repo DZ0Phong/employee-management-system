@@ -23,5 +23,7 @@ public interface DepartmentRepository extends JpaRepository<Department, Long> {
 
     @Query("select count(distinct d.parentId) from Department d where d.parentId is not null")
     long countAllParentId();
+
+
 }
 

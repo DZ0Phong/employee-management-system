@@ -3,11 +3,14 @@ package com.group5.ems.dto.request;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@AllArgsConstructor
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class SaveUserRequest {
+
     private Long id;
     private String username;
     private String password;
@@ -15,6 +18,5 @@ public class SaveUserRequest {
     private String fullName;
     private String phone;
     private String status;
-    /** Role code được chọn trên form (VD: ADMIN, EMPLOYEE, ...) */
     private String role;
 }
