@@ -18,6 +18,9 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
 
     List<Request> findByEmployeeIdAndLeaveTypeIsNotNull(Long employeeId);
     List<Request> findByEmployeeIdAndLeaveTypeIsNotNullOrderByCreatedAtDesc(Long employeeId);
+
+    @org.springframework.data.jpa.repository.Query("SELECT COUNT(r) FROM Request r WHERE r.status = :status AND r.requestType.category = :category")
+    int countByStatusAndRequestTypeCategory(@org.springframework.data.repository.query.Param("status") String status, @org.springframework.data.repository.query.Param("category") String category);
     
     List<Request> findByEmployeeDepartmentIdAndLeaveTypeIsNotNullOrderByCreatedAtDesc(Long departmentId);
   
