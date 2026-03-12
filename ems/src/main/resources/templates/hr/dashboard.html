@@ -197,7 +197,7 @@
                 <p class="px-3 pb-1 pt-1 text-[10px] font-bold text-slate-300 uppercase tracking-widest">Main</p>
 
                 <!-- ACTIVE -->
-                <a th:href="@{/hr/index}"
+                <a th:href="@{/hr/dashboard}"
                     class="nav-active flex items-center gap-3 px-3 py-2.5 bg-primary-light text-primary rounded-xl">
                     <span class="material-symbols-outlined fill-icon text-[20px]">dashboard</span>
                     <span class="text-sm font-semibold">Dashboard</span>
@@ -351,9 +351,9 @@
                                 <p class="text-white/70 text-xs font-semibold uppercase tracking-wider">Active Employees
                                 </p>
                                 <p class="text-3xl font-black stat-num mt-0.5"
-                                    th:text="${dashMetrics?.activeHeadcount ?: 432}">432</p>
+                                    th:text="${dashMetrics?.activeEmployees() ?: 0}">432</p>
                                 <p class="text-white/60 text-[11px] mt-1 font-medium"
-                                    th:text="${'+' + (dashMetrics?.newHiresThisMonth ?: 5) + ' this month'}">+5 this
+                                    th:text="${'+' + (dashMetrics?.newHiresThisMonth() ?: 0) + ' this month'}">+5 this
                                     month</p>
                             </div>
                         </div>
@@ -377,7 +377,7 @@
                                 <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Leave Requests
                                 </p>
                                 <p class="text-3xl font-black stat-num mt-0.5 text-amber-500"
-                                    th:text="${dashMetrics?.pendingLeave ?: 12}">12</p>
+                                    th:text="${dashMetrics?.pendingLeaveRequests() ?: 0}">12</p>
                                 <p class="text-slate-400 text-[11px] mt-1">Pending approval</p>
                             </div>
                         </div>
@@ -398,9 +398,9 @@
                                 <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Open Positions
                                 </p>
                                 <p class="text-3xl font-black stat-num mt-0.5 text-sky-600"
-                                    th:text="${dashMetrics?.openJobs ?: 9}">9</p>
+                                    th:text="${dashMetrics?.openJobPosts() ?: 0}">9</p>
                                 <p class="text-slate-400 text-[11px] mt-1"
-                                    th:text="${(dashMetrics?.totalApplicants ?: 45) + ' total candidates'}">45 total
+                                    th:text="${(dashMetrics?.totalApplicants() ?: 0) + ' total candidates'}">45 total
                                     candidates</p>
                             </div>
                         </div>
@@ -421,7 +421,7 @@
                                 <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Workflow To-Do
                                 </p>
                                 <p class="text-3xl font-black stat-num mt-0.5 text-rose-500"
-                                    th:text="${dashMetrics?.workflowActionRequired ?: 7}">7</p>
+                                    th:text="${dashMetrics?.pendingWorkflowRequests() ?: 0}">7</p>
                                 <p class="text-slate-400 text-[11px] mt-1">Awaiting HR Processing</p>
                             </div>
                         </div>
@@ -448,28 +448,28 @@
                                         <span class="w-2.5 h-2.5 rounded-sm bg-slate-300 inline-block"></span>
                                         <span class="text-xs text-slate-600">Applied (New)</span>
                                     </div>
-                                    <span class="text-xs font-bold text-slate-700 w-8 text-right">45</span>
+                                    <span class="text-xs font-bold text-slate-700 w-8 text-right" th:text="${dashMetrics?.pipelineApplied() ?: 0}">0</span>
                                 </div>
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center gap-2">
                                         <span class="w-2.5 h-2.5 rounded-sm bg-sky-400 inline-block"></span>
                                         <span class="text-xs text-slate-600">Reviewing</span>
                                     </div>
-                                    <span class="text-xs font-bold text-slate-700 w-8 text-right">18</span>
+                                    <span class="text-xs font-bold text-slate-700 w-8 text-right" th:text="${dashMetrics?.pipelineReviewing() ?: 0}">0</span>
                                 </div>
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center gap-2">
                                         <span class="w-2.5 h-2.5 rounded-sm bg-purple-400 inline-block"></span>
                                         <span class="text-xs text-slate-600">Interviewing</span>
                                     </div>
-                                    <span class="text-xs font-bold text-slate-700 w-8 text-right">8</span>
+                                    <span class="text-xs font-bold text-slate-700 w-8 text-right" th:text="${dashMetrics?.pipelineInterviewing() ?: 0}">0</span>
                                 </div>
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center gap-2">
                                         <span class="w-2.5 h-2.5 rounded-sm bg-emerald-400 inline-block"></span>
                                         <span class="text-xs text-slate-600">Offer Sent</span>
                                     </div>
-                                    <span class="text-xs font-bold text-emerald-600 w-8 text-right">2</span>
+                                    <span class="text-xs font-bold text-emerald-600 w-8 text-right" th:text="${dashMetrics?.pipelineOfferSent() ?: 0}">0</span>
                                 </div>
                             </div>
                         </div>
@@ -677,15 +677,20 @@
         </main>
     </div>
 
-    <script>
+    <script th:inline="javascript">
         // ─── Recruitment Pipeline Chart (Doughnut) ───
+        const pApplied = /*[[${dashMetrics?.pipelineApplied() ?: 0}]]*/ 0;
+        const pReviewing = /*[[${dashMetrics?.pipelineReviewing() ?: 0}]]*/ 0;
+        const pInterviewing = /*[[${dashMetrics?.pipelineInterviewing() ?: 0}]]*/ 0;
+        const pOfferSent = /*[[${dashMetrics?.pipelineOfferSent() ?: 0}]]*/ 0;
+
         const pipelineCtx = document.getElementById('pipelineChart').getContext('2d');
         new Chart(pipelineCtx, {
             type: 'doughnut',
             data: {
                 labels: ['Applied', 'Reviewing', 'Interviewing', 'Offer Sent'],
                 datasets: [{
-                    data: [45, 18, 8, 2],
+                    data: [pApplied, pReviewing, pInterviewing, pOfferSent],
                     backgroundColor: ['#cbd5e1', '#38bdf8', '#a78bfa', '#34d399'],
                     borderWidth: 0,
                     hoverOffset: 4,
@@ -710,36 +715,31 @@
 
         // ─── Attendance Overview (Stacked Bar) ───
         const attCtx = document.getElementById('attendanceChart').getContext('2d');
+        const attLabels = /*[[${dashMetrics?.attendanceLabels()}]]*/ [];
+        const attPresent = /*[[${dashMetrics?.attendancePresent()}]]*/ [];
+        const attLeave = /*[[${dashMetrics?.attendanceLeave()}]]*/ [];
+        const attAbsent = /*[[${dashMetrics?.attendanceAbsent()}]]*/ [];
 
-        // Last 7 days labels
-        const dArray = [];
-        for (let i = 6; i >= 0; i--) {
-            const d = new Date();
-            d.setDate(d.getDate() - i);
-            dArray.push(d.toLocaleDateString('en-US', { weekday: 'short', month: 'numeric', day: 'numeric' }));
-        }
-
-        // Example dataset total = ~432 active employees
         new Chart(attCtx, {
             type: 'bar',
             data: {
-                labels: dArray,
+                labels: attLabels,
                 datasets: [
                     {
                         label: 'Present',
-                        data: [410, 412, 408, 415, 395, 0, 0], // Assuming 0 for weekend
+                        data: attPresent,
                         backgroundColor: '#34d399',
                         borderRadius: 4,
                     },
                     {
                         label: 'On Leave',
-                        data: [15, 16, 20, 10, 18, 0, 0],
+                        data: attLeave,
                         backgroundColor: '#fbbf24',
                         borderRadius: 4,
                     },
                     {
                         label: 'Absent',
-                        data: [7, 4, 4, 7, 19, 0, 0],
+                        data: attAbsent,
                         backgroundColor: '#fb7185',
                         borderRadius: 4,
                     }
