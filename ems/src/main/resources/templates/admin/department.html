@@ -215,15 +215,16 @@
         </nav>
 
         <!-- User card -->
+        <!-- User card -->
         <div class="p-4">
             <div class="bg-slate-50 border border-slate-100 rounded-2xl p-3 flex items-center gap-3">
                 <div class="w-9 h-9 rounded-full overflow-hidden bg-primary/10 flex items-center justify-center text-primary font-bold text-sm shrink-0">
-                    <img th:if="${currentUser?.avatarUrl != null}"
+                    <img th:if="${currentUser.avatarUrl != null}"
                          th:src="${currentUser.avatarUrl}"
                          th:alt="${currentUser.fullName}"
                          class="w-full h-full object-cover"
                          onerror="this.style.display='none'"/>
-                    <span th:text="${currentUser?.initials ?: 'U'}">U</span>
+                    <span th:unless="${currentUser.avatarUrl != null}" th:text="${currentUser.getInitials()}"></span>
                 </div>
                 <div class="flex-1 min-w-0">
                     <p class="text-xs font-bold text-slate-800 truncate"
@@ -793,7 +794,7 @@
                     Cancel
                 </button>
                 <!--
-                  th:action is set dynamically by JS (delete-form.action = '/departments/delete/' + id)
+                  th:action is set dynamically by JS (delete-form.action = '/admin/departments/delete/' + id)
                   The hidden CSRF input is rendered by Thymeleaf at page load.
                 -->
                 <form id="delete-form" th:action="@{/admin/departments/delete/0}" method="post" class="flex-1">
@@ -857,8 +858,10 @@
 
     // ── Flash message from controller ─────────────────────────────
     (function () {
-        var msg = /*[[${successMsg}]]*/ null;
-        if (msg) showToast(msg, 'success');
+        var success = /*[[${successMsg}]]*/ null;
+        var error   = /*[[${errorMsg}]]*/ null;
+        if (success) showToast(success, 'success');
+        if (error)   showToast(error, 'error');
     })();
 
     // ── Tab switch ────────────────────────────────────────────────
@@ -1017,7 +1020,7 @@
     // ── Delete modal ──────────────────────────────────────────────
     function openDeleteModal(id, name, staffCount) {
         document.getElementById('delete-name').textContent = name || '—';
-        document.getElementById('delete-form').action = _ctxPath + 'departments/delete/' + id;
+        document.getElementById('delete-form').action = _ctxPath + 'admin/departments/delete/' + id;
         var warn = document.getElementById('delete-warning');
         parseInt(staffCount) > 0 ? warn.classList.remove('hidden') : warn.classList.add('hidden');
         document.getElementById('delete-modal').classList.remove('hidden');

@@ -1,6 +1,7 @@
 package com.group5.ems.service.admin;
 
 import com.group5.ems.dto.request.SaveUserRequest;
+import com.group5.ems.dto.request.DepartmentFormDTO;
 import com.group5.ems.dto.response.DepartmentDTO;
 import com.group5.ems.dto.response.UserDTO;
 import com.group5.ems.entity.*;
@@ -36,6 +37,83 @@ public class AdminService {
     private final EmployeeRepository employeeRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Transactional
+    public void saveDepartment(DepartmentFormDTO form) {
+        if (form == null) {
+            throw new IllegalArgumentException("Department data is required");
+        }
+
+        String name = form.getName() != null ? form.getName().trim() : "";
+        String code = form.getCode() != null ? form.getCode().trim() : "";
+
+        if (name.isEmpty()) {
+            throw new IllegalArgumentException("Department name cannot be empty");
+        }
+        if (code.isEmpty()) {
+            throw new IllegalArgumentException("Department code cannot be empty");
+        }
+
+        // enforce uppercase; keep it consistent even if UI forgets
+        code = code.toUpperCase();
+
+        Long id = form.getId();
+        Long parentId = form.getParentId(); // null = root
+        if (parentId != null && parentId.equals(id)) {
+            throw new IllegalArgumentException("Parent department cannot be itself");
+        }
+
+        // Unique code check
+        if (id == null) {
+            if (departmentRepository.existsByCode(code)) {
+                throw new IllegalArgumentException("Department code already exists");
+            }
+        } else {
+            if (departmentRepository.existsByCodeAndIdNot(code, id)) {
+                throw new IllegalArgumentException("Department code already exists");
+            }
+        }
+
+        Department department;
+        if (id == null) {
+            department = new Department();
+        } else {
+            department = departmentRepository.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("Department not found"));
+        }
+
+        department.setName(name);
+        department.setCode(code);
+        department.setDescription(isBlank(form.getDescription()) ? null : form.getDescription().trim());
+        department.setParentId(parentId); // null = root
+        department.setManagerId(form.getManagerId()); // nullable ok
+
+        departmentRepository.save(department);
+    }
+
+    @Transactional
+    public void deleteDepartment(Long id) {
+        if (id == null) {
+            throw new IllegalArgumentException("Department id is required");
+        }
+
+        // ensure exists
+        Department dept = departmentRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Department not found"));
+
+        // block delete if has employees
+        int staffCount = employeeRepository.countByDepartmentId(id);
+        if (staffCount > 0) {
+            throw new IllegalArgumentException("Cannot delete: department has members");
+        }
+
+        // block delete if has children
+        List<Department> children = departmentRepository.findByParentId(id);
+        if (children != null && !children.isEmpty()) {
+            throw new IllegalArgumentException("Cannot delete: department has child departments");
+        }
+
+        departmentRepository.delete(dept);
+    }
     private final List<String> departmentSortList = List.of("name", "code" ,"createdAt");
 
     public long getAllDepartmentsCount()
@@ -50,6 +128,7 @@ public class AdminService {
         return departmentRepository.countAllParentId();
     }
 
+    @Transactional(readOnly = true)
     public List<DepartmentDTO> getAllDepartmentsDTO()
     {
         List<Department> dept = departmentRepository.findAll();

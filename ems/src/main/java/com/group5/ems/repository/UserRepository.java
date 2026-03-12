@@ -25,5 +25,6 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
 
     boolean existsByUsernameAndIdNot(String username, Long id);
 
+    List<User> findTop5ByOrderByCreatedAtDesc();
 }
 

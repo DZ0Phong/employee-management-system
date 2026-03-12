@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.ArrayList;
@@ -47,7 +48,20 @@ public class DashBoardController {
                 "#1414b8","#38bdf8","#a78bfa","#2dd4bf","#f472b6","#fb923c","#94a3b8","#6366f1"
         ));
 
+        int months = 12;
+
+        model.addAttribute("headcountMonths", adminDashboardService.getHeadcountMonths(months));
+        model.addAttribute("headcountTotal", adminDashboardService.getHeadcountTotal(months));
+        model.addAttribute("headcountActive", adminDashboardService.getHeadcountActive(months));
+        model.addAttribute("headcountSuspended", adminDashboardService.getHeadcountSuspended(months));
+
+
+
         adminService.getUserDTO().ifPresent(u -> model.addAttribute("currentUser", u));
+
+        model.addAttribute("recentUsers", adminDashboardService.getTop5RecentUser());
+
         return "admin/dashboard";
     }
+
 }

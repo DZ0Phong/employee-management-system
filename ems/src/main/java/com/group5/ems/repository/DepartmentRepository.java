@@ -17,6 +17,10 @@ public interface DepartmentRepository extends JpaRepository<Department, Long> {
 
     Optional<Department> findByCode(String code);
 
+    boolean existsByCode(String code);
+
+    boolean existsByCodeAndIdNot(String code, Long id);
+
     List<Department> findByParentIdIsNull();
 
     List<Department> findByParentId(Long parentId);

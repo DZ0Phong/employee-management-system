@@ -12,11 +12,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
@@ -70,5 +67,30 @@ public class DepartmentController {
         List<Employee> employees = employeeService.getAllEmployeeFromDepartment(departmentId);
         List<User> user = employees.stream().map(Employee::getUser).toList();
         return user.stream().map(adminService::toUserDTO).toList();
+    }
+
+    @PostMapping("/departments/save")
+    public String saveDepartment(@ModelAttribute("deptForm") DepartmentFormDTO form, RedirectAttributes ra) {
+        try {
+            adminService.saveDepartment(form);
+            ra.addFlashAttribute("successMsg", (form.getId() == null) ? "Department created" : "Department updated");
+            return "redirect:/admin/departments";
+        }
+        catch (Exception e) {
+            ra.addFlashAttribute("errorMsg", e.getMessage());
+        }
+        return "redirect:/admin/departments";
+    }
+
+    @PostMapping("/departments/delete/{id}")
+    public String deleteDepartment(@PathVariable Long id, RedirectAttributes ra) {
+        try {
+            adminService.deleteDepartment(id);
+            ra.addFlashAttribute("successMsg", "Department deleted");
+        }
+        catch (IllegalArgumentException e) {
+            ra.addFlashAttribute("errorMsg", e.getMessage());
+        }
+        return "redirect:/admin/departments";
     }
 }

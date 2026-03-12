@@ -177,12 +177,12 @@
         <div class="p-4">
             <div class="bg-slate-50 border border-slate-100 rounded-2xl p-3 flex items-center gap-3">
                 <div class="w-9 h-9 rounded-full overflow-hidden bg-primary/10 flex items-center justify-center text-primary font-bold text-sm shrink-0">
-                    <img th:if="${currentUser?.avatarUrl != null}"
+                    <img th:if="${currentUser.avatarUrl != null}"
                          th:src="${currentUser.avatarUrl}"
                          th:alt="${currentUser.fullName}"
                          class="w-full h-full object-cover"
                          onerror="this.style.display='none'"/>
-                    <span th:text="${currentUser?.initials ?: 'U'}">U</span>
+                    <span th:unless="${currentUser.avatarUrl != null}" th:text="${currentUser.getInitials()}"></span>
                 </div>
                 <div class="flex-1 min-w-0">
                     <p class="text-xs font-bold text-slate-800 truncate"
@@ -249,7 +249,6 @@
                                 <div class="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center">
                                     <span class="material-symbols-outlined fill-icon text-[20px]">groups</span>
                                 </div>
-                                <span class="text-xs font-semibold bg-white/20 px-2 py-0.5 rounded-full">↑ 12%</span>
                             </div>
                             <p class="text-white/70 text-xs font-semibold uppercase tracking-wider">Total Employees</p>
                             <p class="text-3xl font-black stat-num mt-0.5"
@@ -267,7 +266,6 @@
                                 <div class="w-9 h-9 bg-emerald-50 rounded-xl flex items-center justify-center">
                                     <span class="material-symbols-outlined fill-icon text-emerald-500 text-[20px]">verified</span>
                                 </div>
-                                <span class="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">↑ 3.2%</span>
                             </div>
                             <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Active</p>
                             <p class="text-3xl font-black stat-num mt-0.5 text-emerald-600"
@@ -285,7 +283,6 @@
                                 <div class="w-9 h-9 bg-slate-100 rounded-xl flex items-center justify-center">
                                     <span class="material-symbols-outlined text-slate-500 text-[20px]">person_off</span>
                                 </div>
-                                <span class="text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">→ 0.1%</span>
                             </div>
                             <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Inactive</p>
                             <p class="text-3xl font-black stat-num mt-0.5 text-slate-600"
@@ -303,7 +300,6 @@
                                 <div class="w-9 h-9 bg-rose-50 rounded-xl flex items-center justify-center">
                                     <span class="material-symbols-outlined fill-icon text-rose-500 text-[20px]">block</span>
                                 </div>
-                                <span class="text-xs font-semibold text-rose-500 bg-rose-50 px-2 py-0.5 rounded-full">↑ 2 new</span>
                             </div>
                             <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Suspended</p>
                             <p class="text-3xl font-black stat-num mt-0.5 text-rose-500"
@@ -325,9 +321,12 @@
                                 <p class="text-xs text-slate-400 mt-0.5">Monthly employee growth · 2025–2026</p>
                             </div>
                             <div class="flex items-center gap-2">
-                                <button class="text-xs font-semibold px-3 py-1.5 bg-primary text-white rounded-lg">12M</button>
-                                <button class="text-xs font-semibold px-3 py-1.5 text-slate-400 hover:bg-slate-50 rounded-lg transition-colors">6M</button>
-                                <button class="text-xs font-semibold px-3 py-1.5 text-slate-400 hover:bg-slate-50 rounded-lg transition-colors">3M</button>
+                                <button id="hc-btn-12m" type="button"
+                                        class="text-xs font-semibold px-3 py-1.5 bg-primary text-white rounded-lg">12M</button>
+                                <button id="hc-btn-6m" type="button"
+                                        class="text-xs font-semibold px-3 py-1.5 text-slate-400 hover:bg-slate-50 rounded-lg transition-colors">6M</button>
+                                <button id="hc-btn-3m" type="button"
+                                        class="text-xs font-semibold px-3 py-1.5 text-slate-400 hover:bg-slate-50 rounded-lg transition-colors">3M</button>
                             </div>
                         </div>
                         <div class="relative h-52">
@@ -357,7 +356,7 @@
                                 <h3 class="text-sm font-black text-slate-800">By Department</h3>
                                 <p class="text-xs text-slate-400 mt-0.5">Distribution breakdown</p>
                             </div>
-                            <button class="text-xs text-primary font-semibold hover:underline">View all</button>
+                            <a class="text-xs text-primary font-semibold hover:underline" th:href="@{/admin/departments}">View all</a>
                         </div>
                         <div class="relative h-36 flex items-center justify-center">
                             <canvas id="deptChart"></canvas>
@@ -367,56 +366,7 @@
                                 <span class="text-[10px] text-slate-400 font-medium">Depts</span>
                             </div>
                         </div>
-                        <div class="mt-4 space-y-2">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-2">
-                                    <span class="w-2.5 h-2.5 rounded-sm bg-primary inline-block"></span>
-                                    <span class="text-xs text-slate-600">Engineering</span>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <div class="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                        <div class="h-full bg-primary rounded-full progress-bar" style="width:35%"></div>
-                                    </div>
-                                    <span class="text-xs font-bold text-slate-700 w-8 text-right">35%</span>
-                                </div>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-2">
-                                    <span class="w-2.5 h-2.5 rounded-sm bg-sky-400 inline-block"></span>
-                                    <span class="text-xs text-slate-600">Sales</span>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <div class="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                        <div class="h-full bg-sky-400 rounded-full progress-bar" style="width:22%; animation-delay:.2s"></div>
-                                    </div>
-                                    <span class="text-xs font-bold text-slate-700 w-8 text-right">22%</span>
-                                </div>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-2">
-                                    <span class="w-2.5 h-2.5 rounded-sm bg-purple-400 inline-block"></span>
-                                    <span class="text-xs text-slate-600">Design</span>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <div class="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                        <div class="h-full bg-purple-400 rounded-full progress-bar" style="width:18%; animation-delay:.4s"></div>
-                                    </div>
-                                    <span class="text-xs font-bold text-slate-700 w-8 text-right">18%</span>
-                                </div>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-2">
-                                    <span class="w-2.5 h-2.5 rounded-sm bg-teal-400 inline-block"></span>
-                                    <span class="text-xs text-slate-600">Operations</span>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <div class="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                        <div class="h-full bg-teal-400 rounded-full progress-bar" style="width:25%; animation-delay:.6s"></div>
-                                    </div>
-                                    <span class="text-xs font-bold text-slate-700 w-8 text-right">25%</span>
-                                </div>
-                            </div>
-                        </div>
+                        <div id="dept-breakdown" class="mt-4 space-y-2"></div>
                     </div>
                 </div>
 
@@ -430,7 +380,7 @@
                                 <h3 class="text-sm font-black text-slate-800">Recent Users</h3>
                                 <p class="text-xs text-slate-400 mt-0.5">Last 5 new accounts</p>
                             </div>
-                            <a href="#" class="text-xs text-primary font-semibold hover:underline flex items-center gap-1">
+                            <a th:href="@{/admin/users}" class="text-xs text-primary font-semibold hover:underline flex items-center gap-1">
                                 View all <span class="material-symbols-outlined text-sm">arrow_forward</span>
                             </a>
                         </div>
@@ -445,81 +395,61 @@
                             </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-50">
-                            <!-- row -->
-                            <tr class="hover:bg-primary/[3%] transition-colors">
-                                <td class="px-6 py-3">
-                                    <div class="flex items-center gap-2.5">
-                                        <div class="w-7 h-7 rounded-full bg-primary/10 text-primary font-bold text-[11px] flex items-center justify-center">LN</div>
-                                        <div>
-                                            <p class="text-xs font-semibold text-slate-800">Linh Nguyen</p>
-                                            <p class="text-[10px] text-slate-400">linh@company.com</p>
-                                        </div>
-                                    </div>
+                            <!-- Empty state -->
+                            <tr th:if="${recentUsers == null or #lists.isEmpty(recentUsers)}">
+                                <td colspan="5" class="px-6 py-6 text-center text-xs text-slate-400">
+                                    No recent users.
                                 </td>
-                                <td class="px-4 py-3"><span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-sky-100 text-sky-600">Developer</span></td>
-                                <td class="px-4 py-3 text-xs text-slate-500">Engineering</td>
-                                <td class="px-4 py-3"><span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Active</span></td>
-                                <td class="px-4 py-3 text-[11px] text-slate-400">2 hours ago</td>
                             </tr>
-                            <tr class="hover:bg-primary/[3%] transition-colors">
+
+                            <!-- Rows -->
+                            <tr th:each="r : ${recentUsers}" class="hover:bg-primary/[3%] transition-colors">
                                 <td class="px-6 py-3">
                                     <div class="flex items-center gap-2.5">
-                                        <div class="w-7 h-7 rounded-full bg-orange-100 text-orange-600 font-bold text-[11px] flex items-center justify-center">MT</div>
+                                        <div class="w-7 h-7 rounded-full bg-primary/10 text-primary font-bold text-[11px] flex items-center justify-center overflow-hidden">
+                                            <img th:if="${r.avatarUrl != null}"
+                                                 th:src="${r.avatarUrl}"
+                                                 th:alt="${r.fullName}"
+                                                 class="w-full h-full object-cover"
+                                                 onerror="this.style.display='none'"/>
+                                            <span th:unless="${r.avatarUrl != null}" th:text="${r.getInitials()}">U</span>
+                                        </div>
                                         <div>
-                                            <p class="text-xs font-semibold text-slate-800">Minh Tran</p>
-                                            <p class="text-[10px] text-slate-400">minh@company.com</p>
+                                            <p th:text="${r.fullName}" class="text-xs font-semibold text-slate-800">Full Name</p>
+                                            <p th:text="${r.email}" class="text-[10px] text-slate-400">email@company.com</p>
                                         </div>
                                     </div>
                                 </td>
-                                <td class="px-4 py-3"><span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-orange-100 text-orange-600">Manager</span></td>
-                                <td class="px-4 py-3 text-xs text-slate-500">Sales</td>
-                                <td class="px-4 py-3"><span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Active</span></td>
-                                <td class="px-4 py-3 text-[11px] text-slate-400">Yesterday</td>
-                            </tr>
-                            <tr class="hover:bg-primary/[3%] transition-colors">
-                                <td class="px-6 py-3">
-                                    <div class="flex items-center gap-2.5">
-                                        <div class="w-7 h-7 rounded-full bg-purple-100 text-purple-600 font-bold text-[11px] flex items-center justify-center">AH</div>
-                                        <div>
-                                            <p class="text-xs font-semibold text-slate-800">An Hoang</p>
-                                            <p class="text-[10px] text-slate-400">an@company.com</p>
-                                        </div>
-                                    </div>
+
+                                <td class="px-4 py-3">
+                                    <span th:text="${r.role}"
+                                          class="text-[10px] font-semibold px-2 py-0.5 rounded"
+                                          th:classappend="${r.role}=='ADMIN' ? ' bg-purple-100 text-purple-600'
+                                                : (${r.role}=='MANAGER' ? ' bg-amber-100 text-amber-700'
+                                                : (${r.role}=='EMPLOYEE' ? ' bg-sky-100 text-sky-600'
+                                                : ' bg-slate-100 text-slate-500'))">
+                                        Role
+                                    </span>
                                 </td>
-                                <td class="px-4 py-3"><span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-purple-100 text-purple-600">Designer</span></td>
-                                <td class="px-4 py-3 text-xs text-slate-500">Design</td>
-                                <td class="px-4 py-3"><span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">Inactive</span></td>
-                                <td class="px-4 py-3 text-[11px] text-slate-400">2 days ago</td>
-                            </tr>
-                            <tr class="hover:bg-primary/[3%] transition-colors">
-                                <td class="px-6 py-3">
-                                    <div class="flex items-center gap-2.5">
-                                        <div class="w-7 h-7 rounded-full bg-teal-100 text-teal-600 font-bold text-[11px] flex items-center justify-center">PL</div>
-                                        <div>
-                                            <p class="text-xs font-semibold text-slate-800">Phuong Le</p>
-                                            <p class="text-[10px] text-slate-400">phuong@company.com</p>
-                                        </div>
-                                    </div>
+
+                                <td th:text="${r.departmentName ?: '—'}"
+                                    class="px-4 py-3 text-xs text-slate-500">—</td>
+
+                                <td class="px-4 py-3">
+                                    <span th:text="${r.status ?: '—'}"
+                                          class="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                                          th:classappend="${r.status}=='Active' ? ' bg-emerald-100 text-emerald-700'
+                                                : (${r.status}=='Inactive' ? ' bg-slate-100 text-slate-600'
+                                                : (${r.status}=='Suspended' ? ' bg-rose-100 text-rose-600'
+                                                : ' bg-slate-100 text-slate-500'))">
+                                        —
+                                    </span>
                                 </td>
-                                <td class="px-4 py-3"><span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-teal-100 text-teal-600">Analyst</span></td>
-                                <td class="px-4 py-3 text-xs text-slate-500">Operations</td>
-                                <td class="px-4 py-3"><span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Active</span></td>
-                                <td class="px-4 py-3 text-[11px] text-slate-400">3 days ago</td>
-                            </tr>
-                            <tr class="hover:bg-primary/[3%] transition-colors">
-                                <td class="px-6 py-3">
-                                    <div class="flex items-center gap-2.5">
-                                        <div class="w-7 h-7 rounded-full bg-rose-100 text-rose-500 font-bold text-[11px] flex items-center justify-center">HD</div>
-                                        <div>
-                                            <p class="text-xs font-semibold text-slate-800">Hung Do</p>
-                                            <p class="text-[10px] text-slate-400">hung@company.com</p>
-                                        </div>
-                                    </div>
+
+                                <td class="px-4 py-3 text-[11px] text-slate-400"
+                                    th:text="${r.createdAt != null ? #temporals.format(r.createdAt, 'yyyy-MM-dd HH:mm') : '—'}">
+                                    —
                                 </td>
-                                <td class="px-4 py-3"><span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-primary/10 text-primary">Admin</span></td>
-                                <td class="px-4 py-3 text-xs text-slate-500">IT</td>
-                                <td class="px-4 py-3"><span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-rose-100 text-rose-600">Suspended</span></td>
-                                <td class="px-4 py-3 text-[11px] text-slate-400">1 week ago</td>
                             </tr>
                             </tbody>
                         </table>
@@ -528,52 +458,52 @@
                     <!-- Right column: Quick metrics + Activity feed -->
                     <div class="anim anim-8 flex flex-col gap-4">
 
-                        <!-- Quick metrics -->
-                        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
-                            <h3 class="text-sm font-black text-slate-800 mb-4">Quick Metrics</h3>
-                            <div class="space-y-4">
+<!--                        &lt;!&ndash; Quick metrics &ndash;&gt;-->
+<!--                        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">-->
+<!--                            <h3 class="text-sm font-black text-slate-800 mb-4">Quick Metrics</h3>-->
+<!--                            <div class="space-y-4">-->
 
-                                <div>
-                                    <div class="flex justify-between items-center mb-1.5">
-                                        <span class="text-xs text-slate-500 font-medium">Attendance Rate</span>
-                                        <span class="text-xs font-bold text-slate-700">92.4%</span>
-                                    </div>
-                                    <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
-                                        <div class="h-full bg-primary rounded-full progress-bar" style="width:92.4%"></div>
-                                    </div>
-                                </div>
+<!--                                <div>-->
+<!--                                    <div class="flex justify-between items-center mb-1.5">-->
+<!--                                        <span class="text-xs text-slate-500 font-medium">Attendance Rate</span>-->
+<!--                                        <span class="text-xs font-bold text-slate-700">92.4%</span>-->
+<!--                                    </div>-->
+<!--                                    <div class="h-2 bg-slate-100 rounded-full overflow-hidden">-->
+<!--                                        <div class="h-full bg-primary rounded-full progress-bar" style="width:92.4%"></div>-->
+<!--                                    </div>-->
+<!--                                </div>-->
 
-                                <div>
-                                    <div class="flex justify-between items-center mb-1.5">
-                                        <span class="text-xs text-slate-500 font-medium">Onboarding Complete</span>
-                                        <span class="text-xs font-bold text-slate-700">78%</span>
-                                    </div>
-                                    <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
-                                        <div class="h-full bg-sky-400 rounded-full progress-bar" style="width:78%; animation-delay:.15s"></div>
-                                    </div>
-                                </div>
+<!--                                <div>-->
+<!--                                    <div class="flex justify-between items-center mb-1.5">-->
+<!--                                        <span class="text-xs text-slate-500 font-medium">Onboarding Complete</span>-->
+<!--                                        <span class="text-xs font-bold text-slate-700">78%</span>-->
+<!--                                    </div>-->
+<!--                                    <div class="h-2 bg-slate-100 rounded-full overflow-hidden">-->
+<!--                                        <div class="h-full bg-sky-400 rounded-full progress-bar" style="width:78%; animation-delay:.15s"></div>-->
+<!--                                    </div>-->
+<!--                                </div>-->
 
-                                <div>
-                                    <div class="flex justify-between items-center mb-1.5">
-                                        <span class="text-xs text-slate-500 font-medium">Leave Requests</span>
-                                        <span class="text-xs font-bold text-slate-700">14 pending</span>
-                                    </div>
-                                    <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
-                                        <div class="h-full bg-amber-400 rounded-full progress-bar" style="width:45%; animation-delay:.3s"></div>
-                                    </div>
-                                </div>
+<!--                                <div>-->
+<!--                                    <div class="flex justify-between items-center mb-1.5">-->
+<!--                                        <span class="text-xs text-slate-500 font-medium">Leave Requests</span>-->
+<!--                                        <span class="text-xs font-bold text-slate-700">14 pending</span>-->
+<!--                                    </div>-->
+<!--                                    <div class="h-2 bg-slate-100 rounded-full overflow-hidden">-->
+<!--                                        <div class="h-full bg-amber-400 rounded-full progress-bar" style="width:45%; animation-delay:.3s"></div>-->
+<!--                                    </div>-->
+<!--                                </div>-->
 
-                                <div>
-                                    <div class="flex justify-between items-center mb-1.5">
-                                        <span class="text-xs text-slate-500 font-medium">Profile Completion</span>
-                                        <span class="text-xs font-bold text-slate-700">86%</span>
-                                    </div>
-                                    <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
-                                        <div class="h-full bg-emerald-400 rounded-full progress-bar" style="width:86%; animation-delay:.45s"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+<!--                                <div>-->
+<!--                                    <div class="flex justify-between items-center mb-1.5">-->
+<!--                                        <span class="text-xs text-slate-500 font-medium">Profile Completion</span>-->
+<!--                                        <span class="text-xs font-bold text-slate-700">86%</span>-->
+<!--                                    </div>-->
+<!--                                    <div class="h-2 bg-slate-100 rounded-full overflow-hidden">-->
+<!--                                        <div class="h-full bg-emerald-400 rounded-full progress-bar" style="width:86%; animation-delay:.45s"></div>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                            </div>-->
+<!--                        </div>-->
 
                         <!-- Activity feed -->
                         <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 flex-1">
@@ -645,6 +575,9 @@
     </main>
 </div>
 
+<!-- Toast container -->
+<div id="toast-container" class="fixed bottom-6 right-6 z-[60] flex flex-col gap-2 pointer-events-none"></div>
+
 <script th:inline="javascript">
     /*<![CDATA[*/
     // Data injected from backend (fallbacks keep page usable)
@@ -658,6 +591,70 @@
     const deptColors = /*[[${deptChartColors}]]*/ ['#1414b8','#38bdf8','#a78bfa','#2dd4bf','#f472b6','#fb923c','#94a3b8','#6366f1'];
     /*]]>*/
 
+    // ─── Toast helper ──────────────────────────────────────────────
+    function showToast(msg, type) {
+        var cfg = {
+            success: { bg:'bg-emerald-600', icon:'check_circle' },
+            error:   { bg:'bg-rose-600',    icon:'error' },
+            info:    { bg:'bg-primary',     icon:'info' }
+        };
+        var c = cfg[type || 'success'];
+        var el = document.createElement('div');
+        el.className = 'toast pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-2xl shadow-xl text-sm font-semibold text-white ' + c.bg;
+        el.innerHTML = '<span class="material-symbols-outlined fill-icon text-[20px]">' + c.icon + '</span>' + msg;
+        document.getElementById('toast-container').appendChild(el);
+        setTimeout(function () {
+            el.classList.add('out');
+            setTimeout(function () { el.remove(); }, 300);
+        }, 3000);
+    }
+
+    // ─── Flash messages from controller ────────────────────────────
+    (function () {
+        var success = /*[[${successMsg}]]*/ null;
+        var error   = /*[[${errorMsg}]]*/ null;
+        if (success) showToast(success, 'success');
+        if (error)   showToast(error, 'error');
+    })();
+
+    // ─── Dept breakdown list (computed on FE) ──────────────────────
+    (function renderDeptBreakdown() {
+        var el = document.getElementById('dept-breakdown');
+        if (!el) return;
+
+        var labels = Array.isArray(deptLabels) ? deptLabels : [];
+        var data   = Array.isArray(deptData) ? deptData : [];
+        var colors = Array.isArray(deptColors) ? deptColors : [];
+
+        var totalVal = data.reduce(function (s, x) {
+            x = Number(x) || 0;
+            return s + x;
+        }, 0);
+        if (totalVal <= 0) totalVal = 1;
+
+        el.innerHTML = '';
+        labels.forEach(function (name, i) {
+            var count = Number(data[i]) || 0;
+            var pct = Math.round(count * 100 / totalVal);
+            var color = colors[i] || '#1414b8';
+
+            var row = document.createElement('div');
+            row.className = 'flex items-center justify-between';
+            row.innerHTML =
+                '<div class="flex items-center gap-2">' +
+                '<span class="w-2.5 h-2.5 rounded-sm inline-block" style="background:' + color + '"></span>' +
+                '<span class="text-xs text-slate-600">' + (name || '—') + '</span>' +
+                '</div>' +
+                '<div class="flex items-center gap-2">' +
+                '<div class="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden">' +
+                '<div class="h-full rounded-full progress-bar" style="width:' + pct + '%; background:' + color + '"></div>' +
+                '</div>' +
+                '<span class="text-xs font-bold text-slate-700 w-8 text-right">' + pct + '%</span>' +
+                '</div>';
+            el.appendChild(row);
+        });
+    })();
+
     // ─── Headcount Chart ────────────────────────────────────────────
     const ctx = document.getElementById('headcountChart').getContext('2d');
 
@@ -670,7 +667,13 @@
     gradActive.addColorStop(0, 'rgba(52,211,153,0.12)');
     gradActive.addColorStop(1, 'rgba(52,211,153,0)');
 
-    new Chart(ctx, {
+    // Keep original full arrays for slicing (12M/6M/3M)
+    const _monthsAll = Array.isArray(months) ? months.slice() : [];
+    const _totalAll  = Array.isArray(total)  ? total.slice()  : [];
+    const _activeAll = Array.isArray(active) ? active.slice() : [];
+    const _suspAll   = Array.isArray(susp)   ? susp.slice()   : [];
+
+    const headcountChart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: months,
@@ -750,6 +753,37 @@
         },
     });
 
+    function _hcSetActive(btnId) {
+        var ids = ['hc-btn-12m', 'hc-btn-6m', 'hc-btn-3m'];
+        ids.forEach(function (id) {
+            var b = document.getElementById(id);
+            if (!b) return;
+            var active = (id === btnId);
+            b.classList.toggle('bg-primary', active);
+            b.classList.toggle('text-white', active);
+            b.classList.toggle('text-slate-400', !active);
+        });
+    }
+
+    function setHeadcountRange(n, btnId) {
+        var m = _monthsAll.slice(-n);
+        headcountChart.data.labels = m;
+        headcountChart.data.datasets[0].data = _totalAll.slice(-n);
+        headcountChart.data.datasets[1].data = _activeAll.slice(-n);
+        headcountChart.data.datasets[2].data = _suspAll.slice(-n);
+        headcountChart.update();
+        if (btnId) _hcSetActive(btnId);
+    }
+
+    // Hook up range buttons
+    var b12 = document.getElementById('hc-btn-12m');
+    var b6  = document.getElementById('hc-btn-6m');
+    var b3  = document.getElementById('hc-btn-3m');
+    if (b12) b12.addEventListener('click', function () { setHeadcountRange(12, 'hc-btn-12m'); });
+    if (b6)  b6.addEventListener('click', function () { setHeadcountRange(6,  'hc-btn-6m'); });
+    if (b3)  b3.addEventListener('click', function () { setHeadcountRange(3,  'hc-btn-3m'); });
+    setHeadcountRange(12, 'hc-btn-12m');
+
     // ─── Dept Doughnut ────────────────────────────────────────────
     const dctx = document.getElementById('deptChart').getContext('2d');
     new Chart(dctx, {
@@ -777,7 +811,14 @@
                     padding: 8,
                     cornerRadius: 8,
                     callbacks: {
-                        label: ctx => ` ${ctx.parsed}%`,
+                        label: function (ctx) {
+                            var raw = (typeof ctx.parsed === 'number') ? ctx.parsed : Number(ctx.parsed) || 0;
+                            var arr = (ctx.dataset && Array.isArray(ctx.dataset.data)) ? ctx.dataset.data : [];
+                            var sum = arr.reduce(function (s, x) { return s + (Number(x) || 0); }, 0);
+                            var pct = sum > 0 ? Math.round(raw * 100 / sum) : 0;
+                            // Show both percent and count for clarity
+                            return ' ' + pct + '% (' + raw + ')';
+                        },
                     },
                 },
             },
