@@ -91,7 +91,7 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
                                           @Param("startDate") LocalDateTime startDate, 
                                           @Param("endDate") LocalDateTime endDate);
 
-}
+
 
     // ── Pageable queries for HR leave page (DB-level filtering) ──
 
