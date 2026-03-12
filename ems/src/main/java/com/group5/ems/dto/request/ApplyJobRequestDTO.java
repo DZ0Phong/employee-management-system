@@ -19,8 +19,6 @@ public class ApplyJobRequestDTO {
     private String phone;
     private String address;
     private String introduction;
-    private String linkedin;
-    private String portfolio;
     private LocalDate dateOfBirth;
 
     private Integer yearsExperience;

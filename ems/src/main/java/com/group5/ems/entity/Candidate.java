@@ -60,11 +60,6 @@ public class Candidate {
     @Column(columnDefinition = "TEXT")
     private String introduction;
 
-    @Column(length = 255)
-    private String linkedin;
-
-    @Column(length = 255)
-    private String portfolio;
 
     @OneToMany(mappedBy = "candidate", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CandidateCv> cvs = new ArrayList<>();
@@ -189,20 +184,5 @@ public class Candidate {
         this.introduction = introduction;
     }
 
-    public String getLinkedin() {
-        return this.linkedin;
-    }
-
-    public void setLinkedin(String linkedin) {
-        this.linkedin = linkedin;
-    }
-
-    public String getPortfolio() {
-        return this.portfolio;
-    }
-
-    public void setPortfolio(String portfolio) {
-        this.portfolio = portfolio;
-    }
 
 }

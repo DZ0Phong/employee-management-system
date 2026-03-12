@@ -58,8 +58,6 @@ public class GuestService {
             String address,
             LocalDate dateOfBirth,
             String introduction,
-            String linkedin,
-            String portfolio,
             Integer yearsExperience,
             BigDecimal expectedSalary) {
 
@@ -77,8 +75,6 @@ public class GuestService {
         candidate.setAddress(address);
         candidate.setDateOfBirth(dateOfBirth);
         candidate.setIntroduction(introduction);
-        candidate.setLinkedin(linkedin);
-        candidate.setPortfolio(portfolio);
         candidate.setYearsExperience(yearsExperience);
         candidate.setExpectedSalary(expectedSalary);
 
@@ -197,8 +193,6 @@ public class GuestService {
                 request.getAddress(),
                 request.getDateOfBirth(),
                 request.getIntroduction(),
-                request.getLinkedin(),
-                request.getPortfolio(),
                 request.getYearsExperience(),
                 request.getExpectedSalary());
 
