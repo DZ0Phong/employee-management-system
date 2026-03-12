@@ -21,8 +21,8 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
     List<Request> findByEmployeeIdAndLeaveTypeIsNotNull(Long employeeId);
     List<Request> findByEmployeeIdAndLeaveTypeIsNotNullOrderByCreatedAtDesc(Long employeeId);
 
-    @Query("SELECT COUNT(r) FROM Request r WHERE r.status = :status AND r.requestType.category = :category")
-    int countByStatusAndRequestTypeCategory(@Param("status") String status, @Param("category") String category);
+    @org.springframework.data.jpa.repository.Query("SELECT COUNT(r) FROM Request r WHERE r.status = :status AND r.requestType.category = :category")
+    int countByStatusAndRequestTypeCategory(@org.springframework.data.repository.query.Param("status") String status, @org.springframework.data.repository.query.Param("category") String category);
     
     List<Request> findByEmployeeDepartmentIdAndLeaveTypeIsNotNullOrderByCreatedAtDesc(Long departmentId);
   
@@ -93,27 +93,3 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
 
 }
 
-    // ── Pageable queries for HR leave page (DB-level filtering) ──
-
-    @Query("SELECT r FROM Request r JOIN FETCH r.employee e JOIN FETCH e.user u " +
-           "LEFT JOIN FETCH e.department d JOIN FETCH r.requestType rt " +
-           "WHERE r.status = 'PENDING' AND rt.category = 'ATTENDANCE' " +
-           "ORDER BY r.createdAt DESC")
-    List<Request> findPendingLeaveRequests();
-
-    @Query(value = "SELECT r FROM Request r JOIN r.employee e JOIN e.user u " +
-           "LEFT JOIN e.department d JOIN r.requestType rt " +
-           "WHERE r.status <> 'PENDING' AND rt.category = 'ATTENDANCE' " +
-           "ORDER BY r.createdAt DESC",
-           countQuery = "SELECT COUNT(r) FROM Request r JOIN r.requestType rt " +
-           "WHERE r.status <> 'PENDING' AND rt.category = 'ATTENDANCE'")
-    Page<Request> findLeaveHistory(Pageable pageable);
-
-    // ── Pageable queries for HR workflow requests ──
-
-    @Query(value = "SELECT r FROM Request r JOIN r.employee e JOIN e.user u " +
-           "LEFT JOIN e.department d JOIN r.requestType rt " +
-           "WHERE rt.category = 'HR_STATUS' ORDER BY r.createdAt DESC",
-           countQuery = "SELECT COUNT(r) FROM Request r JOIN r.requestType rt WHERE rt.category = 'HR_STATUS'")
-    Page<Request> findWorkflowRequests(Pageable pageable);
-}

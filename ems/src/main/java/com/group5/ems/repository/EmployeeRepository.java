@@ -1,8 +1,6 @@
 package com.group5.ems.repository;
 
 import com.group5.ems.entity.Employee;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -39,25 +37,6 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     @Query("SELECT AVG(DATEDIFF(CURRENT_DATE, e.hireDate)) FROM Employee e WHERE e.status = 'ACTIVE' AND e.hireDate IS NOT NULL")
     Double getAverageTenureInDays();
 
-    @Query(value = "SELECT e FROM Employee e JOIN e.user u JOIN e.department d JOIN e.position p " +
-            "WHERE (:search IS NULL OR LOWER(u.fullName) LIKE LOWER(CONCAT('%',:search,'%')) " +
-            "OR LOWER(e.employeeCode) LIKE LOWER(CONCAT('%',:search,'%')) " +
-            "OR LOWER(u.email) LIKE LOWER(CONCAT('%',:search,'%'))) " +
-            "AND (:department IS NULL OR d.name = :department) " +
-            "AND (:status IS NULL OR e.status = :status)",
-            countQuery = "SELECT COUNT(e) FROM Employee e JOIN e.user u JOIN e.department d JOIN e.position p " +
-            "WHERE (:search IS NULL OR LOWER(u.fullName) LIKE LOWER(CONCAT('%',:search,'%')) " +
-            "OR LOWER(e.employeeCode) LIKE LOWER(CONCAT('%',:search,'%')) " +
-            "OR LOWER(u.email) LIKE LOWER(CONCAT('%',:search,'%'))) " +
-            "AND (:department IS NULL OR d.name = :department) " +
-            "AND (:status IS NULL OR e.status = :status)")
-    Page<Employee> searchEmployees(@Param("search") String search,
-                                   @Param("department") String department,
-                                   @Param("status") String status,
-                                   Pageable pageable);
-
-    @Query("SELECT e FROM Employee e LEFT JOIN FETCH e.user LEFT JOIN FETCH e.department LEFT JOIN FETCH e.position WHERE e.id = :id")
-    Optional<Employee> findByIdWithDetails(@Param("id") Long id);
 
 }
 

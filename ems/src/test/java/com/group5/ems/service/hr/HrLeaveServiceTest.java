@@ -13,17 +13,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -75,7 +70,7 @@ public class HrLeaveServiceTest {
 
     @Test
     void testGetPendingLeaveRequests() {
-        when(requestRepository.findPendingLeaveRequests()).thenReturn(Arrays.asList(leaveReq1));
+        when(requestRepository.findByStatus("PENDING")).thenReturn(Arrays.asList(leaveReq1));
 
         List<HrLeaveRequestDTO> result = hrLeaveService.getPendingLeaves();
 
@@ -88,13 +83,11 @@ public class HrLeaveServiceTest {
 
     @Test
     void testGetLeaveHistory() {
-        Pageable pageable = PageRequest.of(0, 10);
-        Page<Request> page = new PageImpl<>(Arrays.asList(leaveReq2), pageable, 1);
-        when(requestRepository.findLeaveHistory(any(Pageable.class))).thenReturn(page);
+        when(requestRepository.findAll()).thenReturn(Arrays.asList(leaveReq1, leaveReq2));
 
-        Page<HrLeaveRequestDTO> result = hrLeaveService.getLeaveHistory(pageable);
+        List<HrLeaveRequestDTO> result = hrLeaveService.getLeaveHistory();
 
-        assertEquals(1, result.getContent().size());
-        assertEquals("APPROVED", result.getContent().get(0).status());
+        assertEquals(1, result.size()); // Should only return non-PENDING attendance requests
+        assertEquals("APPROVED", result.get(0).status());
     }
 }

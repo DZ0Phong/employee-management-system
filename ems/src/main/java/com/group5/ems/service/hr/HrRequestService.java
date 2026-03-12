@@ -3,19 +3,12 @@ package com.group5.ems.service.hr;
 import com.group5.ems.dto.response.HrRequestDTO;
 import com.group5.ems.entity.Request;
 import com.group5.ems.repository.RequestRepository;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.transaction.annotation.Transactional;
-
 @Service
-@Transactional(readOnly = true)
 public class HrRequestService {
 
     private final RequestRepository requestRepository;
@@ -24,30 +17,11 @@ public class HrRequestService {
         this.requestRepository = requestRepository;
     }
 
-    public Page<HrRequestDTO> getAllWorkflowRequests(Pageable pageable) {
-        Page<Request> page = requestRepository.findWorkflowRequests(pageable);
-        List<HrRequestDTO> dtos = page.getContent().stream()
+    public List<HrRequestDTO> getAllWorkflowRequests() {
+        return requestRepository.findAll().stream()
+                .filter(req -> req.getRequestType() != null && "HR_STATUS".equals(req.getRequestType().getCategory()))
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
-        return new PageImpl<>(dtos, pageable, page.getTotalElements());
-    }
-
-    @Transactional
-    public void approveRequest(Long id) {
-        Request request = requestRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Request not found"));
-        request.setStatus("APPROVED");
-        request.setApprovedAt(LocalDateTime.now());
-        requestRepository.save(request);
-    }
-
-    @Transactional
-    public void rejectRequest(Long id, String reason) {
-        Request request = requestRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Request not found"));
-        request.setStatus("REJECTED");
-        request.setRejectedReason(reason);
-        requestRepository.save(request);
     }
 
     private HrRequestDTO mapToDTO(Request request) {

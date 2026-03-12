@@ -13,16 +13,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -64,19 +60,18 @@ public class HrRequestServiceTest {
 
     @Test
     void testGetAllWorkflowRequests() {
-        Pageable pageable = PageRequest.of(0, 10);
-        Page<Request> page = new PageImpl<>(Arrays.asList(workflowReq1), pageable, 1);
-        when(requestRepository.findWorkflowRequests(any(Pageable.class))).thenReturn(page);
+        // Mock to return only non-attendance HR requests
+        when(requestRepository.findAll()).thenReturn(Arrays.asList(workflowReq1));
 
-        Page<HrRequestDTO> result = hrRequestService.getAllWorkflowRequests(pageable);
+        List<HrRequestDTO> result = hrRequestService.getAllWorkflowRequests();
 
-        assertEquals(1, result.getContent().size());
+        assertEquals(1, result.size());
         
-        HrRequestDTO dto = result.getContent().get(0);
+        HrRequestDTO dto = result.get(0);
         assertEquals("Eve Adams", dto.requestedBy());
         assertEquals("Finance", dto.department());
         assertEquals("Requesting advance", dto.title());
-        assertEquals("Salary Advance", dto.category());
+        assertEquals("HR_STATUS", dto.category());
         assertEquals("PENDING", dto.status());
     }
 }

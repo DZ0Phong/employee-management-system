@@ -180,46 +180,13 @@
                                         </td>
                                         <td class="px-5 py-4"><span class="text-xs text-slate-500" th:text="${#temporals.format(req.submittedAt, 'MMM dd, yyyy')}">2 Days ago</span></td>
                                         <td class="px-5 py-4 text-right">
-                                            <div th:if="${req.status == 'PENDING'}" class="flex items-center justify-end gap-2">
-                                                <form th:action="@{/hr/requests/{id}/reject(id=${req.id})}" method="post" class="inline">
-                                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                                                    <input type="hidden" name="reason" value="Rejected by HR" />
-                                                    <button type="submit" class="text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-lg transition-colors text-xs font-semibold px-3 py-1.5 border border-rose-200">Reject</button>
-                                                </form>
-                                                <form th:action="@{/hr/requests/{id}/approve(id=${req.id})}" method="post" class="inline">
-                                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                                                    <button type="submit" class="text-white bg-primary hover:bg-primary/90 rounded-lg transition-colors text-xs font-semibold px-4 py-1.5 shadow-sm shadow-primary/30">Approve</button>
-                                                </form>
-                                            </div>
-                                            <span th:if="${req.status == 'APPROVED'}" class="text-emerald-700 bg-emerald-100 rounded-lg text-xs font-semibold px-4 py-1.5">Approved</span>
-                                            <span th:if="${req.status == 'REJECTED'}" class="text-rose-700 bg-rose-100 rounded-lg text-xs font-semibold px-4 py-1.5">Rejected</span>
+                                            <button th:if="${req.status == 'PENDING'}" class="text-white bg-primary hover:bg-primary/90 rounded-lg transition-colors text-xs font-semibold px-4 py-1.5 shadow-sm shadow-primary/30">Process</button>
+                                            <button th:if="${req.status == 'APPROVED'}" class="text-emerald-700 bg-emerald-100 rounded-lg transition-colors text-xs font-semibold px-4 py-1.5">Approved</button>
+                                            <button th:if="${req.status == 'REJECTED'}" class="text-rose-700 bg-rose-100 rounded-lg transition-colors text-xs font-semibold px-4 py-1.5">Rejected</button>
                                         </td>
                                     </tr>
                                 </tbody>
                             </table>
-                        </div>
-                        <!-- Pagination -->
-                        <div th:if="${totalPages > 1}" class="p-4 border-t border-slate-100 flex items-center justify-between">
-                            <p class="text-xs text-slate-500">
-                                Showing page <span th:text="${currentPage + 1}" class="font-bold">1</span> of <span th:text="${totalPages}" class="font-bold">1</span>
-                                (<span th:text="${totalItems}" class="font-semibold"></span> total records)
-                            </p>
-                            <div class="flex items-center gap-1">
-                                <a th:if="${currentPage > 0}" th:href="@{/hr/requests(page=${currentPage - 1})}"
-                                   class="px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-50 border border-slate-200 rounded-lg hover:bg-primary hover:text-white hover:border-primary transition-colors">
-                                    <span class="material-symbols-outlined text-sm align-middle">chevron_left</span> Prev
-                                </a>
-                                <th:block th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
-                                    <a th:href="@{/hr/requests(page=${i})}"
-                                       th:text="${i + 1}"
-                                       th:classappend="${i == currentPage} ? 'bg-primary text-white border-primary' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'"
-                                       class="px-3 py-1.5 text-xs font-bold border rounded-lg transition-colors">1</a>
-                                </th:block>
-                                <a th:if="${currentPage < totalPages - 1}" th:href="@{/hr/requests(page=${currentPage + 1})}"
-                                   class="px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-50 border border-slate-200 rounded-lg hover:bg-primary hover:text-white hover:border-primary transition-colors">
-                                    Next <span class="material-symbols-outlined text-sm align-middle">chevron_right</span>
-                                </a>
-                            </div>
                         </div>
                     </div>
 

@@ -10,13 +10,10 @@ public record HrLeaveRequestDTO(
     String employeeName,
     String initials,
     String department,
-    String employeeCode,
     String leaveType,
     String duration,
-    String dates,
-    String reason,
-    LocalDate leave_from,
-    LocalDate leave_to,
+    LocalDate startDate,
+    LocalDate endDate,
     String status
 ) {
 }

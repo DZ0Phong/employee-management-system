@@ -159,18 +159,18 @@
                             <div>
                                 <h3 class="text-white/80 text-sm font-bold uppercase tracking-wider mb-1">Estimated Total Payroll</h3>
                                 <div class="flex items-baseline gap-2">
-                                    <span class="text-4xl font-black font-mono tracking-tighter" th:text="${'$' + #numbers.formatDecimal(payrollSummary.totalNetSalary(), 1, 'COMMA', 0, 'POINT')}">$0</span>
-                                    <span class="text-white/60 text-sm font-medium" th:text="${'for ' + payrollSummary.employeeCount() + ' employees'}">for 0 employees</span>
+                                    <span class="text-4xl font-black font-mono tracking-tighter" th:text="${estTotalPayroll ?: '$1,245,600'}">$1,245,600</span>
+                                    <span class="text-white/60 text-sm font-medium">for 432 employees</span>
                                 </div>
                             </div>
                             <div class="flex gap-4">
                                 <div class="bg-white/10 p-3 rounded-xl backdrop-blur-sm border border-white/10 min-w-[120px]">
                                     <p class="text-white/60 text-[10px] font-bold uppercase tracking-wider mb-1">Base Salary</p>
-                                    <p class="text-lg font-bold font-mono" th:text="${'$' + #numbers.formatDecimal(payrollSummary.totalBaseSalary(), 1, 'COMMA', 0, 'POINT')}">$0</p>
+                                    <p class="text-lg font-bold font-mono">$1,100,500</p>
                                 </div>
                                 <div class="bg-white/10 p-3 rounded-xl backdrop-blur-sm border border-white/10 min-w-[120px]">
                                     <p class="text-white/60 text-[10px] font-bold uppercase tracking-wider mb-1">Deductions/Taxes</p>
-                                    <p class="text-lg font-bold font-mono text-white/90" th:text="${'-$' + #numbers.formatDecimal(payrollSummary.totalDeductions(), 1, 'COMMA', 0, 'POINT')}">-$0</p>
+                                    <p class="text-lg font-bold font-mono text-white/90">-$145,100</p>
                                 </div>
                             </div>
                         </div>

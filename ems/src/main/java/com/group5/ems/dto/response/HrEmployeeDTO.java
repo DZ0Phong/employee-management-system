@@ -10,8 +10,6 @@ public record HrEmployeeDTO(
     String position,
     String department,
     String code,
-    String status,
-    String email,
-    String phone
+    String status
 ) {
 }
