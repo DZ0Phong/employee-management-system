@@ -13,12 +13,17 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -57,7 +62,7 @@ public class HrLeaveServiceTest {
         leaveReq1.setLeaveTo(LocalDate.now().plusDays(2));
         leaveReq1.setStatus("PENDING");
         leaveReq1.setContent("Vacation");
-        
+
         leaveReq2 = new Request();
         leaveReq2.setId(11L);
         leaveReq2.setEmployee(employee1);
@@ -70,7 +75,7 @@ public class HrLeaveServiceTest {
 
     @Test
     void testGetPendingLeaveRequests() {
-        when(requestRepository.findByStatus("PENDING")).thenReturn(Arrays.asList(leaveReq1));
+        when(requestRepository.findPendingLeaveRequests()).thenReturn(Arrays.asList(leaveReq1));
 
         List<HrLeaveRequestDTO> result = hrLeaveService.getPendingLeaves();
 
@@ -83,11 +88,13 @@ public class HrLeaveServiceTest {
 
     @Test
     void testGetLeaveHistory() {
-        when(requestRepository.findAll()).thenReturn(Arrays.asList(leaveReq1, leaveReq2));
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Request> page = new PageImpl<>(Arrays.asList(leaveReq2), pageable, 1);
+        when(requestRepository.findLeaveHistory(any(Pageable.class))).thenReturn(page);
 
-        List<HrLeaveRequestDTO> result = hrLeaveService.getLeaveHistory();
+        Page<HrLeaveRequestDTO> result = hrLeaveService.getLeaveHistory(pageable);
 
-        assertEquals(1, result.size()); // Should only return non-PENDING attendance requests
-        assertEquals("APPROVED", result.get(0).status());
+        assertEquals(1, result.getContent().size());
+        assertEquals("APPROVED", result.getContent().get(0).status());
     }
 }

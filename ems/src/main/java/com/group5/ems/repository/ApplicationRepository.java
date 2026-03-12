@@ -17,4 +17,6 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     List<Application> findByJobPostIdAndStatus(Long jobPostId, String status);
 
     int countByStatus(String status);
+
+    Application findByTrackingToken(String trackingToken);
 }
