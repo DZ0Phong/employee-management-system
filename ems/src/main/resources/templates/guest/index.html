@@ -208,11 +208,11 @@
         <div class="job-title" th:text="${job.title}">Job Title</div>
         <div class="job-dept">
           <span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;">business</span>
-          <span th:text="${job.department?.name ?: 'Department'}">Department</span>
+          <span th:text="${job.department != null ? job.department.name : 'Department'}">Department</span>
         </div>
         <div class="job-tags">
           <span class="job-tag open">● OPEN</span>
-          <span class="job-tag" th:text="${job.position?.name ?: 'Full-Time'}">Position</span>
+          <span class="job-tag" th:text="${job.position != null ? job.position.name : 'Full-Time'}">Position</span>
         </div>
         <div style="display:flex;align-items:center;justify-content:space-between;">
           <div class="job-salary">
