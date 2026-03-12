@@ -24,10 +24,10 @@ public class Request {
     @Column(columnDefinition = "TEXT")
     private String content;
 
-    @Column(name = "start_date")
+    @Column(name = "leave_from")
     private LocalDate leaveFrom;
 
-    @Column(name = "end_date")
+    @Column(name = "leave_to")
     private LocalDate leaveTo;
 
     @Column(name = "leave_type", length = 50)

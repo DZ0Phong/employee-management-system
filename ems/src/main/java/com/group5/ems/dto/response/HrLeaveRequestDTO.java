@@ -15,8 +15,8 @@ public record HrLeaveRequestDTO(
     String duration,
     String dates,
     String reason,
-    LocalDate startDate,
-    LocalDate endDate,
+    LocalDate leave_from,
+    LocalDate leave_to,
     String status
 ) {
 }

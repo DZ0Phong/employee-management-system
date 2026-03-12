@@ -114,8 +114,8 @@ public class HrLeaveService {
                 .duration(duration)
                 .dates(dates)
                 .reason(reason)
-                .startDate(request.getLeaveFrom())
-                .endDate(request.getLeaveTo())
+                .leave_from(request.getLeaveFrom())
+                .leave_to(request.getLeaveTo())
                 .status(request.getStatus())
                 .build();
     }
