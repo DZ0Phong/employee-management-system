@@ -1,12 +1,16 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
 <head>
-    <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title th:text="${pageTitle != null ? pageTitle : 'HRM Pro - Manager Dashboard'}">HRM Pro - Manager Dashboard</title>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title th:text="${pageTitle != null ? pageTitle : 'EMS - Manager Dashboard'}">EMS - Manager Dashboard
+    </title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
     <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
@@ -18,553 +22,613 @@
                         "background-dark": "#111121",
                     },
                     fontFamily: { "display": ["Inter"] },
-                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
                 },
             },
         }
     </script>
 </head>
+
 <body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100">
-<div class="flex h-screen overflow-hidden">
+    <div class="flex h-screen overflow-hidden">
 
-    <!-- Sidebar Navigation -->
-    <aside class="w-72 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col">
-        <div class="p-6 flex items-center gap-3">
-            <div class="size-10 bg-primary rounded-xl flex items-center justify-center text-white">
-                <span class="material-symbols-outlined">corporate_fare</span>
-            </div>
-            <div>
-                <h1 class="text-lg font-bold leading-none" th:text="${appName != null ? appName : 'HRM Pro'}">HRM Pro</h1>
-                <p class="text-xs text-slate-500 dark:text-slate-400">HR Manager Portal</p>
-            </div>
-        </div>
-
-        <nav class="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
-            <a th:href="@{/hrmanager/dashboard}"
-               th:classappend="${activePage == 'dashboard' or activePage == null ? 'bg-primary/10 text-primary font-semibold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}"
-               class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors">
-                <span class="material-symbols-outlined">dashboard</span>
-                <span class="text-sm">Dashboard</span>
-            </a>
-            <a th:href="@{/hrmanager/leave-approval}"
-               th:classappend="${activePage == 'leave' ? 'bg-primary/10 text-primary font-semibold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}"
-               class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors">
-                <span class="material-symbols-outlined">calendar_today</span>
-                <span class="text-sm">Leave Approval</span>
-            </a>
-            <a th:href="@{/hrmanager/payroll-approval}"
-               th:classappend="${activePage == 'payroll' ? 'bg-primary/10 text-primary font-semibold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}"
-               class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors">
-                <span class="material-symbols-outlined">payments</span>
-                <span class="text-sm">Payroll Approval</span>
-            </a>
-            <a th:href="@{/hrmanager/hr-analytics}"
-               th:classappend="${activePage == 'analytics' ? 'bg-primary/10 text-primary font-semibold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}"
-               class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors">
-                <span class="material-symbols-outlined">monitoring</span>
-                <span class="text-sm">HR Analytics Dashboard</span>
-            </a>
-        </nav>
-
-        <!-- Current user profile -->
-        <div class="p-4 border-t border-slate-200 dark:border-slate-800">
-            <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition-colors">
-                <!-- Show avatar if URL available, fallback to initials -->
-                <th:block th:if="${currentUser?.avatarUrl != null}">
-                    <img class="size-10 rounded-full border border-slate-200 dark:border-slate-700 object-cover"
-                         th:src="${currentUser.avatarUrl}"
-                         th:alt="${currentUser.fullName}"/>
-                </th:block>
-                <th:block th:if="${currentUser?.avatarUrl == null}">
-                    <div class="size-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-sm"
-                         th:text="${currentUser?.initials != null ? currentUser.initials : 'AH'}">AH</div>
-                </th:block>
-                <div class="flex-1 overflow-hidden">
-                    <p class="text-sm font-semibold truncate"
-                       th:text="${currentUser?.fullName != null ? currentUser.fullName : 'Alex Henderson'}">Alex Henderson</p>
-                    <p class="text-xs text-slate-500 truncate"
-                       th:text="${currentUser?.role != null ? currentUser.role : 'Senior HR Manager'}">Senior HR Manager</p>
+        <!-- Sidebar Navigation -->
+        <aside class="w-72 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col">
+            <div class="p-6 flex items-center gap-3">
+                <div class="size-10 bg-primary rounded-xl flex items-center justify-center text-white">
+                    <span class="material-symbols-outlined">corporate_fare</span>
                 </div>
-                <form th:action="@{/logout}" method="post" class="inline">
-                    <button type="submit" class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" title="Logout">
-                        <span class="material-symbols-outlined text-lg">logout</span>
-                    </button>
-                </form>
-            </div>
-        </div>
-    </aside>
-
-    <!-- Main Content -->
-    <main class="flex-1 flex flex-col overflow-hidden">
-
-        <!-- Header -->
-        <header class="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-8 shrink-0">
-            <div class="flex items-center gap-4 flex-1 max-w-xl">
-                <div class="relative w-full">
-                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
-                    <input class="w-full bg-slate-100 dark:bg-slate-800 border-none rounded-lg py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/20 transition-all"
-                           placeholder="Search employees, documents, or reports..."
-                           th:value="${searchQuery}"
-                           name="searchQuery"
-                           type="text"/>
-                </div>
-            </div>
-            <div class="flex items-center gap-3">
-                <button class="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg relative transition-colors">
-                    <span class="material-symbols-outlined">notifications</span>
-                    <span th:if="${hasNotifications}" class="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
-                    <!-- Fallback: luôn hiển thị dot khi không có dữ liệu từ backend -->
-                    <span th:unless="${hasNotifications != null}" class="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
-                </button>
-                <button class="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
-                    <span class="material-symbols-outlined">settings</span>
-                </button>
-            </div>
-        </header>
-
-        <!-- Dashboard Body -->
-        <div class="flex-1 overflow-y-auto p-8 space-y-8">
-
-            <!-- Page Title -->
-            <div class="flex justify-between items-end">
                 <div>
-                    <h2 class="text-3xl font-black tracking-tight">Dashboard Overview</h2>
-                    <p class="text-slate-500 dark:text-slate-400 mt-1">
-                        Welcome back, <span th:text="${currentUser?.firstName} ?: 'Alex'">Alex</span>. Here's what's happening today.
-                    </p>
-                </div>
-                <div class="flex gap-3">
-                    <a th:href="@{/dashboard/export(format='pdf')}"
-                       class="flex items-center gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-                        <span class="material-symbols-outlined text-lg">download</span> Export PDF
-                    </a>
-                    <a th:href="@{/requests/new}"
-                       class="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors">
-                        <span class="material-symbols-outlined text-lg">add</span> New Request
-                    </a>
+                    <h1 class="text-lg font-bold leading-none" th:text="${appName != null ? appName : 'EMS'}">EMS
+                        Pro</h1>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">HR Manager Portal</p>
                 </div>
             </div>
 
-            <!-- KPI Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <nav class="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
+                <a th:href="@{/hrmanager/dashboard}"
+                    th:classappend="${activePage == 'dashboard' or activePage == null ? 'bg-primary/10 text-primary font-semibold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors">
+                    <span class="material-symbols-outlined">dashboard</span>
+                    <span class="text-sm">Dashboard</span>
+                </a>
+                <a th:href="@{/hrmanager/leave-approval}"
+                    th:classappend="${activePage == 'leave' ? 'bg-primary/10 text-primary font-semibold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors">
+                    <span class="material-symbols-outlined">calendar_today</span>
+                    <span class="text-sm">Leave Approval</span>
+                </a>
+                <a th:href="@{/hrmanager/payroll-approval}"
+                    th:classappend="${activePage == 'payroll' ? 'bg-primary/10 text-primary font-semibold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors">
+                    <span class="material-symbols-outlined">payments</span>
+                    <span class="text-sm">Payroll Approval</span>
+                </a>
+                <a th:href="@{/hrmanager/hr-analytics}"
+                    th:classappend="${activePage == 'analytics' ? 'bg-primary/10 text-primary font-semibold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors">
+                    <span class="material-symbols-outlined">monitoring</span>
+                    <span class="text-sm">HR Analytics Dashboard</span>
+                </a>
+            </nav>
 
-                <!-- Total Headcount -->
-                <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="size-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center text-blue-600 dark:text-blue-400">
-                            <span class="material-symbols-outlined">groups</span>
-                        </div>
-                        <span th:text="${kpi?.headcountChange != null ? kpi.headcountChange : '+2.5%'}"
-                              th:classappend="${kpi?.headcountChangePositive != null ? (kpi.headcountChangePositive ? 'text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10' : 'text-rose-500 bg-rose-50 dark:bg-rose-500/10') : 'text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10'}"
-                              class="text-xs font-bold px-2 py-1 rounded">+2.5%</span>
+            <!-- Current user profile -->
+            <div class="p-4 border-t border-slate-200 dark:border-slate-800">
+                <div
+                    class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition-colors">
+                    <!-- Show avatar if URL available, fallback to initials -->
+                    <th:block th:if="${currentUser?.avatarUrl != null}">
+                        <img class="size-10 rounded-full border border-slate-200 dark:border-slate-700 object-cover"
+                            th:src="${currentUser.avatarUrl}" th:alt="${currentUser.fullName}" />
+                    </th:block>
+                    <th:block th:if="${currentUser?.avatarUrl == null}">
+                        <div class="size-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-sm"
+                            th:text="${currentUser?.initials != null ? currentUser.initials : 'AH'}">AH</div>
+                    </th:block>
+                    <div class="flex-1 overflow-hidden">
+                        <p class="text-sm font-semibold truncate"
+                            th:text="${currentUser?.fullName != null ? currentUser.fullName : 'Alex Henderson'}">Alex
+                            Henderson</p>
+                        <p class="text-xs text-slate-500 truncate"
+                            th:text="${currentUser?.role != null ? currentUser.role : 'Senior HR Manager'}">Senior HR
+                            Manager</p>
                     </div>
-                    <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Total Headcount</p>
-                    <h3 class="text-3xl font-bold mt-1"
-                        th:text="${kpi?.totalHeadcount != null ? #numbers.formatInteger(kpi.totalHeadcount, 1, 'COMMA') : '1,248'}">1,248</h3>
-                </div>
-
-                <!-- Open Requisitions -->
-                <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="size-10 bg-amber-100 dark:bg-amber-900/30 rounded-lg flex items-center justify-center text-amber-600 dark:text-amber-400">
-                            <span class="material-symbols-outlined">work_outline</span>
-                        </div>
-                        <span th:text="${kpi?.openReqChange != null ? kpi.openReqChange : '-10%'}"
-                              th:classappend="${kpi?.openReqChangePositive != null ? (kpi.openReqChangePositive ? 'text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10' : 'text-rose-500 bg-rose-50 dark:bg-rose-500/10') : 'text-rose-500 bg-rose-50 dark:bg-rose-500/10'}"
-                              class="text-xs font-bold px-2 py-1 rounded">-10%</span>
-                    </div>
-                    <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Open Requisitions</p>
-                    <h3 class="text-3xl font-bold mt-1"
-                        th:text="${kpi?.openRequisitions != null ? kpi.openRequisitions : 24}">24</h3>
-                </div>
-
-                <!-- Monthly Turnover -->
-                <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="size-10 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center text-emerald-600 dark:text-emerald-400">
-                            <span class="material-symbols-outlined">trending_down</span>
-                        </div>
-                        <span th:text="${kpi?.turnoverChange != null ? kpi.turnoverChange : '+0.1%'}"
-                              th:classappend="${kpi?.turnoverChangePositive != null ? (kpi.turnoverChangePositive ? 'text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10' : 'text-rose-500 bg-rose-50 dark:bg-rose-500/10') : 'text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10'}"
-                              class="text-xs font-bold px-2 py-1 rounded">+0.1%</span>
-                    </div>
-                    <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Monthly Turnover</p>
-                    <h3 class="text-3xl font-bold mt-1"
-                        th:text="${kpi?.monthlyTurnover != null ? kpi.monthlyTurnover : '1.2%'}">1.2%</h3>
-                </div>
-
-                <!-- Average Tenure -->
-                <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="size-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center text-purple-600 dark:text-purple-400">
-                            <span class="material-symbols-outlined">timer</span>
-                        </div>
-                        <span th:text="${kpi?.tenureChange != null ? kpi.tenureChange : '-0.2%'}"
-                              th:classappend="${kpi?.tenureChangePositive != null ? (kpi.tenureChangePositive ? 'text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10' : 'text-rose-500 bg-rose-50 dark:bg-rose-500/10') : 'text-rose-500 bg-rose-50 dark:bg-rose-500/10'}"
-                              class="text-xs font-bold px-2 py-1 rounded">-0.2%</span>
-                    </div>
-                    <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Average Tenure</p>
-                    <h3 class="text-3xl font-bold mt-1"
-                        th:text="${kpi?.averageTenure != null ? kpi.averageTenure : '4.5 Yrs'}">4.5 Yrs</h3>
+                    <form th:action="@{/logout}" method="post" class="inline">
+                        <button type="submit"
+                            class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                            title="Logout">
+                            <span class="material-symbols-outlined text-lg">logout</span>
+                        </button>
+                    </form>
                 </div>
             </div>
+        </aside>
 
-            <!-- Chart + Upcoming Events -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col overflow-hidden">
 
-                <!-- Hiring vs Attrition Chart -->
-                <div class="lg:col-span-2 bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                    <div class="flex justify-between items-center mb-8">
-                        <div>
-                            <h4 class="text-lg font-bold">Hiring vs. Attrition</h4>
-                            <p class="text-sm text-slate-500">Employee lifecycle trends over the last 6 months</p>
+            <!-- Header -->
+            <header
+                class="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-8 shrink-0">
+                <div class="flex items-center gap-4 flex-1 max-w-xl">
+                    <div class="relative w-full">
+                        <span
+                            class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+                        <input
+                            class="w-full bg-slate-100 dark:bg-slate-800 border-none rounded-lg py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/20 transition-all"
+                            placeholder="Search employees, documents, or reports..." th:value="${searchQuery}"
+                            name="searchQuery" type="text" />
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button
+                        class="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg relative transition-colors">
+                        <span class="material-symbols-outlined">notifications</span>
+                        <span th:if="${hasNotifications}"
+                            class="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
+                        <!-- Fallback: luôn hiển thị dot khi không có dữ liệu từ backend -->
+                        <span th:unless="${hasNotifications != null}"
+                            class="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
+                    </button>
+                    <button
+                        class="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
+                        <span class="material-symbols-outlined">settings</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Dashboard Body -->
+            <div class="flex-1 overflow-y-auto p-8 space-y-8">
+
+                <!-- Page Title -->
+                <div class="flex justify-between items-end">
+                    <div>
+                        <h2 class="text-3xl font-black tracking-tight">Dashboard Overview</h2>
+                        <p class="text-slate-500 dark:text-slate-400 mt-1">
+                            Welcome back, <span th:text="${currentUser?.firstName} ?: 'Alex'">Alex</span>. Here's what's
+                            happening today.
+                        </p>
+                    </div>
+                    <div class="flex gap-3">
+                        <a th:href="@{/dashboard/export(format='pdf')}"
+                            class="flex items-center gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                            <span class="material-symbols-outlined text-lg">download</span> Export PDF
+                        </a>
+                        <a th:href="@{/requests/new}"
+                            class="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors">
+                            <span class="material-symbols-outlined text-lg">add</span> New Request
+                        </a>
+                    </div>
+                </div>
+
+                <!-- KPI Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+
+                    <!-- Total Headcount -->
+                    <div
+                        class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                        <div class="flex justify-between items-start mb-4">
+                            <div
+                                class="size-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center text-blue-600 dark:text-blue-400">
+                                <span class="material-symbols-outlined">groups</span>
+                            </div>
+                            <span th:text="${kpi?.headcountChange != null ? kpi.headcountChange : '+2.5%'}"
+                                th:classappend="${kpi?.headcountChangePositive != null ? (kpi.headcountChangePositive ? 'text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10' : 'text-rose-500 bg-rose-50 dark:bg-rose-500/10') : 'text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10'}"
+                                class="text-xs font-bold px-2 py-1 rounded">+2.5%</span>
                         </div>
-                        <div class="flex items-center gap-4 text-sm font-medium">
-                            <div class="flex items-center gap-2">
-                                <span class="size-3 rounded-full bg-primary"></span>
-                                <span>Hiring</span>
+                        <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Total Headcount</p>
+                        <h3 class="text-3xl font-bold mt-1"
+                            th:text="${kpi?.totalHeadcount != null ? #numbers.formatInteger(kpi.totalHeadcount, 1, 'COMMA') : '1,248'}">
+                            1,248</h3>
+                    </div>
+
+                    <!-- Open Requisitions -->
+                    <div
+                        class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                        <div class="flex justify-between items-start mb-4">
+                            <div
+                                class="size-10 bg-amber-100 dark:bg-amber-900/30 rounded-lg flex items-center justify-center text-amber-600 dark:text-amber-400">
+                                <span class="material-symbols-outlined">work_outline</span>
                             </div>
-                            <div class="flex items-center gap-2">
-                                <span class="size-3 rounded-full bg-slate-300 dark:bg-slate-600"></span>
-                                <span>Attrition</span>
+                            <span th:text="${kpi?.openReqChange != null ? kpi.openReqChange : '-10%'}"
+                                th:classappend="${kpi?.openReqChangePositive != null ? (kpi.openReqChangePositive ? 'text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10' : 'text-rose-500 bg-rose-50 dark:bg-rose-500/10') : 'text-rose-500 bg-rose-50 dark:bg-rose-500/10'}"
+                                class="text-xs font-bold px-2 py-1 rounded">-10%</span>
+                        </div>
+                        <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Open Requisitions</p>
+                        <h3 class="text-3xl font-bold mt-1"
+                            th:text="${kpi?.openRequisitions != null ? kpi.openRequisitions : 24}">24</h3>
+                    </div>
+
+                    <!-- Monthly Turnover -->
+                    <div
+                        class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                        <div class="flex justify-between items-start mb-4">
+                            <div
+                                class="size-10 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                                <span class="material-symbols-outlined">trending_down</span>
+                            </div>
+                            <span th:text="${kpi?.turnoverChange != null ? kpi.turnoverChange : '+0.1%'}"
+                                th:classappend="${kpi?.turnoverChangePositive != null ? (kpi.turnoverChangePositive ? 'text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10' : 'text-rose-500 bg-rose-50 dark:bg-rose-500/10') : 'text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10'}"
+                                class="text-xs font-bold px-2 py-1 rounded">+0.1%</span>
+                        </div>
+                        <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Monthly Turnover</p>
+                        <h3 class="text-3xl font-bold mt-1"
+                            th:text="${kpi?.monthlyTurnover != null ? kpi.monthlyTurnover : '1.2%'}">1.2%</h3>
+                    </div>
+
+                    <!-- Average Tenure -->
+                    <div
+                        class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                        <div class="flex justify-between items-start mb-4">
+                            <div
+                                class="size-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center text-purple-600 dark:text-purple-400">
+                                <span class="material-symbols-outlined">timer</span>
+                            </div>
+                            <span th:text="${kpi?.tenureChange != null ? kpi.tenureChange : '-0.2%'}"
+                                th:classappend="${kpi?.tenureChangePositive != null ? (kpi.tenureChangePositive ? 'text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10' : 'text-rose-500 bg-rose-50 dark:bg-rose-500/10') : 'text-rose-500 bg-rose-50 dark:bg-rose-500/10'}"
+                                class="text-xs font-bold px-2 py-1 rounded">-0.2%</span>
+                        </div>
+                        <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Average Tenure</p>
+                        <h3 class="text-3xl font-bold mt-1"
+                            th:text="${kpi?.averageTenure != null ? kpi.averageTenure : '4.5 Yrs'}">4.5 Yrs</h3>
+                    </div>
+                </div>
+
+                <!-- Chart + Upcoming Events -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+                    <!-- Hiring vs Attrition Chart -->
+                    <div
+                        class="lg:col-span-2 bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                        <div class="flex justify-between items-center mb-8">
+                            <div>
+                                <h4 class="text-lg font-bold">Hiring vs. Attrition</h4>
+                                <p class="text-sm text-slate-500">Employee lifecycle trends over the last 6 months</p>
+                            </div>
+                            <div class="flex items-center gap-4 text-sm font-medium">
+                                <div class="flex items-center gap-2">
+                                    <span class="size-3 rounded-full bg-primary"></span>
+                                    <span>Hiring</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="size-3 rounded-full bg-slate-300 dark:bg-slate-600"></span>
+                                    <span>Attrition</span>
+                                </div>
                             </div>
                         </div>
+                        <div class="relative" style="height: 256px;">
+                            <canvas id="hiringAttritionChart"></canvas>
+                        </div>
                     </div>
-                    <div class="relative" style="height: 256px;">
-                        <canvas id="hiringAttritionChart"></canvas>
+
+                    <!-- Upcoming Events -->
+                    <div
+                        class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                        <h4 class="text-lg font-bold mb-6">Upcoming Events</h4>
+                        <div class="space-y-6">
+
+                            <!--/* Dynamic events từ backend */-->
+                            <th:block th:if="${upcomingEvents != null and !upcomingEvents.empty}">
+                                <div th:each="event : ${upcomingEvents}" class="flex gap-4">
+                                    <div th:classappend="${event.colorClass != null ? event.colorClass : 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'}"
+                                        class="p-3 rounded-lg flex flex-col items-center justify-center min-w-[60px]">
+                                        <span class="text-sm font-bold" th:text="${event.monthLabel}">OCT</span>
+                                        <span class="text-xl font-black" th:text="${event.day}">12</span>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="text-sm font-bold" th:text="${event.title}">Event Title</p>
+                                        <p class="text-xs text-slate-500 mt-1 flex items-center gap-1">
+                                            <span class="material-symbols-outlined text-xs">schedule</span>
+                                            <span th:text="${event.timeLabel}">09:00 AM - 11:00 AM</span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </th:block>
+
+                            <!--/* Fallback static events */-->
+                            <th:block th:if="${upcomingEvents == null or upcomingEvents.empty}">
+                                <div class="flex gap-4">
+                                    <div
+                                        class="bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 p-3 rounded-lg flex flex-col items-center justify-center min-w-[60px]">
+                                        <span class="text-sm font-bold">OCT</span>
+                                        <span class="text-xl font-black">12</span>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="text-sm font-bold">New Employee Orientation</p>
+                                        <p class="text-xs text-slate-500 mt-1 flex items-center gap-1">
+                                            <span class="material-symbols-outlined text-xs">schedule</span> 09:00 AM -
+                                            11:00 AM
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="flex gap-4">
+                                    <div
+                                        class="bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 p-3 rounded-lg flex flex-col items-center justify-center min-w-[60px]">
+                                        <span class="text-sm font-bold">OCT</span>
+                                        <span class="text-xl font-black">14</span>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="text-sm font-bold">Q3 Performance Reviews</p>
+                                        <p class="text-xs text-slate-500 mt-1 flex items-center gap-1">
+                                            <span class="material-symbols-outlined text-xs">schedule</span> All Day
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="flex gap-4">
+                                    <div
+                                        class="bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 p-3 rounded-lg flex flex-col items-center justify-center min-w-[60px]">
+                                        <span class="text-sm font-bold">OCT</span>
+                                        <span class="text-xl font-black">15</span>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="text-sm font-bold">Benefits Enrollment Ends</p>
+                                        <p class="text-xs text-slate-500 mt-1 flex items-center gap-1">
+                                            <span class="material-symbols-outlined text-xs">schedule</span> 05:00 PM
+                                            Deadline
+                                        </p>
+                                    </div>
+                                </div>
+                            </th:block>
+
+                        </div>
+                        <a th:href="@{/calendar}"
+                            class="block w-full mt-8 py-2 text-sm font-bold text-primary hover:bg-primary/5 rounded-lg transition-colors border border-primary/20 text-center">
+                            View Calendar
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Recent Activity Table -->
+                <div
+                    class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+                    <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+                        <h4 class="text-lg font-bold">Recent Activity</h4>
+                        <div class="flex gap-2">
+                            <a th:href="@{/dashboard(activityFilter='all')}"
+                                th:classappend="${activityFilter == 'all' or activityFilter == null ? 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}"
+                                class="px-3 py-1.5 text-xs font-bold rounded-md transition-colors">All</a>
+                            <a th:href="@{/dashboard(activityFilter='pending')}"
+                                th:classappend="${activityFilter == 'pending' ? 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}"
+                                class="px-3 py-1.5 text-xs font-bold rounded-md transition-colors">Pending</a>
+                            <a th:href="@{/dashboard(activityFilter='approved')}"
+                                th:classappend="${activityFilter == 'approved' ? 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}"
+                                class="px-3 py-1.5 text-xs font-bold rounded-md transition-colors">Approved</a>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-50 dark:bg-slate-800/50">
+                                <tr>
+                                    <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">
+                                        Employee</th>
+                                    <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">
+                                        Action</th>
+                                    <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">Date
+                                    </th>
+                                    <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">
+                                        Status</th>
+                                    <th
+                                        class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 text-right">
+                                        Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+
+                                <!--/* Dynamic rows */-->
+                                <th:block th:if="${recentActivities != null and !recentActivities.empty}">
+                                    <tr th:each="activity : ${recentActivities}">
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center gap-3">
+                                                <div class="size-8 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-500 text-xs"
+                                                    th:text="${activity.employeeInitials}">SR</div>
+                                                <div>
+                                                    <p class="text-sm font-bold" th:text="${activity.employeeName}">Name
+                                                    </p>
+                                                    <p class="text-xs text-slate-500"
+                                                        th:text="${activity.employeePosition}">Position</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="text-sm" th:text="${activity.actionLabel}">Action</span>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="text-sm"
+                                                th:text="${#temporals.format(activity.date, 'MMM dd, yyyy')}">Oct 10,
+                                                2023</span>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span th:switch="${activity.status}"
+                                                class="px-2.5 py-1 text-xs font-bold rounded-full">
+                                                <span th:case="'PENDING'"
+                                                    class="px-2.5 py-1 text-xs font-bold rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">Pending</span>
+                                                <span th:case="'APPROVED'"
+                                                    class="px-2.5 py-1 text-xs font-bold rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400">Approved</span>
+                                                <span th:case="'IN_PROGRESS'"
+                                                    class="px-2.5 py-1 text-xs font-bold rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">In
+                                                    Progress</span>
+                                                <span th:case="'REJECTED'"
+                                                    class="px-2.5 py-1 text-xs font-bold rounded-full bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400">Rejected</span>
+                                                <span th:case="*"
+                                                    class="px-2.5 py-1 text-xs font-bold rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
+                                                    th:text="${activity.status}">Other</span>
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 text-right">
+                                            <a th:href="@{/requests/{id}(id=${activity.id})}"
+                                                class="text-primary font-bold text-sm hover:underline transition-all">Review</a>
+                                        </td>
+                                    </tr>
+                                </th:block>
+
+                                <!--/* Fallback static rows */-->
+                                <th:block th:if="${recentActivities == null or recentActivities.empty}">
+                                    <tr>
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center gap-3">
+                                                <div
+                                                    class="size-8 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-500 text-xs">
+                                                    SR</div>
+                                                <div>
+                                                    <p class="text-sm font-bold">Sarah Rodriguez</p>
+                                                    <p class="text-xs text-slate-500">Marketing Specialist</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4"><span class="text-sm">Sick Leave Request</span></td>
+                                        <td class="px-6 py-4"><span class="text-sm">Oct 10, 2023</span></td>
+                                        <td class="px-6 py-4">
+                                            <span
+                                                class="px-2.5 py-1 text-xs font-bold rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">Pending</span>
+                                        </td>
+                                        <td class="px-6 py-4 text-right">
+                                            <a href="#"
+                                                class="text-primary font-bold text-sm hover:underline transition-all">Review</a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center gap-3">
+                                                <div
+                                                    class="size-8 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-500 text-xs">
+                                                    MJ</div>
+                                                <div>
+                                                    <p class="text-sm font-bold">Marcus Johnson</p>
+                                                    <p class="text-xs text-slate-500">Product Designer</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4"><span class="text-sm">Bonus Approval</span></td>
+                                        <td class="px-6 py-4"><span class="text-sm">Oct 09, 2023</span></td>
+                                        <td class="px-6 py-4">
+                                            <span
+                                                class="px-2.5 py-1 text-xs font-bold rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400">Approved</span>
+                                        </td>
+                                        <td class="px-6 py-4 text-right">
+                                            <a href="#"
+                                                class="text-primary font-bold text-sm hover:underline transition-all">Review</a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center gap-3">
+                                                <div
+                                                    class="size-8 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-500 text-xs">
+                                                    EL</div>
+                                                <div>
+                                                    <p class="text-sm font-bold">Elena Lee</p>
+                                                    <p class="text-xs text-slate-500">Data Analyst</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4"><span class="text-sm">Hiring Contract</span></td>
+                                        <td class="px-6 py-4"><span class="text-sm">Oct 08, 2023</span></td>
+                                        <td class="px-6 py-4">
+                                            <span
+                                                class="px-2.5 py-1 text-xs font-bold rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">In
+                                                Progress</span>
+                                        </td>
+                                        <td class="px-6 py-4 text-right">
+                                            <a href="#"
+                                                class="text-primary font-bold text-sm hover:underline transition-all">Review</a>
+                                        </td>
+                                    </tr>
+                                </th:block>
+
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
-                <!-- Upcoming Events -->
-                <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                    <h4 class="text-lg font-bold mb-6">Upcoming Events</h4>
-                    <div class="space-y-6">
+            </div><!-- end dashboard body -->
+        </main>
+    </div>
 
-                        <!--/* Dynamic events từ backend */-->
-                        <th:block th:if="${upcomingEvents != null and !upcomingEvents.empty}">
-                            <div th:each="event : ${upcomingEvents}" class="flex gap-4">
-                                <div th:classappend="${event.colorClass != null ? event.colorClass : 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'}"
-                                     class="p-3 rounded-lg flex flex-col items-center justify-center min-w-[60px]">
-                                    <span class="text-sm font-bold" th:text="${event.monthLabel}">OCT</span>
-                                    <span class="text-xl font-black" th:text="${event.day}">12</span>
-                                </div>
-                                <div class="flex-1">
-                                    <p class="text-sm font-bold" th:text="${event.title}">Event Title</p>
-                                    <p class="text-xs text-slate-500 mt-1 flex items-center gap-1">
-                                        <span class="material-symbols-outlined text-xs">schedule</span>
-                                        <span th:text="${event.timeLabel}">09:00 AM - 11:00 AM</span>
-                                    </p>
-                                </div>
-                            </div>
-                        </th:block>
+    <!-- Toast Notification -->
+    <div id="toast"
+        class="fixed bottom-6 right-6 z-50 hidden items-center gap-3 px-5 py-3 rounded-xl shadow-lg text-white text-sm font-semibold transition-all duration-300">
+        <span id="toast-icon" class="material-symbols-outlined text-[20px]">check_circle</span>
+        <span id="toast-msg">Done</span>
+    </div>
 
-                        <!--/* Fallback static events */-->
-                        <th:block th:if="${upcomingEvents == null or upcomingEvents.empty}">
-                            <div class="flex gap-4">
-                                <div class="bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 p-3 rounded-lg flex flex-col items-center justify-center min-w-[60px]">
-                                    <span class="text-sm font-bold">OCT</span>
-                                    <span class="text-xl font-black">12</span>
-                                </div>
-                                <div class="flex-1">
-                                    <p class="text-sm font-bold">New Employee Orientation</p>
-                                    <p class="text-xs text-slate-500 mt-1 flex items-center gap-1">
-                                        <span class="material-symbols-outlined text-xs">schedule</span> 09:00 AM - 11:00 AM
-                                    </p>
-                                </div>
-                            </div>
-                            <div class="flex gap-4">
-                                <div class="bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 p-3 rounded-lg flex flex-col items-center justify-center min-w-[60px]">
-                                    <span class="text-sm font-bold">OCT</span>
-                                    <span class="text-xl font-black">14</span>
-                                </div>
-                                <div class="flex-1">
-                                    <p class="text-sm font-bold">Q3 Performance Reviews</p>
-                                    <p class="text-xs text-slate-500 mt-1 flex items-center gap-1">
-                                        <span class="material-symbols-outlined text-xs">schedule</span> All Day
-                                    </p>
-                                </div>
-                            </div>
-                            <div class="flex gap-4">
-                                <div class="bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 p-3 rounded-lg flex flex-col items-center justify-center min-w-[60px]">
-                                    <span class="text-sm font-bold">OCT</span>
-                                    <span class="text-xl font-black">15</span>
-                                </div>
-                                <div class="flex-1">
-                                    <p class="text-sm font-bold">Benefits Enrollment Ends</p>
-                                    <p class="text-xs text-slate-500 mt-1 flex items-center gap-1">
-                                        <span class="material-symbols-outlined text-xs">schedule</span> 05:00 PM Deadline
-                                    </p>
-                                </div>
-                            </div>
-                        </th:block>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
-                    </div>
-                    <a th:href="@{/calendar}"
-                       class="block w-full mt-8 py-2 text-sm font-bold text-primary hover:bg-primary/5 rounded-lg transition-colors border border-primary/20 text-center">
-                        View Calendar
-                    </a>
-                </div>
-            </div>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
 
-            <!-- Recent Activity Table -->
-            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-                <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
-                    <h4 class="text-lg font-bold">Recent Activity</h4>
-                    <div class="flex gap-2">
-                        <a th:href="@{/dashboard(activityFilter='all')}"
-                           th:classappend="${activityFilter == 'all' or activityFilter == null ? 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}"
-                           class="px-3 py-1.5 text-xs font-bold rounded-md transition-colors">All</a>
-                        <a th:href="@{/dashboard(activityFilter='pending')}"
-                           th:classappend="${activityFilter == 'pending' ? 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}"
-                           class="px-3 py-1.5 text-xs font-bold rounded-md transition-colors">Pending</a>
-                        <a th:href="@{/dashboard(activityFilter='approved')}"
-                           th:classappend="${activityFilter == 'approved' ? 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}"
-                           class="px-3 py-1.5 text-xs font-bold rounded-md transition-colors">Approved</a>
-                    </div>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left">
-                        <thead class="bg-slate-50 dark:bg-slate-800/50">
-                        <tr>
-                            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">Employee</th>
-                            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">Action</th>
-                            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">Date</th>
-                            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">Status</th>
-                            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 text-right">Action</th>
-                        </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+        // ── Chart.js: Hiring vs Attrition ─────────────────────────────────────────
+        // Dữ liệu từ backend (Spring truyền vào model).
+        // Fallback là mảng mẫu để trang không bị trắng khi chưa tích hợp.
+        const chartLabels = /*[[${chartLabels}]]*/['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+        const hiringData = /*[[${hiringData}]]*/[45, 62, 38, 71, 55, 49];
+        const attritionData = /*[[${attritionData}]]*/[12, 18, 10, 22, 15, 20];
 
-                        <!--/* Dynamic rows */-->
-                        <th:block th:if="${recentActivities != null and !recentActivities.empty}">
-                            <tr th:each="activity : ${recentActivities}">
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center gap-3">
-                                        <div class="size-8 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-500 text-xs"
-                                             th:text="${activity.employeeInitials}">SR</div>
-                                        <div>
-                                            <p class="text-sm font-bold" th:text="${activity.employeeName}">Name</p>
-                                            <p class="text-xs text-slate-500" th:text="${activity.employeePosition}">Position</p>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <span class="text-sm" th:text="${activity.actionLabel}">Action</span>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <span class="text-sm" th:text="${#temporals.format(activity.date, 'MMM dd, yyyy')}">Oct 10, 2023</span>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <span th:switch="${activity.status}"
-                                          class="px-2.5 py-1 text-xs font-bold rounded-full">
-                                        <span th:case="'PENDING'"   class="px-2.5 py-1 text-xs font-bold rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">Pending</span>
-                                        <span th:case="'APPROVED'"  class="px-2.5 py-1 text-xs font-bold rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400">Approved</span>
-                                        <span th:case="'IN_PROGRESS'" class="px-2.5 py-1 text-xs font-bold rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">In Progress</span>
-                                        <span th:case="'REJECTED'"  class="px-2.5 py-1 text-xs font-bold rounded-full bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400">Rejected</span>
-                                        <span th:case="*"           class="px-2.5 py-1 text-xs font-bold rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400" th:text="${activity.status}">Other</span>
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 text-right">
-                                    <a th:href="@{/requests/{id}(id=${activity.id})}"
-                                       class="text-primary font-bold text-sm hover:underline transition-all">Review</a>
-                                </td>
-                            </tr>
-                        </th:block>
+        // Phát hiện dark mode để đổi màu grid/text
+        const isDark = document.documentElement.classList.contains('dark');
+        const gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+        const tickColor = isDark ? '#94a3b8' : '#64748b';
 
-                        <!--/* Fallback static rows */-->
-                        <th:block th:if="${recentActivities == null or recentActivities.empty}">
-                            <tr>
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center gap-3">
-                                        <div class="size-8 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-500 text-xs">SR</div>
-                                        <div>
-                                            <p class="text-sm font-bold">Sarah Rodriguez</p>
-                                            <p class="text-xs text-slate-500">Marketing Specialist</p>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4"><span class="text-sm">Sick Leave Request</span></td>
-                                <td class="px-6 py-4"><span class="text-sm">Oct 10, 2023</span></td>
-                                <td class="px-6 py-4">
-                                    <span class="px-2.5 py-1 text-xs font-bold rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">Pending</span>
-                                </td>
-                                <td class="px-6 py-4 text-right">
-                                    <a href="#" class="text-primary font-bold text-sm hover:underline transition-all">Review</a>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center gap-3">
-                                        <div class="size-8 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-500 text-xs">MJ</div>
-                                        <div>
-                                            <p class="text-sm font-bold">Marcus Johnson</p>
-                                            <p class="text-xs text-slate-500">Product Designer</p>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4"><span class="text-sm">Bonus Approval</span></td>
-                                <td class="px-6 py-4"><span class="text-sm">Oct 09, 2023</span></td>
-                                <td class="px-6 py-4">
-                                    <span class="px-2.5 py-1 text-xs font-bold rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400">Approved</span>
-                                </td>
-                                <td class="px-6 py-4 text-right">
-                                    <a href="#" class="text-primary font-bold text-sm hover:underline transition-all">Review</a>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center gap-3">
-                                        <div class="size-8 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-500 text-xs">EL</div>
-                                        <div>
-                                            <p class="text-sm font-bold">Elena Lee</p>
-                                            <p class="text-xs text-slate-500">Data Analyst</p>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4"><span class="text-sm">Hiring Contract</span></td>
-                                <td class="px-6 py-4"><span class="text-sm">Oct 08, 2023</span></td>
-                                <td class="px-6 py-4">
-                                    <span class="px-2.5 py-1 text-xs font-bold rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">In Progress</span>
-                                </td>
-                                <td class="px-6 py-4 text-right">
-                                    <a href="#" class="text-primary font-bold text-sm hover:underline transition-all">Review</a>
-                                </td>
-                            </tr>
-                        </th:block>
+        const ctx = document.getElementById('hiringAttritionChart').getContext('2d');
 
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+        // Gradient fill cho đường Hiring
+        const gradient = ctx.createLinearGradient(0, 0, 0, 256);
+        gradient.addColorStop(0, 'rgba(20,20,184,0.18)');
+        gradient.addColorStop(1, 'rgba(20,20,184,0)');
 
-        </div><!-- end dashboard body -->
-    </main>
-</div>
-
-<!-- Toast Notification -->
-<div id="toast"
-     class="fixed bottom-6 right-6 z-50 hidden items-center gap-3 px-5 py-3 rounded-xl shadow-lg text-white text-sm font-semibold transition-all duration-300">
-    <span id="toast-icon" class="material-symbols-outlined text-[20px]">check_circle</span>
-    <span id="toast-msg">Done</span>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-
-<script th:inline="javascript">
-    /*<![CDATA[*/
-
-    // ── Chart.js: Hiring vs Attrition ─────────────────────────────────────────
-    // Dữ liệu từ backend (Spring truyền vào model).
-    // Fallback là mảng mẫu để trang không bị trắng khi chưa tích hợp.
-    const chartLabels       = /*[[${chartLabels}]]*/      ['Jan','Feb','Mar','Apr','May','Jun'];
-    const hiringData        = /*[[${hiringData}]]*/       [45, 62, 38, 71, 55, 49];
-    const attritionData     = /*[[${attritionData}]]*/    [12, 18, 10, 22, 15, 20];
-
-    // Phát hiện dark mode để đổi màu grid/text
-    const isDark = document.documentElement.classList.contains('dark');
-    const gridColor  = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
-    const tickColor  = isDark ? '#94a3b8' : '#64748b';
-
-    const ctx = document.getElementById('hiringAttritionChart').getContext('2d');
-
-    // Gradient fill cho đường Hiring
-    const gradient = ctx.createLinearGradient(0, 0, 0, 256);
-    gradient.addColorStop(0,   'rgba(20,20,184,0.18)');
-    gradient.addColorStop(1,   'rgba(20,20,184,0)');
-
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: chartLabels,
-            datasets: [
-                {
-                    label: 'Hiring',
-                    data: hiringData,
-                    borderColor: '#1414b8',
-                    backgroundColor: gradient,
-                    borderWidth: 2.5,
-                    fill: true,
-                    tension: 0.45,
-                    pointRadius: 4,
-                    pointBackgroundColor: '#1414b8',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2,
-                    pointHoverRadius: 6,
-                },
-                {
-                    label: 'Attrition',
-                    data: attritionData,
-                    borderColor: '#94a3b8',
-                    backgroundColor: 'transparent',
-                    borderWidth: 2,
-                    borderDash: [6, 4],
-                    fill: false,
-                    tension: 0.45,
-                    pointRadius: 4,
-                    pointBackgroundColor: '#94a3b8',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2,
-                    pointHoverRadius: 6,
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            interaction: { mode: 'index', intersect: false },
-            plugins: {
-                legend: { display: false },  // legend tuỳ chỉnh đã có trong HTML
-                tooltip: {
-                    backgroundColor: isDark ? '#1e293b' : '#fff',
-                    borderColor:     isDark ? '#334155' : '#e2e8f0',
-                    borderWidth: 1,
-                    titleColor:  isDark ? '#f1f5f9' : '#0f172a',
-                    bodyColor:   isDark ? '#94a3b8'  : '#475569',
-                    padding: 12,
-                    callbacks: {
-                        label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y} người`
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: chartLabels,
+                datasets: [
+                    {
+                        label: 'Hiring',
+                        data: hiringData,
+                        borderColor: '#1414b8',
+                        backgroundColor: gradient,
+                        borderWidth: 2.5,
+                        fill: true,
+                        tension: 0.45,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#1414b8',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointHoverRadius: 6,
+                    },
+                    {
+                        label: 'Attrition',
+                        data: attritionData,
+                        borderColor: '#94a3b8',
+                        backgroundColor: 'transparent',
+                        borderWidth: 2,
+                        borderDash: [6, 4],
+                        fill: false,
+                        tension: 0.45,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#94a3b8',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointHoverRadius: 6,
                     }
-                }
+                ]
             },
-            scales: {
-                x: {
-                    grid: { color: gridColor, drawBorder: false },
-                    ticks: { color: tickColor, font: { family: 'Inter', size: 12, weight: '600' } }
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { display: false },  // legend tuỳ chỉnh đã có trong HTML
+                    tooltip: {
+                        backgroundColor: isDark ? '#1e293b' : '#fff',
+                        borderColor: isDark ? '#334155' : '#e2e8f0',
+                        borderWidth: 1,
+                        titleColor: isDark ? '#f1f5f9' : '#0f172a',
+                        bodyColor: isDark ? '#94a3b8' : '#475569',
+                        padding: 12,
+                        callbacks: {
+                            label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y} người`
+                        }
+                    }
                 },
-                y: {
-                    beginAtZero: true,
-                    grid: { color: gridColor, drawBorder: false },
-                    ticks: {
-                        color: tickColor,
-                        font: { family: 'Inter', size: 12 },
-                        stepSize: 10,
-                        callback: val => val + ' người'
+                scales: {
+                    x: {
+                        grid: { color: gridColor, drawBorder: false },
+                        ticks: { color: tickColor, font: { family: 'Inter', size: 12, weight: '600' } }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: gridColor, drawBorder: false },
+                        ticks: {
+                            color: tickColor,
+                            font: { family: 'Inter', size: 12 },
+                            stepSize: 10,
+                            callback: val => val + ' người'
+                        }
                     }
                 }
             }
+        });
+
+        // ── Flash toast ────────────────────────────────────────────────────────────
+        const flashMessage = /*[[${flashMessage}]]*/ null;
+        const flashType = /*[[${flashType}]]*/ 'success';
+
+        function showToast(message, type) {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toast-icon');
+            const msgEl = document.getElementById('toast-msg');
+            msgEl.textContent = message;
+            icon.textContent = type === 'success' ? 'check_circle' : 'error';
+            toast.className = toast.className.replace(/bg-\S+/g, '');
+            toast.classList.add(type === 'success' ? 'bg-emerald-600' : 'bg-rose-600');
+            toast.classList.remove('hidden');
+            toast.classList.add('flex');
+            setTimeout(() => { toast.classList.add('hidden'); toast.classList.remove('flex'); }, 3000);
         }
-    });
 
-    // ── Flash toast ────────────────────────────────────────────────────────────
-    const flashMessage = /*[[${flashMessage}]]*/ null;
-    const flashType    = /*[[${flashType}]]*/ 'success';
+        if (flashMessage) showToast(flashMessage, flashType);
 
-    function showToast(message, type) {
-        const toast = document.getElementById('toast');
-        const icon  = document.getElementById('toast-icon');
-        const msgEl = document.getElementById('toast-msg');
-        msgEl.textContent = message;
-        icon.textContent  = type === 'success' ? 'check_circle' : 'error';
-        toast.className   = toast.className.replace(/bg-\S+/g, '');
-        toast.classList.add(type === 'success' ? 'bg-emerald-600' : 'bg-rose-600');
-        toast.classList.remove('hidden');
-        toast.classList.add('flex');
-        setTimeout(() => { toast.classList.add('hidden'); toast.classList.remove('flex'); }, 3000);
-    }
-
-    if (flashMessage) showToast(flashMessage, flashType);
-
-    /*]]>*/
-</script>
+        /*]]>*/
+    </script>
 </body>
+
 </html>

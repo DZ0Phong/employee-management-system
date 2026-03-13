@@ -3,6 +3,7 @@ package com.group5.ems.controller.hrmanager;
 import com.group5.ems.service.hrmanager.HRAnalyticsService;
 import com.group5.ems.service.hrmanager.HRManagerDashboardService;
 import com.group5.ems.service.hrmanager.LeaveApprovalService;
+import com.group5.ems.service.hrmanager.PayrollApprovalService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,6 +20,7 @@ public class HrManagerController {
     private final HRManagerDashboardService dashboardService;
     private final HRAnalyticsService analyticsService;
     private final LeaveApprovalService leaveApprovalService;  // ← thêm
+    private final PayrollApprovalService payrollApprovalService;
 
     @GetMapping({"", "/", "/dashboard"})
     public String dashboard(Model model) {
@@ -43,8 +45,12 @@ public class HrManagerController {
     }
 
     @GetMapping("/payroll-approval")
-    public String payrollApproval(Model model) {
-        model.addAttribute("activePage", "payroll");
+    public String payrollApproval(Model model,
+                                  @RequestParam(defaultValue = "1") int page) {
+        model.addAttribute("summary",     payrollApprovalService.getSummary());
+        model.addAttribute("payrollRuns", payrollApprovalService.getPayrollRuns(page));
+        model.addAttribute("pagination",  payrollApprovalService.getPagination(page));
+        model.addAttribute("activePage",  "payroll");
         return "hrmanager/payroll_approval";
     }
 
