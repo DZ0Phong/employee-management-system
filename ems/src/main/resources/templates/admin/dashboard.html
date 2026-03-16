@@ -208,8 +208,8 @@
         <header class="h-16 bg-white border-b border-slate-100 flex items-center justify-between px-8 shrink-0">
             <div>
                 <h2 class="text-base font-black text-slate-900 leading-tight"
-                    th:text="${currentUser != null ? 'Good morning, ' + currentUser.firstName + ' 👋' : 'Good morning 👋'}">
-                    Good morning 👋
+                    th:text="${currentUser != null ? 'Good morning, ' + currentUser.firstName  : 'Good morning'}">
+                    Good morning
                 </h2>
                 <p class="text-xs text-slate-400"
                    th:text="${#dates.format(#dates.createNow(), 'EEEE, d MMMM yyyy')}">

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>HRM Pro – Access Denied</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary:        "#1414b8",
+                        "primary-light":"#e8e8fb",
+                        "bg-light":     "#f6f6f8"
+                    },
+                    fontFamily: { display: ["Inter"] }
+                }
+            }
+        };
+    </script>
+
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined { font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24; }
+        .fill-icon                 { font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24; }
+
+        .dot-grid {
+            background-image: radial-gradient(circle, #1414b818 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+
+        @keyframes fadeUp {
+            from { opacity:0; transform:translateY(20px); }
+            to   { opacity:1; transform:translateY(0); }
+        }
+        .anim   { animation: fadeUp .5s ease both; }
+        .anim-1 { animation-delay: .05s; }
+        .anim-2 { animation-delay: .15s; }
+        .anim-3 { animation-delay: .25s; }
+        .anim-4 { animation-delay: .35s; }
+
+        @keyframes float {
+            0%,100% { transform: translateY(0); }
+            50%     { transform: translateY(-10px); }
+        }
+        .float { animation: float 3.5s ease-in-out infinite; }
+
+        @keyframes ring {
+            0%   { transform:scale(1);   opacity:.6; }
+            100% { transform:scale(1.9); opacity:0; }
+        }
+        .ring {
+            position: absolute; inset: 0;
+            border-radius: 9999px;
+            border: 2px solid #ef4444;
+            animation: ring 2s ease-out infinite;
+        }
+        .ring-2 { animation-delay: .7s; }
+
+        .grad-text {
+            background: linear-gradient(135deg, #ef4444, #dc2626, #b91c1c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        @keyframes gShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+        .code-chip {
+            background: linear-gradient(135deg,#1414b8,#3b3bea,#6366f1,#1414b8);
+            background-size: 300% 300%;
+            animation: gShift 6s ease infinite;
+        }
+
+        .btn-primary { transition: transform .15s ease, box-shadow .15s ease; }
+        .btn-primary:hover { transform:translateY(-1px); box-shadow:0 8px 24px -6px rgba(20,20,184,.35); }
+        .btn-primary:active { transform:scale(.97); }
+
+        ::-webkit-scrollbar { width:5px; }
+        ::-webkit-scrollbar-thumb { background:#1414b840; border-radius:99px; }
+    </style>
+</head>
+
+<body class="bg-bg-light min-h-screen dot-grid flex flex-col">
+
+<!-- ── Top bar ── -->
+<header class="w-full bg-white/80 backdrop-blur-sm border-b border-slate-100 px-8 h-16 flex items-center justify-between shrink-0">
+    <a th:href="@{/guest}" class="flex items-center gap-3 group">
+        <div class="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-white shadow-md shadow-primary/30 group-hover:shadow-primary/50 transition-shadow">
+            <span class="material-symbols-outlined text-[20px]">corporate_fare</span>
+        </div>
+        <div>
+            <p class="text-sm font-black tracking-tight text-slate-900">EMS Pro</p>
+            <p class="text-[10px] text-slate-400 font-medium leading-none">Workspace Management</p>
+        </div>
+    </a>
+
+    <div class="flex items-center gap-2">
+        <button type="button" onclick="history.back()"
+                class="flex items-center gap-1.5 px-4 py-2 bg-white border border-slate-200 text-slate-600 text-xs font-semibold rounded-xl hover:bg-slate-50 shadow-sm transition-colors">
+            <span class="material-symbols-outlined text-[17px]">arrow_back</span>
+            Go Back
+        </button>
+<!--        <a th:href="@{/dashboard}"-->
+<!--           class="btn-primary flex items-center gap-1.5 px-4 py-2 bg-primary text-white text-xs font-bold rounded-xl shadow-md shadow-primary/25">-->
+<!--            <span class="material-symbols-outlined text-[17px]">dashboard</span>-->
+<!--            Dashboard-->
+<!--        </a>-->
+    </div>
+</header>
+
+<!-- ── Main ── -->
+<main class="flex-1 flex items-center justify-center px-4">
+    <div class="w-full max-w-md text-center">
+
+        <div class="anim anim-1 flex justify-center mb-8">
+            <div class="relative">
+                <div class="ring"></div>
+                <div class="ring ring-2"></div>
+                <div class="relative w-28 h-28 rounded-full bg-rose-50 border-2 border-rose-100 flex items-center justify-center float">
+                    <span class="material-symbols-outlined fill-icon text-rose-500" style="font-size:56px">lock</span>
+                </div>
+            </div>
+        </div>
+
+
+
+        <h1 class="anim anim-3 text-5xl font-black tracking-tight mb-3">
+            <span class="grad-text">Access</span>
+            <span class="text-slate-900"> Denied</span>
+        </h1>
+
+        <p class="anim anim-4 text-slate-500 text-base leading-relaxed">
+            You don't have permission to view this page.
+        </p>
+
+    </div>
+</main>
+
+</body>
+</html>

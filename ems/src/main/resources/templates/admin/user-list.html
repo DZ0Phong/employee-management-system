@@ -684,6 +684,97 @@
     document.getElementById('modal-overlay').addEventListener('click', function(e){ if(e.target===e.currentTarget) closeModal(); });
     document.getElementById('delete-modal').addEventListener('click',  function(e){ if(e.target===e.currentTarget) closeDeleteModal(); });
 
+    // ── User form client-side validation ──────────────────────────
+    (function () {
+        const form = document.getElementById('user-form');
+        if (!form) return;
+
+        const usernameEl = document.getElementById('field-username');
+        const emailEl    = document.getElementById('field-email');
+        const passwordEl = document.getElementById('field-password');
+        const fullNameEl = document.getElementById('field-fullName');
+        const phoneEl    = document.getElementById('field-phone');
+        const roleEl     = document.getElementById('field-role');
+        const idEl       = document.getElementById('field-id');
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const phoneRegex = /^(0\d{9,10})$/;
+
+        function clearErrorStyles() {
+            [usernameEl, emailEl, passwordEl, fullNameEl, phoneEl, roleEl].forEach(function (el) {
+                if (!el) return;
+                el.classList.remove('border-rose-400', 'border-rose-500');
+            });
+        }
+
+        form.addEventListener('submit', function (e) {
+            clearErrorStyles();
+
+            const errors = [];
+            let firstInvalid = null;
+
+            const isEdit    = idEl && idEl.value && idEl.value.trim() !== '';
+            const username  = usernameEl.value.trim();
+            const email     = emailEl.value.trim();
+            const password  = passwordEl.value.trim();
+            const fullName  = fullNameEl.value.trim();
+            const phone     = phoneEl.value.trim();
+            const role      = roleEl.value;
+
+            if (!username || username.length < 6) {
+                errors.push('Username must be at least 6 characters');
+                usernameEl.classList.add('border-rose-400');
+                firstInvalid = firstInvalid || usernameEl;
+            }
+
+            if (!email || !emailRegex.test(email)) {
+                errors.push('Email is required and must be valid');
+                emailEl.classList.add('border-rose-400');
+                firstInvalid = firstInvalid || emailEl;
+            }
+
+            if (!fullName || fullName.length < 3) {
+                errors.push('Full name must be at least 3 characters');
+                fullNameEl.classList.add('border-rose-400');
+                firstInvalid = firstInvalid || fullNameEl;
+            }
+
+            if (!isEdit) {
+                if (!password || password.length < 6) {
+                    errors.push('Password is required and must be at least 6 characters for new users');
+                    passwordEl.classList.add('border-rose-400');
+                    firstInvalid = firstInvalid || passwordEl;
+                }
+            } else {
+                if (password && password.length < 6) {
+                    errors.push('If you change the password, it must be at least 6 characters');
+                    passwordEl.classList.add('border-rose-400');
+                    firstInvalid = firstInvalid || passwordEl;
+                }
+            }
+
+            if (phone && !phoneRegex.test(phone)) {
+                errors.push('Phone must start with 0 and have 10–11 digits');
+                phoneEl.classList.add('border-rose-400');
+                firstInvalid = firstInvalid || phoneEl;
+            }
+
+            if (!role || role.trim() === '') {
+                errors.push('Role is required');
+                roleEl.classList.add('border-rose-400');
+                firstInvalid = firstInvalid || roleEl;
+            }
+
+            if (errors.length > 0) {
+                e.preventDefault();
+                showToast(errors[0], 'error');
+                if (firstInvalid && typeof firstInvalid.focus === 'function') {
+                    firstInvalid.focus();
+                }
+            }
+        });
+    })();
+
     // ── Debounce search ───────────────────────────────────────────
     var _dt;
     function debounceSubmit(){ clearTimeout(_dt); _dt=setTimeout(function(){ document.getElementById('filter-form').submit(); },400); }
