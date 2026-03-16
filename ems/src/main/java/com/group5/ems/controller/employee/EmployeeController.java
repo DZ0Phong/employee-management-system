@@ -7,10 +7,7 @@ import com.group5.ems.entity.Employee;
 import com.group5.ems.entity.User;
 import com.group5.ems.repository.EmployeeRepository;
 import com.group5.ems.repository.UserRepository;
-import com.group5.ems.service.employee.AttendanceService;
-import com.group5.ems.service.employee.DashboardService;
-import com.group5.ems.service.employee.LeaveServiceImpl;
-import com.group5.ems.service.employee.ProfileService;
+import com.group5.ems.service.employee.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -38,6 +35,8 @@ public class EmployeeController {
     private final LeaveServiceImpl leaveService;
     private final ProfileService profileService;
     private final AttendanceService attendanceService;
+    private final PayrollService payrollService;
+
 
     // ── Helper methods ─────────────────────────────────────
     private User getUser(Authentication authentication) {
@@ -197,13 +196,29 @@ public class EmployeeController {
                 .body(csv);
     }
 
-    // ── Payroll ────────────────────────────────────────────
     @GetMapping("/payroll")
     public String payroll(Authentication authentication, Model model) {
         User user = getUser(authentication);
         Employee employee = getEmployee(user);
+
         model.addAttribute("employee", dashboardService.getEmployeeInfo(employee.getId(), user.getId()));
+        model.addAttribute("summary", payrollService.getPayrollSummary(employee.getId()));
+        model.addAttribute("payslips", payrollService.getPayslipHistory(employee.getId()));
+
         return "employee/payroll";
+    }
+
+    @GetMapping("/payroll/export")
+    public ResponseEntity<byte[]> exportPayroll(Authentication authentication) {
+        User user = getUser(authentication);
+        Employee employee = getEmployee(user);
+
+        byte[] csv = payrollService.exportPayslipCsv(employee.getId());
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=payroll_history.csv")
+                .contentType(MediaType.parseMediaType("text/csv"))
+                .body(csv);
     }
 
     // ── Performance ────────────────────────────────────────

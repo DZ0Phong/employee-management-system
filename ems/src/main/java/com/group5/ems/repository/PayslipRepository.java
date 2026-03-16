@@ -22,6 +22,9 @@ public interface PayslipRepository extends JpaRepository<Payslip, Long> {
     List<Payslip> findByStatus(String status);
     
     List<Payslip> findByStatusOrderByIdDesc(String status);
+
+    List<Payslip> findByEmployeeIdOrderByIdDesc(Long employeeId);
+    Optional<Payslip> findTopByEmployeeIdOrderByIdDesc(Long employeeId);
     
     @Query("SELECT COUNT(p) FROM Payslip p WHERE p.status = :status")
     Long countByStatus(@Param("status") String status);

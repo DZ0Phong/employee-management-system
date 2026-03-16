@@ -16,5 +16,8 @@ public interface SalaryRepository extends JpaRepository<Salary, Long> {
 
     Optional<Salary> findFirstByEmployeeIdAndEffectiveFromLessThanEqualOrderByEffectiveFromDesc(
             Long employeeId, LocalDate date);
+
+    List<Salary> findByEmployeeIdOrderByEffectiveFromDesc(Long employeeId);
+    Optional<Salary> findTopByEmployeeIdOrderByEffectiveFromDesc(Long employeeId);
 }
 
