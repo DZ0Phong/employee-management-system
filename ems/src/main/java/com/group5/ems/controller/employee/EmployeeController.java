@@ -36,6 +36,8 @@ public class EmployeeController {
     private final ProfileService profileService;
     private final AttendanceService attendanceService;
     private final PayrollService payrollService;
+    private final PerformanceService performanceService;
+
 
 
     // ── Helper methods ─────────────────────────────────────
@@ -226,7 +228,11 @@ public class EmployeeController {
     public String performance(Authentication authentication, Model model) {
         User user = getUser(authentication);
         Employee employee = getEmployee(user);
+
         model.addAttribute("employee", dashboardService.getEmployeeInfo(employee.getId(), user.getId()));
+        model.addAttribute("summary", performanceService.getPerformanceSummary(employee.getId()));
+        model.addAttribute("reviews", performanceService.getReviewHistory(employee.getId()));
+
         return "employee/performance";
     }
 
