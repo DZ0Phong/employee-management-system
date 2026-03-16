@@ -13,4 +13,6 @@ public interface PerformanceReviewRepository extends JpaRepository<PerformanceRe
     Optional<PerformanceReview> findByEmployeeIdAndReviewPeriod(Long employeeId, String reviewPeriod);
 
     List<PerformanceReview> findByReviewerId(Long reviewerId);
+    List<PerformanceReview> findByEmployeeIdOrderByCreatedAtDesc(Long employeeId);
+    Optional<PerformanceReview> findTopByEmployeeIdOrderByCreatedAtDesc(Long employeeId);
 }
