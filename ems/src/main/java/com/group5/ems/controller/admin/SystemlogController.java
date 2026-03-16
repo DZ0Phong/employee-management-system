@@ -46,6 +46,7 @@ public class SystemlogController {
         model.addAttribute("statToday", adminLogService.countToday());
         model.addAttribute("statCreate", adminLogService.countCreate());
         model.addAttribute("statUpdateDelete", adminLogService.countUpdateDelete());
+        model.addAttribute("departmentCount", adminService.getAllDepartmentsCount());
 
         model.addAttribute("keyword", keyword);
         model.addAttribute("actionFilter", action);

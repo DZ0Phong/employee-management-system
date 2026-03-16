@@ -155,7 +155,7 @@
                 <span class="material-symbols-outlined text-[22px]">corporate_fare</span>
             </div>
             <div>
-                <h1 class="text-base font-black tracking-tight">HRM Pro</h1>
+                <h1 class="text-base font-black tracking-tight">EMS Pro</h1>
                 <p class="text-[11px] text-slate-400 font-medium">Workspace Management</p>
             </div>
         </div>
@@ -180,6 +180,8 @@
                class="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:bg-slate-50 rounded-xl transition-all group">
                 <span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-primary transition-colors">account_tree</span>
                 <span class="text-sm font-medium">Departments</span>
+                <span class="ml-auto text-[10px] font-bold bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-md"
+                      th:text="${departmentCount ?: 0}">0</span>
             </a>
 
             <a th:href="@{/admin/roles}"
@@ -211,7 +213,6 @@
             </a>
         </nav>
 
-        <!-- User card -->
         <!-- User card -->
         <div class="p-4">
             <div class="bg-slate-50 border border-slate-100 rounded-2xl p-3 flex items-center gap-3">
@@ -428,21 +429,28 @@
                     </div>
 
                     <!-- Table -->
-                    <table class="w-full text-left">
+                    <table class="w-full text-left table-fixed">
+                        <colgroup>
+                            <col class="w-1/5"/>
+                            <col class="w-1/5"/>
+                            <col class="w-1/5"/>
+                            <col class="w-1/5"/>
+                            <col class="w-1/5"/>
+                        </colgroup>
                         <thead>
                         <tr class="bg-slate-50/80 border-b border-slate-100">
-                            <th class="px-6 py-3.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest w-40">Time</th>
-                            <th class="px-4 py-3.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest w-28">Action</th>
-                            <th class="px-4 py-3.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest w-28">Entity</th>
-                            <th class="px-4 py-3.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Entity ID</th>
-                            <th class="px-4 py-3.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest w-44">Actor</th>
+                            <th class="px-4 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Time</th>
+                            <th class="px-3 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Action</th>
+                            <th class="px-3 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Entity</th>
+                            <th class="px-3 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Entity ID</th>
+                            <th class="px-3 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Actor</th>
                         </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-50">
 
                         <!-- Empty state row -->
                         <tr th:if="${logs == null or #lists.isEmpty(logs.content)}">
-                            <td colspan="5" class="px-6 py-20 text-center">
+                            <td colspan="5" class="px-4 py-16 text-center">
                                 <div class="flex flex-col items-center gap-3">
                                     <div class="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center">
                                         <span class="material-symbols-outlined text-slate-300 text-4xl">receipt_long</span>
@@ -463,42 +471,40 @@
                             th:data-actor-email="${log.actorEmail}"
                             th:data-created-at="${log.createdAt}"
                             onclick="openLogPanel(this)"
-                            class="hover:bg-primary/[3%] group transition-colors">
+                            class="hover:bg-primary/[3%] group transition-colors cursor-pointer">
 
                             <!-- Time -->
-                            <td class="px-6 py-3.5">
-                                <p class="text-xs font-semibold text-slate-700" th:text="${log.createdAt}">—</p>
+                            <td class="px-4 py-3 align-top">
+                                <p class="text-[11px] font-semibold text-slate-700 leading-tight truncate" th:text="${log.createdAt}">—</p>
                             </td>
 
                             <!-- Action -->
-                            <td class="px-4 py-3.5">
-                  <span class="text-[10px] font-bold font-mono text-slate-500 bg-slate-100 px-2 py-1 rounded-lg"
-                        th:text="${log.action}">—</span>
+                            <td class="px-3 py-3 align-top">
+                                <span class="inline-block text-[10px] font-bold font-mono text-slate-500 bg-slate-100 px-2 py-1 rounded-lg truncate max-w-full"
+                                      th:text="${log.action}">—</span>
                             </td>
 
                             <!-- Entity -->
-                            <td class="px-4 py-3.5">
-                  <span class="text-[10px] font-semibold text-primary bg-primary-light px-2 py-1 rounded-lg"
-                        th:text="${log.entityName}">—</span>
+                            <td class="px-3 py-3 align-top">
+                                <span class="inline-block text-[10px] font-semibold text-primary bg-primary-light px-2 py-1 rounded-lg truncate max-w-full"
+                                      th:text="${log.entityName}">—</span>
                             </td>
 
                             <!-- Entity ID -->
-                            <td class="px-4 py-3.5">
-                                <span class="text-[11px] font-mono text-slate-500"
+                            <td class="px-3 py-3 align-top">
+                                <span class="text-[11px] font-mono text-slate-500 truncate block"
                                       th:text="${log.entityId != null ? '#' + log.entityId : '—'}">—</span>
                             </td>
 
                             <!-- Actor -->
-                            <td class="px-4 py-3.5">
-                                <div th:if="${log.actorName != null}" class="flex items-center gap-2">
-                                    <div class="min-w-0">
-                                        <p class="text-xs font-semibold text-slate-700 truncate leading-tight"
-                                           th:text="${log.actorName}">—</p>
-                                        <p class="text-[10px] text-slate-400 truncate"
-                                           th:text="${log.actorEmail}">—</p>
-                                    </div>
+                            <td class="px-3 py-3 align-top">
+                                <div th:if="${log.actorName != null}" class="min-w-0">
+                                    <p class="text-[11px] font-semibold text-slate-700 truncate leading-tight"
+                                       th:text="${log.actorName}">—</p>
+                                    <p class="text-[10px] text-slate-400 truncate mt-0.5"
+                                       th:text="${log.actorEmail}">—</p>
                                 </div>
-                                <span th:unless="${log.actorName != null}" class="text-xs text-slate-400">System</span>
+                                <span th:unless="${log.actorName != null}" class="text-[11px] text-slate-400">System</span>
                             </td>
 
                         </tr>
