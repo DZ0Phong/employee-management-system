@@ -509,59 +509,45 @@
                         <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 flex-1">
                             <div class="flex items-center justify-between mb-4">
                                 <h3 class="text-sm font-black text-slate-800">Activity Feed</h3>
-                                <button class="text-xs text-primary font-semibold hover:underline">All</button>
+                                <a th:href="@{/admin/system-log}"
+                                   class="text-xs text-primary font-semibold hover:underline">All</a>
                             </div>
-                            <div class="space-y-3.5 relative">
+
+                            <!-- Empty state -->
+                            <div th:if="${recentLogs == null or #lists.isEmpty(recentLogs)}"
+                                 class="flex flex-col items-center justify-center py-8 gap-2">
+                                <span class="material-symbols-outlined text-slate-300 text-3xl">receipt_long</span>
+                                <p class="text-xs text-slate-400">No activity yet</p>
+                            </div>
+
+                            <!-- Timeline -->
+                            <div th:unless="${recentLogs == null or #lists.isEmpty(recentLogs)}"
+                                 class="space-y-3.5 relative">
                                 <!-- timeline line -->
                                 <div class="absolute left-[11px] top-2 bottom-2 w-px bg-slate-100"></div>
 
-                                <div class="flex items-start gap-3 pl-1">
-                                    <div class="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 mt-0.5 z-10">
-                                        <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
+                                <div th:each="log : ${recentLogs}" class="flex items-start gap-3 pl-1">
+                                    <!-- dot color by action -->
+                                    <div th:classappend="${log.action == 'CREATE'} ? 'bg-emerald-100' : (${log.action == 'DELETE'} ? 'bg-rose-100' : (${log.action == 'UPDATE'} ? 'bg-sky-100' : 'bg-amber-100'))"
+                                         class="w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 z-10">
+                                        <span th:classappend="${log.action == 'CREATE'} ? 'bg-emerald-500' : (${log.action == 'DELETE'} ? 'bg-rose-500' : (${log.action == 'UPDATE'} ? 'bg-sky-500' : 'bg-amber-500'))"
+                                              class="w-2 h-2 rounded-full inline-block"></span>
                                     </div>
-                                    <div>
-                                        <p class="text-xs font-semibold text-slate-700">New user <span class="text-primary">Linh Nguyen</span> added</p>
-                                        <p class="text-[10px] text-slate-400 mt-0.5">2 hours ago · by Admin</p>
-                                    </div>
-                                </div>
-
-                                <div class="flex items-start gap-3 pl-1">
-                                    <div class="w-5 h-5 rounded-full bg-rose-100 flex items-center justify-center shrink-0 mt-0.5 z-10">
-                                        <span class="w-2 h-2 rounded-full bg-rose-500 inline-block"></span>
-                                    </div>
-                                    <div>
-                                        <p class="text-xs font-semibold text-slate-700"><span class="text-primary">Hung Do</span> suspended</p>
-                                        <p class="text-[10px] text-slate-400 mt-0.5">5 hours ago · by Alex R.</p>
-                                    </div>
-                                </div>
-
-                                <div class="flex items-start gap-3 pl-1">
-                                    <div class="w-5 h-5 rounded-full bg-sky-100 flex items-center justify-center shrink-0 mt-0.5 z-10">
-                                        <span class="w-2 h-2 rounded-full bg-sky-500 inline-block"></span>
-                                    </div>
-                                    <div>
-                                        <p class="text-xs font-semibold text-slate-700">Role <span class="text-primary">Developer</span> updated</p>
-                                        <p class="text-[10px] text-slate-400 mt-0.5">Yesterday · by System</p>
-                                    </div>
-                                </div>
-
-                                <div class="flex items-start gap-3 pl-1">
-                                    <div class="w-5 h-5 rounded-full bg-amber-100 flex items-center justify-center shrink-0 mt-0.5 z-10">
-                                        <span class="w-2 h-2 rounded-full bg-amber-500 inline-block"></span>
-                                    </div>
-                                    <div>
-                                        <p class="text-xs font-semibold text-slate-700">Dept <span class="text-primary">Design</span> created</p>
-                                        <p class="text-[10px] text-slate-400 mt-0.5">2 days ago · by HR</p>
-                                    </div>
-                                </div>
-
-                                <div class="flex items-start gap-3 pl-1">
-                                    <div class="w-5 h-5 rounded-full bg-primary-light flex items-center justify-center shrink-0 mt-0.5 z-10">
-                                        <span class="w-2 h-2 rounded-full bg-primary inline-block"></span>
-                                    </div>
-                                    <div>
-                                        <p class="text-xs font-semibold text-slate-700">System backup completed</p>
-                                        <p class="text-[10px] text-slate-400 mt-0.5">3 days ago · Automated</p>
+                                    <div class="min-w-0 flex-1">
+                                        <p class="text-xs font-semibold text-slate-700 truncate">
+                                            <span class="font-bold font-mono text-[10px] uppercase"
+                                                  th:classappend="${log.action == 'CREATE'} ? 'text-emerald-600' : (${log.action == 'DELETE'} ? 'text-rose-500' : (${log.action == 'UPDATE'} ? 'text-sky-500' : 'text-amber-500'))"
+                                                  th:text="${log.action}">ACTION</span>
+                                            <span class="text-slate-500"> · </span>
+                                            <span class="text-primary" th:text="${log.entityName}">Entity</span>
+                                            <span th:if="${log.entityId != null}" class="text-slate-400 font-normal"
+                                                  th:text="' #' + ${log.entityId}"></span>
+                                        </p>
+                                        <p class="text-[10px] text-slate-400 mt-0.5 truncate">
+                                            <span th:text="${log.createdAt}">—</span>
+                                            <span class="mx-1">·</span>
+                                            <span th:text="${log.actorName ?: 'System'}">System</span>
+                                        </p>
                                     </div>
                                 </div>
                             </div>

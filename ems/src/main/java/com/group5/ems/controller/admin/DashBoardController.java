@@ -1,12 +1,12 @@
 package com.group5.ems.controller.admin;
 
+import com.group5.ems.service.admin.AdminLogService;
 import com.group5.ems.service.admin.AdminService;
 import com.group5.ems.service.admin.AdminDashboardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.ArrayList;
@@ -19,6 +19,7 @@ public class DashBoardController {
 
     private final AdminService adminService;
     private final AdminDashboardService adminDashboardService;
+    private final AdminLogService adminLogService;
 
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
@@ -60,6 +61,7 @@ public class DashBoardController {
         adminService.getUserDTO().ifPresent(u -> model.addAttribute("currentUser", u));
 
         model.addAttribute("recentUsers", adminDashboardService.getTop5RecentUser());
+        model.addAttribute("recentLogs", adminLogService.getRecentLogs(7));
 
         return "admin/dashboard";
     }

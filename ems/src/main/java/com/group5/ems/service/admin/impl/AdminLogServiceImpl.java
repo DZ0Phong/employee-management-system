@@ -74,6 +74,16 @@ public class AdminLogServiceImpl implements AdminLogService {
     }
 
     @Override
+    public List<AuditLogDTO> getRecentLogs(int limit) {
+        return auditLogRepository
+                .findAll(Sort.by(Sort.Direction.DESC, "createdAt"))
+                .stream()
+                .limit(limit)
+                .map(this::toAuditLogDTO)
+                .toList();
+    }
+
+    @Override
     public long countTotal() {
         return auditLogRepository.count();
     }
