@@ -17,5 +17,15 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
 
     List<Application> findByJobPostIdAndStatus(Long jobPostId, String status);
 
+<<<<<<< Updated upstream
     Application findByTrackingToken(String trackingToken);
 }
+=======
+    int countByStatus(String status);
+
+
+    Optional<Application> findByTrackingToken(String token);
+
+    void deleteByTrackingToken(String token);
+}
+>>>>>>> Stashed changes

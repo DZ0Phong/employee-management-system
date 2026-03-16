@@ -1,288 +1,868 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org"
-      th:fragment="layout(title, content, activePage)">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:fragment="layout(title, content, activePage)">
+
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title th:text="${title} + ' — HRM Pro'">HRM Pro</title>
-  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap"
+    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    rel="stylesheet" />
   <style>
     :root {
-      --primary:#1414b8; --primary-light:#e8e8fb; --primary-mid:#3b3bea;
-      --accent:#6366f1; --bg-light:#f6f6f8; --text-dark:#0f172a;
-      --text-mid:#475569; --text-muted:#94a3b8; --border:#e2e8f0; --white:#ffffff;
+      --primary: #1414b8;
+      --primary-light: #e8e8fb;
+      --primary-mid: #3b3bea;
+      --accent: #6366f1;
+      --bg-light: #f6f6f8;
+      --text-dark: #0f172a;
+      --text-mid: #475569;
+      --text-muted: #94a3b8;
+      --border: #e2e8f0;
+      --white: #ffffff;
     }
-    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
-    html { scroll-behavior:smooth; }
-    body { font-family:'Inter',sans-serif; background:var(--bg-light); color:var(--text-dark); overflow-x:hidden; }
-    h1,h2,h3,h4,h5 { font-family:'Sora',sans-serif; }
-    .material-symbols-outlined { font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24; vertical-align:middle; }
-    .fill-icon { font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24; }
-    ::-webkit-scrollbar { width:5px; } ::-webkit-scrollbar-track { background:transparent; }
-    ::-webkit-scrollbar-thumb { background:#1414b840; border-radius:99px; }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-light);
+      color: var(--text-dark);
+      overflow-x: hidden;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5 {
+      font-family: 'Sora', sans-serif;
+    }
+
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      vertical-align: middle;
+    }
+
+    .fill-icon {
+      font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+
+    ::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #1414b840;
+      border-radius: 99px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
 
     /* ── Navbar ── */
     nav {
-      position:fixed; top:0; left:0; right:0; z-index:100;
-      background:rgba(255,255,255,0.92); backdrop-filter:blur(16px);
-      border-bottom:1px solid var(--border); height:64px;
-      display:flex; align-items:center;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background: rgba(255, 255, 255, .92);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      height: 64px;
+      display: flex;
+      align-items: center;
     }
+
     .nav-inner {
-      max-width:1200px; margin:0 auto; padding:0 24px;
-      width:100%; display:flex; align-items:center; gap:12px;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
-    .nav-logo { display:flex; align-items:center; gap:10px; text-decoration:none; }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
     .nav-logo-icon {
-      width:38px; height:38px; border-radius:10px; background:var(--primary);
-      display:flex; align-items:center; justify-content:center;
-      color:white; box-shadow:0 4px 12px -2px #1414b840;
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      box-shadow: 0 4px 12px -2px #1414b840;
     }
-    .nav-logo-text { font-family:'Sora',sans-serif; font-weight:800; font-size:15px; color:var(--text-dark); }
-    .nav-logo-sub  { font-size:10px; color:var(--text-muted); font-weight:500; display:block; margin-top:-2px; }
-    .nav-links { display:flex; align-items:center; gap:2px; margin-left:32px; }
+
+    .nav-logo-text {
+      font-family: 'Sora', sans-serif;
+      font-weight: 800;
+      font-size: 15px;
+      color: var(--text-dark);
+    }
+
+    .nav-logo-sub {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-weight: 500;
+      display: block;
+      margin-top: -2px;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      margin-left: 32px;
+    }
+
     .nav-link {
-      padding:7px 14px; border-radius:10px; font-size:14px; font-weight:500;
-      color:var(--text-mid); text-decoration:none; transition:all .18s;
+      padding: 7px 14px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-mid);
+      text-decoration: none;
+      transition: all .18s;
     }
-    .nav-link:hover { background:var(--primary-light); color:var(--primary); }
-    .nav-link.active { background:var(--primary-light); color:var(--primary); font-weight:600; }
-    .nav-spacer { flex:1; }
+
+    .nav-link:hover {
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    .nav-link.active {
+      background: var(--primary-light);
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .nav-spacer {
+      flex: 1;
+    }
+
     .btn-track {
-      display:flex; align-items:center; gap:7px;
-      padding:8px 16px; border-radius:10px; border:1.5px solid var(--border);
-      background:white; font-size:13px; font-weight:600; color:var(--text-mid);
-      text-decoration:none; transition:all .18s; cursor:pointer;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 16px;
+      border-radius: 10px;
+      border: 1.5px solid var(--border);
+      background: white;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-mid);
+      text-decoration: none;
+      transition: all .18s;
+      cursor: pointer;
     }
-    .btn-track:hover { border-color:var(--primary); color:var(--primary); background:var(--primary-light); }
+
+    .btn-track:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: var(--primary-light);
+    }
+
     .btn-login {
-      display:flex; align-items:center; gap:7px;
-      padding:8px 18px; border-radius:10px; background:var(--primary); color:white;
-      font-size:13px; font-weight:600; text-decoration:none; transition:all .18s;
-      box-shadow:0 3px 12px -2px #1414b850;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 18px;
+      border-radius: 10px;
+      background: var(--primary);
+      color: white;
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all .18s;
+      box-shadow: 0 3px 12px -2px #1414b850;
     }
-    .btn-login:hover { background:var(--primary-mid); transform:translateY(-1px); }
+
+    .btn-login:hover {
+      background: var(--primary-mid);
+      transform: translateY(-1px);
+    }
 
     /* ── Page wrapper ── */
-    .page-body { margin-top:64px; min-height:calc(100vh - 64px); }
+    .page-body {
+      margin-top: 64px;
+      min-height: calc(100vh - 64px);
+    }
 
     /* ── Footer ── */
-    footer { background:var(--text-dark); color:white; padding:40px 24px 24px; }
-    .footer-inner { max-width:1200px; margin:0 auto; }
-    .footer-top { display:flex; justify-content:space-between; flex-wrap:wrap; gap:24px; margin-bottom:32px; }
-    .footer-logo-wrap { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
-    .footer-logo-icon { width:36px; height:36px; border-radius:10px; background:var(--primary); display:flex; align-items:center; justify-content:center; }
-    .footer-desc { font-size:13px; color:#94a3b8; line-height:1.7; max-width:260px; }
-    .footer-col h4 { font-family:'Sora',sans-serif; font-size:13px; font-weight:700; margin-bottom:12px; color:#e2e8f0; }
-    .footer-col a { display:block; font-size:13px; color:#94a3b8; text-decoration:none; margin-bottom:8px; transition:color .15s; }
-    .footer-col a:hover { color:white; }
-    .footer-bottom { border-top:1px solid #1e293b; padding-top:20px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; }
-    .footer-bottom p { font-size:12px; color:#64748b; }
+    footer {
+      background: var(--text-dark);
+      color: white;
+      padding: 40px 24px 24px;
+    }
+
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .footer-top {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+
+    .footer-logo-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .footer-logo-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .footer-desc {
+      font-size: 13px;
+      color: #94a3b8;
+      line-height: 1.7;
+      max-width: 260px;
+    }
+
+    .footer-col h4 {
+      font-family: 'Sora', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: #e2e8f0;
+    }
+
+    .footer-col a {
+      display: block;
+      font-size: 13px;
+      color: #94a3b8;
+      text-decoration: none;
+      margin-bottom: 8px;
+      transition: color .15s;
+    }
+
+    .footer-col a:hover {
+      color: white;
+    }
+
+    .footer-bottom {
+      border-top: 1px solid #1e293b;
+      padding-top: 20px;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .footer-bottom p {
+      font-size: 12px;
+      color: #64748b;
+    }
 
     /* ── Toast ── */
-    #toast-container { position:fixed; bottom:24px; right:24px; z-index:999; display:flex; flex-direction:column; gap:8px; pointer-events:none; }
-    @keyframes toastIn  { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
-    @keyframes toastOut { from{opacity:1} to{opacity:0} }
-    .toast { pointer-events:auto; display:flex; align-items:center; gap:10px; padding:12px 18px; border-radius:14px; font-size:13px; font-weight:600; color:white; box-shadow:0 8px 24px -4px rgba(0,0,0,.25); animation:toastIn .3s ease both; }
-    .toast.out { animation:toastOut .3s ease both; }
-    .toast.success { background:#16a34a; } .toast.error { background:#dc2626; } .toast.info { background:var(--primary); }
-
-    /* ── Overlay / Modal shared ── */
-    .overlay { position:fixed; inset:0; z-index:200; background:rgba(15,23,42,.5); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; padding:24px; }
-    .overlay.hidden { display:none; }
-    @keyframes modalIn { from{transform:scale(.95) translateY(10px);opacity:0} to{transform:scale(1) translateY(0);opacity:1} }
-    .modal-box { background:white; border-radius:20px; width:100%; max-width:500px; max-height:90vh; overflow-y:auto; animation:modalIn .22s ease both; box-shadow:0 24px 80px -16px rgba(0,0,0,.3); }
-    .modal-header { padding:22px 24px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:12px; }
-    .modal-header-icon { width:40px; height:40px; border-radius:10px; background:var(--primary-light); color:var(--primary); display:flex; align-items:center; justify-content:center; }
-    .modal-header h3 { font-size:17px; font-weight:700; flex:1; }
-    .modal-close { width:32px; height:32px; border-radius:8px; border:none; background:#f1f5f9; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--text-mid); transition:background .15s; }
-    .modal-close:hover { background:#e2e8f0; }
-    .modal-body { padding:22px 24px; }
-    .modal-footer { padding:16px 24px 22px; display:flex; gap:10px; justify-content:flex-end; }
-    .form-group { display:flex; flex-direction:column; gap:5px; margin-bottom:14px; }
-    .form-group label { font-size:12px; font-weight:600; color:var(--text-mid); }
-    .form-group input, .form-group textarea {
-      border:1.5px solid var(--border); border-radius:10px; padding:9px 13px;
-      font-size:14px; font-family:'Inter',sans-serif; color:var(--text-dark);
-      outline:none; background:var(--bg-light); transition:border-color .18s;
+    #toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 999;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
     }
-    .form-group input:focus, .form-group textarea:focus { border-color:var(--primary); background:white; }
-    .btn-primary { padding:10px 22px; border-radius:10px; background:var(--primary); color:white; font-size:14px; font-weight:600; border:none; cursor:pointer; transition:all .18s; display:inline-flex; align-items:center; gap:7px; }
-    .btn-primary:hover { background:var(--primary-mid); }
-    .btn-secondary { padding:10px 22px; border-radius:10px; background:#f1f5f9; color:var(--text-mid); font-size:14px; font-weight:600; border:1.5px solid var(--border); cursor:pointer; transition:all .18s; }
-    .btn-secondary:hover { background:#e2e8f0; }
-    @keyframes spin { to{transform:rotate(360deg)} }
-    .spinner { width:16px; height:16px; border:2.5px solid rgba(255,255,255,.35); border-top-color:white; border-radius:50%; animation:spin .7s linear infinite; display:inline-block; }
 
-    @media(max-width:768px) { .nav-links { display:none; } }
+    @keyframes toastIn {
+      from {
+        transform: translateY(20px);
+        opacity: 0
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1
+      }
+    }
+
+    @keyframes toastOut {
+      from {
+        opacity: 1
+      }
+
+      to {
+        opacity: 0
+      }
+    }
+
+    .toast {
+      pointer-events: auto;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 18px;
+      border-radius: 14px;
+      font-size: 13px;
+      font-weight: 600;
+      color: white;
+      box-shadow: 0 8px 24px -4px rgba(0, 0, 0, .25);
+      animation: toastIn .3s ease both;
+    }
+
+    .toast.out {
+      animation: toastOut .3s ease both;
+    }
+
+    .toast.success {
+      background: #16a34a;
+    }
+
+    .toast.error {
+      background: #dc2626;
+    }
+
+    .toast.info {
+      background: var(--primary);
+    }
+
+    /* ── Overlay / Modal ── */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: rgba(15, 23, 42, .5);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .overlay.hidden {
+      display: none;
+    }
+
+    @keyframes modalIn {
+      from {
+        transform: scale(.95) translateY(10px);
+        opacity: 0
+      }
+
+      to {
+        transform: scale(1) translateY(0);
+        opacity: 1
+      }
+    }
+
+    .modal-box {
+      background: white;
+      border-radius: 20px;
+      width: 100%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+      animation: modalIn .22s ease both;
+      box-shadow: 0 24px 80px -16px rgba(0, 0, 0, .3);
+    }
+
+    .modal-header {
+      padding: 22px 24px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .modal-header-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: var(--primary-light);
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-header h3 {
+      font-size: 17px;
+      font-weight: 700;
+      flex: 1;
+    }
+
+    .modal-close {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: none;
+      background: #f1f5f9;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-mid);
+      transition: background .15s;
+    }
+
+    .modal-close:hover {
+      background: #e2e8f0;
+    }
+
+    .modal-body {
+      padding: 22px 24px;
+    }
+
+    .modal-footer {
+      padding: 16px 24px 22px;
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    /* ── Forms ── */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin-bottom: 14px;
+    }
+
+    .form-group label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-mid);
+    }
+
+    .form-group input,
+    .form-group textarea {
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 9px 13px;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      color: var(--text-dark);
+      outline: none;
+      background: var(--bg-light);
+      transition: border-color .18s;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+      border-color: var(--primary);
+      background: white;
+    }
+
+    /* ── Buttons ── */
+    .btn-primary {
+      padding: 10px 22px;
+      border-radius: 10px;
+      background: var(--primary);
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all .18s;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-mid);
+    }
+
+    .btn-secondary {
+      padding: 10px 22px;
+      border-radius: 10px;
+      background: #f1f5f9;
+      color: var(--text-mid);
+      font-size: 14px;
+      font-weight: 600;
+      border: 1.5px solid var(--border);
+      cursor: pointer;
+      transition: all .18s;
+    }
+
+    .btn-secondary:hover {
+      background: #e2e8f0;
+    }
+
+    .btn-danger {
+      padding: 10px 22px;
+      border-radius: 10px;
+      background: #fef2f2;
+      color: #dc2626;
+      font-size: 14px;
+      font-weight: 600;
+      border: 1.5px solid #fecaca;
+      cursor: pointer;
+      transition: all .18s;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .btn-danger:hover {
+      background: #dc2626;
+      color: white;
+      border-color: #dc2626;
+    }
+
+    /* ── Spinner ── */
+    @keyframes spin {
+      to {
+        transform: rotate(360deg)
+      }
+    }
+
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2.5px solid rgba(255, 255, 255, .35);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      display: inline-block;
+    }
+
+    @media(max-width:768px) {
+      .nav-links {
+        display: none;
+      }
+    }
   </style>
 </head>
+
 <body>
 
-<!-- ═══ NAVBAR ════════════════════════════════════════════════ -->
-<nav>
-  <div class="nav-inner">
-    <a th:href="@{/guest}" class="nav-logo">
-      <div class="nav-logo-icon">
-        <span class="material-symbols-outlined" style="font-size:20px">corporate_fare</span>
-      </div>
-      <div>
-        <span class="nav-logo-text">HRM Pro</span>
-        <span class="nav-logo-sub">Careers Portal</span>
-      </div>
-    </a>
-
-    <div class="nav-links">
-      <a th:href="@{/guest}"         class="nav-link" th:classappend="${activePage == 'home'}    ? 'active' : ''">Home</a>
-      <a th:href="@{/guest/jobs}"    class="nav-link" th:classappend="${activePage == 'jobs'}    ? 'active' : ''">Jobs</a>
-      <a th:href="@{/guest/about}"   class="nav-link" th:classappend="${activePage == 'about'}   ? 'active' : ''">About</a>
-      <a th:href="@{/guest/contact}" class="nav-link" th:classappend="${activePage == 'contact'} ? 'active' : ''">Contact</a>
-    </div>
-
-    <div class="nav-spacer"></div>
-
-    <button class="btn-track" onclick="openTrackModal()">
-      <span class="material-symbols-outlined" style="font-size:16px">track_changes</span> Track Application
-    </button>
-    <a th:href="@{/login}" class="btn-login" style="margin-left:8px;">
-      <span class="material-symbols-outlined" style="font-size:16px">lock</span> Employee Login
-    </a>
-  </div>
-</nav>
-
-<!-- ═══ PAGE CONTENT ══════════════════════════════════════════ -->
-<div class="page-body">
-  <th:block th:replace="${content}"/>
-</div>
-
-<!-- ═══ FOOTER ════════════════════════════════════════════════ -->
-<footer>
-  <div class="footer-inner">
-    <div class="footer-top">
-      <div>
-        <div class="footer-logo-wrap">
-          <div class="footer-logo-icon"><span class="material-symbols-outlined" style="font-size:18px;color:white">corporate_fare</span></div>
-          <span style="font-family:'Sora',sans-serif;font-weight:800;font-size:15px;">HRM Pro</span>
+  <!-- ═══ NAVBAR ════════════════════════════════════════════════ -->
+  <nav>
+    <div class="nav-inner">
+      <a th:href="@{/guest}" class="nav-logo">
+        <div class="nav-logo-icon">
+          <span class="material-symbols-outlined" style="font-size:20px">corporate_fare</span>
         </div>
-        <p class="footer-desc">Empowering companies and candidates to find the perfect match since 2020.</p>
-      </div>
-      <div class="footer-col">
-        <h4>Quick Links</h4>
-        <a th:href="@{/guest}">Home</a>
-        <a th:href="@{/guest/jobs}">Open Jobs</a>
-        <a th:href="@{/guest/about}">About Us</a>
-        <a th:href="@{/guest/contact}">Contact</a>
-      </div>
-      <div class="footer-col">
-        <h4>For Candidates</h4>
-        <a th:href="@{/guest/jobs}">Browse Jobs</a>
-        <a href="#" onclick="openTrackModal();return false;">Track Application</a>
-        <a th:href="@{/guest/contact}">Get Help</a>
-      </div>
-      <div class="footer-col">
-        <h4>For Employees</h4>
-        <a th:href="@{/login}">Employee Login</a>
-        <a th:href="@{/dashboard}">Dashboard</a>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <p>© 2025 HRM Pro. All rights reserved.</p>
-      <p>Built with ❤ by Group 5</p>
-    </div>
-  </div>
-</footer>
+        <div>
+          <span class="nav-logo-text">HRM Pro</span>
+          <span class="nav-logo-sub">Careers Portal</span>
+        </div>
+      </a>
 
-<!-- ═══ TRACK MODAL (global) ═════════════════════════════════ -->
-<div class="overlay hidden" id="track-overlay">
-  <div class="modal-box">
-    <div class="modal-header">
-      <div class="modal-header-icon"><span class="material-symbols-outlined fill-icon">track_changes</span></div>
-      <h3>Track My Application</h3>
-      <button class="modal-close" onclick="closeTrackModal()"><span class="material-symbols-outlined" style="font-size:18px">close</span></button>
-    </div>
-    <div class="modal-body">
-      <p style="font-size:13px;color:var(--text-mid);margin-bottom:16px;">Enter the tracking token from your confirmation email to check your application status.</p>
-      <div class="form-group">
-        <label>Tracking Token</label>
-        <input type="text" id="track-token-input" placeholder="Paste your token here..." style="font-family:monospace;letter-spacing:1px;"/>
+      <div class="nav-links">
+        <a th:href="@{/guest}" class="nav-link" th:classappend="${activePage == 'home'}    ? 'active' : ''">Home</a>
+        <a th:href="@{/guest/jobs}" class="nav-link"
+          th:classappend="${activePage == 'jobs'}    ? 'active' : ''">Jobs</a>
+        <a th:href="@{/guest/about}" class="nav-link"
+          th:classappend="${activePage == 'about'}   ? 'active' : ''">About</a>
+        <a th:href="@{/guest/contact}" class="nav-link"
+          th:classappend="${activePage == 'contact'} ? 'active' : ''">Contact</a>
       </div>
-      <div id="track-result-wrap"></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-secondary" onclick="closeTrackModal()">Close</button>
-      <button class="btn-primary" onclick="doTrack()">
-        <span class="material-symbols-outlined" style="font-size:16px">search</span> Track
+
+      <div class="nav-spacer"></div>
+
+      <button class="btn-track" onclick="openTrackModal()">
+        <span class="material-symbols-outlined" style="font-size:16px">track_changes</span> Track Application
       </button>
+      <a th:href="@{/login}" class="btn-login" style="margin-left:8px;">
+        <span class="material-symbols-outlined" style="font-size:16px">lock</span> Employee Login
+      </a>
+    </div>
+  </nav>
+
+  <!-- ═══ PAGE CONTENT ══════════════════════════════════════════ -->
+  <div class="page-body">
+    <th:block th:replace="${content}" />
+  </div>
+
+  <!-- ═══ FOOTER ════════════════════════════════════════════════ -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-top">
+        <div>
+          <div class="footer-logo-wrap">
+            <div class="footer-logo-icon">
+              <span class="material-symbols-outlined" style="font-size:18px;color:white">corporate_fare</span>
+            </div>
+            <span style="font-family:'Sora',sans-serif;font-weight:800;font-size:15px;">HRM Pro</span>
+          </div>
+          <p class="footer-desc">Empowering companies and candidates to find the perfect match since 2020.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Quick Links</h4>
+          <a th:href="@{/guest}">Home</a>
+          <a th:href="@{/guest/jobs}">Open Jobs</a>
+          <a th:href="@{/guest/about}">About Us</a>
+          <a th:href="@{/guest/contact}">Contact</a>
+        </div>
+        <div class="footer-col">
+          <h4>For Candidates</h4>
+          <a th:href="@{/guest/jobs}">Browse Jobs</a>
+          <a href="#" onclick="openTrackModal();return false;">Track Application</a>
+          <a th:href="@{/guest/contact}">Get Help</a>
+        </div>
+        <div class="footer-col">
+          <h4>For Employees</h4>
+          <a th:href="@{/login}">Employee Login</a>
+          <a th:href="@{/dashboard}">Dashboard</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2025 HRM Pro. All rights reserved.</p>
+        <p>Built with ❤ by Group 5</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ═══ TRACK MODAL ═══════════════════════════════════════════ -->
+  <div class="overlay hidden" id="track-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-header-icon">
+          <span class="material-symbols-outlined fill-icon">track_changes</span>
+        </div>
+        <h3>Track My Application</h3>
+        <button class="modal-close" onclick="closeTrackModal()">
+          <span class="material-symbols-outlined" style="font-size:18px">close</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:13px;color:var(--text-mid);margin-bottom:16px;">
+          Enter the tracking token from your confirmation email to check your application status.
+        </p>
+        <div class="form-group">
+          <label>Tracking Token</label>
+          <input type="text" id="track-token-input" placeholder="Paste your token here..."
+            style="font-family:monospace;letter-spacing:1px;" />
+        </div>
+        <div id="track-result-wrap"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeTrackModal()">Close</button>
+        <button class="btn-danger hidden" id="btn-cancel-app" onclick="cancelApplication()">
+          <span class="material-symbols-outlined" style="font-size:16px">cancel</span> Cancel Application
+        </button>
+        <button class="btn-primary" onclick="doTrack()">
+          <span class="material-symbols-outlined" style="font-size:16px">search</span> Track
+        </button>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- ═══ TOAST ═════════════════════════════════════════════════ -->
-<div id="toast-container"></div>
+  <!-- ═══ CONFIRM CANCEL MODAL ════════════════════════════════ -->
+  <div class="overlay hidden" id="confirm-overlay">
+    <div class="modal-box" style="max-width:420px;">
+      <div class="modal-body" style="padding:32px 28px 24px;text-align:center;">
+        <div
+          style="width:56px;height:56px;border-radius:50%;background:#fef2f2;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;">
+          <span class="material-symbols-outlined fill-icon" style="font-size:28px;color:#dc2626;">warning</span>
+        </div>
+        <h3 style="font-size:18px;font-weight:800;margin-bottom:8px;">Cancel Application?</h3>
+        <p style="font-size:14px;color:var(--text-mid);line-height:1.6;">
+          This action <strong>cannot be undone</strong>. Your application will be permanently removed.
+        </p>
+      </div>
+      <div class="modal-footer" style="justify-content:center;gap:12px;padding-top:0;">
+        <button class="btn-secondary" onclick="closeConfirm()" style="min-width:120px;">
+          Keep It
+        </button>
+        <button class="btn-danger" id="btn-confirm-cancel" onclick="confirmCancel()" style="min-width:120px;">
+          <span class="material-symbols-outlined" style="font-size:16px">delete</span> Yes, Cancel
+        </button>
+      </div>
+    </div>
+  </div>
 
-<script>
-  function openTrackModal()  { document.getElementById('track-overlay').classList.remove('hidden'); }
-  function closeTrackModal() {
-    document.getElementById('track-overlay').classList.add('hidden');
-    document.getElementById('track-result-wrap').innerHTML = '';
-    document.getElementById('track-token-input').value = '';
-  }
-  document.getElementById('track-overlay').addEventListener('click', function(e){ if(e.target===this) closeTrackModal(); });
+  <!-- ═══ TOAST ═════════════════════════════════════════════════ -->
+  <div id="toast-container"></div>
 
-  function doTrack() {
-    const token = document.getElementById('track-token-input').value.trim();
-    if(!token){ showToast('Please enter a tracking token.','error'); return; }
-    const wrap = document.getElementById('track-result-wrap');
-    wrap.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);"><div class="spinner" style="border-color:#1414b840;border-top-color:var(--primary);width:24px;height:24px;border-width:3px;margin:0 auto 10px;"></div>Searching...</div>';
-    // Controller: GET /guest/track/{token} → @ResponseBody Application (có thể null)
-    fetch('/guest/track/api/' + encodeURIComponent(token), { headers: { 'Accept': 'application/json' } })
-      .then(r => {
-        if (r.status === 404 || r.status === 204) return null;
-        if (!r.ok) return null;
-        return r.json().catch(() => null);
-      })
-      .then(data => {
-        if(!data) {
-          wrap.innerHTML = '<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:14px 16px;margin-top:10px;display:flex;gap:10px;align-items:center;font-size:13px;color:#dc2626;"><span class="material-symbols-outlined fill-icon" style="font-size:18px">error</span>No application found with this token. Please check and try again.</div>';
-        } else {
+  <script>
+    let _trackedToken = null;
+
+    function openTrackModal() {
+      document.getElementById('track-overlay').classList.remove('hidden');
+    }
+
+    function closeTrackModal() {
+      document.getElementById('track-overlay').classList.add('hidden');
+      document.getElementById('track-result-wrap').innerHTML = '';
+      document.getElementById('track-token-input').value = '';
+      document.getElementById('btn-cancel-app').classList.add('hidden');
+      _trackedToken = null;
+    }
+
+    document.getElementById('track-overlay').addEventListener('click', function (e) {
+      if (e.target === this) closeTrackModal();
+    });
+
+    function doTrack() {
+      const token = document.getElementById('track-token-input').value.trim();
+      if (!token) { showToast('Please enter a tracking token.', 'error'); return; }
+
+      const wrap = document.getElementById('track-result-wrap');
+      wrap.innerHTML = `<div style="text-align:center;padding:20px;color:var(--text-muted);">
+        <div class="spinner" style="border-color:#1414b840;border-top-color:var(--primary);width:24px;height:24px;border-width:3px;margin:0 auto 10px;"></div>
+        Searching...
+      </div>`;
+
+      document.getElementById('btn-cancel-app').classList.add('hidden');
+      _trackedToken = null;
+
+      fetch('/guest/track/api/' + encodeURIComponent(token), { headers: { 'Accept': 'application/json' } })
+        .then(r => {
+          if (r.status === 404 || r.status === 204) return null;
+          if (!r.ok) return null;
+          return r.json().catch(() => null);
+        })
+        .then(data => {
+          if (!data) {
+            wrap.innerHTML = `<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:14px 16px;margin-top:10px;display:flex;gap:10px;align-items:center;font-size:13px;color:#dc2626;">
+              <span class="material-symbols-outlined fill-icon" style="font-size:18px">error</span>
+              No application found with this token. Please check and try again.
+            </div>`;
+            return;
+          }
+
+          // Thử nhiều field name phòng backend đặt tên khác nhau
+          const rawStatus = (
+            data.status ||
+            data.applicationStatus ||
+            data.state ||
+            data.applicationState ||
+            ''
+          ).toString().trim().toUpperCase();
+
           const statusColors = {
-            APPLIED:   'background:#dcfce7;color:#16a34a',
+            APPLIED: 'background:#dcfce7;color:#16a34a',
             SCREENING: 'background:#dbeafe;color:#1d4ed8',
+            INTERVIEWING: 'background:#fef9c3;color:#a16207',
             INTERVIEW: 'background:#fef9c3;color:#a16207',
-            OFFER:     'background:#f3e8ff;color:#7e22ce',
-            REJECTED:  'background:#fee2e2;color:#dc2626'
+            OFFER: 'background:#f3e8ff;color:#7e22ce',
+            HIRED: 'background:#f0fdf4;color:#15803d',
+            REJECTED: 'background:#fee2e2;color:#dc2626',
           };
-          const sc = statusColors[data.status] || statusColors['APPLIED'];
-          const jobTitle  = (data.jobPost && data.jobPost.title) ? data.jobPost.title : 'Position';
-          const appliedAt = data.appliedAt ? new Date(data.appliedAt).toLocaleDateString('vi-VN') : '—';
-          wrap.innerHTML = `<div style="background:var(--bg-light);border-radius:12px;padding:16px;border:1px solid var(--border);margin-top:14px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
-              <div>
-                <div style="font-size:11px;color:var(--text-muted);margin-bottom:2px;">Application for</div>
-                <div style="font-size:15px;font-weight:700;">${jobTitle}</div>
-              </div>
-              <span style="${sc};padding:5px 14px;border-radius:99px;font-size:12px;font-weight:700;">${data.status}</span>
-            </div>
-            <div style="font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:6px;">
-              <span class="material-symbols-outlined" style="font-size:14px">calendar_month</span>
-              Applied: ${appliedAt}
-            </div>
-          </div>`;
-        }
-      }).catch(() => {
-        wrap.innerHTML = '<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:14px 16px;margin-top:10px;display:flex;gap:10px;align-items:center;font-size:13px;color:#dc2626;"><span class="material-symbols-outlined fill-icon" style="font-size:18px">error</span>Could not connect. Please try again.</div>';
-      });
-  }
+          const sc = statusColors[rawStatus] || 'background:#f1f5f9;color:var(--text-mid)';
 
-  function showToast(msg, type='success') {
-    const icons = { success:'check_circle', error:'error', info:'info' };
-    const el = document.createElement('div');
-    el.className = 'toast ' + type;
-    el.innerHTML = '<span class="material-symbols-outlined fill-icon" style="font-size:18px">' + (icons[type]||'info') + '</span>' + msg;
-    document.getElementById('toast-container').appendChild(el);
-    setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 350); }, 3500);
-  }
-</script>
+          const jobTitle = (data.jobPost && data.jobPost.title)
+            ? data.jobPost.title
+            : (data.job && data.job.title ? data.job.title : 'Position');
+
+          const appliedAt = data.appliedAt
+            ? new Date(data.appliedAt).toLocaleDateString('vi-VN')
+            : '—';
+
+          wrap.innerHTML = `
+            <div style="background:var(--bg-light);border-radius:12px;padding:16px;border:1px solid var(--border);margin-top:14px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+                <div>
+                  <div style="font-size:11px;color:var(--text-muted);margin-bottom:2px;">Application for</div>
+                  <div style="font-size:15px;font-weight:700;">${jobTitle}</div>
+                </div>
+                <span style="${sc};padding:5px 14px;border-radius:99px;font-size:12px;font-weight:700;">${rawStatus}</span>
+              </div>
+              <div style="font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:6px;">
+                <span class="material-symbols-outlined" style="font-size:14px">calendar_month</span>
+                Applied: ${appliedAt}
+              </div>
+            </div>`;
+
+          // Hiện nút Cancel nếu trạng thái cho phép huỷ
+          const cancellable = ['APPLIED', 'SCREENING'];
+          if (cancellable.includes(rawStatus)) {
+            _trackedToken = token;
+            document.getElementById('btn-cancel-app').classList.remove('hidden');
+          }
+        })
+        .catch(() => {
+          wrap.innerHTML = `<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:14px 16px;margin-top:10px;display:flex;gap:10px;align-items:center;font-size:13px;color:#dc2626;">
+            <span class="material-symbols-outlined fill-icon" style="font-size:18px">error</span>
+            Could not connect. Please try again.
+          </div>`;
+        });
+    }
+
+    function cancelApplication() {
+      if (!_trackedToken) return;
+      // Mở modal confirm thay vì dùng confirm()
+      document.getElementById('confirm-overlay').classList.remove('hidden');
+    }
+
+    function closeConfirm() {
+      document.getElementById('confirm-overlay').classList.add('hidden');
+    }
+
+    function confirmCancel() {
+      const btn = document.getElementById('btn-confirm-cancel');
+      btn.disabled = true;
+      btn.innerHTML = '<div class="spinner"></div> Cancelling...';
+
+      fetch('/guest/application/delete/' + _trackedToken, { method: 'POST' })
+        .then(r => r.text())
+        .then(() => {
+          closeConfirm();
+          showToast('Application cancelled successfully.', 'success');
+          closeTrackModal();
+        })
+        .catch(() => {
+          closeConfirm();
+          showToast('Error cancelling application. Please try again.', 'error');
+        })
+        .finally(() => {
+          btn.disabled = false;
+          btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:16px">delete</span> Yes, Cancel';
+        });
+    }
+
+    // Đóng confirm modal khi click backdrop
+    document.getElementById('confirm-overlay').addEventListener('click', function (e) {
+      if (e.target === this) closeConfirm();
+    });
+
+    function showToast(msg, type = 'success') {
+      const icons = { success: 'check_circle', error: 'error', info: 'info' };
+      const el = document.createElement('div');
+      el.className = 'toast ' + type;
+      el.innerHTML = `<span class="material-symbols-outlined fill-icon" style="font-size:18px">${icons[type] || 'info'}</span>${msg}`;
+      document.getElementById('toast-container').appendChild(el);
+      setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 350); }, 3500);
+    }
+  </script>
+
+
 </body>
+
 </html>

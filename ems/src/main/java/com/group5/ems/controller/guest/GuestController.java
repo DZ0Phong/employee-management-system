@@ -250,6 +250,15 @@ public class GuestController {
                 return guestService.trackApplicationDTO(token);
         }
 
+        @PostMapping("/application/delete/{token}")
+        @ResponseBody
+        public String deleteApplication(@PathVariable String token) {
+
+                guestService.deleteApplicationByToken(token);
+
+                return "deleted";
+        }
+
         @PostMapping("/test-upload")
         @ResponseBody
         public String testUpload(@RequestParam("file") MultipartFile file) {
@@ -271,4 +280,5 @@ public class GuestController {
                                 .header("Content-Type", cv.getFileType())
                                 .body(cv.getFileData());
         }
+
 }

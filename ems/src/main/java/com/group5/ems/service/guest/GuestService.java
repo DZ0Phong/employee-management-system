@@ -3,6 +3,7 @@ package com.group5.ems.service.guest;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -36,6 +37,7 @@ public class GuestService {
     private final CandidateCvRepository candidateCvRepository;
     private final ApplicationRepository applicationRepository;
     private final DepartmentRepository departmentRepository;
+    private final EmailService emailService;
 
     // =============================
     // CANDIDATES
@@ -183,8 +185,7 @@ public class GuestService {
     // FULL APPLY FLOW
     // =============================
 
-    public ApplicationResponseDTO applyJobFullFlow(
-            ApplyJobRequestDTO request) throws Exception {
+    public ApplicationResponseDTO applyJobFullFlow(ApplyJobRequestDTO request) throws Exception {
 
         Candidate candidate = createCandidateIfNotExist(
                 request.getFullName(),
@@ -197,15 +198,30 @@ public class GuestService {
                 request.getExpectedSalary());
 
         CandidateCv cv = uploadCv(candidate.getId(), request.getFile());
-
         Application app = applyJob(candidate.getId(), request.getJobId(), cv.getId());
 
-        return new ApplicationResponseDTO(
-                app.getId(),
-                app.getCandidateId(),
-                app.getJobPostId(),
-                app.getCvId(),
-                app.getTrackingToken());
+        // Lấy job title để gửi mail
+        String jobTitle = jobPostRepository
+                .findById(request.getJobId())
+                .map(JobPost::getTitle)
+                .orElse("the position");
+
+        // Gửi email xác nhận sau khi apply
+        emailService.sendFromTemplate(
+                candidate.getEmail(),
+                "APPLICATION_CONFIRM",
+                Map.of(
+                        "fullName", candidate.getFullName(),
+                        "jobTitle", jobTitle,
+                        "token", app.getTrackingToken()));
+
+        ApplicationResponseDTO dto = new ApplicationResponseDTO();
+        dto.setApplicationId(app.getId());
+        dto.setCandidateId(app.getCandidateId());
+        dto.setJobId(app.getJobPostId());
+        dto.setCvId(app.getCvId());
+        dto.setTrackingToken(app.getTrackingToken());
+        return dto;
     }
 
     // =============================
@@ -214,17 +230,46 @@ public class GuestService {
 
     public ApplicationResponseDTO trackApplicationDTO(String token) {
 
-        Application app = applicationRepository.findByTrackingToken(token);
+        Application app = applicationRepository
+                .findByTrackingToken(token)
+                .orElse(null);
 
-        if (app == null) {
+        if (app == null)
             return null;
+
+        // Lấy job title
+        String jobTitle = null;
+        if (app.getJobPostId() != null) {
+            jobTitle = jobPostRepository
+                    .findById(app.getJobPostId())
+                    .map(JobPost::getTitle)
+                    .orElse(null);
         }
 
-        return new ApplicationResponseDTO(
-                app.getId(),
-                app.getCandidateId(),
-                app.getJobPostId(),
-                app.getCvId(),
-                app.getTrackingToken());
+        // Format appliedAt
+        String appliedAt = app.getAppliedAt() != null
+                ? app.getAppliedAt().toString()
+                : null;
+
+        ApplicationResponseDTO dto = new ApplicationResponseDTO();
+        dto.setApplicationId(app.getId());
+        dto.setCandidateId(app.getCandidateId());
+        dto.setJobId(app.getJobPostId());
+        dto.setCvId(app.getCvId());
+        dto.setTrackingToken(app.getTrackingToken());
+        dto.setStatus(app.getStatus() != null ? app.getStatus().toString() : null);
+        dto.setAppliedAt(appliedAt);
+        dto.setJobPost(new ApplicationResponseDTO.JobPostInfo(jobTitle));
+
+        return dto;
+    }
+
+    public void deleteApplicationByToken(String token) {
+
+        Application app = applicationRepository
+                .findByTrackingToken(token)
+                .orElseThrow(() -> new RuntimeException("Application not found"));
+
+        applicationRepository.delete(app);
     }
 }
