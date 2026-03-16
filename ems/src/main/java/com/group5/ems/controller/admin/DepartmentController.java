@@ -33,8 +33,8 @@ public class DepartmentController {
                              @RequestParam(defaultValue = "10") int pageSize,
                              Model model) {
         model.addAttribute("keyword", keyword);
-        model.addAttribute("sort", sort);
-        model.addAttribute("dir", dir);
+        model.addAttribute("sortField", sort);
+        model.addAttribute("sortDir", dir);
 
         model.addAttribute("statTotal", adminService.getAllDepartmentsCount());
         model.addAttribute("statTotalStaff", adminService.getAllEmployeesCount());
@@ -44,7 +44,7 @@ public class DepartmentController {
         model.addAttribute("departments", pg);
         model.addAttribute("currentPage", pg.getNumber());
         model.addAttribute("totalPages", pg.getTotalPages());
-        model.addAttribute("totalItems", pg.getTotalElements());
+        model.addAttribute("totalElements", pg.getTotalElements());
         model.addAttribute("pageSize", pg.getSize());
 
         model.addAttribute("deptForm", new DepartmentFormDTO());

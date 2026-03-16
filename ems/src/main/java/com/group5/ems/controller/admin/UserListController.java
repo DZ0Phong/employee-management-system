@@ -4,10 +4,12 @@ import com.group5.ems.dto.request.SaveUserRequest;
 import com.group5.ems.dto.response.UserDTO;
 import com.group5.ems.entity.Role;
 import com.group5.ems.service.admin.AdminService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -48,6 +50,7 @@ public class UserListController {
         //get dept
         model.addAttribute("departments",adminService.getDepartmentName());
 
+        model.addAttribute("departmentCount", adminService.getAllDepartmentsCount());
         model.addAttribute("statTotal", adminService.getStatusTotal());
         model.addAttribute("statActive", adminService.getStatusActive());
         model.addAttribute("statInactive", adminService.getStatusInactive());
@@ -67,7 +70,14 @@ public class UserListController {
     }
 
     @PostMapping("/users/save")
-    public String saveUser(@ModelAttribute SaveUserRequest req, RedirectAttributes  redirectAttributes) {
+    public String saveUser(@Valid @ModelAttribute SaveUserRequest req,
+                           BindingResult bindingResult,
+                           RedirectAttributes redirectAttributes) {
+        if(bindingResult.hasErrors()) {
+            String error = bindingResult.getAllErrors().get(0).getDefaultMessage();
+            redirectAttributes.addFlashAttribute("message", error);
+            return "redirect:/admin/users";
+        }
         try{
             adminService.saveUser(req);
             redirectAttributes.addFlashAttribute("message", "User has been saved successfully");
