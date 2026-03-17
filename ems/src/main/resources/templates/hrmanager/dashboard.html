@@ -70,6 +70,12 @@
                     <span class="material-symbols-outlined">monitoring</span>
                     <span class="text-sm">HR Analytics Dashboard</span>
                 </a>
+                <a th:href="@{/hrmanager/calendar}"
+                   th:classappend="${activePage == 'calendar' ? 'bg-primary/10 text-primary font-semibold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}"
+                   class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors">
+                    <span class="material-symbols-outlined">calendar_month</span>
+                    <span class="text-sm">Calendar</span>
+                </a>
             </nav>
 
             <!-- Current user profile -->
@@ -331,10 +337,6 @@
                             </th:block>
 
                         </div>
-                        <a th:href="@{/calendar}"
-                            class="block w-full mt-8 py-2 text-sm font-bold text-primary hover:bg-primary/5 rounded-lg transition-colors border border-primary/20 text-center">
-                            View Calendar
-                        </a>
                     </div>
                 </div>
 

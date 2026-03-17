@@ -11,6 +11,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import com.group5.ems.service.hrmanager.CalendarService;
+import com.group5.ems.dto.request.hrmanager.EventCreateDTO;
+import com.group5.ems.dto.request.hrmanager.EventUpdateDTO;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import java.time.LocalDate;
 
 
 @Controller
@@ -22,6 +28,8 @@ public class HrManagerController {
     private final HRAnalyticsService analyticsService;
     private final LeaveApprovalService leaveApprovalService;  // ← thêm
     private final PayrollApprovalService payrollApprovalService;
+    private final CalendarService calendarService;
+
 
     @GetMapping({"", "/", "/dashboard"})
     public String dashboard(Model model,
@@ -70,6 +78,40 @@ public class HrManagerController {
         return "hrmanager/hr_analytics";
     }
 
+    // ── Calendar ──────────────────────────────────────────────────────────────
+    @GetMapping("/calendar")
+    public String calendar(Model model,
+                           @RequestParam(required = false) Integer month,
+                           @RequestParam(required = false) Integer year,
+                           @RequestParam(defaultValue = "month") String view) {
+
+        // Mặc định là tháng/năm hiện tại
+        LocalDate now = LocalDate.now();
+        int currentMonth = month != null ? month : now.getMonthValue();
+        int currentYear  = year  != null ? year  : now.getYear();
+
+        try {
+            model.addAttribute("events",       eventService.getAllActiveEvents());
+            model.addAttribute("weekEvents",   eventService.getUpcomingEventsForDashboard());
+            model.addAttribute("categories",   eventCategoryService.getAllActiveCategories());
+            model.addAttribute("currentMonth", currentMonth);
+            model.addAttribute("currentYear",  currentYear);
+            model.addAttribute("view",         view);
+            model.addAttribute("activePage",   "calendar");
+            return "hrmanager/calendar";
+        } catch (Exception e) {
+            model.addAttribute("errorMessage", "Error loading calendar: " + e.getMessage());
+            model.addAttribute("events", java.util.Collections.emptyList());
+            model.addAttribute("weekEvents", java.util.Collections.emptyList());
+            model.addAttribute("categories", java.util.Collections.emptyList());
+            model.addAttribute("currentMonth", currentMonth);
+            model.addAttribute("currentYear",  currentYear);
+            model.addAttribute("view",         view);
+            model.addAttribute("activePage",   "calendar");
+            return "hrmanager/calendar";
+        }
+    }
+
     @PostMapping("/leave-approval/approve")
     public String approveLeaveRequest(@RequestParam Long requestId,
                                     @RequestParam Long approverId) {
@@ -84,4 +126,59 @@ public class HrManagerController {
         leaveApprovalService.rejectLeaveRequest(requestId, approverId, rejectedReason);
         return "redirect:/hrmanager/leave-approval?tab=pending";
     }
+
+    // ── Thêm event ────────────────────────────────────────────────────────────
+    @PostMapping("/calendar/create")
+    public String createEvent(@ModelAttribute EventCreateDTO dto,
+                              RedirectAttributes redirectAttributes) {
+        try {
+            Long currentUserId = getCurrentUserId(); // TODO: lấy từ SecurityContext
+            calendarService.createEvent(dto, currentUserId);
+            redirectAttributes.addFlashAttribute("flashMessage", "Event created successfully!");
+            redirectAttributes.addFlashAttribute("flashType", "success");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("flashMessage", e.getMessage());
+            redirectAttributes.addFlashAttribute("flashType", "error");
+        }
+        return "redirect:/hrmanager/calendar";
+    }
+
+    // ── Sửa event ────────────────────────────────────────────────────────────
+    @PostMapping("/calendar/update")
+    public String updateEvent(@ModelAttribute EventUpdateDTO dto,
+                              RedirectAttributes redirectAttributes) {
+        try {
+            Long currentUserId = getCurrentUserId();
+            calendarService.updateEvent(dto, currentUserId);
+            redirectAttributes.addFlashAttribute("flashMessage", "Event updated successfully!");
+            redirectAttributes.addFlashAttribute("flashType", "success");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("flashMessage", e.getMessage());
+            redirectAttributes.addFlashAttribute("flashType", "error");
+        }
+        return "redirect:/hrmanager/calendar";
+    }
+
+    // ── Xóa event ────────────────────────────────────────────────────────────
+    @PostMapping("/calendar/delete")
+    public String deleteEvent(@RequestParam Long id,
+                              RedirectAttributes redirectAttributes) {
+        try {
+            Long currentUserId = getCurrentUserId();
+            calendarService.deleteEvent(id, currentUserId);
+            redirectAttributes.addFlashAttribute("flashMessage", "Event deleted successfully!");
+            redirectAttributes.addFlashAttribute("flashType", "success");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("flashMessage", e.getMessage());
+            redirectAttributes.addFlashAttribute("flashType", "error");
+        }
+        return "redirect:/hrmanager/calendar";
+    }
+
+    // ── Helper lấy current user ───────────────────────────────────────────────
+    private Long getCurrentUserId() {
+        // TODO: thay bằng SecurityContext sau khi có Authentication
+        return 1L; // tạm thời hard-code
+    }
+
 }
