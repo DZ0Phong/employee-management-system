@@ -1,0 +1,151 @@
+/* ══════════════════════════════════════════════════════════ */
+/* HR MODULE COMMON STYLES                                   */
+/* ══════════════════════════════════════════════════════════ */
+
+/* --- Material Symbols Configuration --- */
+.material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+.fill-icon {
+    font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* --- Shared Animations --- */
+@keyframes gradientShift {
+    0%, 100% { background-position: 0 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+@keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes progressFill {
+    from { width: 0; }
+}
+
+@keyframes pulse-dot {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.5); opacity: .6; }
+}
+
+/* --- Layout Components --- */
+.gradient-card {
+    background: linear-gradient(135deg, #1414b8, #3b3bea, #6366f1, #1414b8);
+    background-size: 300% 300%;
+    animation: gradientShift 6s ease infinite;
+}
+
+.anim {
+    opacity: 0;
+    animation: fadeSlideUp 0.55s ease forwards;
+}
+
+/* Animation Delays */
+.anim-1 { animation-delay: 0.05s; }
+.anim-2 { animation-delay: 0.12s; }
+.anim-3 { animation-delay: 0.19s; }
+.anim-4 { animation-delay: 0.26s; }
+.anim-5 { animation-delay: 0.33s; }
+.anim-6 { animation-delay: 0.40s; }
+.anim-7 { animation-delay: 0.47s; }
+.anim-8 { animation-delay: 0.54s; }
+
+.dot-grid {
+    background-image: radial-gradient(circle, #1414b820 1px, transparent 1px);
+    background-size: 24px 24px;
+}
+
+.progress-bar {
+    animation: progressFill 1.2s cubic-bezier(.4, 0, .2, 1) forwards;
+}
+
+.pulse-dot {
+    animation: pulse-dot 2s ease-in-out infinite;
+}
+
+/* --- Scrollbar Customization --- */
+::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #1414b840;
+    border-radius: 99px;
+}
+
+/* --- Navigation & States --- */
+.nav-active {
+    box-shadow: 0 0 0 1px #1414b830, inset 3px 0 0 #1414b8;
+}
+
+.card-hover {
+    transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px -8px #1414b825;
+}
+
+.stat-num {
+    font-feature-settings: "tnum";
+    font-variant-numeric: tabular-nums;
+}
+
+/* --- Modal Components --- */
+.modal-backdrop {
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(4px);
+}
+
+.modal-tab {
+    border-bottom: 2px solid transparent;
+}
+
+.modal-tab.active {
+    color: #1414b8;
+    border-color: #1414b8;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* --- Leave Specific Styles --- */
+.leave-tab {
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+}
+
+.leave-tab.active {
+    color: #1414b8;
+    border-color: #1414b8;
+}
+
+.leave-tab:not(.active) {
+    color: #94a3b8;
+}
+
+.leave-tab:hover:not(.active) {
+    color: #64748b;
+}
+
+.leave-panel {
+    display: none;
+}
+
+.leave-panel.active {
+    display: block;
+}

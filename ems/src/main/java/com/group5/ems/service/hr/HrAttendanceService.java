@@ -3,6 +3,7 @@ package com.group5.ems.service.hr;
 import com.group5.ems.dto.response.HrAttendanceDTO;
 import com.group5.ems.entity.Attendance;
 import com.group5.ems.repository.AttendanceRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,14 +12,11 @@ import java.util.stream.Collectors;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class HrAttendanceService {
 
     private final AttendanceRepository attendanceRepository;
-
-    public HrAttendanceService(AttendanceRepository attendanceRepository) {
-        this.attendanceRepository = attendanceRepository;
-    }
 
     public List<HrAttendanceDTO> getAllAttendances() {
         return attendanceRepository.findAll().stream()

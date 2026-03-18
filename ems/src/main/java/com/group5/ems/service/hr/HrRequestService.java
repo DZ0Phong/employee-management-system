@@ -3,6 +3,7 @@ package com.group5.ems.service.hr;
 import com.group5.ems.dto.response.HrRequestDTO;
 import com.group5.ems.entity.Request;
 import com.group5.ems.repository.RequestRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -15,14 +16,11 @@ import java.util.stream.Collectors;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class HrRequestService {
 
     private final RequestRepository requestRepository;
-
-    public HrRequestService(RequestRepository requestRepository) {
-        this.requestRepository = requestRepository;
-    }
 
     public Page<HrRequestDTO> getAllWorkflowRequests(Pageable pageable) {
         Page<Request> page = requestRepository.findWorkflowRequests(pageable);

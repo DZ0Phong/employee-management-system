@@ -1,6 +1,6 @@
 package com.group5.ems.controller.hrmanager;
 
-import com.group5.ems.dto.request.hrmanager.EventCreateDTO;
+import com.group5.ems.dto.response.hrmanager.EventCreateDTO;
 import com.group5.ems.dto.request.hrmanager.EventUpdateDTO;
 import com.group5.ems.service.hrmanager.CalendarService;
 import com.group5.ems.service.hrmanager.HRAnalyticsService;
