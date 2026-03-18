@@ -6,6 +6,7 @@ import com.group5.ems.repository.AttendanceRepository;
 import com.group5.ems.repository.EmployeeRepository;
 import com.group5.ems.repository.JobPostRepository;
 import com.group5.ems.repository.RequestRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class HrDashboardService {
 
@@ -23,18 +25,6 @@ public class HrDashboardService {
     private final RequestRepository requestRepository;
     private final AttendanceRepository attendanceRepository;
     private final ApplicationRepository applicationRepository;
-
-    public HrDashboardService(EmployeeRepository employeeRepository,
-                              JobPostRepository jobPostRepository,
-                              RequestRepository requestRepository,
-                              AttendanceRepository attendanceRepository,
-                              ApplicationRepository applicationRepository) {
-        this.employeeRepository = employeeRepository;
-        this.jobPostRepository = jobPostRepository;
-        this.requestRepository = requestRepository;
-        this.attendanceRepository = attendanceRepository;
-        this.applicationRepository = applicationRepository;
-    }
 
     public HrDashboardMetricsDTO getDashboardMetrics() {
         Long activeEmployees = employeeRepository.countByStatus("ACTIVE");

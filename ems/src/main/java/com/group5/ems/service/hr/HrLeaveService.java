@@ -3,6 +3,7 @@ package com.group5.ems.service.hr;
 import com.group5.ems.dto.response.HrLeaveRequestDTO;
 import com.group5.ems.entity.Request;
 import com.group5.ems.repository.RequestRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -17,14 +18,11 @@ import java.util.stream.Collectors;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class HrLeaveService {
 
     private final RequestRepository requestRepository;
-
-    public HrLeaveService(RequestRepository requestRepository) {
-        this.requestRepository = requestRepository;
-    }
 
     /**
      * Pending leaves are always shown in full (small count). Uses DB-level JOIN FETCH.

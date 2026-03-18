@@ -9,6 +9,7 @@ import com.group5.ems.dto.response.HrRequestDTO;
 import com.group5.ems.entity.Department;
 import com.group5.ems.repository.DepartmentRepository;
 import com.group5.ems.service.hr.HrDashboardService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -26,6 +27,7 @@ import java.util.List;
 
 @Controller
 @RequestMapping("/hr")
+@RequiredArgsConstructor
 public class HrController {
 
     private static final int PAGE_SIZE = 10;
@@ -40,26 +42,6 @@ public class HrController {
     private final com.group5.ems.service.hr.HrPerformanceService performanceService;
     private final com.group5.ems.service.hr.HrRequestService requestService;
     private final DepartmentRepository departmentRepository;
-
-    public HrController(HrDashboardService dashboardService,
-                        com.group5.ems.service.hr.HrEmployeeService employeeService,
-                        com.group5.ems.service.hr.HrLeaveService leaveService,
-                        com.group5.ems.service.hr.HrPayrollService payrollService,
-                        com.group5.ems.service.hr.HrAttendanceService attendanceService,
-                        com.group5.ems.service.hr.HrRecruitmentService recruitmentService,
-                        com.group5.ems.service.hr.HrPerformanceService performanceService,
-                        com.group5.ems.service.hr.HrRequestService requestService,
-                        DepartmentRepository departmentRepository) {
-        this.dashboardService = dashboardService;
-        this.employeeService = employeeService;
-        this.leaveService = leaveService;
-        this.payrollService = payrollService;
-        this.attendanceService = attendanceService;
-        this.recruitmentService = recruitmentService;
-        this.performanceService = performanceService;
-        this.requestService = requestService;
-        this.departmentRepository = departmentRepository;
-    }
 
     @GetMapping({"", "/", "/dashboard"})
     public String dashboard(Model model) {
@@ -118,7 +100,7 @@ public class HrController {
 
         model.addAttribute("pendingLeaves", leaveService.getPendingLeaves());
 
-        Pageable pageable = PageRequest.of(page, PAGE_SIZE);
+        Pageable pageable = PageRequest.of(page, EMPLOYEE_PAGE_SIZE);
         Page<HrLeaveRequestDTO> historyPage = leaveService.getLeaveHistory(pageable);
         model.addAttribute("leaveHistory", historyPage.getContent());
         model.addAttribute("currentPage", page);

@@ -6,6 +6,7 @@ import com.group5.ems.entity.Contract;
 import com.group5.ems.entity.Employee;
 import com.group5.ems.entity.Salary;
 import com.group5.ems.repository.EmployeeRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -19,14 +20,11 @@ import java.util.stream.Collectors;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class HrEmployeeService {
 
     private final EmployeeRepository employeeRepository;
-
-    public HrEmployeeService(EmployeeRepository employeeRepository) {
-        this.employeeRepository = employeeRepository;
-    }
 
     public List<HrEmployeeDTO> getAllEmployees() {
         return employeeRepository.findAll().stream()

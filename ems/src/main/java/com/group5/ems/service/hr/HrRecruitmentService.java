@@ -4,6 +4,7 @@ import com.group5.ems.dto.response.HrApplicantDTO;
 import com.group5.ems.dto.response.HrRecruitmentDTO;
 import com.group5.ems.entity.JobPost;
 import com.group5.ems.repository.JobPostRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -14,14 +15,11 @@ import java.util.stream.Collectors;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class HrRecruitmentService {
 
     private final JobPostRepository jobPostRepository;
-
-    public HrRecruitmentService(JobPostRepository jobPostRepository) {
-        this.jobPostRepository = jobPostRepository;
-    }
 
     public List<HrRecruitmentDTO> getActiveJobPosts() {
         return jobPostRepository.findAll().stream()

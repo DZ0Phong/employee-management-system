@@ -4,6 +4,7 @@ import com.group5.ems.dto.response.HrPayrollDTO;
 import com.group5.ems.dto.response.HrPayrollSummaryDTO;
 import com.group5.ems.entity.Payslip;
 import com.group5.ems.repository.PayslipRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -13,14 +14,11 @@ import java.util.stream.Collectors;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class HrPayrollService {
 
     private final PayslipRepository payslipRepository;
-
-    public HrPayrollService(PayslipRepository payslipRepository) {
-        this.payslipRepository = payslipRepository;
-    }
 
     public List<HrPayrollDTO> getAllPayslips() {
         return payslipRepository.findAll().stream()
