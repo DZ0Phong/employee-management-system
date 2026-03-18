@@ -2,16 +2,22 @@ package com.group5.ems.controller.hr;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-
-import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.group5.ems.dto.response.HrDashboardMetricsDTO;
 import com.group5.ems.dto.response.HrEmployeeDTO;
@@ -19,16 +25,21 @@ import com.group5.ems.dto.response.HrEmployeeDetailDTO;
 import com.group5.ems.dto.response.HrLeaveRequestDTO;
 import com.group5.ems.dto.response.HrPayrollSummaryDTO;
 import com.group5.ems.dto.response.HrRequestDTO;
-
 import com.group5.ems.entity.Department;
 import com.group5.ems.entity.JobPost;
-
 import com.group5.ems.repository.DepartmentRepository;
 import com.group5.ems.repository.JobPostRepository;
 import com.group5.ems.repository.PositionRepository;
-
+import com.group5.ems.service.hr.HrAttendanceService;
 import com.group5.ems.service.hr.HrDashboardService;
+import com.group5.ems.service.hr.HrEmployeeService;
+import com.group5.ems.service.hr.HrLeaveService;
+import com.group5.ems.service.hr.HrPayrollService;
+import com.group5.ems.service.hr.HrPerformanceService;
 import com.group5.ems.service.hr.HrRecruitmentService;
+import com.group5.ems.service.hr.HrRequestService;
+
+import lombok.RequiredArgsConstructor;
 
 @Controller
 @RequestMapping("/hr")
@@ -39,16 +50,16 @@ public class HrController {
     private static final int EMPLOYEE_PAGE_SIZE = 16;
 
     private final HrDashboardService dashboardService;
-    private final com.group5.ems.service.hr.HrEmployeeService employeeService;
-    private final com.group5.ems.service.hr.HrLeaveService leaveService;
-    private final com.group5.ems.service.hr.HrPayrollService payrollService;
-    private final com.group5.ems.service.hr.HrAttendanceService attendanceService;
+    private final HrEmployeeService employeeService;
+    private final HrLeaveService leaveService;
+    private final HrPayrollService payrollService;
+    private final HrAttendanceService attendanceService;
     private final DepartmentRepository departmentRepository;
     private final PositionRepository positionRepository;
     private final JobPostRepository jobPostRepository;
     private final HrRecruitmentService recruitmentService;
-    private final com.group5.ems.service.hr.HrPerformanceService performanceService;
-    private final com.group5.ems.service.hr.HrRequestService requestService;
+    private final HrPerformanceService performanceService;
+    private final HrRequestService requestService;
 
     @GetMapping({"", "/", "/dashboard"})
     public String dashboard(Model model) {
@@ -236,4 +247,5 @@ public class HrController {
     public String rejectRequest(@PathVariable Long id, @RequestParam(required = false) String reason) {
         requestService.rejectRequest(id, reason != null ? reason : "Rejected by HR");
         return "redirect:/hr/requests";
+    }
 }

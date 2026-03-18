@@ -1,4 +1,4 @@
-package com.group5.ems.dto.request.hrmanager;
+package com.group5.ems.dto.response.hrmanager;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

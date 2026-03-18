@@ -21,15 +21,8 @@ import com.group5.ems.entity.ApplicationStage;
 import com.group5.ems.entity.JobPost;
 import com.group5.ems.repository.ApplicationRepository;
 import com.group5.ems.repository.JobPostRepository;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -41,39 +34,18 @@ public class HrRecruitmentService {
     private final JobPostRepository jobPostRepository;
     private final ApplicationRepository applicationRepository;
 
-    public HrRecruitmentService(JobPostRepository jobPostRepository,
-            ApplicationRepository applicationRepository) {
-        this.jobPostRepository = jobPostRepository;
-        this.applicationRepository = applicationRepository;
-    }
 
-    // ── Job Posts ─────────────────────────────────────────────────────────
-
-    /**
-     * Returns all OPEN job posts with applicant counts and computed fields.
-     * Dùng findByStatus() thay vì findAll() + filter để tránh load toàn bộ bảng.
-     */
     public List<HrRecruitmentDTO> getActiveJobPosts() {
         return jobPostRepository.findByStatus("OPEN").stream()
                 .map(this::mapToJobPostDTO)
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Total number of OPEN job posts — dùng countByStatus() thay vì stream filter.
-     */
     public long countOpenJobs() {
         return jobPostRepository.countByStatus("OPEN");
     }
 
-    // ── Applications ──────────────────────────────────────────────────────
-
-    /**
-     * Returns the 20 most recent applications with full candidate info.
-     */
     public List<HrApplicantDTO> getRecentApplications() {
-        // Dùng findAllWithDetails để load candidate + jobPost + stages
-        // trong cùng 1 query — tránh LazyInitializationException ngoài transaction
         List<Application> apps = applicationRepository.findAllWithDetails(
                 PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "appliedAt"))).getContent();
 
@@ -82,9 +54,6 @@ public class HrRecruitmentService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Total application count — used for header badge.
-     */
     public long countTotalApplications() {
         return applicationRepository.count();
     }
@@ -160,9 +129,6 @@ public class HrRecruitmentService {
                 department = app.getJobPost().getDepartment().getName();
             }
         }
-
-        // Lấy stage mới nhất từ lịch sử ApplicationStage, fallback về
-        // Application.status
         String stage = app.getStatus();
         if (app.getStages() != null && !app.getStages().isEmpty()) {
             stage = app.getStages().stream()
