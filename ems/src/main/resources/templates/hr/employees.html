@@ -8,6 +8,8 @@
     <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" th:href="@{/css/hr/hr-common.css}">
+    <script th:src="@{/js/hr/hr-common.js}"></script>
     <script>
         tailwind.config = {
             darkMode: "class",
@@ -23,26 +25,6 @@
             },
         };
     </script>
-    <style>
-        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
-        .fill-icon { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
-        @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
-        .anim { opacity: 0; animation: fadeSlideUp 0.55s ease forwards; }
-        .anim-1 { animation-delay: 0.05s; }
-        .dot-grid { background-image: radial-gradient(circle, #1414b820 1px, transparent 1px); background-size: 24px 24px; }
-        ::-webkit-scrollbar { width: 5px; height: 5px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #1414b840; border-radius: 99px; }
-        .nav-active { box-shadow: 0 0 0 1px #1414b830, inset 3px 0 0 #1414b8; }
-        .card-hover { transition: transform .2s ease, box-shadow .2s ease; }
-        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 12px 32px -8px #1414b825; }
-        /* Modal */
-        .modal-backdrop { background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); }
-        .modal-tab.active { color: #1414b8; border-color: #1414b8; }
-        .modal-tab { border-bottom: 2px solid transparent; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-    </style>
 </head>
 
 <body class="bg-bg-light font-display text-slate-900 min-h-screen">
@@ -378,12 +360,6 @@
             });
 
         switchTab('info');
-    }
-
-    function closeModal() {
-        const modal = document.getElementById('empModal');
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
     }
 
     function switchTab(tab) {
