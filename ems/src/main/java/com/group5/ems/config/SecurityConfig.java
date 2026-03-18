@@ -25,7 +25,7 @@ public class SecurityConfig {
             )
         
         .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/login", "/error", "/guest", "/guest/**").permitAll()
+                .requestMatchers("/login", "/error", "/guest", "/guest/**","/access-denied").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/employee/**").hasRole("EMPLOYEE")
                 .requestMatchers("/dept-manager/**").hasRole("DEPT_MANAGER")
@@ -34,6 +34,9 @@ public class SecurityConfig {
                 .anyRequest().authenticated()).formLogin(form -> form
                         .loginPage("/login")
                         .successHandler(customeLoginSuccessHandler).permitAll())
+                .exceptionHandling(exception -> exception
+                        .accessDeniedPage("/access-denied")
+                )
          .logout(logout -> logout
          .logoutUrl("/logout")
          .logoutSuccessUrl("/login?logout")

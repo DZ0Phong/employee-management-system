@@ -31,6 +31,7 @@ public class HRManagerDashboardService {
     private final EmployeeRepository employeeRepository;
     private final RequestRepository requestRepository;
     private final JobPostRepository jobPostRepository;
+    private final CalendarService calendarService; // ← thêm
     
     public DashboardKpiResponseDTO getKpiData() {
         DashboardKpiResponseDTO kpi = new DashboardKpiResponseDTO();
@@ -76,13 +77,18 @@ public class HRManagerDashboardService {
         }
         return months; // ví dụ: ["Oct", "Nov", "Dec", "Jan", "Feb", "Mar"]
     }
-    
+
     public List<UpcomingEventDTO> getUpcomingEvents() {
-        return Arrays.asList(
-            new UpcomingEventDTO("New Employee Orientation", "OCT", "12", "09:00 AM - 11:00 AM", "blue"),
-            new UpcomingEventDTO("Q3 Performance Reviews", "OCT", "14", "All Day", "purple"),
-            new UpcomingEventDTO("Benefits Enrollment Ends", "OCT", "15", "05:00 PM Deadline", "emerald")
-        );
+        return calendarService.getUpcomingEvents()
+                .stream()
+                .map(e -> new UpcomingEventDTO(
+                        e.getTitle(),
+                        e.getMonthLabel(),
+                        e.getDayLabel(),
+                        e.getTimeLabel(),
+                        e.getColor()
+                ))
+                .collect(Collectors.toList());
     }
 
     public List<RecentActivityDTO> getRecentActivities(String filter) {

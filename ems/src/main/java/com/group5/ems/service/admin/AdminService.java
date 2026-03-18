@@ -1,12 +1,15 @@
 package com.group5.ems.service.admin;
 
-import com.group5.ems.dto.request.SaveUserRequest;
 import com.group5.ems.dto.request.DepartmentFormDTO;
+import com.group5.ems.dto.request.SaveUserRequest;
 import com.group5.ems.dto.response.DepartmentDTO;
 import com.group5.ems.dto.response.UserDTO;
 import com.group5.ems.entity.*;
+import com.group5.ems.enums.AuditAction;
+import com.group5.ems.enums.AuditEntityType;
 import com.group5.ems.repository.*;
 import com.group5.ems.repository.spec.UserSpecification;
+import com.group5.ems.service.common.LogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -36,6 +39,7 @@ public class AdminService {
     private final DepartmentRepository departmentRepository;
     private final EmployeeRepository employeeRepository;
     private final PasswordEncoder passwordEncoder;
+    private final LogService logService;
 
     @Transactional
     public void saveDepartment(DepartmentFormDTO form) {
@@ -73,6 +77,7 @@ public class AdminService {
             }
         }
 
+        boolean isCreate = (id == null);
         Department department;
         if (id == null) {
             department = new Department();
@@ -88,6 +93,9 @@ public class AdminService {
         department.setManagerId(form.getManagerId()); // nullable ok
 
         departmentRepository.save(department);
+        logService.log(isCreate ? AuditAction.CREATE : AuditAction.UPDATE,
+                AuditEntityType.DEPARTMENT,
+                department.getId());
     }
 
     @Transactional
@@ -113,6 +121,7 @@ public class AdminService {
         }
 
         departmentRepository.delete(dept);
+        logService.log(AuditAction.DELETE, AuditEntityType.DEPARTMENT, id);
     }
     private final List<String> departmentSortList = List.of("name", "code" ,"createdAt");
 
@@ -212,10 +221,14 @@ public class AdminService {
         if(req.getUsername().isBlank() ||req.getEmail().isBlank() ||req.getFullName().isBlank()){
             throw new IllegalArgumentException("User name, email and full name are required");
         }
+        String password = req.getPassword() == null ? "" : req.getPassword().trim();
         //add user
         if(req.getId() == null) {
-            if (req.getPassword().isBlank()) {
+            if (password.isBlank()) {
                 throw new IllegalArgumentException("Password is required");
+            }
+            if (password.length() < 6) {
+                throw new IllegalArgumentException("Password must be at least 6 characters");
             }
             if (userRepository.findByEmail(req.getEmail()).isPresent()) {
                 throw new IllegalArgumentException("Email is already exist");
@@ -225,11 +238,12 @@ public class AdminService {
             }
             User user = new User();
             applyCommonFields(user, req);
-            user.setPasswordHash(passwordEncoder.encode(req.getPassword()));
+            user.setPasswordHash(passwordEncoder.encode(password));
             user.setAvatarUrl(null);
             userRepository.save(user);
             // Gán role được chọn cho user mới (nếu có)
             assignRole(user, req.getRole());
+            logService.log(AuditAction.CREATE, AuditEntityType.USER, user.getId());
         }
         //edit
         else{
@@ -241,12 +255,16 @@ public class AdminService {
                 throw new IllegalArgumentException("Username is already exist");
             }
             applyCommonFields(existingUser, req);
-            if(!req.getPassword().isBlank()){
-                existingUser.setPasswordHash(passwordEncoder.encode(req.getPassword()));
+            if(!password.isBlank()){
+                if (password.length() < 6) {
+                    throw new IllegalArgumentException("Password must be at least 6 characters");
+                }
+                existingUser.setPasswordHash(passwordEncoder.encode(password));
             }
             userRepository.save(existingUser);
             // Cập nhật lại role cho user (xóa cũ, gán mới nếu có)
             assignRole(existingUser, req.getRole());
+            logService.log(AuditAction.UPDATE, AuditEntityType.USER, existingUser.getId());
         }
     }
 
