@@ -167,14 +167,14 @@
                     <h2 class="text-xl font-bold">Calendar</h2>
                     <!-- Month/Year navigation -->
                     <div class="flex items-center gap-2">
-                        <a th:href="@{/hrmanager/calendar(month=${currentMonth == 1 ? 12 : currentMonth - 1}, year=${currentMonth == 1 ? currentYear - 1 : currentYear}, view=${view})}"
+                        <a th:href="@{/hrmanager/calendar(month=${currentMonth == 1 ? 12 : currentMonth - 1}, year=${currentMonth == 1 ? currentYear - 1 : currentYear})}"
                             class="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
                             <span class="material-symbols-outlined text-slate-500">chevron_left</span>
                         </a>
                         <span class="text-sm font-bold min-w-[120px] text-center" id="currentPeriodLabel">
                             <!-- Rendered by JS -->
                         </span>
-                        <a th:href="@{/hrmanager/calendar(month=${currentMonth == 12 ? 1 : currentMonth + 1}, year=${currentMonth == 12 ? currentYear + 1 : currentYear}, view=${view})}"
+                        <a th:href="@{/hrmanager/calendar(month=${currentMonth == 12 ? 1 : currentMonth + 1}, year=${currentMonth == 12 ? currentYear + 1 : currentYear})}"
                             class="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
                             <span class="material-symbols-outlined text-slate-500">chevron_right</span>
                         </a>
@@ -184,90 +184,25 @@
                         </a>
                     </div>
                 </div>
-                <div class="flex items-center gap-3">
-                    <!-- View Toggle -->
-                    <div class="flex items-center bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
-                        <a th:href="@{/hrmanager/calendar(month=${currentMonth}, year=${currentYear}, view='month')}"
-                            th:classappend="${view == 'month' or view == null ? 'bg-white dark:bg-slate-700 shadow-sm text-primary' : 'text-slate-500 hover:text-slate-700'}"
-                            class="px-3 py-1.5 text-xs font-bold rounded-md transition-colors">Month</a>
-                        <a th:href="@{/hrmanager/calendar(month=${currentMonth}, year=${currentYear}, view='week')}"
-                            th:classappend="${view == 'week' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary' : 'text-slate-500 hover:text-slate-700'}"
-                            class="px-3 py-1.5 text-xs font-bold rounded-md transition-colors">Week</a>
-                    </div>
-                    <!-- Add Event Button -->
-                    <button onclick="openAddModal()"
-                        class="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors">
-                        <span class="material-symbols-outlined text-lg">add</span>
-                        Add Event
-                    </button>
-                </div>
             </header>
 
             <!-- Calendar Body -->
             <div class="flex-1 overflow-y-auto p-6">
-
-                <!-- ── MONTH VIEW ───────────────────────────────────────────────── -->
-                <div id="monthView" th:if="${view == 'month' or view == null}">
-                    <!-- Day headers -->
-                    <!-- Thay thế phần Day headers ✅ -->
-                    <div class="grid grid-cols-7 mb-2">
-                        <div class="text-center text-xs font-bold text-slate-500 uppercase tracking-wider py-2">Sun
-                        </div>
-                        <div class="text-center text-xs font-bold text-slate-500 uppercase tracking-wider py-2">Mon
-                        </div>
-                        <div class="text-center text-xs font-bold text-slate-500 uppercase tracking-wider py-2">Tue
-                        </div>
-                        <div class="text-center text-xs font-bold text-slate-500 uppercase tracking-wider py-2">Wed
-                        </div>
-                        <div class="text-center text-xs font-bold text-slate-500 uppercase tracking-wider py-2">Thu
-                        </div>
-                        <div class="text-center text-xs font-bold text-slate-500 uppercase tracking-wider py-2">Fri
-                        </div>
-                        <div class="text-center text-xs font-bold text-slate-500 uppercase tracking-wider py-2">Sat
-                        </div>
-                    </div>
-                    <!-- Calendar grid — rendered by JS -->
-                    <div id="monthGrid"
-                        class="grid grid-cols-7 gap-px bg-slate-200 dark:bg-slate-700 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700">
-                        <!-- Days injected by buildMonthGrid() -->
-                    </div>
+                <!-- Day headers -->
+                <div class="grid grid-cols-7 mb-2">
+                    <div class="text-center text-xs font-bold text-slate-500 uppercase tracking-wider py-2">Sun</div>
+                    <div class="text-center text-xs font-bold text-slate-500 uppercase tracking-wider py-2">Mon</div>
+                    <div class="text-center text-xs font-bold text-slate-500 uppercase tracking-wider py-2">Tue</div>
+                    <div class="text-center text-xs font-bold text-slate-500 uppercase tracking-wider py-2">Wed</div>
+                    <div class="text-center text-xs font-bold text-slate-500 uppercase tracking-wider py-2">Thu</div>
+                    <div class="text-center text-xs font-bold text-slate-500 uppercase tracking-wider py-2">Fri</div>
+                    <div class="text-center text-xs font-bold text-slate-500 uppercase tracking-wider py-2">Sat</div>
                 </div>
-
-                <!-- ── WEEK VIEW ────────────────────────────────────────────────── -->
-                <div id="weekView" th:if="${view == 'week'}">
-                    <div
-                        class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
-                        <!-- Week header -->
-                        <div class="grid grid-cols-8 border-b border-slate-200 dark:border-slate-800">
-                            <div class="px-4 py-3 text-xs font-bold text-slate-400 uppercase">Time</div>
-                            <div th:each="i : ${#numbers.sequence(0, 6)}"
-                                class="px-4 py-3 text-center border-l border-slate-200 dark:border-slate-800">
-                            </div>
-                        </div>
-                        <!-- Week events list -->
-                        <div class="flex gap-2">
-                            <button th:attr="data-id=${event.id},
-                     data-title=${event.title},
-                     data-description=${event.description},
-                     data-start-date=${event.startDate},
-                     data-end-date=${event.endDate},
-                     data-start-time=${event.startTime},
-                     data-end-time=${event.endTime},
-                     data-type=${event.type},
-                     data-color=${event.color},
-                     data-all-day=${event.isAllDay}" onclick="openEditFromBtn(this)"
-                                class="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors">
-                                <span class="material-symbols-outlined text-sm">edit</span>
-                            </button>
-                            <button th:attr="data-id=${event.id}, data-title=${event.title}"
-                                onclick="confirmDeleteFromBtn(this)"
-                                class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
-                                <span class="material-symbols-outlined text-sm">delete</span>
-                            </button>
-                        </div>
-                    </div>
+                <!-- Calendar grid — rendered by JS -->
+                <div id="monthGrid"
+                    class="grid grid-cols-7 gap-px bg-slate-200 dark:bg-slate-700 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700">
+                    <!-- Days injected by buildMonthGrid() -->
                 </div>
-
             </div>
         </main>
     </div>
@@ -420,7 +355,6 @@
         /*<![CDATA[*/
         var calendarMonth = /*[[${currentMonth}]]*/ 1;
         var calendarYear = /*[[${currentYear}]]*/ 2026;
-        var calendarView = /*[[${view}]]*/ 'month';
         var calendarEvents = /*[[${events}]]*/[];
         var calendarFlashMessage = /*[[${flashMessage}]]*/ null;
         var calendarFlashType = /*[[${flashType}]]*/ 'success';
@@ -428,10 +362,7 @@
         var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
             'July', 'August', 'September', 'October', 'November', 'December'];
 
-        document.getElementById('currentPeriodLabel').textContent =
-            calendarView === 'week'
-                ? 'Week of ' + MONTHS[calendarMonth - 1] + ' ' + calendarYear
-                : MONTHS[calendarMonth - 1] + ' ' + calendarYear;
+        document.getElementById('currentPeriodLabel').textContent = MONTHS[calendarMonth - 1] + ' ' + calendarYear;
 
         function buildMonthGrid() {
             var grid = document.getElementById('monthGrid');
@@ -470,10 +401,16 @@
                 var shown = dayEvts.slice(0, 3);
                 for (var j = 0; j < shown.length; j++) {
                     var ev = shown[j];
-                    var evJson = JSON.stringify(ev).replace(/'/g, "\\'");
+                    // Encode an toàn hơn
+                    var evJson = JSON.stringify(ev)
+                        .replace(/\\/g, '\\\\')
+                        .replace(/'/g, "\\'")
+                        .replace(/"/g, '&quot;');
+
                     evtsHtml += '<div class="text-[10px] font-bold px-1.5 py-0.5 rounded truncate cursor-pointer ' + getEventBgClass(ev.color) + '"'
-                        + ' onclick="event.stopPropagation(); openEditModalFromData(\'' + evJson + '\')"'
-                        + ' title="' + (ev.title || '') + '">'
+                        + ' onclick="event.stopPropagation(); openEditModalFromData(JSON.parse(this.dataset.ev))"'
+                        + ' data-ev=\'' + JSON.stringify(ev).replace(/'/g, "\\'") + '\''
+                        + ' title="' + (ev.title || '').replace(/"/g, '&quot;') + '">'
                         + (ev.title || '')
                         + '</div>';
                 }
@@ -510,7 +447,7 @@
             return map[color] || map.blue;
         }
 
-        if (calendarView === 'month' || !calendarView) buildMonthGrid();
+        buildMonthGrid();
 
         function openModal() {
             var m = document.getElementById('eventModal');
@@ -534,10 +471,13 @@
             document.getElementById('eventEndDate').value = dateStr;
         }
         function openEditModalFromData(evStr) {
-            var ev = typeof evStr === 'string' ? JSON.parse(evStr) : evStr;
+            var ev = evStr;
+            if (typeof evStr === 'string') {
+                try { ev = JSON.parse(evStr); } catch (e) { return; }
+            }
             document.getElementById('modalTitle').textContent = 'Edit Event';
             document.getElementById('eventForm').action = '/hrmanager/calendar/update';
-            document.getElementById('eventId').value = ev.id;
+            document.getElementById('eventId').value = ev.id || '';
             document.getElementById('eventTitle').value = ev.title || '';
             document.getElementById('eventDescription').value = ev.description || '';
             document.getElementById('eventStartDate').value = ev.startDate || '';

@@ -86,17 +86,14 @@ public class HrManagerController {
     @GetMapping("/calendar")
     public String calendar(Model model,
                            @RequestParam(required = false) Integer month,
-                           @RequestParam(required = false) Integer year,
-                           @RequestParam(defaultValue = "month") String view) {
+                           @RequestParam(required = false) Integer year) {
         LocalDate now = LocalDate.now();
         int currentMonth = month != null ? month : now.getMonthValue();
         int currentYear  = year  != null ? year  : now.getYear();
 
         model.addAttribute("events",       calendarService.getEventsByMonth(currentMonth, currentYear));
-        model.addAttribute("weekEvents",   calendarService.getEventsByWeek(now));
         model.addAttribute("currentMonth", currentMonth);
         model.addAttribute("currentYear",  currentYear);
-        model.addAttribute("view",         view);
         model.addAttribute("activePage",   "calendar");
         return "hrmanager/calendar";
     }
