@@ -15,4 +15,7 @@ public interface PerformanceReviewRepository extends JpaRepository<PerformanceRe
     List<PerformanceReview> findByReviewerId(Long reviewerId);
     List<PerformanceReview> findByEmployeeIdOrderByCreatedAtDesc(Long employeeId);
     Optional<PerformanceReview> findTopByEmployeeIdOrderByCreatedAtDesc(Long employeeId);
+
+    // Added for Department Manager dashboard
+    List<PerformanceReview> findByEmployee_DepartmentIdOrderByUpdatedAtDesc(Long departmentId);
 }

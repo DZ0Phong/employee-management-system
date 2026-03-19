@@ -5,18 +5,17 @@ import com.group5.ems.entity.Employee;
 import com.group5.ems.entity.Position;
 import com.group5.ems.entity.User;
 import com.group5.ems.repository.DepartmentRepository;
-import com.group5.ems.repository.EmployeeRepository;
-import com.group5.ems.repository.UserRepository;
+import com.group5.ems.repository.PositionRepository;
+import com.group5.ems.repository.RequestRepository;
+import com.group5.ems.repository.RequestTypeRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -24,42 +23,10 @@ import org.springframework.transaction.annotation.Transactional;
 public class DeptManagerService {
 
         private final DepartmentRepository departmentRepository;
-        private final EmployeeRepository employeeRepository;
-        private final UserRepository userRepository;
-        private final com.group5.ems.repository.RequestRepository requestRepository;
-
-        private User getCurrentUser() {
-                Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-                if (auth == null || !auth.isAuthenticated())
-                        return null;
-                return userRepository.findByUsername(auth.getName()).orElse(null);
-        }
-
-        private Map<String, String> getManagerMap(User user) {
-                Map<String, String> manager = new HashMap<>();
-                if (user != null) {
-                        manager.put("name", user.getFullName());
-                        // Simplistic role derivation
-                        manager.put("role", "Department Manager");
-                        manager.put("avatarUrl", user.getAvatarUrl() != null ? user.getAvatarUrl()
-                                        : "https://lh3.googleusercontent.com/aida-public/AB6AXuDdPhGMiAuUVMrhgqJVFn7WwuSwOLn9a730wH2usyu4spUNv9xdN6YBAMA1bABIftIBnWGbN4ZOta3fvUqdmQRPhCb4JMMxyVITyF3CXo6Srgkl9jI21MbXolPsVUwxgExfg-52F2HuTfQ6J4o8bqtfvprk6ikOWkdiJjTsXS_uWawAu1l8WErbThrS0pmx91Dh6uDOoITamBraDKhrQ9er2LfexZBrhboZh3DcLncMTsqT9CZHa9SHfcD8lEFBXDC8zmwPLNHkISk");
-                }
-                return manager;
-        }
-
-        private Department getDepartmentForManager(User user) {
-                if (user == null)
-                        return null;
-                Employee managerEmp = employeeRepository.findByUserId(user.getId()).orElse(null);
-                if (managerEmp == null)
-                        return null;
-
-                List<Department> managedDepts = departmentRepository.findByManagerId(managerEmp.getId());
-                if (!managedDepts.isEmpty()) {
-                        return managedDepts.get(0);
-                }
-                return managerEmp.getDepartment();
-        }
+        private final DeptManagerUtilService utilService;
+        private final RequestRepository requestRepository;
+        private final RequestTypeRepository requestTypeRepository;
+        private final PositionRepository positionRepository;
 
         public int getTeamSize(Long managerId) {
                 return departmentRepository.findByManagerId(managerId).size();
@@ -67,19 +34,21 @@ public class DeptManagerService {
 
         public Map<String, Object> getDashboardMockData() {
                 Map<String, Object> data = new HashMap<>();
-                User currentUser = getCurrentUser();
-                data.put("manager", getManagerMap(currentUser));
+                User currentUser = utilService.getCurrentUser();
+                data.put("manager", utilService.getManagerMap(currentUser));
 
-                Department dept = getDepartmentForManager(currentUser);
+                Department dept = utilService.getDepartmentForManager(currentUser);
                 int teamSize = 0;
                 int activeCount = 0;
                 int inactiveCount = 0;
                 int suspendedCount = 0;
 
-                data.put("newApprovals", 3); // Metrics will need actual calculation logic later
-                data.put("pendingApprovals", 8);
-                data.put("teamAttendance", "92%");
-                data.put("nextReview", "Oct 15");
+                int pendingApprovals = utilService.getPendingApprovalsCount(dept);
+
+                data.put("newApprovals", pendingApprovals);
+                data.put("pendingApprovals", pendingApprovals);
+                data.put("teamAttendance", "N/A"); // Needs Attendance implementation later
+                data.put("nextReview", "N/A"); // Needs Performance Review implementation later
 
                 List<Map<String, String>> activities = new ArrayList<>();
                 if (dept != null && dept.getEmployees() != null) {
@@ -97,22 +66,22 @@ public class DeptManagerService {
 
                                 if (count < 5) {
                                         User empUser = emp.getUser();
-                                Map<String, String> map = new HashMap<>();
-                                map.put("name", empUser != null ? empUser.getFullName() : "Employee #" + emp.getId());
-                                map.put("title", "Staff");
-                                map.put("avatarUrl", empUser != null && empUser.getAvatarUrl() != null
-                                                ? empUser.getAvatarUrl()
-                                                : "https://lh3.googleusercontent.com/aida-public/AB6AXuC5CGURyOdKZg1nPS5tSotOqt9DZB78eRGH3eg3EC-4AMB4rdDXy9jeQr4qOj7ChckGmlmMGLtDvSGTG-xjpnI3_Nfylvv685wy7ZZt-l-5S7goNULPP3vcdleWBtr01Pep3ZA9mtCX5hkoy6OkrIFGl8u9d9KfmPZQw2_aut4hAoECaycxw2Oz1wyAZA4-eKUk6Jbrk2Maoj0rN7YEVuVvYssm7pQ4monLETA3SqC89B2yDAt2DK9icMHRpTDW18H21JOyHXMqMQA");
-                                map.put("status", emp.getStatus() != null ? emp.getStatus() : "Active");
+                                        Map<String, String> map = new HashMap<>();
+                                        map.put("name", empUser != null ? empUser.getFullName() : "Employee #" + emp.getId());
+                                        map.put("title", emp.getPosition() != null ? emp.getPosition().getName() : "Staff");
+                                        map.put("avatarUrl", empUser != null && empUser.getAvatarUrl() != null
+                                                        ? empUser.getAvatarUrl()
+                                                        : "https://lh3.googleusercontent.com/aida-public/AB6AXuC5CGURyOdKZg1nPS5tSotOqt9DZB78eRGH3eg3EC-4AMB4rdDXy9jeQr4qOj7ChckGmlmMGLtDvSGTG-xjpnI3_Nfylvv685wy7ZZt-l-5S7goNULPP3vcdleWBtr01Pep3ZA9mtCX5hkoy6OkrIFGl8u9d9KfmPZQw2_aut4hAoECaycxw2Oz1wyAZA4-eKUk6Jbrk2Maoj0rN7YEVuVvYssm7pQ4monLETA3SqC89B2yDAt2DK9icMHRpTDW18H21JOyHXMqMQA");
+                                        map.put("status", emp.getStatus() != null ? emp.getStatus() : "Active");
 
-                                String statusClass = "ACTIVE".equalsIgnoreCase(emp.getStatus())
-                                                ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-                                                : "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400";
-                                map.put("statusClass", statusClass);
+                                        String statusClass = "ACTIVE".equalsIgnoreCase(emp.getStatus())
+                                                        ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                                                        : "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400";
+                                        map.put("statusClass", statusClass);
 
-                                map.put("attendance", "98%");
-                                map.put("lastReview", "Aug 12, 2023");
-                                activities.add(map);
+                                        map.put("attendance", "N/A");
+                                        map.put("lastReview", "N/A");
+                                        activities.add(map);
                                         count++;
                                 }
                         }
@@ -129,23 +98,25 @@ public class DeptManagerService {
 
         public Map<String, Object> getTeamMockData() {
                 Map<String, Object> data = new HashMap<>();
-                User currentUser = getCurrentUser();
-                data.put("manager", getManagerMap(currentUser));
-                data.put("pendingApprovals", 8);
-                data.put("newApprovals", 3);
+                User currentUser = utilService.getCurrentUser();
+                data.put("manager", utilService.getManagerMap(currentUser));
+                Department dept = utilService.getDepartmentForManager(currentUser);
+                
+                int pendingApprovals = utilService.getPendingApprovalsCount(dept);
+                data.put("pendingApprovals", pendingApprovals);
+                data.put("newApprovals", pendingApprovals); // Treating all as new for simplicity
 
                 List<Map<String, String>> members = new ArrayList<>();
-                Department dept = getDepartmentForManager(currentUser);
-
                 if (dept != null && dept.getEmployees() != null) {
                         for (Employee emp : dept.getEmployees()) {
                                 User empUser = emp.getUser();
                                 Map<String, String> member = new HashMap<>();
-                                member.put("name",
-                                                empUser != null ? empUser.getFullName() : "Employee #" + emp.getId());
+                                member.put("id", String.valueOf(emp.getId()));
+                                member.put("empCode", emp.getEmployeeCode() != null ? emp.getEmployeeCode() : "EMP-" + String.format("%03d", emp.getId()));
+                                member.put("name", empUser != null ? empUser.getFullName() : "Employee #" + emp.getId());
                                 member.put("email", empUser != null ? empUser.getEmail() : "");
-                                member.put("role", "Staff");
-                                member.put("rating", "Meets Expectations");
+                                member.put("role", emp.getPosition() != null ? emp.getPosition().getName() : "Staff");
+                                member.put("rating", "N/A");
                                 member.put("ratingClass",
                                                 "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400");
                                 member.put("status", emp.getStatus() != null ? emp.getStatus() : "Active");
@@ -159,18 +130,32 @@ public class DeptManagerService {
                 }
 
                 data.put("teamMembers", members);
+
+                // Pass all positions for the modal dropdown
+                List<Map<String, String>> positionList = new ArrayList<>();
+                List<Position> allPositions = positionRepository.findAll();
+                for (Position pos : allPositions) {
+                    Map<String, String> p = new HashMap<>();
+                    p.put("id", String.valueOf(pos.getId()));
+                    p.put("name", pos.getName());
+                    positionList.add(p);
+                }
+                data.put("allPositions", positionList);
+
                 return data;
         }
 
         public Map<String, Object> getDepartmentMockData() {
                 Map<String, Object> data = new HashMap<>();
-                User currentUser = getCurrentUser();
-                Map<String, String> managerMap = getManagerMap(currentUser);
+                User currentUser = utilService.getCurrentUser();
+                Map<String, String> managerMap = utilService.getManagerMap(currentUser);
                 data.put("manager", managerMap);
-                data.put("pendingApprovals", 8);
-                data.put("newApprovals", 3);
-
-                Department dept = getDepartmentForManager(currentUser);
+                Department dept = utilService.getDepartmentForManager(currentUser);
+                
+                int pendingApprovals = utilService.getPendingApprovalsCount(dept);
+                
+                data.put("pendingApprovals", pendingApprovals);
+                data.put("newApprovals", pendingApprovals);
                 Map<String, String> department = new HashMap<>();
                 List<Map<String, String>> teams = new ArrayList<>();
                 List<Map<String, String>> positions = new ArrayList<>();
@@ -183,8 +168,8 @@ public class DeptManagerService {
                         department.put("manager", managerMap.get("name"));
                         department.put("totalEmployees",
                                         dept.getEmployees() != null ? String.valueOf(dept.getEmployees().size()) : "0");
-                        department.put("openPositions", "0");
-                        department.put("budgetUtilization", "85%");
+                        department.put("openPositions", "0"); // requires jobpost integration
+                        department.put("budgetUtilization", "N/A"); // Requires salary calculation
 
                         if (dept.getChildren() != null && !dept.getChildren().isEmpty()) {
                                 for (Department child : dept.getChildren()) {
@@ -208,8 +193,12 @@ public class DeptManagerService {
                                 for (Position pos : dept.getPositions()) {
                                         Map<String, String> posMap = new HashMap<>();
                                         posMap.put("title", pos.getName());
-                                        posMap.put("headcount", "1"); // Placeholder
-                                        posMap.put("status", "Filled"); // Placeholder
+                                        int count = 0;
+                                        if (pos.getEmployees() != null) { // Using standard length
+                                                count = pos.getEmployees().size();
+                                        }
+                                        posMap.put("headcount", String.valueOf(count)); 
+                                        posMap.put("status", "Active");
                                         posMap.put("statusClass", "bg-green-100 text-green-700");
                                         positions.add(posMap);
                                 }
@@ -222,7 +211,7 @@ public class DeptManagerService {
                         department.put("manager", managerMap.get("name"));
                         department.put("totalEmployees", "0");
                         department.put("openPositions", "0");
-                        department.put("budgetUtilization", "0%");
+                        department.put("budgetUtilization", "N/A");
                 }
 
                 data.put("department", department);
@@ -231,109 +220,56 @@ public class DeptManagerService {
 
                 return data;
         }
-        public Map<String, Object> getLeaveApprovalData() {
-                Map<String, Object> data = new HashMap<>();
-                User currentUser = getCurrentUser();
-                Map<String, String> managerMap = getManagerMap(currentUser);
-                data.put("manager", managerMap);
 
-                Department dept = getDepartmentForManager(currentUser);
-                List<com.group5.ems.entity.Request> requests = new ArrayList<>();
-                if (dept != null) {
-                        requests = requestRepository.findByEmployeeDepartmentIdAndLeaveTypeIsNotNullOrderByCreatedAtDesc(dept.getId());
-                }
+        @Transactional
+        public void createRemovalRequest(Long employeeId, String reason) {
+            com.group5.ems.entity.RequestType rt = requestTypeRepository.findByCode("REMOVAL").orElseGet(() -> {
+                com.group5.ems.entity.RequestType nrt = new com.group5.ems.entity.RequestType();
+                nrt.setCode("REMOVAL");
+                nrt.setName("Member Removal");
+                nrt.setCategory("HR");
+                return requestTypeRepository.save(nrt);
+            });
 
-                java.time.LocalDate today = java.time.LocalDate.now();
-                java.time.YearMonth currentMonth = java.time.YearMonth.now();
+            com.group5.ems.entity.Request req = new com.group5.ems.entity.Request();
+            req.setEmployeeId(employeeId);
+            req.setRequestTypeId(rt.getId());
+            req.setTitle("Request Member Removal");
+            req.setContent(reason);
+            req.setStatus("PENDING");
+            requestRepository.save(req);
+        }
 
-                int pendingApprovals = 0;
-                int approvedThisMonth = 0;
-                int awayToday = 0;
+        @Transactional
+        public boolean createAddMemberRequest(String requestType, String role, String description) {
+            if ("TRANSFER".equals(requestType)) {
+                // Return false to simulate no internal transfer targets available
+                return false;
+            }
 
-                List<Map<String, Object>> mappedRequests = new ArrayList<>();
+            // Recruitment logic
+            com.group5.ems.entity.RequestType rt = requestTypeRepository.findByCode("RECRUITMENT").orElseGet(() -> {
+                com.group5.ems.entity.RequestType nrt = new com.group5.ems.entity.RequestType();
+                nrt.setCode("RECRUITMENT");
+                nrt.setName("Recruitment");
+                nrt.setCategory("HR");
+                return requestTypeRepository.save(nrt);
+            });
 
-                for (com.group5.ems.entity.Request req : requests) {
-                        // Metrics
-                        if ("PENDING".equalsIgnoreCase(req.getStatus())) {
-                                pendingApprovals++;
-                        } else if ("APPROVED".equalsIgnoreCase(req.getStatus())) {
-                                if (req.getApprovedAt() != null && java.time.YearMonth.from(req.getApprovedAt()).equals(currentMonth)) {
-                                        approvedThisMonth++;
-                                }
-                                if (req.getLeaveFrom() != null && req.getLeaveTo() != null) {
-                                        if (!today.isBefore(req.getLeaveFrom()) && !today.isAfter(req.getLeaveTo())) {
-                                                awayToday++;
-                                        }
-                                }
-                        }
+            User currentUser = utilService.getCurrentUser();
+            Department dept = utilService.getDepartmentForManager(currentUser);
+            // using any employee ID as a placeholder for the requested by
+            Long anyEmpId = (dept.getEmployees() != null && !dept.getEmployees().isEmpty()) 
+                            ? dept.getEmployees().get(0).getId() : 1L;
 
-                        // Map to view data
-                        Map<String, Object> reqMap = new HashMap<>();
-                        reqMap.put("id", req.getId());
+            com.group5.ems.entity.Request req = new com.group5.ems.entity.Request();
+            req.setEmployeeId(anyEmpId);
+            req.setRequestTypeId(rt.getId());
+            req.setTitle("Request Recruitment: " + role);
+            req.setContent(description);
+            req.setStatus("PENDING");
+            requestRepository.save(req);
 
-                        Map<String, String> empMap = new HashMap<>();
-                        if (req.getEmployee() != null) {
-                                empMap.put("name", req.getEmployee().getUser() != null ? req.getEmployee().getUser().getFullName() : "Unknown");
-                                empMap.put("role", req.getEmployee().getPosition() != null ? req.getEmployee().getPosition().getName() : "Employee");
-                                empMap.put("avatarUrl", req.getEmployee().getUser() != null && req.getEmployee().getUser().getAvatarUrl() != null 
-                                        ? req.getEmployee().getUser().getAvatarUrl() 
-                                        : "https://lh3.googleusercontent.com/aida-public/AB6AXuAx3bm_6ROku45Qad2UC6L8WqGYQTSxbQfGbrIsZyy-UW0G-0eeaUe05OzGGUPVXtUgSAXYY1km4lsQ8OMlKocQqnLvoWylgqv8HhjdOhc-kA7_Y9WGXOHncHiVIom2GDXi5UFfTRWNw-kIM5Tj5rLVJx3alhzAv1liLktNE8Zt65-kYJuInGPkWm85aD_STgeoCKnakLN1ZpxNfG-GLOhHh26_zxMgT8NQ21STEfw2DrFNb7ygWY6IQKmzRFuP-NmzVNfiEHO9zvA");
-                        }
-                        reqMap.put("employee", empMap);
-
-                        // Friendly formatting
-                        String typeStr = req.getLeaveType().replace("_", " ").toLowerCase();
-                        if (typeStr.contains("annual")) {
-                            reqMap.put("typeDisplay", "Annual Leave");
-                            reqMap.put("typeColorClass", "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 border-blue-100");
-                            reqMap.put("typeDotClass", "bg-blue-500");
-                        } else if (typeStr.contains("sick")) {
-                            reqMap.put("typeDisplay", "Sick Leave");
-                            reqMap.put("typeColorClass", "bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-300 border-rose-100");
-                            reqMap.put("typeDotClass", "bg-rose-500");
-                        } else {
-                            reqMap.put("typeDisplay", req.getLeaveType());
-                            reqMap.put("typeColorClass", "bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border-purple-100");
-                            reqMap.put("typeDotClass", "bg-purple-500");
-                        }
-
-                        long durationDays = 0;
-                        if (req.getLeaveFrom() != null && req.getLeaveTo() != null) {
-                                durationDays = java.time.temporal.ChronoUnit.DAYS.between(req.getLeaveFrom(), req.getLeaveTo()) + 1;
-                        }
-                        reqMap.put("durationDays", durationDays);
-
-                        java.time.format.DateTimeFormatter dtf = java.time.format.DateTimeFormatter.ofPattern("MMM dd");
-                        String dates = "";
-                        if (req.getLeaveFrom() != null) {
-                                dates += req.getLeaveFrom().format(dtf);
-                                if (req.getLeaveTo() != null && !req.getLeaveTo().equals(req.getLeaveFrom())) {
-                                        dates += " - " + req.getLeaveTo().format(dtf);
-                                }
-                        }
-                        reqMap.put("dates", dates);
-                        reqMap.put("appliedOn", req.getCreatedAt() != null ? req.getCreatedAt().format(dtf) : "N/A");
-
-                        reqMap.put("status", req.getStatus());
-                        if ("PENDING".equalsIgnoreCase(req.getStatus())) {
-                                reqMap.put("statusClass", "bg-amber-50 dark:bg-amber-900/20 text-amber-600 border-amber-100");
-                                reqMap.put("statusDisplay", "Pending Review");
-                        } else if ("APPROVED".equalsIgnoreCase(req.getStatus())) {
-                                reqMap.put("statusClass", "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 border-emerald-100");
-                                reqMap.put("statusDisplay", "Approved");
-                        } else {
-                                reqMap.put("statusClass", "bg-rose-50 dark:bg-rose-900/20 text-rose-600 border-rose-100");
-                                reqMap.put("statusDisplay", "Rejected");
-                        }
-
-                        mappedRequests.add(reqMap);
-                }
-
-                data.put("pendingApprovals", pendingApprovals);
-                data.put("approvedThisMonth", approvedThisMonth);
-                data.put("awayToday", awayToday);
-                data.put("requests", mappedRequests);
-
-                return data;
+            return true;
         }
 }
