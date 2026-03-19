@@ -141,40 +141,25 @@
                 <p class="text-xs text-slate-400">Review and approve payroll runs</p>
             </div>
             <div class="flex items-center gap-2">
-                <button class="relative w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-50 text-slate-500 transition-colors">
-                    <span class="material-symbols-outlined text-[20px]">notifications</span>
-                    <span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 border-2 border-white"></span>
+                <a th:href="@{/payroll/approvals/export}"
+                   class="flex items-center gap-1.5 px-3.5 py-2 bg-white border border-slate-200 text-slate-500 text-xs font-semibold rounded-xl hover:bg-slate-50 transition-colors shadow-sm">
+                    <span class="material-symbols-outlined text-[17px]">file_download</span>
+                    Export Report
+                </a>
+                <button id="bulkApproveBtn"
+                        onclick="bulkApprove()"
+                        class="flex items-center gap-1.5 px-3.5 py-2 bg-primary text-white text-xs font-semibold rounded-xl hover:bg-primary/90 transition-colors shadow-sm">
+                    <span class="material-symbols-outlined text-[17px]">verified</span>
+                    Bulk Approve
                 </button>
-                <button class="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-50 text-slate-500 transition-colors">
-                    <span class="material-symbols-outlined text-[20px]">help_outline</span>
-                </button>
+                <div class="w-8 h-8 rounded-full bg-primary/10 text-primary font-bold text-xs flex items-center justify-center ml-1"
+                     th:text="${currentUser?.initials ?: 'AH'}">AH</div>
             </div>
         </header>
 
         <!-- Scrollable content -->
         <div class="flex-1 overflow-y-auto p-8">
             <div class="max-w-7xl mx-auto space-y-6">
-
-                    <!-- Page Header -->
-                    <div class="flex flex-wrap justify-between items-end gap-4 mb-8">
-                        <div class="flex flex-col gap-2">
-                            <h1 class="text-4xl font-black leading-tight tracking-tight text-slate-900">Payroll Approvals</h1>
-                            <p class="text-slate-600 text-lg">Review and sign-off on monthly payroll runs for the current period.</p>
-                        </div>
-                        <div class="flex gap-3">
-                            <a th:href="@{/payroll/approvals/export}"
-                               class="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-bold shadow-sm hover:bg-slate-50 transition-colors">
-                                <span class="material-symbols-outlined text-lg">file_download</span>
-                                Export Report
-                            </a>
-                            <button id="bulkApproveBtn"
-                                    onclick="bulkApprove()"
-                                    class="flex items-center gap-2 px-6 py-2 bg-primary text-white rounded-lg text-sm font-bold shadow-md shadow-primary/20 hover:bg-primary/90 transition-colors">
-                                <span class="material-symbols-outlined text-lg">verified</span>
-                                Bulk Approve
-                            </button>
-                        </div>
-                    </div>
 
                     <!-- Summary Cards -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">

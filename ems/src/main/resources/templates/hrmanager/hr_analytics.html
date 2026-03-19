@@ -139,45 +139,25 @@
 
         <!-- Header -->
         <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 shrink-0">
-            <div class="flex items-center gap-4 flex-1 max-w-xl">
-                <div class="relative w-full">
-                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
-                    <input id="globalSearch"
-                           class="w-full bg-slate-100 border-none rounded-lg py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/20 transition-all"
-                           placeholder="Search analytics, employees..."
-                           th:value="${searchQuery}"
-                           type="text"/>
-                </div>
+            <div>
+                <h2 class="text-base font-black text-slate-900 leading-tight">HR Analytics</h2>
+                <p class="text-xs text-slate-400">Real-time overview of organizational health and workforce trends</p>
             </div>
-            <div class="flex items-center gap-3">
-                <button class="p-2 text-slate-500 hover:bg-slate-100 rounded-lg relative transition-colors">
-                    <span class="material-symbols-outlined">notifications</span>
-                    <span th:if="${hasNotifications}"
-                          class="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-white"></span>
-                    <span th:unless="${hasNotifications != null}"
-                          class="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-white"></span>
-                </button>
-                <button class="p-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors">
-                    <span class="material-symbols-outlined">help_outline</span>
-                </button>
-                <div class="h-8 w-px bg-slate-200 mx-2"></div>
-                <div class="flex items-center gap-3">
-                    <span class="text-sm font-medium hidden sm:block"
-                          th:text="${currentPeriod != null ? currentPeriod : 'Q3 FY2024'}">Q3 FY2024</span>
-                    <a th:href="@{/analytics/export}"
-                       class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 transition-colors">
-                        <span class="material-symbols-outlined text-sm">download</span>
-                        Export Report
-                    </a>
-                </div>
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-medium text-slate-500 hidden sm:block"
+                      th:text="${currentPeriod != null ? currentPeriod : 'Q3 FY2024'}">Q3 FY2024</span>
+                <a th:href="@{/analytics/export}"
+                   class="flex items-center gap-1.5 px-3.5 py-2 bg-primary text-white text-xs font-semibold rounded-xl hover:bg-primary/90 transition-colors shadow-sm">
+                    <span class="material-symbols-outlined text-[17px]">download</span>
+                    Export Report
+                </a>
+                <div class="w-8 h-8 rounded-full bg-primary/10 text-primary font-bold text-xs flex items-center justify-center ml-1"
+                     th:text="${currentUser?.initials ?: 'AH'}">AH</div>
             </div>
         </header>
 
         <!-- Content Area -->
         <div class="flex-1 overflow-y-auto p-8">
-
-            <!-- Page Title -->
-            <div class="mb-8">
                 <h2 class="text-3xl font-black tracking-tight mb-2">HR Manager Analytics</h2>
                 <p class="text-slate-500 dark:text-slate-400">Real-time overview of organizational health and workforce trends.</p>
             </div>
