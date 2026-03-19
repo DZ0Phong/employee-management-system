@@ -218,18 +218,18 @@
                                         <label for="minScore" class="text-[9px] font-black text-slate-400 uppercase tracking-[.1em] flex justify-between">Performance Score <span class="text-primary font-bold" id="perfRangeLabel">1.0 - 5.0</span></label>
                                         <div class="flex items-center gap-2">
                                             <input type="range" id="minScore" name="minScore" th:value="${minScore ?: 1.0}" min="1" max="5" step="0.1"
-                                                   class="flex-1 h-1.5 bg-slate-100 rounded-full appearance-none accent-primary cursor-pointer" oninput="updateRangeLabel('minScore', 'maxScore', 'perfRangeLabel')">
+                                                   class="flex-1 h-1.5 bg-slate-100 rounded-full appearance-none accent-primary cursor-pointer" oninput="updateRangeLabel(this, 'minScore', 'maxScore', 'perfRangeLabel')">
                                             <input type="range" id="maxScore" name="maxScore" th:value="${maxScore ?: 5.0}" min="1" max="5" step="0.1"
-                                                   class="flex-1 h-1.5 bg-slate-100 rounded-full appearance-none accent-primary cursor-pointer" oninput="updateRangeLabel('minScore', 'maxScore', 'perfRangeLabel')">
+                                                   class="flex-1 h-1.5 bg-slate-100 rounded-full appearance-none accent-primary cursor-pointer" oninput="updateRangeLabel(this, 'minScore', 'maxScore', 'perfRangeLabel')">
                                         </div>
                                     </div>
                                     <div class="space-y-1">
                                         <label for="minPotential" class="text-[9px] font-black text-slate-400 uppercase tracking-[.1em] flex justify-between">Potential Score <span class="text-blue-500 font-bold" id="potRangeLabel">1.0 - 5.0</span></label>
                                         <div class="flex items-center gap-2">
                                             <input type="range" id="minPotential" name="minPotential" th:value="${minPotential ?: 1.0}" min="1" max="5" step="0.1" 
-                                                   aria-label="Min Potential" class="flex-1 h-1.5 bg-slate-100 rounded-full appearance-none accent-blue-500 cursor-pointer" oninput="updateRangeLabel('minPotential', 'maxPotential', 'potRangeLabel')">
+                                                   aria-label="Min Potential" class="flex-1 h-1.5 bg-slate-100 rounded-full appearance-none accent-blue-500 cursor-pointer" oninput="updateRangeLabel(this, 'minPotential', 'maxPotential', 'potRangeLabel')">
                                             <input type="range" id="maxPotential" name="maxPotential" th:value="${maxPotential ?: 5.0}" min="1" max="5" step="0.1" 
-                                                   aria-label="Max Potential" class="flex-1 h-1.5 bg-slate-100 rounded-full appearance-none accent-blue-500 cursor-pointer" oninput="updateRangeLabel('minPotential', 'maxPotential', 'potRangeLabel')">
+                                                   aria-label="Max Potential" class="flex-1 h-1.5 bg-slate-100 rounded-full appearance-none accent-blue-500 cursor-pointer" oninput="updateRangeLabel(this, 'minPotential', 'maxPotential', 'potRangeLabel')">
                                         </div>
                                     </div>
                                 </div>
@@ -404,10 +404,22 @@
         }
 
         /* Dual Range Slider Labels */
-        function updateRangeLabel(minName, maxName, labelId) {
-            const min = document.querySelector(`input[name="${minName}"]`).value;
-            const max = document.querySelector(`input[name="${maxName}"]`).value;
-            document.getElementById(labelId).textContent = `${min} - ${max}`;
+        function updateRangeLabel(currentInput, minName, maxName, labelId) {
+            const minInput = document.querySelector(`input[name="${minName}"]`);
+            const maxInput = document.querySelector(`input[name="${maxName}"]`);
+            let min = parseFloat(minInput.value);
+            let max = parseFloat(maxInput.value);
+
+            if (currentInput.name === minName && min > max) {
+                maxInput.value = min;
+            } else if (currentInput.name === maxName && max < min) {
+                minInput.value = max;
+            }
+            
+            // Re-fetch values after potential adjustment
+            const finalMin = minInput.value;
+            const finalMax = maxInput.value;
+            document.getElementById(labelId).textContent = `${finalMin} - ${finalMax}`;
         }
 
         /* Searchable Select Logic */
@@ -451,8 +463,8 @@
         });
 
         // Initialize Slider Labels & Metrics
-        updateRangeLabel('minScore', 'maxScore', 'perfRangeLabel');
-        updateRangeLabel('minPotential', 'maxPotential', 'potRangeLabel');
+        updateRangeLabel(document.querySelector('input[name="minScore"]'), 'minScore', 'maxScore', 'perfRangeLabel');
+        updateRangeLabel(document.querySelector('input[name="minPotential"]'), 'minPotential', 'maxPotential', 'potRangeLabel');
         /*]]>*/
     </script>
 </body>
