@@ -13,7 +13,10 @@ import com.group5.ems.dto.response.hrmanager.EventCreateDTO;
 import com.group5.ems.dto.response.hrmanager.EventResponseDTO;
 import com.group5.ems.dto.response.hrmanager.EventUpdateDTO;
 import com.group5.ems.entity.Event;
+import com.group5.ems.enums.AuditAction;
+import com.group5.ems.enums.AuditEntityType;
 import com.group5.ems.repository.EventRepository;
+import com.group5.ems.service.common.LogService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -22,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 public class CalendarService {
 
     private final EventRepository eventRepository;
+    private final LogService logService;
 
 
     private static final DateTimeFormatter MONTH_FMT = DateTimeFormatter.ofPattern("MMM").withLocale(java.util.Locale.ENGLISH);
@@ -87,7 +91,8 @@ public class CalendarService {
         // 3. Save
         Event saved = eventRepository.save(event);
 
-        // 4. Audit log ← QUAN TRỌNG
+        // 4. Audit log
+        logService.log(AuditAction.CREATE, AuditEntityType.EVENT, saved.getId(), userId);
 
         return mapToResponseDTO(saved);
     }
@@ -118,7 +123,8 @@ public class CalendarService {
         // 4. Save
         Event updated = eventRepository.save(event);
 
-        // 5. Audit log ← QUAN TRỌNG
+        // 5. Audit log
+        logService.log(AuditAction.UPDATE, AuditEntityType.EVENT, updated.getId(), userId);
 
         return mapToResponseDTO(updated);
     }
@@ -128,13 +134,14 @@ public class CalendarService {
     @Transactional
     public void deleteEvent(Long id, Long userId) {
         // 1. Kiểm tra tồn tại
-        eventRepository.findById(id)
+        Event event = eventRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Event not found: " + id));
 
         // 2. Delete
         eventRepository.deleteById(id);
 
-        // 3. Audit log ← QUAN TRỌNG
+        // 3. Audit log
+        logService.log(AuditAction.DELETE, AuditEntityType.EVENT, id, userId);
     }
 
     // ── MAPPING ───────────────────────────────────────────────────────────────

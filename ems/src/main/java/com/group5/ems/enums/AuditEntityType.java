@@ -6,5 +6,6 @@ public enum AuditEntityType {
     COMPANY,
     ROLE,
     AUTH,
-    SYSTEM
+    SYSTEM,
+    EVENT
 }
