@@ -117,7 +117,7 @@
                         <button type="submit"
                                 class="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-bold shadow-lg hover:bg-emerald-700 transition-colors">
                             <span class="material-symbols-outlined text-[20px]">login</span>
-                            Clock In
+                            Check In
                         </button>
                     </form>
                     <form th:action="@{/employee/attendance/clock-out}" method="post"
@@ -125,7 +125,7 @@
                         <button type="submit"
                                 class="flex items-center gap-2 px-5 py-2.5 bg-rose-600 text-white rounded-xl text-sm font-bold shadow-lg hover:bg-rose-700 transition-colors">
                             <span class="material-symbols-outlined text-[20px]">logout</span>
-                            Clock Out
+                            Check Out
                         </button>
                     </form>
                     <span th:if="${stats.clockedOutToday}"
