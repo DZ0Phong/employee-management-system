@@ -25,6 +25,14 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     // Lấy events theo type
     List<Event> findByTypeOrderByStartDateAsc(String type);
 
+    // Lấy policy reviews (type = REVIEW)
+    @Query("SELECT e FROM Event e WHERE e.type = 'REVIEW' ORDER BY " +
+            "CASE WHEN e.status = 'IN_REVIEW' THEN 1 " +
+            "     WHEN e.status = 'DRAFTING' THEN 2 " +
+            "     WHEN e.status = 'FINALIZED' THEN 3 " +
+            "     ELSE 4 END, e.startDate ASC")
+    List<Event> findPolicyReviews();
+
     // Lấy events theo department
     List<Event> findByDepartmentIdOrderByStartDateAsc(Long departmentId);
 }

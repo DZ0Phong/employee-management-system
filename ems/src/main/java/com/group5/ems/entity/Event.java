@@ -34,6 +34,9 @@ public class Event {
     @Column(length = 50)
     private String type; // HOLIDAY, MEETING, REVIEW, TRAINING, OTHER
 
+    @Column(length = 30)
+    private String status; // For REVIEW type: DRAFTING, IN_REVIEW, FINALIZED
+
     @Column(length = 20)
     private String color; // blue, purple, emerald, amber
 
@@ -89,6 +92,8 @@ public class Event {
     public void setEndTime(LocalTime endTime) { this.endTime = endTime; }
     public String getType() { return type; }
     public void setType(String type) { this.type = type; }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
     public String getColor() { return color; }
     public void setColor(String color) { this.color = color; }
     public Boolean getIsAllDay() { return isAllDay; }
