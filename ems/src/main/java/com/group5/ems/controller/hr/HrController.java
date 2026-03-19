@@ -176,6 +176,17 @@ public class HrController {
                               @RequestParam(required = false) BigDecimal maxScore,
                               @RequestParam(required = false) BigDecimal minPotential,
                               @RequestParam(required = false) BigDecimal maxPotential) {
+        if (minScore != null && maxScore != null && minScore.compareTo(maxScore) > 0) {
+            BigDecimal temp = minScore;
+            minScore = maxScore;
+            maxScore = temp;
+        }
+        if (minPotential != null && maxPotential != null && minPotential.compareTo(maxPotential) > 0) {
+            BigDecimal temp = minPotential;
+            minPotential = maxPotential;
+            maxPotential = temp;
+        }
+
         String reviewPeriod = null;
         if (reviewYear != null && !reviewYear.isEmpty()) {
             if (reviewPeriodType != null && !reviewPeriodType.isEmpty()) {
