@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.group5.ems.service.deptmanager.AttendanceService;
 import com.group5.ems.service.deptmanager.LeaveService;
+import com.group5.ems.service.deptmanager.PerformanceService;
 
 @Controller
 @RequestMapping("/dept-manager")
@@ -18,6 +19,7 @@ public class DeptManagerController {
     private final DeptManagerService deptManagerService;
     private final LeaveService leaveService;
     private final AttendanceService attendanceService;
+    private final PerformanceService performanceService;
 
     @GetMapping({ "", "/", "/dashboard" })
     public String dashboard(Model model) {
@@ -54,7 +56,7 @@ public class DeptManagerController {
 
     @GetMapping("/performance-review")
     public String performanceReview(Model model) {
-        model.addAttribute("data", deptManagerService.getDashboardMockData());
-        return "deptmanager/dashboard"; // Placeholder
+        model.addAttribute("data", performanceService.getPerformanceReviewData());
+        return "deptmanager/performance-review";
     }
 }

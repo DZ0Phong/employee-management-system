@@ -123,7 +123,6 @@
                          th:alt="${data.manager.name}"
                          class="w-full h-full object-cover"
                          onerror="this.style.display='none'"/>
-                    <span th:text="${data.manager != null ? data.manager.name.substring(0,1) : 'U'}">U</span>
                 </div>
                 <div class="flex-1 min-w-0">
                     <p class="text-xs font-bold text-slate-800 truncate" th:text="${data.manager != null ? data.manager.name : 'User'}">User</p>
