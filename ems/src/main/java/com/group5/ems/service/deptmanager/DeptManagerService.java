@@ -5,6 +5,9 @@ import com.group5.ems.entity.Employee;
 import com.group5.ems.entity.Position;
 import com.group5.ems.entity.User;
 import com.group5.ems.repository.DepartmentRepository;
+import com.group5.ems.repository.PositionRepository;
+import com.group5.ems.repository.RequestRepository;
+import com.group5.ems.repository.RequestTypeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +24,9 @@ public class DeptManagerService {
 
         private final DepartmentRepository departmentRepository;
         private final DeptManagerUtilService utilService;
+        private final RequestRepository requestRepository;
+        private final RequestTypeRepository requestTypeRepository;
+        private final PositionRepository positionRepository;
 
         public int getTeamSize(Long managerId) {
                 return departmentRepository.findByManagerId(managerId).size();
@@ -105,8 +111,9 @@ public class DeptManagerService {
                         for (Employee emp : dept.getEmployees()) {
                                 User empUser = emp.getUser();
                                 Map<String, String> member = new HashMap<>();
-                                member.put("name",
-                                                empUser != null ? empUser.getFullName() : "Employee #" + emp.getId());
+                                member.put("id", String.valueOf(emp.getId()));
+                                member.put("empCode", emp.getEmployeeCode() != null ? emp.getEmployeeCode() : "EMP-" + String.format("%03d", emp.getId()));
+                                member.put("name", empUser != null ? empUser.getFullName() : "Employee #" + emp.getId());
                                 member.put("email", empUser != null ? empUser.getEmail() : "");
                                 member.put("role", emp.getPosition() != null ? emp.getPosition().getName() : "Staff");
                                 member.put("rating", "N/A");
@@ -123,6 +130,18 @@ public class DeptManagerService {
                 }
 
                 data.put("teamMembers", members);
+
+                // Pass all positions for the modal dropdown
+                List<Map<String, String>> positionList = new ArrayList<>();
+                List<Position> allPositions = positionRepository.findAll();
+                for (Position pos : allPositions) {
+                    Map<String, String> p = new HashMap<>();
+                    p.put("id", String.valueOf(pos.getId()));
+                    p.put("name", pos.getName());
+                    positionList.add(p);
+                }
+                data.put("allPositions", positionList);
+
                 return data;
         }
 
@@ -200,5 +219,57 @@ public class DeptManagerService {
                 data.put("positions", positions);
 
                 return data;
+        }
+
+        @Transactional
+        public void createRemovalRequest(Long employeeId, String reason) {
+            com.group5.ems.entity.RequestType rt = requestTypeRepository.findByCode("REMOVAL").orElseGet(() -> {
+                com.group5.ems.entity.RequestType nrt = new com.group5.ems.entity.RequestType();
+                nrt.setCode("REMOVAL");
+                nrt.setName("Member Removal");
+                nrt.setCategory("HR");
+                return requestTypeRepository.save(nrt);
+            });
+
+            com.group5.ems.entity.Request req = new com.group5.ems.entity.Request();
+            req.setEmployeeId(employeeId);
+            req.setRequestTypeId(rt.getId());
+            req.setTitle("Request Member Removal");
+            req.setContent(reason);
+            req.setStatus("PENDING");
+            requestRepository.save(req);
+        }
+
+        @Transactional
+        public boolean createAddMemberRequest(String requestType, String role, String description) {
+            if ("TRANSFER".equals(requestType)) {
+                // Return false to simulate no internal transfer targets available
+                return false;
+            }
+
+            // Recruitment logic
+            com.group5.ems.entity.RequestType rt = requestTypeRepository.findByCode("RECRUITMENT").orElseGet(() -> {
+                com.group5.ems.entity.RequestType nrt = new com.group5.ems.entity.RequestType();
+                nrt.setCode("RECRUITMENT");
+                nrt.setName("Recruitment");
+                nrt.setCategory("HR");
+                return requestTypeRepository.save(nrt);
+            });
+
+            User currentUser = utilService.getCurrentUser();
+            Department dept = utilService.getDepartmentForManager(currentUser);
+            // using any employee ID as a placeholder for the requested by
+            Long anyEmpId = (dept.getEmployees() != null && !dept.getEmployees().isEmpty()) 
+                            ? dept.getEmployees().get(0).getId() : 1L;
+
+            com.group5.ems.entity.Request req = new com.group5.ems.entity.Request();
+            req.setEmployeeId(anyEmpId);
+            req.setRequestTypeId(rt.getId());
+            req.setTitle("Request Recruitment: " + role);
+            req.setContent(description);
+            req.setStatus("PENDING");
+            requestRepository.save(req);
+
+            return true;
         }
 }

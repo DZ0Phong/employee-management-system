@@ -74,4 +74,19 @@ public class DeptManagerController {
         leaveService.rejectLeaveRequest(id);
         return "redirect:/dept-manager/leave-approval";
     }
+
+    @PostMapping("/team/request-removal")
+    public String requestMemberRemoval(@RequestParam Long employeeId, @RequestParam String reason) {
+        deptManagerService.createRemovalRequest(employeeId, reason);
+        return "redirect:/dept-manager/my-team?success=removal";
+    }
+
+    @PostMapping("/team/request-add")
+    public String requestAddMember(@RequestParam String requestType, @RequestParam String role, @RequestParam String description) {
+        boolean success = deptManagerService.createAddMemberRequest(requestType, role, description);
+        if(!success && "TRANSFER".equals(requestType)) {
+            return "redirect:/dept-manager/my-team?error=notransfer";
+        }
+        return "redirect:/dept-manager/my-team?success=add";
+    }
 }
