@@ -204,7 +204,6 @@
                                             <option th:each="year : ${#numbers.sequence(2024, 2027)}" th:value="${year}" th:text="${year}" th:selected="${reviewYear == #strings.toString(year)}"></option>
                                         </select>
                                         <select id="reviewPeriodType" name="reviewPeriodType" aria-label="Review Cycle" class="w-1/2 bg-slate-50 border-transparent rounded-xl py-2 text-xs focus:ring-primary/20 focus:border-primary">
-                                            <option value="">Cycle</option>
                                             <option value="Annual" th:selected="${reviewPeriodType == 'Annual'}">Annual</option>
                                             <option value="H1" th:selected="${reviewPeriodType == 'H1'}">H1 (First)</option>
                                             <option value="H2" th:selected="${reviewPeriodType == 'H2'}">H2 (Second)</option>
