@@ -1,14 +1,18 @@
 package com.group5.ems.repository;
 
 import com.group5.ems.entity.Payslip;
+import com.group5.ems.dto.hr.PayslipReviewDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.math.BigDecimal;
 
 public interface PayslipRepository extends JpaRepository<Payslip, Long> {
 
@@ -49,4 +53,32 @@ public interface PayslipRepository extends JpaRepository<Payslip, Long> {
     @org.springframework.data.jpa.repository.Modifying
     int approveByDepartment(@Param("deptId") Long deptId,
                             @Param("approverId") Long approverId);
+
+    // --- Task 4.1: Review Dashboard Queries ---
+
+    @Query("SELECT new com.group5.ems.dto.hr.PayslipReviewDTO(" +
+            "p.id, e.employeeCode, u.fullName, p.totalGrossSalary, p.totalDeduction, p.netSalary, p.status) " +
+            "FROM Payslip p " +
+            "JOIN p.employee e " +
+            "JOIN e.user u " +
+            "WHERE p.periodId = :periodId")
+    Page<PayslipReviewDTO> findReviewDTOByPeriodId(@Param("periodId") Long periodId, Pageable pageable);
+
+    @Query("SELECT COUNT(p) FROM Payslip p WHERE p.periodId = :periodId AND p.status = 'PENDING'")
+    long countPendingByPeriodId(@Param("periodId") Long periodId);
+
+    @Transactional
+    @Modifying
+    @Query("UPDATE Payslip p SET p.status = 'APPROVED', p.approvedBy = :approverId " +
+            "WHERE p.periodId = :periodId AND p.status = 'PENDING'")
+    int approveAllPendingInPeriod(@Param("periodId") Long periodId, @Param("approverId") Long approverId);
+
+    @Query("SELECT SUM(p.totalGrossSalary) FROM Payslip p WHERE p.periodId = :periodId")
+    BigDecimal sumTotalGrossByPeriodId(@Param("periodId") Long periodId);
+
+    @Query("SELECT SUM(p.netSalary) FROM Payslip p WHERE p.periodId = :periodId")
+    BigDecimal sumTotalNetByPeriodId(@Param("periodId") Long periodId);
+
+    @Query("SELECT COUNT(p) FROM Payslip p WHERE p.periodId = :periodId")
+    int countByPeriodId(@Param("periodId") Long periodId);
 }

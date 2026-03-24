@@ -310,6 +310,14 @@
                                            title="Preview aggregated data">
                                             <span class="material-symbols-outlined text-[16px]">visibility</span>
                                         </a>
+                                        <!-- Review & Approve (for locked periods) -->
+                                        <a th:if="${period.isLocked}"
+                                           th:href="@{/hr/payroll-review/{id}(id=${period.id})}"
+                                           class="w-8 h-8 rounded-lg bg-emerald-50 hover:bg-emerald-100 flex items-center justify-center text-emerald-600 transition-colors"
+                                           title="Review & Approve Payslips">
+                                            <span class="material-symbols-outlined text-[16px]">fact_check</span>
+                                        </a>
+
                                         <!-- Lock (unlocked) -->
                                         <form th:if="${!period.isLocked}"
                                               th:action="@{/hr/payroll-periods/{id}/lock(id=${period.id})}" method="post"
