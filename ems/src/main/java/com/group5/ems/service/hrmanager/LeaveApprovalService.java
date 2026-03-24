@@ -148,16 +148,16 @@ public class LeaveApprovalService {
         
         switch (tab.toLowerCase()) {
             case "pending":
-                requestPage = requestRepository.findLeaveRequestsByStatus("PENDING", pageable);
+                requestPage = requestRepository.findRequestsByStatusWithoutLeaveTypeFilter("PENDING", pageable);
                 break;
             case "approved":
-                requestPage = requestRepository.findLeaveRequestsByStatus("APPROVED", pageable);
+                requestPage = requestRepository.findRequestsByStatusWithoutLeaveTypeFilter("APPROVED", pageable);
                 break;
             case "rejected":
-                requestPage = requestRepository.findLeaveRequestsByStatus("REJECTED", pageable);
+                requestPage = requestRepository.findRequestsByStatusWithoutLeaveTypeFilter("REJECTED", pageable);
                 break;
             default:
-                requestPage = requestRepository.findAllLeaveRequests(pageable);
+                requestPage = requestRepository.findAllRequestsWithoutLeaveTypeFilter(pageable);
                 break;
         }
         
@@ -204,16 +204,16 @@ public class LeaveApprovalService {
         
         switch (tab.toLowerCase()) {
             case "pending":
-                requestPage = requestRepository.findLeaveRequestsByStatus("PENDING", pageable);
+                requestPage = requestRepository.findRequestsByStatusWithoutLeaveTypeFilter("PENDING", pageable);
                 break;
             case "approved":
-                requestPage = requestRepository.findLeaveRequestsByStatus("APPROVED", pageable);
+                requestPage = requestRepository.findRequestsByStatusWithoutLeaveTypeFilter("APPROVED", pageable);
                 break;
             case "rejected":
-                requestPage = requestRepository.findLeaveRequestsByStatus("REJECTED", pageable);
+                requestPage = requestRepository.findRequestsByStatusWithoutLeaveTypeFilter("REJECTED", pageable);
                 break;
             default:
-                requestPage = requestRepository.findAllLeaveRequests(pageable);
+                requestPage = requestRepository.findAllRequestsWithoutLeaveTypeFilter(pageable);
                 break;
         }
         
