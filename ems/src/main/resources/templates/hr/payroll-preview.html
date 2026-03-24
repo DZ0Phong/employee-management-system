@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>EMS Pro - Payroll Preview</title>
+    <meta name="description" content="Review aggregated payroll data before generating payslips" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" th:href="@{/css/hr/hr-common.css}">
+    <script th:src="@{/js/hr/hr-common.js}"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#1414b8",
+                        "primary-light": "#e8e8fb",
+                        "bg-light": "#f6f6f8",
+                    },
+                    fontFamily: { display: ["Inter"] },
+                },
+            },
+        };
+    </script>
+</head>
+
+<body class="bg-bg-light font-display text-slate-900 min-h-screen">
+<div class="flex h-screen overflow-hidden">
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- SIDEBAR                                                   -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <aside class="w-72 bg-white border-r border-slate-100 flex flex-col shrink-0 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-40 h-40 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+
+        <!-- Brand -->
+        <div class="px-6 py-6 flex items-center gap-3 relative z-10">
+            <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white shadow-md shadow-primary/30">
+                <span class="material-symbols-outlined text-[22px]">corporate_fare</span>
+            </div>
+            <div>
+                <h1 class="text-base font-black tracking-tight">EMS Pro</h1>
+                <p class="text-[11px] text-slate-400 font-medium">HR Workspace</p>
+            </div>
+        </div>
+
+        <!-- Nav -->
+        <nav class="flex-1 px-3 space-y-0.5 overflow-y-auto">
+            <p class="px-3 pb-1 pt-1 text-[10px] font-bold text-slate-300 uppercase tracking-widest">Main</p>
+
+            <a th:href="@{/hr/dashboard}" class="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:bg-slate-50 rounded-xl transition-all group">
+                <span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-primary transition-colors">dashboard</span>
+                <span class="text-sm font-medium">Dashboard</span>
+            </a>
+
+            <a th:href="@{/hr/employees}" class="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:bg-slate-50 rounded-xl transition-all group">
+                <span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-primary transition-colors">badge</span>
+                <span class="text-sm font-medium">Employees Directory</span>
+            </a>
+
+            <a th:href="@{/hr/attendance}" class="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:bg-slate-50 rounded-xl transition-all group">
+                <span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-primary transition-colors">event_note</span>
+                <span class="text-sm font-medium">Attendance &amp; Time</span>
+            </a>
+
+            <a th:href="@{/hr/leave}" class="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:bg-slate-50 rounded-xl transition-all group">
+                <span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-primary transition-colors">free_cancellation</span>
+                <span class="text-sm font-medium">Leave Requests</span>
+            </a>
+
+            <a th:href="@{/hr/payroll}" class="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:bg-slate-50 rounded-xl transition-all group">
+                <span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-primary transition-colors">account_balance_wallet</span>
+                <span class="text-sm font-medium">Payroll Data</span>
+            </a>
+
+            <!-- ACTIVE -->
+            <a th:href="@{/hr/payroll-periods}" class="nav-active flex items-center gap-3 px-3 py-2.5 bg-primary-light text-primary rounded-xl">
+                <span class="material-symbols-outlined fill-icon text-[20px]">date_range</span>
+                <span class="text-sm font-semibold">Payroll Periods</span>
+            </a>
+
+            <p class="px-3 pb-1 pt-4 text-[10px] font-bold text-slate-300 uppercase tracking-widest">Recruitment &amp; Perf</p>
+
+            <a th:href="@{/hr/recruitment}" class="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:bg-slate-50 rounded-xl transition-all group">
+                <span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-primary transition-colors">hail</span>
+                <span class="text-sm font-medium">Recruitment</span>
+            </a>
+
+            <a th:href="@{/hr/performance}" class="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:bg-slate-50 rounded-xl transition-all group">
+                <span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-primary transition-colors">military_tech</span>
+                <span class="text-sm font-medium">Performance Reviews</span>
+            </a>
+
+            <p class="px-3 pb-1 pt-4 text-[10px] font-bold text-slate-300 uppercase tracking-widest">Requests Management</p>
+
+            <a th:href="@{/hr/requests}" class="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:bg-slate-50 rounded-xl transition-all group">
+                <span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-primary transition-colors">inventory</span>
+                <span class="text-sm font-medium">Workflow Requests</span>
+            </a>
+        </nav>
+
+        <div class="p-4 border-t border-slate-100 mt-auto">
+            <div class="bg-slate-50 rounded-2xl p-3 flex items-center gap-3 border border-slate-100">
+                <div class="w-9 h-9 rounded-full overflow-hidden bg-primary/10 flex items-center justify-center text-primary font-bold text-sm shrink-0">
+                    <span th:text="${currentUser?.initials ?: 'HR'}">HR</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-xs font-bold text-slate-800 truncate" th:text="${currentUser?.fullName ?: 'HR Specialist'}">HR Specialist</p>
+                    <p class="text-[11px] text-slate-400 truncate" th:text="${currentUser?.email ?: 'hr@company.local'}">hr@company.local</p>
+                </div>
+                <form th:action="@{/logout}" method="post" class="shrink-0">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <button type="submit" class="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors">
+                        <span class="material-symbols-outlined text-sm">logout</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ─── Main ───────────────────────────────────────────────── -->
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <header class="h-16 bg-white border-b border-slate-100 flex items-center justify-between px-8 shrink-0">
+            <div>
+                <h2 class="text-base font-black text-slate-900 leading-tight">Payroll Preview</h2>
+                <p class="text-xs text-slate-400">Review aggregated data before generating payslips</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <a th:href="@{/hr/payroll-periods}"
+                   class="flex items-center gap-2 text-slate-500 hover:text-primary px-3 py-1.5 rounded-xl text-sm font-semibold hover:bg-primary-light transition-colors">
+                    <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                    Back to Periods
+                </a>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-8 dot-grid">
+            <div class="max-w-6xl mx-auto space-y-6">
+
+                <!-- ═══ Flash Messages ═══ -->
+                <div th:if="${successMessage}" class="bg-emerald-50 border border-emerald-200 rounded-xl px-5 py-3 flex items-center gap-3 anim anim-1">
+                    <span class="material-symbols-outlined text-emerald-600 text-[20px]">check_circle</span>
+                    <p class="text-sm font-medium text-emerald-700" th:text="${successMessage}">Success</p>
+                    <button onclick="this.parentElement.remove()" class="ml-auto text-emerald-400 hover:text-emerald-600 transition-colors">
+                        <span class="material-symbols-outlined text-[18px]">close</span>
+                    </button>
+                </div>
+
+                <div th:if="${errorMessage}" class="bg-rose-50 border border-rose-200 rounded-xl px-5 py-3 flex items-center gap-3 anim anim-1">
+                    <span class="material-symbols-outlined text-rose-600 text-[20px]">error</span>
+                    <p class="text-sm font-medium text-rose-700" th:text="${errorMessage}">Error</p>
+                    <button onclick="this.parentElement.remove()" class="ml-auto text-rose-400 hover:text-rose-600 transition-colors">
+                        <span class="material-symbols-outlined text-[18px]">close</span>
+                    </button>
+                </div>
+
+                <!-- ═══ Breadcrumb ═══ -->
+                <nav class="flex items-center gap-1.5 text-xs anim anim-1" aria-label="Breadcrumb">
+                    <a th:href="@{/hr/dashboard}" class="text-slate-400 hover:text-primary transition-colors font-medium">Home</a>
+                    <span class="material-symbols-outlined text-slate-300 text-[14px]">chevron_right</span>
+                    <a th:href="@{/hr/payroll-periods}" class="text-slate-400 hover:text-primary transition-colors font-medium">Payroll Periods</a>
+                    <span class="material-symbols-outlined text-slate-300 text-[14px]">chevron_right</span>
+                    <span class="text-slate-700 font-semibold" th:text="'Preview: ' + ${periodSummary.periodName()}">Preview: March 2026</span>
+                </nav>
+
+                <!-- ═══ Page Header ═══ -->
+                <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 anim anim-1">
+                    <div>
+                        <div class="flex items-center gap-3 mb-1">
+                            <h2 class="text-3xl font-black text-slate-800 tracking-tight" th:text="${periodSummary.periodName()}">March 2026</h2>
+                            <!-- Locked badge -->
+                            <span th:if="${periodSummary.locked()}"
+                                  class="inline-flex items-center gap-1 text-[11px] font-bold bg-gray-100 text-gray-700 px-3 py-1 rounded-full border border-gray-200">
+                                <span class="material-symbols-outlined text-[14px]">lock</span>
+                                Locked
+                            </span>
+                            <!-- Open badge -->
+                            <span th:unless="${periodSummary.locked()}"
+                                  class="inline-flex items-center gap-1 text-[11px] font-bold bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full border border-emerald-200">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>
+                                Open
+                            </span>
+                        </div>
+                        <p class="text-sm text-slate-500">
+                            Review aggregated attendance, bonuses, and deductions before generating the final payslips.
+                        </p>
+                        <p class="text-xs text-slate-400 mt-1 font-mono">
+                            <span th:text="${#temporals.format(periodSummary.startDate(), 'dd/MM/yyyy')}">01/03/2026</span>
+                            <span class="mx-1">→</span>
+                            <span th:text="${#temporals.format(periodSummary.endDate(), 'dd/MM/yyyy')}">31/03/2026</span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- ═══ Metric Cards ═══ -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 anim anim-2">
+                    <!-- Card 1: Total Employees -->
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-5 hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Employees Processed</span>
+                            <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+                                <span class="material-symbols-outlined text-blue-600 text-[18px]">groups</span>
+                            </div>
+                        </div>
+                        <p class="text-2xl font-black text-slate-800 font-mono" th:text="${periodSummary.totalEmployeesProcessed()}">0</p>
+                        <p class="text-[11px] text-slate-400 mt-1 font-medium">Active employees in period</p>
+                    </div>
+
+                    <!-- Card 2: Avg Payable Days -->
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-5 hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Avg Payable Days</span>
+                            <div class="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center">
+                                <span class="material-symbols-outlined text-emerald-600 text-[18px]">calendar_today</span>
+                            </div>
+                        </div>
+                        <p class="text-2xl font-black text-slate-800 font-mono" th:text="${#numbers.formatDecimal(periodSummary.avgPayableDays(), 1, 1)}">0.0</p>
+                        <p class="text-[11px] text-slate-400 mt-1 font-medium">Average across all employees</p>
+                    </div>
+
+                    <!-- Card 3: Period Status -->
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-5 hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Period Status</span>
+                            <div class="w-8 h-8 rounded-lg" th:classappend="${periodSummary.locked()} ? 'bg-gray-50' : 'bg-amber-50'">
+                                <span class="material-symbols-outlined text-[18px] flex items-center justify-center w-full h-full"
+                                      th:classappend="${periodSummary.locked()} ? 'text-gray-600' : 'text-amber-600'"
+                                      th:text="${periodSummary.locked()} ? 'lock' : 'lock_open'">lock_open</span>
+                            </div>
+                        </div>
+                        <p class="text-2xl font-black font-mono"
+                           th:classappend="${periodSummary.locked()} ? 'text-gray-700' : 'text-amber-600'"
+                           th:text="${periodSummary.locked()} ? 'Locked' : 'Open'">Open</p>
+                        <p class="text-[11px] text-slate-400 mt-1 font-medium" th:text="${periodSummary.locked()} ? 'Ready for payslip generation' : 'Lock period to generate payslips'">Status info</p>
+                    </div>
+
+                    <!-- Card 4: Payslip Readiness -->
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-5 hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Payslip Ready</span>
+                            <div class="w-8 h-8 rounded-lg" th:classappend="${periodSummary.locked()} ? 'bg-emerald-50' : 'bg-slate-50'">
+                                <span class="material-symbols-outlined text-[18px] flex items-center justify-center w-full h-full"
+                                      th:classappend="${periodSummary.locked()} ? 'text-emerald-600' : 'text-slate-400'"
+                                      th:text="${periodSummary.locked()} ? 'check_circle' : 'pending'">pending</span>
+                            </div>
+                        </div>
+                        <p class="text-2xl font-black font-mono"
+                           th:classappend="${periodSummary.locked()} ? 'text-emerald-600' : 'text-slate-400'"
+                           th:text="${periodSummary.locked()} ? 'Yes' : 'No'">No</p>
+                        <p class="text-[11px] text-slate-400 mt-1 font-medium" th:text="${periodSummary.locked()} ? 'Click Generate below' : 'Period must be locked first'">Lock needed</p>
+                    </div>
+                </div>
+
+                <!-- ═══ Data Table ═══ -->
+                <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden anim anim-3 flex flex-col">
+                    <div class="p-5 border-b border-slate-50 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <h3 class="text-sm font-black text-slate-800">Employee Aggregation</h3>
+                            <span class="text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full"
+                                  th:text="${#lists.size(employees)} + ' records'">0 records</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <input type="text" id="tableSearch" placeholder="Search employees..."
+                                   onkeyup="filterTable()"
+                                   class="text-xs rounded-lg px-3 py-1.5 border border-slate-200 focus:ring-primary focus:border-primary bg-slate-50 w-56" />
+                        </div>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div th:if="${#lists.isEmpty(employees)}" class="px-5 py-16 flex flex-col items-center justify-center">
+                        <div class="w-16 h-16 rounded-2xl bg-slate-50 flex items-center justify-center mb-4">
+                            <span class="material-symbols-outlined text-slate-300 text-[36px]">folder_off</span>
+                        </div>
+                        <p class="text-sm font-bold text-slate-500">No data available</p>
+                        <p class="text-xs text-slate-400 mt-1 max-w-xs text-center">No active employees found for this period. Ensure employees have an ACTIVE status.</p>
+                    </div>
+
+                    <!-- Table -->
+                    <div th:unless="${#lists.isEmpty(employees)}" class="flex-1 overflow-auto max-h-[520px]">
+                        <table class="w-full text-left border-collapse" id="aggregationTable">
+                            <thead>
+                            <tr class="bg-slate-50/80 sticky top-0 z-10">
+                                <th class="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">#</th>
+                                <th class="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">Employee</th>
+                                <th class="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 text-center">Std Days</th>
+                                <th class="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 text-center">Unpaid Leaves</th>
+                                <th class="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 text-center">Payable Days</th>
+                                <th class="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 text-center">OT Hours</th>
+                                <th class="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 text-right">Bonuses ($)</th>
+                                <th class="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 text-right">Deductions ($)</th>
+                            </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-50">
+                            <tr th:each="emp, stat : ${employees}" class="hover:bg-primary/[2%] transition-colors employee-row">
+                                <!-- Row number -->
+                                <td class="px-5 py-4">
+                                    <span class="text-[10px] font-bold text-slate-300" th:text="${stat.index + 1}">1</span>
+                                </td>
+                                <!-- Employee info -->
+                                <td class="px-5 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs shrink-0"
+                                             th:text="${emp.fullName() != null ? emp.fullName().substring(0, 1).toUpperCase() : '?'}">A</div>
+                                        <div>
+                                            <p class="text-xs font-semibold text-slate-800 employee-name" th:text="${emp.fullName()}">John Doe</p>
+                                            <p class="text-[10px] text-slate-400 font-mono" th:text="${emp.employeeCode()}">EMP001</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <!-- Standard Days -->
+                                <td class="px-5 py-4 text-center">
+                                    <span class="text-xs font-semibold text-slate-700 font-mono" th:text="${emp.standardDays()}">22</span>
+                                </td>
+                                <!-- Unpaid Leaves — amber badge if > 0 -->
+                                <td class="px-5 py-4 text-center">
+                                    <span th:if="${emp.unpaidLeaveDays() > 0}"
+                                          class="inline-flex items-center gap-1 text-[10px] font-bold bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full border border-amber-200">
+                                        <span class="material-symbols-outlined text-[12px]">warning</span>
+                                        <span th:text="${#numbers.formatDecimal(emp.unpaidLeaveDays(), 1, 1)}">2.0</span>
+                                    </span>
+                                    <span th:if="${emp.unpaidLeaveDays() == 0}"
+                                          class="text-xs font-medium text-slate-400 font-mono">0</span>
+                                </td>
+                                <!-- Payable Days — orange text if less than standard -->
+                                <td class="px-5 py-4 text-center">
+                                    <span class="text-xs font-bold font-mono"
+                                          th:classappend="${emp.payableDays() < emp.standardDays()} ? 'text-orange-600' : 'text-slate-700'"
+                                          th:text="${#numbers.formatDecimal(emp.payableDays(), 1, 1)}">20.0</span>
+                                </td>
+                                <!-- OT Hours -->
+                                <td class="px-5 py-4 text-center">
+                                    <span class="text-xs font-semibold font-mono"
+                                          th:classappend="${emp.totalOvertimeHours().compareTo(T(java.math.BigDecimal).ZERO) > 0} ? 'text-blue-600' : 'text-slate-400'"
+                                          th:text="${#numbers.formatDecimal(emp.totalOvertimeHours(), 1, 1)}">0.0</span>
+                                </td>
+                                <!-- Bonuses -->
+                                <td class="px-5 py-4 text-right">
+                                    <span class="text-xs font-semibold font-mono"
+                                          th:classappend="${emp.totalBonuses().compareTo(T(java.math.BigDecimal).ZERO) > 0} ? 'text-emerald-600' : 'text-slate-400'"
+                                          th:text="${#numbers.formatDecimal(emp.totalBonuses(), 1, 2)}">0.00</span>
+                                </td>
+                                <!-- Deductions -->
+                                <td class="px-5 py-4 text-right">
+                                    <span class="text-xs font-semibold font-mono"
+                                          th:classappend="${emp.totalDeductions().compareTo(T(java.math.BigDecimal).ZERO) > 0} ? 'text-rose-600' : 'text-slate-400'"
+                                          th:text="${#numbers.formatDecimal(emp.totalDeductions(), 1, 2)}">0.00</span>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ═══ CTA Actions ═══ -->
+                <div class="flex items-center justify-between pt-2 anim anim-4">
+                    <a th:href="@{/hr/payroll-periods}"
+                       class="inline-flex items-center gap-2 text-xs font-semibold text-slate-500 hover:text-slate-700 hover:bg-slate-100 px-4 py-2 rounded-lg transition-colors">
+                        <span class="material-symbols-outlined text-[16px]">arrow_back</span>
+                        Back to Periods
+                    </a>
+
+                    <div class="flex items-center gap-3">
+                        <!-- Refresh preview -->
+                        <a th:href="@{/hr/payroll-preview/{id}(id=${periodId})}"
+                           class="inline-flex items-center gap-2 text-xs font-semibold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 px-4 py-2 rounded-lg transition-all shadow-sm">
+                            <span class="material-symbols-outlined text-[16px]">refresh</span>
+                            Refresh Data
+                        </a>
+
+                        <!-- Generate Payslips CTA -->
+                        <form th:if="${periodSummary.locked()}"
+                              th:action="@{/hr/payroll-preview/{id}/generate-payslips(id=${periodId})}"
+                              method="post"
+                              onsubmit="return confirm('Are you sure you want to generate payslips for all employees in this period? This action will create payslip records.');">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                            <button type="submit"
+                                    class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-6 py-2 shadow-md hover:shadow-lg transition-all text-sm font-semibold">
+                                <span class="material-symbols-outlined text-[18px]">receipt_long</span>
+                                Proceed to Generate Payslips
+                            </button>
+                        </form>
+
+                        <!-- Disabled CTA (period not locked) -->
+                        <div th:unless="${periodSummary.locked()}" class="relative group">
+                            <button disabled
+                                    class="inline-flex items-center gap-2 bg-slate-200 text-slate-400 rounded-lg px-6 py-2 text-sm font-semibold cursor-not-allowed opacity-70">
+                                <span class="material-symbols-outlined text-[18px]">lock</span>
+                                Proceed to Generate Payslips
+                            </button>
+                            <div class="absolute bottom-full right-0 mb-2 px-3 py-1.5 bg-slate-800 text-white text-[10px] font-medium rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                                Lock the period first to enable payslip generation
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    // Client-side table search filter
+    function filterTable() {
+        const query = document.getElementById('tableSearch').value.toLowerCase();
+        const rows = document.querySelectorAll('.employee-row');
+        rows.forEach(row => {
+            const name = row.querySelector('.employee-name')?.textContent?.toLowerCase() || '';
+            const code = row.querySelector('.font-mono')?.textContent?.toLowerCase() || '';
+            row.style.display = (name.includes(query) || code.includes(query)) ? '' : 'none';
+        });
+    }
+
+    // Auto-dismiss flash messages after 5 seconds
+    document.addEventListener('DOMContentLoaded', function () {
+        const flashes = document.querySelectorAll('[class*="bg-emerald-50"], [class*="bg-rose-50"]');
+        flashes.forEach(flash => {
+            setTimeout(() => {
+                flash.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                flash.style.opacity = '0';
+                flash.style.transform = 'translateY(-8px)';
+                setTimeout(() => flash.remove(), 300);
+            }, 5000);
+        });
+    });
+</script>
+</body>
+</html>

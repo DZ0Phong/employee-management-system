@@ -7,7 +7,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "timesheet_periods")
+@Table(name = "timesheet_periods", indexes = {
+        @Index(name = "idx_period_dates", columnList = "start_date, end_date")
+})
 public class TimesheetPeriod {
 
     @Id

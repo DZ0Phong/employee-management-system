@@ -1,6 +1,10 @@
 package com.group5.ems.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
+import org.hibernate.annotations.ColumnDefault;
+
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -69,6 +73,29 @@ public class Request {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "approved_by", insertable = false, updatable = false)
     private User approvedByUser;
+    @Size(max = 255)
+    @Column(name = "other_detail")
+    private String otherDetail;
+    @Column(name = "start_date")
+    private Instant startDate;
+    @Column(name = "end_date")
+    private Instant endDate;
+    @ColumnDefault("0")
+    @Column(name = "is_urgent")
+    private Boolean isUrgent;
+    @Size(max = 50)
+    @ColumnDefault("'WAITING_DM'")
+    @Column(name = "step", length = 50)
+    private String step;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "dm_approver_id")
+    private User dmApprover;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "hrm_approver_id")
+    private User hrmApprover;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "hr_processor_id")
+    private User hrProcessor;
 
     @PrePersist
     protected void onCreate() {
@@ -119,5 +146,69 @@ public class Request {
     public void setCurrentApprover(User currentApprover) { this.currentApprover = currentApprover; }
     public User getApprovedByUser() { return approvedByUser; }
     public void setApprovedByUser(User approvedByUser) { this.approvedByUser = approvedByUser; }
+
+    public String getOtherDetail() {
+        return otherDetail;
+    }
+
+    public void setOtherDetail(String otherDetail) {
+        this.otherDetail = otherDetail;
+    }
+
+    public Instant getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(Instant startDate) {
+        this.startDate = startDate;
+    }
+
+    public Instant getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(Instant endDate) {
+        this.endDate = endDate;
+    }
+
+    public Boolean getIsUrgent() {
+        return isUrgent;
+    }
+
+    public void setIsUrgent(Boolean isUrgent) {
+        this.isUrgent = isUrgent;
+    }
+
+    public String getStep() {
+        return step;
+    }
+
+    public void setStep(String step) {
+        this.step = step;
+    }
+
+    public User getDmApprover() {
+        return dmApprover;
+    }
+
+    public void setDmApprover(User dmApprover) {
+        this.dmApprover = dmApprover;
+    }
+
+    public User getHrmApprover() {
+        return hrmApprover;
+    }
+
+    public void setHrmApprover(User hrmApprover) {
+        this.hrmApprover = hrmApprover;
+    }
+
+    public User getHrProcessor() {
+        return hrProcessor;
+    }
+
+    public void setHrProcessor(User hrProcessor) {
+        this.hrProcessor = hrProcessor;
+    }
 }
 
