@@ -40,8 +40,7 @@ public class HrEmployeeService {
         List<HrEmployeeDTO> dtos = page.getContent().stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
-        
-        logService.log(AuditAction.ACCESS, AuditEntityType.EMPLOYEE, null);
+
         return new PageImpl<>(dtos, pageable, page.getTotalElements());
     }
 
@@ -131,8 +130,7 @@ public class HrEmployeeService {
                 .contractEnd(contractEnd)
                 .contractStatus(contractStatus)
                 .build();
-        
-        logService.log(AuditAction.ACCESS, AuditEntityType.EMPLOYEE, employee.getId());
+
         return dto;
     }
 
