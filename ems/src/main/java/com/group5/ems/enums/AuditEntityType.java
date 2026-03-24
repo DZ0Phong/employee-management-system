@@ -15,5 +15,8 @@ public enum AuditEntityType {
     PERFORMANCE,
     CANDIDATE,
     JOB_POST,
-    REQUEST
+    REQUEST,
+    BANK_DETAILS,
+    TIMESHEET_PERIOD,
+    PAYROLL_PREVIEW
 }

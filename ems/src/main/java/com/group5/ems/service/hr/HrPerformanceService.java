@@ -43,7 +43,6 @@ public class HrPerformanceService {
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
 
-        logService.log(AuditAction.ACCESS, AuditEntityType.PERFORMANCE, null);
         return new PageImpl<>(dtos, pageable, page.getTotalElements());
     }
 
@@ -52,7 +51,6 @@ public class HrPerformanceService {
      */
     public Optional<HrPerformanceDTO> getReviewById(Long id) {
         Optional<HrPerformanceDTO> dto = reviewRepository.findById(id).map(this::mapToDTO);
-        dto.ifPresent(d -> logService.log(AuditAction.ACCESS, AuditEntityType.PERFORMANCE, d.id()));
         return dto;
     }
 
