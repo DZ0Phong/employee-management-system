@@ -20,7 +20,7 @@ public class Employee {
     @Column(name = "employee_code", unique = true, length = 50)
     private String employeeCode;
 
-    @Column(name = "department_id", nullable = false)
+    @Column(name = "department_id")
     private Long departmentId;
 
     @Column(name = "position_id", nullable = false)

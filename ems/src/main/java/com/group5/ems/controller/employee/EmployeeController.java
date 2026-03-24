@@ -38,8 +38,6 @@ public class EmployeeController {
     private final PayrollService payrollService;
     private final PerformanceService performanceService;
 
-
-
     // ── Helper methods ─────────────────────────────────────
     private User getUser(Authentication authentication) {
         return userRepository.findByUsername(authentication.getName())
@@ -47,8 +45,18 @@ public class EmployeeController {
     }
 
     private Employee getEmployee(User user) {
-        return employeeRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new RuntimeException("Employee not found"));
+        return employeeRepository.findByUserId(user.getId()).orElse(null);
+    }
+
+    // Tạo EmployeeInfoDTO mặc định khi chưa được assign phòng ban
+    private EmployeeInfoDTO buildDefaultEmployeeInfo(User user) {
+        return EmployeeInfoDTO.builder()
+                .fullName(user.getFullName())
+                .firstName(user.getFullName())
+                .avatarUrl(user.getAvatarUrl())
+                .position("Unassigned")
+                .department("—")
+                .build();
     }
 
     // ── Dashboard ──────────────────────────────────────────
@@ -57,9 +65,18 @@ public class EmployeeController {
         User user = getUser(authentication);
         Employee employee = getEmployee(user);
 
-        model.addAttribute("employee", dashboardService.getEmployeeInfo(employee.getId(), user.getId()));
-        model.addAttribute("dashboard", dashboardService.getDashboardData(employee.getId()));
-        model.addAttribute("activities", dashboardService.getRecentActivities(employee.getId()));
+        if (employee != null) {
+            model.addAttribute("employee", dashboardService.getEmployeeInfo(employee.getId(), user.getId()));
+            model.addAttribute("dashboard", dashboardService.getDashboardData(employee.getId()));
+            model.addAttribute("activities", dashboardService.getRecentActivities(employee.getId()));
+        } else {
+            model.addAttribute("employee", buildDefaultEmployeeInfo(user));
+            model.addAttribute("dashboard", EmployeeDashboardDTO.builder()
+                    .leaveBalance(0.0).attendanceRate(0.0)
+                    .attendanceTrend("+0%").lastPayroll(0.0)
+                    .performanceRating(0.0).build());
+            model.addAttribute("activities", List.of());
+        }
 
         return "employee/dashboard";
     }
@@ -70,9 +87,15 @@ public class EmployeeController {
         User user = getUser(authentication);
         Employee employee = getEmployee(user);
 
-        model.addAttribute("employee", dashboardService.getEmployeeInfo(employee.getId(), user.getId()));
-        model.addAttribute("balances", leaveService.getLeaveBalances(employee.getId()));
-        model.addAttribute("leaveHistory", leaveService.getLeaveHistory(employee.getId()));
+        if (employee != null) {
+            model.addAttribute("employee", dashboardService.getEmployeeInfo(employee.getId(), user.getId()));
+            model.addAttribute("balances", leaveService.getLeaveBalances(employee.getId()));
+            model.addAttribute("leaveHistory", leaveService.getLeaveHistory(employee.getId()));
+        } else {
+            model.addAttribute("employee", buildDefaultEmployeeInfo(user));
+            model.addAttribute("balances", List.of());
+            model.addAttribute("leaveHistory", List.of());
+        }
 
         return "employee/leave";
     }
@@ -84,6 +107,7 @@ public class EmployeeController {
         try {
             User user = getUser(authentication);
             Employee employee = getEmployee(user);
+            if (employee == null) throw new RuntimeException("You are not assigned to any department yet.");
             leaveService.createLeaveRequest(employee.getId(), dto);
             redirectAttributes.addFlashAttribute("success", "Leave request submitted successfully");
         } catch (Exception e) {
@@ -98,8 +122,23 @@ public class EmployeeController {
         User user = getUser(authentication);
         Employee employee = getEmployee(user);
 
-        model.addAttribute("profile", profileService.getProfile(employee.getId(), user.getId()));
-        model.addAttribute("employee", dashboardService.getEmployeeInfo(employee.getId(), user.getId()));
+        if (employee != null) {
+            model.addAttribute("profile", profileService.getProfile(employee.getId(), user.getId()));
+            model.addAttribute("employee", dashboardService.getEmployeeInfo(employee.getId(), user.getId()));
+        } else {
+            model.addAttribute("profile", EmployeeProfileDTO.builder()
+                    .userId(user.getId())
+                    .username(user.getUsername())
+                    .email(user.getEmail())
+                    .fullName(user.getFullName())
+                    .phone(user.getPhone())
+                    .avatarUrl(user.getAvatarUrl())
+                    .status(user.getStatus())
+                    .departmentName("Unassigned")
+                    .positionName("Unassigned")
+                    .build());
+            model.addAttribute("employee", buildDefaultEmployeeInfo(user));
+        }
 
         return "employee/profile";
     }
@@ -130,11 +169,7 @@ public class EmployeeController {
         int selectedYear = year == 0 ? now.getYear() : year;
         int selectedMonth = month == 0 ? now.getMonthValue() : month;
 
-        List<AttendanceDTO> attendances = attendanceService.getAttendanceHistory(employee.getId(), selectedYear, selectedMonth);
-        AttendanceStatsDTO stats = attendanceService.getAttendanceStats(employee.getId(), selectedYear, selectedMonth);
-
         List<Integer> years = List.of(now.getYear() - 2, now.getYear() - 1, now.getYear());
-
         List<Map<String, Object>> months = new ArrayList<>();
         String[] monthNames = {"January", "February", "March", "April", "May", "June",
                 "July", "August", "September", "October", "November", "December"};
@@ -145,9 +180,19 @@ public class EmployeeController {
             months.add(m);
         }
 
-        model.addAttribute("employee", dashboardService.getEmployeeInfo(employee.getId(), user.getId()));
-        model.addAttribute("attendances", attendances);
-        model.addAttribute("stats", stats);
+        if (employee != null) {
+            model.addAttribute("employee", dashboardService.getEmployeeInfo(employee.getId(), user.getId()));
+            model.addAttribute("attendances", attendanceService.getAttendanceHistory(employee.getId(), selectedYear, selectedMonth));
+            model.addAttribute("stats", attendanceService.getAttendanceStats(employee.getId(), selectedYear, selectedMonth));
+        } else {
+            model.addAttribute("employee", buildDefaultEmployeeInfo(user));
+            model.addAttribute("attendances", List.of());
+            model.addAttribute("stats", AttendanceStatsDTO.builder()
+                    .totalHours("0h 0m").onTimeRate(0.0)
+                    .presentDays(0).totalWorkDays(0)
+                    .clockedInToday(false).clockedOutToday(false).build());
+        }
+
         model.addAttribute("selectedYear", selectedYear);
         model.addAttribute("selectedMonth", selectedMonth);
         model.addAttribute("years", years);
@@ -161,6 +206,7 @@ public class EmployeeController {
         try {
             User user = getUser(authentication);
             Employee employee = getEmployee(user);
+            if (employee == null) throw new RuntimeException("You are not assigned to any department yet.");
             attendanceService.clockIn(employee.getId());
             redirectAttributes.addFlashAttribute("success", "Clocked in successfully!");
         } catch (Exception e) {
@@ -174,6 +220,7 @@ public class EmployeeController {
         try {
             User user = getUser(authentication);
             Employee employee = getEmployee(user);
+            if (employee == null) throw new RuntimeException("You are not assigned to any department yet.");
             attendanceService.clockOut(employee.getId());
             redirectAttributes.addFlashAttribute("success", "Clocked out successfully!");
         } catch (Exception e) {
@@ -188,6 +235,9 @@ public class EmployeeController {
                                                    @RequestParam int month) {
         User user = getUser(authentication);
         Employee employee = getEmployee(user);
+        if (employee == null) {
+            return ResponseEntity.badRequest().build();
+        }
 
         byte[] csv = attendanceService.exportReport(employee.getId(), year, month);
         String filename = "attendance_" + year + "_" + month + ".csv";
@@ -198,14 +248,21 @@ public class EmployeeController {
                 .body(csv);
     }
 
+    // ── Payroll ────────────────────────────────────────────
     @GetMapping("/payroll")
     public String payroll(Authentication authentication, Model model) {
         User user = getUser(authentication);
         Employee employee = getEmployee(user);
 
-        model.addAttribute("employee", dashboardService.getEmployeeInfo(employee.getId(), user.getId()));
-        model.addAttribute("summary", payrollService.getPayrollSummary(employee.getId()));
-        model.addAttribute("payslips", payrollService.getPayslipHistory(employee.getId()));
+        if (employee != null) {
+            model.addAttribute("employee", dashboardService.getEmployeeInfo(employee.getId(), user.getId()));
+            model.addAttribute("summary", payrollService.getPayrollSummary(employee.getId()));
+            model.addAttribute("payslips", payrollService.getPayslipHistory(employee.getId()));
+        } else {
+            model.addAttribute("employee", buildDefaultEmployeeInfo(user));
+            model.addAttribute("summary", PayrollSummaryDTO.builder().build());
+            model.addAttribute("payslips", List.of());
+        }
 
         return "employee/payroll";
     }
@@ -214,6 +271,9 @@ public class EmployeeController {
     public ResponseEntity<byte[]> exportPayroll(Authentication authentication) {
         User user = getUser(authentication);
         Employee employee = getEmployee(user);
+        if (employee == null) {
+            return ResponseEntity.badRequest().build();
+        }
 
         byte[] csv = payrollService.exportPayslipCsv(employee.getId());
 
@@ -229,9 +289,19 @@ public class EmployeeController {
         User user = getUser(authentication);
         Employee employee = getEmployee(user);
 
-        model.addAttribute("employee", dashboardService.getEmployeeInfo(employee.getId(), user.getId()));
-        model.addAttribute("summary", performanceService.getPerformanceSummary(employee.getId()));
-        model.addAttribute("reviews", performanceService.getReviewHistory(employee.getId()));
+        if (employee != null) {
+            model.addAttribute("employee", dashboardService.getEmployeeInfo(employee.getId(), user.getId()));
+            model.addAttribute("summary", performanceService.getPerformanceSummary(employee.getId()));
+            model.addAttribute("reviews", performanceService.getReviewHistory(employee.getId()));
+        } else {
+            model.addAttribute("employee", buildDefaultEmployeeInfo(user));
+            model.addAttribute("summary", PerformanceSummaryDTO.builder()
+                    .currentRating(java.math.BigDecimal.ZERO)
+                    .previousRating(java.math.BigDecimal.ZERO)
+                    .talentMatrix("N/A").totalReviews(0)
+                    .kpisMet(0).kpisTotal(0).skillsCount(0).build());
+            model.addAttribute("reviews", List.of());
+        }
 
         return "employee/performance";
     }
@@ -241,7 +311,11 @@ public class EmployeeController {
     public String settings(Authentication authentication, Model model) {
         User user = getUser(authentication);
         Employee employee = getEmployee(user);
-        model.addAttribute("employee", dashboardService.getEmployeeInfo(employee.getId(), user.getId()));
+
+        model.addAttribute("employee", employee != null
+                ? dashboardService.getEmployeeInfo(employee.getId(), user.getId())
+                : buildDefaultEmployeeInfo(user));
+
         return "employee/settings";
     }
 }
