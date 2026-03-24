@@ -130,4 +130,29 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
 
     // ── Pageable queries for HR leave page (DB-level filtering) ──
 
+    // ── Payroll Aggregation queries ──
+
+    /**
+     * Finds approved unpaid leave requests overlapping a given date range for a specific employee.
+     * Uses Request.startDate / Request.endDate (Instant fields).
+     */
+    @Query("SELECT r FROM Request r JOIN r.requestType rt " +
+           "WHERE r.employeeId = :empId AND r.status = 'APPROVED' " +
+           "AND rt.code = 'LEAVE_UNPAID' " +
+           "AND r.startDate <= :endInstant AND r.endDate >= :startInstant")
+    List<Request> findApprovedUnpaidLeave(@Param("empId") Long empId,
+                                          @Param("startInstant") java.time.Instant startInstant,
+                                          @Param("endInstant") java.time.Instant endInstant);
+
+    /**
+     * Finds approved overtime requests overlapping a given date range for a specific employee.
+     * Uses Request.startDate / Request.endDate (Instant fields).
+     */
+    @Query("SELECT r FROM Request r JOIN r.requestType rt " +
+           "WHERE r.employeeId = :empId AND r.status = 'APPROVED' " +
+           "AND rt.code = 'ATT_OVERTIME' " +
+           "AND r.startDate <= :endInstant AND r.endDate >= :startInstant")
+    List<Request> findApprovedOvertime(@Param("empId") Long empId,
+                                       @Param("startInstant") java.time.Instant startInstant,
+                                       @Param("endInstant") java.time.Instant endInstant);
 }

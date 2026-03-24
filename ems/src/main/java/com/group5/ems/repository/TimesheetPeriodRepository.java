@@ -2,6 +2,8 @@ package com.group5.ems.repository;
 
 import com.group5.ems.entity.TimesheetPeriod;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -12,4 +14,11 @@ public interface TimesheetPeriodRepository extends JpaRepository<TimesheetPeriod
     List<TimesheetPeriod> findByIsLocked(Boolean isLocked);
 
     Optional<TimesheetPeriod> findFirstByStartDateLessThanEqualAndEndDateGreaterThanEqual(LocalDate date, LocalDate dateEnd);
+
+    /**
+     * Check if a new date range overlaps with any existing period.
+     * Uses the standard interval overlap condition: A.start <= B.end AND A.end >= B.start
+     */
+    @Query("SELECT COUNT(t) > 0 FROM TimesheetPeriod t WHERE t.startDate <= :newEnd AND t.endDate >= :newStart")
+    boolean isDateRangeOverlapping(@Param("newStart") LocalDate newStart, @Param("newEnd") LocalDate newEnd);
 }

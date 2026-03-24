@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>EMS Pro - Payroll Periods</title>
+    <meta name="description" content="Manage timesheet periods for payroll processing" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" th:href="@{/css/hr/hr-common.css}">
+    <script th:src="@{/js/hr/hr-common.js}"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#1414b8",
+                        "primary-light": "#e8e8fb",
+                        "bg-light": "#f6f6f8",
+                    },
+                    fontFamily: { display: ["Inter"] },
+                },
+            },
+        };
+    </script>
+</head>
+
+<body class="bg-bg-light font-display text-slate-900 min-h-screen">
+<div class="flex h-screen overflow-hidden">
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- SIDEBAR                                                   -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <aside class="w-72 bg-white border-r border-slate-100 flex flex-col shrink-0 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-40 h-40 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+
+        <!-- Brand -->
+        <div class="px-6 py-6 flex items-center gap-3 relative z-10">
+            <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white shadow-md shadow-primary/30">
+                <span class="material-symbols-outlined text-[22px]">corporate_fare</span>
+            </div>
+            <div>
+                <h1 class="text-base font-black tracking-tight">EMS Pro</h1>
+                <p class="text-[11px] text-slate-400 font-medium">HR Workspace</p>
+            </div>
+        </div>
+
+        <!-- Nav -->
+        <nav class="flex-1 px-3 space-y-0.5 overflow-y-auto">
+            <p class="px-3 pb-1 pt-1 text-[10px] font-bold text-slate-300 uppercase tracking-widest">Main</p>
+
+            <a th:href="@{/hr/dashboard}" class="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:bg-slate-50 rounded-xl transition-all group">
+                <span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-primary transition-colors">dashboard</span>
+                <span class="text-sm font-medium">Dashboard</span>
+            </a>
+
+            <a th:href="@{/hr/employees}" class="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:bg-slate-50 rounded-xl transition-all group">
+                <span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-primary transition-colors">badge</span>
+                <span class="text-sm font-medium">Employees Directory</span>
+            </a>
+
+            <a th:href="@{/hr/attendance}" class="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:bg-slate-50 rounded-xl transition-all group">
+                <span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-primary transition-colors">event_note</span>
+                <span class="text-sm font-medium">Attendance & Time</span>
+            </a>
+
+            <a th:href="@{/hr/leave}" class="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:bg-slate-50 rounded-xl transition-all group">
+                <span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-primary transition-colors">free_cancellation</span>
+                <span class="text-sm font-medium">Leave Requests</span>
+            </a>
+
+            <a th:href="@{/hr/payroll}" class="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:bg-slate-50 rounded-xl transition-all group">
+                <span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-primary transition-colors">account_balance_wallet</span>
+                <span class="text-sm font-medium">Payroll Data</span>
+            </a>
+
+            <!-- ACTIVE -->
+            <a th:href="@{/hr/payroll-periods}" class="nav-active flex items-center gap-3 px-3 py-2.5 bg-primary-light text-primary rounded-xl">
+                <span class="material-symbols-outlined fill-icon text-[20px]">date_range</span>
+                <span class="text-sm font-semibold">Payroll Periods</span>
+            </a>
+
+            <p class="px-3 pb-1 pt-4 text-[10px] font-bold text-slate-300 uppercase tracking-widest">Recruitment & Perf</p>
+
+            <a th:href="@{/hr/recruitment}" class="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:bg-slate-50 rounded-xl transition-all group">
+                <span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-primary transition-colors">hail</span>
+                <span class="text-sm font-medium">Recruitment</span>
+            </a>
+
+            <a th:href="@{/hr/performance}" class="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:bg-slate-50 rounded-xl transition-all group">
+                <span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-primary transition-colors">military_tech</span>
+                <span class="text-sm font-medium">Performance Reviews</span>
+            </a>
+
+            <p class="px-3 pb-1 pt-4 text-[10px] font-bold text-slate-300 uppercase tracking-widest">Requests Management</p>
+
+            <a th:href="@{/hr/requests}" class="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:bg-slate-50 rounded-xl transition-all group">
+                <span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-primary transition-colors">inventory</span>
+                <span class="text-sm font-medium">Workflow Requests</span>
+            </a>
+        </nav>
+
+        <div class="p-4 border-t border-slate-100 mt-auto">
+            <div class="bg-slate-50 rounded-2xl p-3 flex items-center gap-3 border border-slate-100">
+                <div class="w-9 h-9 rounded-full overflow-hidden bg-primary/10 flex items-center justify-center text-primary font-bold text-sm shrink-0">
+                    <span th:text="${currentUser?.initials ?: 'HR'}">HR</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-xs font-bold text-slate-800 truncate" th:text="${currentUser?.fullName ?: 'HR Specialist'}">HR Specialist</p>
+                    <p class="text-[11px] text-slate-400 truncate" th:text="${currentUser?.email ?: 'hr@company.local'}">hr@company.local</p>
+                </div>
+                <form th:action="@{/logout}" method="post" class="shrink-0">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <button type="submit" class="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors">
+                        <span class="material-symbols-outlined text-sm">logout</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ─── Main ───────────────────────────────────────────────── -->
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <header class="h-16 bg-white border-b border-slate-100 flex items-center justify-between px-8 shrink-0">
+            <div>
+                <h2 class="text-base font-black text-slate-900 leading-tight">Payroll Periods</h2>
+                <p class="text-xs text-slate-400">Manage timesheet periods for payroll processing</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <button id="toggleCreateFormBtn" onclick="toggleCreateForm()"
+                        class="flex items-center gap-2 bg-primary text-white px-4 py-1.5 rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors shadow-sm shadow-primary/30">
+                    <span class="material-symbols-outlined text-[18px]">add_circle</span>
+                    Create New Period
+                </button>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-8 dot-grid">
+            <div class="max-w-5xl mx-auto space-y-6">
+
+                <!-- ═══ Flash Messages ═══ -->
+                <div th:if="${successMessage}" class="bg-emerald-50 border border-emerald-200 rounded-xl px-5 py-3 flex items-center gap-3 anim anim-1">
+                    <span class="material-symbols-outlined text-emerald-600 text-[20px]">check_circle</span>
+                    <p class="text-sm font-medium text-emerald-700" th:text="${successMessage}">Success</p>
+                    <button onclick="this.parentElement.remove()" class="ml-auto text-emerald-400 hover:text-emerald-600 transition-colors">
+                        <span class="material-symbols-outlined text-[18px]">close</span>
+                    </button>
+                </div>
+
+                <div th:if="${errorMessage}" class="bg-rose-50 border border-rose-200 rounded-xl px-5 py-3 flex items-center gap-3 anim anim-1">
+                    <span class="material-symbols-outlined text-rose-600 text-[20px]">error</span>
+                    <p class="text-sm font-medium text-rose-700" th:text="${errorMessage}">Error</p>
+                    <button onclick="this.parentElement.remove()" class="ml-auto text-rose-400 hover:text-rose-600 transition-colors">
+                        <span class="material-symbols-outlined text-[18px]">close</span>
+                    </button>
+                </div>
+
+                <!-- ═══ Summary Card ═══ -->
+                <div class="bg-gradient-to-r from-primary to-indigo-600 rounded-2xl p-6 text-white shadow-lg shadow-primary/20 anim anim-1 relative overflow-hidden">
+                    <div class="absolute inset-0 opacity-10" style="background: url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22><circle cx=%2230%22 cy=%2230%22 r=%2220%22 fill=%22none%22 stroke=%22white%22 stroke-width=%221%22/></svg>')"></div>
+                    <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div>
+                            <h3 class="text-white/80 text-sm font-bold uppercase tracking-wider mb-1">Timesheet Periods</h3>
+                            <div class="flex items-baseline gap-2">
+                                <span class="text-4xl font-black font-mono tracking-tighter" th:text="${periods.totalElements}">0</span>
+                                <span class="text-white/60 text-sm font-medium">total periods</span>
+                            </div>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="bg-white/10 p-3 rounded-xl backdrop-blur-sm border border-white/10 min-w-[120px]">
+                                <p class="text-white/60 text-[10px] font-bold uppercase tracking-wider mb-1">Open</p>
+                                <p class="text-lg font-bold font-mono" th:text="${periods.content.?[!isLocked].size()}">0</p>
+                            </div>
+                            <div class="bg-white/10 p-3 rounded-xl backdrop-blur-sm border border-white/10 min-w-[120px]">
+                                <p class="text-white/60 text-[10px] font-bold uppercase tracking-wider mb-1">Locked</p>
+                                <p class="text-lg font-bold font-mono text-white/90" th:text="${periods.content.?[isLocked].size()}">0</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══ Create Period Form (Inline, toggled) ═══ -->
+                <div id="createFormPanel"
+                     th:classappend="${showCreateForm} ? '' : 'hidden'"
+                     class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden anim anim-2">
+                    <div class="p-5 border-b border-slate-50 flex items-center justify-between">
+                        <h3 class="text-sm font-black text-slate-800 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary text-[18px]">add_circle</span>
+                            Create New Period
+                        </h3>
+                        <button onclick="toggleCreateForm()" class="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
+                            <span class="material-symbols-outlined text-sm">close</span>
+                        </button>
+                    </div>
+
+                    <form th:action="@{/hr/payroll-periods/create}" th:object="${periodCreateReq}" method="post" class="p-5">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                        <!-- Global @ValidDateRange error -->
+                        <div th:if="${#fields.hasGlobalErrors()}" class="mb-4 bg-rose-50 border border-rose-200 rounded-xl px-4 py-3 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-rose-500 text-[18px]">warning</span>
+                            <p class="text-sm text-rose-700" th:each="err : ${#fields.globalErrors()}" th:text="${err}">Validation error</p>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <!-- Period Name -->
+                            <div>
+                                <label for="periodName" class="block text-xs font-semibold text-slate-600 mb-1.5">Period Name</label>
+                                <input type="text" id="periodName" th:field="*{periodName}"
+                                       placeholder="e.g. March 2026"
+                                       th:classappend="${#fields.hasErrors('periodName')} ? 'border-rose-300 focus:ring-rose-500 focus:border-rose-500' : 'border-slate-200 focus:ring-primary focus:border-primary'"
+                                       class="w-full text-sm rounded-xl px-3 py-2 bg-white shadow-sm" />
+                                <p th:if="${#fields.hasErrors('periodName')}" th:errors="*{periodName}" class="mt-1 text-xs text-rose-500 font-medium">Error</p>
+                            </div>
+
+                            <!-- Start Date -->
+                            <div>
+                                <label for="startDate" class="block text-xs font-semibold text-slate-600 mb-1.5">Start Date</label>
+                                <input type="date" id="startDate" th:field="*{startDate}"
+                                       th:classappend="${#fields.hasErrors('startDate')} ? 'border-rose-300 focus:ring-rose-500 focus:border-rose-500' : 'border-slate-200 focus:ring-primary focus:border-primary'"
+                                       class="w-full text-sm rounded-xl px-3 py-2 bg-white shadow-sm" />
+                                <p th:if="${#fields.hasErrors('startDate')}" th:errors="*{startDate}" class="mt-1 text-xs text-rose-500 font-medium">Error</p>
+                            </div>
+
+                            <!-- End Date -->
+                            <div>
+                                <label for="endDate" class="block text-xs font-semibold text-slate-600 mb-1.5">End Date</label>
+                                <input type="date" id="endDate" th:field="*{endDate}"
+                                       th:classappend="${#fields.hasErrors('endDate')} ? 'border-rose-300 focus:ring-rose-500 focus:border-rose-500' : 'border-slate-200 focus:ring-primary focus:border-primary'"
+                                       class="w-full text-sm rounded-xl px-3 py-2 bg-white shadow-sm" />
+                                <p th:if="${#fields.hasErrors('endDate')}" th:errors="*{endDate}" class="mt-1 text-xs text-rose-500 font-medium">Error</p>
+                            </div>
+                        </div>
+
+                        <div class="mt-5 flex items-center justify-end gap-3">
+                            <button type="button" onclick="toggleCreateForm()"
+                                    class="px-4 py-2 text-sm font-semibold text-slate-500 hover:text-slate-700 hover:bg-slate-50 rounded-xl transition-colors">
+                                Cancel
+                            </button>
+                            <button type="submit"
+                                    class="flex items-center gap-2 bg-primary text-white px-5 py-2 rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors shadow-sm shadow-primary/30">
+                                <span class="material-symbols-outlined text-[16px]">save</span>
+                                Create Period
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- ═══ Data Table ═══ -->
+                <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden anim anim-2 flex flex-col">
+                    <div class="p-5 border-b border-slate-50 flex items-center justify-between">
+                        <h3 class="text-sm font-black text-slate-800">All Periods</h3>
+                        <span class="text-xs text-slate-400 font-medium" th:text="${periods.totalElements + ' records'}">0 records</span>
+                    </div>
+                    <div class="flex-1 overflow-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                            <tr class="bg-slate-50/70">
+                                <th class="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">Period Name</th>
+                                <th class="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">Start Date</th>
+                                <th class="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">End Date</th>
+                                <th class="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 text-center">Status</th>
+                                <th class="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 text-center">Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-50">
+                            <!-- Empty state -->
+                            <tr th:if="${periods.content.isEmpty()}">
+                                <td colspan="5" class="px-5 py-12 text-center">
+                                    <span class="material-symbols-outlined text-slate-300 text-[40px] mb-2">calendar_month</span>
+                                    <p class="text-sm text-slate-400 font-medium">No timesheet periods found</p>
+                                    <p class="text-xs text-slate-300 mt-1">Click "Create New Period" to get started</p>
+                                </td>
+                            </tr>
+
+                            <tr th:each="period : ${periods.content}" class="hover:bg-primary/[2%] transition-colors">
+                                <td class="px-5 py-4">
+                                    <p class="text-xs font-semibold text-slate-800" th:text="${period.periodName ?: 'Unnamed'}">March 2026</p>
+                                </td>
+                                <td class="px-5 py-4">
+                                    <span class="text-xs text-slate-500 font-medium font-mono"
+                                          th:text="${#temporals.format(period.startDate, 'dd/MM/yyyy')}">01/03/2026</span>
+                                </td>
+                                <td class="px-5 py-4">
+                                    <span class="text-xs text-slate-500 font-medium font-mono"
+                                          th:text="${#temporals.format(period.endDate, 'dd/MM/yyyy')}">31/03/2026</span>
+                                </td>
+                                <td class="px-5 py-4 text-center">
+                                    <!-- Open badge -->
+                                    <span th:if="${!period.isLocked}"
+                                          class="text-[10px] font-bold bg-green-100 text-green-800 px-2.5 py-1 rounded-full inline-flex items-center gap-1">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span>
+                                        Open
+                                    </span>
+                                    <!-- Locked badge -->
+                                    <span th:if="${period.isLocked}"
+                                          class="text-[10px] font-bold bg-gray-100 text-gray-800 px-2.5 py-1 rounded-full inline-flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-[12px]">lock</span>
+                                        Locked
+                                    </span>
+                                </td>
+                                <td class="px-5 py-4 text-center">
+                                    <div class="inline-flex items-center gap-2">
+                                        <!-- Preview -->
+                                        <a th:href="@{/hr/payroll-preview/{id}(id=${period.id})}"
+                                           class="w-8 h-8 rounded-lg bg-primary/5 hover:bg-primary/10 flex items-center justify-center text-primary transition-colors"
+                                           title="Preview aggregated data">
+                                            <span class="material-symbols-outlined text-[16px]">visibility</span>
+                                        </a>
+                                        <!-- Lock (unlocked) -->
+                                        <form th:if="${!period.isLocked}"
+                                              th:action="@{/hr/payroll-periods/{id}/lock(id=${period.id})}" method="post"
+                                              onsubmit="return confirm('Are you sure you want to lock this period? This action cannot be undone!');">
+                                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                            <button type="submit"
+                                                    class="w-8 h-8 rounded-lg bg-amber-50 hover:bg-amber-100 flex items-center justify-center text-amber-500 transition-colors"
+                                                    title="Lock this period">
+                                                <span class="material-symbols-outlined text-[16px]">lock_open</span>
+                                            </button>
+                                        </form>
+                                        <!-- Locked (non-interactive) -->
+                                        <span th:if="${period.isLocked}"
+                                              class="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-300"
+                                              th:title="'Locked at ' + ${period.lockedAt != null ? #temporals.format(period.lockedAt, 'dd/MM/yyyy HH:mm') : 'N/A'}">
+                                            <span class="material-symbols-outlined text-[16px]">lock</span>
+                                        </span>
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ═══ Pagination ═══ -->
+                <div th:if="${totalPages > 1}" class="flex items-center justify-between pt-2 anim anim-3">
+                    <p class="text-xs text-slate-400 font-medium">
+                        Showing page <span th:text="${currentPage + 1}">1</span> of <span th:text="${totalPages}">1</span>
+                        <span class="text-slate-300 mx-1">•</span>
+                        <span th:text="${totalItems}">0</span> total records
+                    </p>
+                    <div class="flex items-center gap-2">
+                        <!-- Previous -->
+                        <a th:if="${currentPage > 0}"
+                           th:href="@{/hr/payroll-periods(page=${currentPage - 1})}"
+                           class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm">
+                            <span class="material-symbols-outlined text-[14px]">chevron_left</span>
+                            Previous
+                        </a>
+                        <span th:if="${currentPage == 0}"
+                              class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-slate-300 bg-slate-50 border border-slate-100 rounded-lg cursor-not-allowed">
+                            <span class="material-symbols-outlined text-[14px]">chevron_left</span>
+                            Previous
+                        </span>
+
+                        <!-- Page numbers -->
+                        <th:block th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+                            <a th:if="${i != currentPage}"
+                               th:href="@{/hr/payroll-periods(page=${i})}"
+                               th:text="${i + 1}"
+                               class="w-8 h-8 flex items-center justify-center text-xs font-semibold text-slate-500 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm">1</a>
+                            <span th:if="${i == currentPage}"
+                                  th:text="${i + 1}"
+                                  class="w-8 h-8 flex items-center justify-center text-xs font-bold text-white bg-primary rounded-lg shadow-sm shadow-primary/30">1</span>
+                        </th:block>
+
+                        <!-- Next -->
+                        <a th:if="${currentPage < totalPages - 1}"
+                           th:href="@{/hr/payroll-periods(page=${currentPage + 1})}"
+                           class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm">
+                            Next
+                            <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+                        </a>
+                        <span th:if="${currentPage >= totalPages - 1}"
+                              class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-slate-300 bg-slate-50 border border-slate-100 rounded-lg cursor-not-allowed">
+                            Next
+                            <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+                        </span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    function toggleCreateForm() {
+        const panel = document.getElementById('createFormPanel');
+        panel.classList.toggle('hidden');
+        if (!panel.classList.contains('hidden')) {
+            document.getElementById('periodName').focus();
+        }
+    }
+
+    // Auto-dismiss flash messages after 5 seconds
+    document.addEventListener('DOMContentLoaded', function () {
+        const flashes = document.querySelectorAll('[class*="bg-emerald-50"], [class*="bg-rose-50"]');
+        flashes.forEach(flash => {
+            setTimeout(() => {
+                flash.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                flash.style.opacity = '0';
+                flash.style.transform = 'translateY(-8px)';
+                setTimeout(() => flash.remove(), 300);
+            }, 5000);
+        });
+    });
+</script>
+</body>
+</html>
