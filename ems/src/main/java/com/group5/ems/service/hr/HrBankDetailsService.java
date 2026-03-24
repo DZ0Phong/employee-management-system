@@ -4,14 +4,14 @@ import com.group5.ems.dto.response.BankDetailsResponseDTO;
 import com.group5.ems.entity.EmployeeBankDetail;
 import com.group5.ems.enums.AuditAction;
 import com.group5.ems.enums.AuditEntityType;
+import com.group5.ems.exception.BankDetailNotFoundException;
 import com.group5.ems.repository.EmployeeBankDetailRepository;
 import com.group5.ems.service.common.LogService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -20,16 +20,19 @@ public class HrBankDetailsService {
     private final EmployeeBankDetailRepository bankDetailRepository;
     private final LogService logService;
 
-    public List<BankDetailsResponseDTO> getMaskedBankDetails(Long employeeId) {
-        return bankDetailRepository.findByEmployeeId(employeeId).stream()
-                .map(this::toResponseDTO)
-                .collect(Collectors.toList());
+    /**
+     * Returns a paginated list of masked bank details for a given employee.
+     */
+    @Transactional(readOnly = true)
+    public Page<BankDetailsResponseDTO> getPaginatedMaskedBankDetails(Long employeeId, Pageable pageable) {
+        return bankDetailRepository.findByEmployeeId(employeeId, pageable)
+                .map(this::toResponseDTO);
     }
 
     @Transactional
     public void setPrimaryAccount(Long employeeId, Long bankId) {
         EmployeeBankDetail detail = bankDetailRepository.findByIdAndEmployeeId(bankId, employeeId)
-                .orElseThrow(() -> new RuntimeException("Bank detail not found or not owned by employee"));
+                .orElseThrow(() -> new BankDetailNotFoundException(bankId, employeeId));
 
         bankDetailRepository.resetPrimaryAccounts(employeeId);
         detail.setIsPrimary(true);
@@ -42,10 +45,10 @@ public class HrBankDetailsService {
     @Transactional
     public void deleteBankDetail(Long employeeId, Long bankId) {
         EmployeeBankDetail detail = bankDetailRepository.findByIdAndEmployeeId(bankId, employeeId)
-                .orElseThrow(() -> new RuntimeException("Bank detail not found or not owned by employee"));
+                .orElseThrow(() -> new BankDetailNotFoundException(bankId, employeeId));
 
         if (Boolean.TRUE.equals(detail.getIsPrimary())) {
-            throw new RuntimeException("Cannot delete primary bank account. Set another as primary first.");
+            throw new IllegalStateException("Cannot delete primary bank account. Set another as primary first.");
         }
 
         bankDetailRepository.delete(detail);

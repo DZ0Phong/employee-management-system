@@ -330,12 +330,15 @@ public class HrController {
     // ── Bank Details Management ──────────────────────────────────────────
 
     @GetMapping("/bank-details/{id}")
-    public String employeeBankDetails(@PathVariable Long id, Model model) {
+    public String employeeBankDetails(@PathVariable Long id,
+                                      @RequestParam(defaultValue = "0") int page,
+                                      Model model) {
         Employee employee = employeeRepository.findByIdWithDetails(id)
                 .orElseThrow(() -> new RuntimeException("Employee not found"));
         
+        Pageable pageable = PageRequest.of(page, PAGE_SIZE);
         model.addAttribute("employee", employee);
-        model.addAttribute("bankDetails", bankDetailsService.getMaskedBankDetails(id));
+        model.addAttribute("bankDetails", bankDetailsService.getPaginatedMaskedBankDetails(id, pageable));
         model.addAttribute("currentUser", adminService.getUserDTO().orElse(null));
         return "hr/bank-details";
     }

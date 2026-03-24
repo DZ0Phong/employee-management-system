@@ -23,6 +23,9 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     @Query("select e from Employee  e join e.user u where u.status = :status")
     List<Employee> findByStatus(@Param("status") String status);
 
+    @Query("select e from Employee e join e.user u where u.status = :status")
+    Page<Employee> findByStatus(@Param("status") String status, Pageable pageable);
+
     @Query("select count(e) from Employee e where month(e.hireDate) = month (current_date ) and year(e.hireDate) = year(current_date )")
     long newThisMonth();
     @Query("select count(e) from Employee e where year(e.hireDate) = year(current_date )")

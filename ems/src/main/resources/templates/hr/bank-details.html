@@ -143,10 +143,10 @@
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-50">
-                                <tr th:if="${bankDetails.empty}">
+                                <tr th:if="${bankDetails.content.isEmpty()}">
                                     <td colspan="5" class="px-5 py-10 text-center text-slate-400 text-sm italic">No bank accounts added for this employee.</td>
                                 </tr>
-                                <tr th:each="detail : ${bankDetails}" class="hover:bg-primary/[2%] transition-colors">
+                                <tr th:each="detail : ${bankDetails.content}" class="hover:bg-primary/[2%] transition-colors">
                                     <td class="px-5 py-4">
                                         <div class="flex flex-col">
                                             <span class="text-xs font-bold text-slate-800" th:text="${detail.bankName}">Bank Name</span>
@@ -187,6 +187,8 @@
                     </div>
                 </div>
 
+                <!-- Pagination -->
+                <div th:replace="~{fragments/pagination :: pagination(pageData=${bankDetails}, baseUrl='/hr/bank-details/' + ${employee.id})}"></div>
 
             </div>
         </div>

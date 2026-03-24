@@ -261,7 +261,7 @@
                         <div class="flex items-center gap-3">
                             <h3 class="text-sm font-black text-slate-800">Employee Aggregation</h3>
                             <span class="text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full"
-                                  th:text="${#lists.size(employees)} + ' records'">0 records</span>
+                                  th:text="${employees.totalElements} + ' records'">0 records</span>
                         </div>
                         <div class="flex items-center gap-2">
                             <input type="text" id="tableSearch" placeholder="Search employees..."
@@ -271,7 +271,7 @@
                     </div>
 
                     <!-- Empty State -->
-                    <div th:if="${#lists.isEmpty(employees)}" class="px-5 py-16 flex flex-col items-center justify-center">
+                    <div th:if="${employees.content.isEmpty()}" class="px-5 py-16 flex flex-col items-center justify-center">
                         <div class="w-16 h-16 rounded-2xl bg-slate-50 flex items-center justify-center mb-4">
                             <span class="material-symbols-outlined text-slate-300 text-[36px]">folder_off</span>
                         </div>
@@ -280,7 +280,7 @@
                     </div>
 
                     <!-- Table -->
-                    <div th:unless="${#lists.isEmpty(employees)}" class="flex-1 overflow-auto max-h-[520px]">
+                    <div th:unless="${employees.content.isEmpty()}" class="flex-1 overflow-auto max-h-[520px]">
                         <table class="w-full text-left border-collapse" id="aggregationTable">
                             <thead>
                             <tr class="bg-slate-50/80 sticky top-0 z-10">
@@ -295,7 +295,7 @@
                             </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-50">
-                            <tr th:each="emp, stat : ${employees}" class="hover:bg-primary/[2%] transition-colors employee-row">
+                            <tr th:each="emp, stat : ${employees.content}" class="hover:bg-primary/[2%] transition-colors employee-row">
                                 <!-- Row number -->
                                 <td class="px-5 py-4">
                                     <span class="text-[10px] font-bold text-slate-300" th:text="${stat.index + 1}">1</span>
@@ -355,6 +355,9 @@
                     </div>
                 </div>
 
+                <!-- ═══ Pagination ═══ -->
+                <div th:replace="~{fragments/pagination :: pagination(pageData=${employees}, baseUrl='/hr/payroll-preview/' + ${periodId})}"></div>
+
                 <!-- ═══ CTA Actions ═══ -->
                 <div class="flex items-center justify-between pt-2 anim anim-4">
                     <a th:href="@{/hr/payroll-periods}"
@@ -371,28 +374,25 @@
                             Refresh Data
                         </a>
 
-                        <!-- Generate Payslips CTA -->
-                        <form th:if="${periodSummary.locked()}"
-                              th:action="@{/hr/payroll-preview/{id}/generate-payslips(id=${periodId})}"
-                              method="post"
-                              onsubmit="return confirm('Are you sure you want to generate payslips for all employees in this period? This action will create payslip records.');">
-                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                            <button type="submit"
-                                    class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-6 py-2 shadow-md hover:shadow-lg transition-all text-sm font-semibold">
-                                <span class="material-symbols-outlined text-[18px]">receipt_long</span>
-                                Proceed to Generate Payslips
+                        <!-- Generate Payslips CTA (New Modal Trigger) -->
+                        <div th:if="${periodSummary.locked()}">
+                            <button type="button" onclick="openGenerateModal()"
+                                    class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-6 py-2.5 shadow-md shadow-blue-200 hover:shadow-lg hover:-translate-y-0.5 transition-all text-sm font-semibold active:scale-95">
+                                <span class="material-symbols-outlined text-[20px]">calculate</span>
+                                Generate Payslips
                             </button>
-                        </form>
+                        </div>
 
                         <!-- Disabled CTA (period not locked) -->
                         <div th:unless="${periodSummary.locked()}" class="relative group">
                             <button disabled
-                                    class="inline-flex items-center gap-2 bg-slate-200 text-slate-400 rounded-lg px-6 py-2 text-sm font-semibold cursor-not-allowed opacity-70">
-                                <span class="material-symbols-outlined text-[18px]">lock</span>
-                                Proceed to Generate Payslips
+                                    class="inline-flex items-center gap-2 bg-slate-200 text-slate-400 rounded-lg px-6 py-2.5 text-sm font-semibold cursor-not-allowed opacity-70">
+                                <span class="material-symbols-outlined text-[20px]">lock_clock</span>
+                                Generate Payslips
                             </button>
-                            <div class="absolute bottom-full right-0 mb-2 px-3 py-1.5 bg-slate-800 text-white text-[10px] font-medium rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                                Lock the period first to enable payslip generation
+                            <div class="absolute bottom-full right-0 mb-2 px-3 py-1.5 bg-slate-800 text-white text-[10px] font-medium rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-xl">
+                                Lock the period first to enable calculation engine
+                                <div class="absolute top-full right-4 border-4 border-transparent border-t-slate-800"></div>
                             </div>
                         </div>
                     </div>
@@ -403,7 +403,96 @@
     </main>
 </div>
 
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- CONFIRMATION MODAL (Gross-to-Net Engine)                   -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div id="generateModal" class="fixed inset-0 z-[100] hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <!-- Backdrop -->
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeGenerateModal()"></div>
+
+    <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+        <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-md border border-slate-100 anim-modal-enter">
+            <div class="bg-white px-4 pb-4 pt-5 sm:p-8 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl bg-blue-50 sm:mx-0 sm:h-12 sm:w-12">
+                        <span class="material-symbols-outlined text-blue-600 text-[28px]">receipt_long</span>
+                    </div>
+                    <div class="mt-3 text-center sm:ml-5 sm:mt-0 sm:text-left">
+                        <h3 class="text-xl font-black leading-6 text-slate-800" id="modal-title">Generate Draft Payslips?</h3>
+                        <div class="mt-3">
+                            <p class="text-sm text-slate-500 leading-relaxed">
+                                This action will trigger the <span class="font-bold text-slate-700">Gross-to-Net Calculation Engine</span>. 
+                                It will compute pro-rated base pay, overtime (1.5x), and bonuses for all active employees based on current aggregated data.
+                            </p>
+                            <div class="mt-4 p-3 bg-amber-50 rounded-xl border border-amber-100 flex gap-3">
+                                <span class="material-symbols-outlined text-amber-600 text-[18px] shrink-0">info</span>
+                                <p class="text-[11px] text-amber-800 leading-normal">
+                                    Generated payslips will be in <span class="font-bold">DRAFT (PENDING)</span> status and can be reviewed before approval.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-slate-50/50 px-4 py-6 sm:flex sm:flex-row-reverse sm:px-8 gap-3">
+                <form id="generatePayrollForm" th:action="@{/hr/payroll-periods/{periodId}/generate(periodId=${periodId})}" method="POST" class="inline-flex w-full sm:w-auto">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <button type="submit" id="submitBtn"
+                            class="inline-flex w-full justify-center items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                        <span id="btnText">Confirm &amp; Generate</span>
+                        <!-- Loading Spinner -->
+                        <svg id="loadingSpinner" class="hidden animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </button>
+                </form>
+                <button type="button" onclick="closeGenerateModal()"
+                        class="mt-3 inline-flex w-full justify-center rounded-xl bg-white px-6 py-3 text-sm font-bold text-slate-700 shadow-sm ring-1 ring-inset ring-slate-200 hover:bg-slate-50 sm:mt-0 sm:w-auto transition-all">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @keyframes modalEnter {
+        from { opacity: 0; transform: scale(0.95) translateY(10px); }
+        to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .anim-modal-enter {
+        animation: modalEnter 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+</style>
+
 <script>
+    // Modal Management
+    function openGenerateModal() {
+        const modal = document.getElementById('generateModal');
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden'; // Prevent scroll
+    }
+
+    function closeGenerateModal() {
+        const modal = document.getElementById('generateModal');
+        modal.classList.add('hidden');
+        document.body.style.overflow = ''; // Restore scroll
+    }
+
+    // Double-Submit Prevention (Loading Spinner)
+    document.getElementById('generatePayrollForm')?.addEventListener('submit', function(e) {
+        const submitBtn = document.getElementById('submitBtn');
+        const btnText = document.getElementById('btnText');
+        const spinner = document.getElementById('loadingSpinner');
+
+        // State: Processing
+        submitBtn.disabled = true;
+        submitBtn.classList.add('cursor-not-allowed', 'opacity-80');
+        btnText.classList.add('hidden');
+        spinner.classList.remove('hidden');
+    });
+
     // Client-side table search filter
     function filterTable() {
         const query = document.getElementById('tableSearch').value.toLowerCase();
