@@ -23,6 +23,9 @@ public class SecurityConfig {
         .csrf(csrf -> csrf
                 .ignoringRequestMatchers("/home/**")
             )
+        .headers(headers -> headers
+        .frameOptions(frame -> frame.sameOrigin())
+    )    
         
         .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/login", "/error", "/home", "/home/**").permitAll()
