@@ -164,8 +164,10 @@
                     <span th:text="${currentUser?.initials ?: 'HR'}">HR</span>
                 </div>
                 <div class="flex-1 min-w-0">
-                    <p class="text-xs font-bold text-slate-800 truncate" th:text="${currentUser?.fullName ?: 'HR Specialist'}">HR Specialist</p>
-                    <p class="text-[11px] text-slate-400 truncate" th:text="${currentUser?.email ?: 'hr@company.local'}">hr@company.local</p>
+                    <a th:href="@{/hr/my-profile/bank-details}" class="block hover:opacity-80 transition-opacity" title="Manage My Bank Details">
+                        <p class="text-xs font-bold text-slate-800 truncate group-hover:text-primary transition-colors" th:text="${currentUser?.fullName ?: 'HR Specialist'}">HR Specialist</p>
+                        <p class="text-[11px] text-slate-400 truncate" th:text="${currentUser?.email ?: 'hr@company.local'}">hr@company.local</p>
+                    </a>
                 </div>
                 <form th:action="@{/logout}" method="post" class="shrink-0">
                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />

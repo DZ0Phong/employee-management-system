@@ -73,6 +73,16 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
             "GROUP BY MONTH(e.hireDate) ORDER BY MONTH(e.hireDate)")
     List<Object[]> countHiringByMonth(@Param("year") int year);
 
+    @Query("SELECT e FROM Employee e " +
+           "WHERE e.status IN ('ACTIVE', 'ON_LEAVE') " +
+           "AND e.hireDate <= :periodEndDate")
+    Page<Employee> findEligibleEmployeesForPeriod(@Param("periodEndDate") LocalDate periodEndDate, Pageable pageable);
+
+    @Query("SELECT e FROM Employee e " +
+           "WHERE e.status IN ('ACTIVE', 'ON_LEAVE') " +
+           "AND e.hireDate <= :periodEndDate")
+    List<Employee> findEligibleEmployeesForPeriodList(@Param("periodEndDate") LocalDate periodEndDate);
+
     @Query("SELECT e FROM Employee e JOIN FETCH e.user u")
     List<Employee> findAllWithUser();
 

@@ -12,14 +12,12 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/hr/payroll-review")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('HR_MANAGER')")
+@PreAuthorize("hasAnyRole('HR', 'HR_MANAGER', 'ADMIN')")
 public class PayrollReviewController {
 
     private final PayrollReviewService payrollReviewService;
@@ -40,20 +38,4 @@ public class PayrollReviewController {
         return "hr/payroll-review";
     }
 
-    @PostMapping("/{periodId}/approve")
-    public String approvePayroll(
-            @PathVariable Long periodId,
-            RedirectAttributes redirectAttributes) {
-        
-        try {
-            payrollReviewService.approvePayrollRun(periodId);
-            redirectAttributes.addFlashAttribute("successMessage", 
-                "Payroll run approved successfully. Payslips are now locked.");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", 
-                "Error approving payroll run: " + e.getMessage());
-        }
-        
-        return "redirect:/hr/payroll-review/" + periodId;
-    }
 }

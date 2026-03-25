@@ -69,10 +69,10 @@ public class PayrollAggregationService {
         TimesheetPeriod period = periodRepository.findById(periodId)
                 .orElseThrow(() -> new PayrollPreviewNotFoundException(periodId));
 
-        List<Employee> activeEmployees = employeeRepository.findByStatus("ACTIVE");
+        List<Employee> eligibleEmployees = employeeRepository.findEligibleEmployeesForPeriodList(period.getEndDate());
         List<EmployeeAggregationDTO> result = new ArrayList<>();
 
-        for (Employee emp : activeEmployees) {
+        for (Employee emp : eligibleEmployees) {
             result.add(aggregateDataForEmployee(period, emp));
         }
 
@@ -95,7 +95,7 @@ public class PayrollAggregationService {
                 .orElseThrow(() -> new PayrollPreviewNotFoundException(periodId));
 
         // Query only the requested page of employees from DB
-        Page<Employee> employeePage = employeeRepository.findByStatus("ACTIVE", pageable);
+        Page<Employee> employeePage = employeeRepository.findEligibleEmployeesForPeriod(period.getEndDate(), pageable);
 
         List<EmployeeAggregationDTO> aggregated = employeePage.getContent().stream()
                 .map(emp -> aggregateDataForEmployee(period, emp))
@@ -160,10 +160,10 @@ public class PayrollAggregationService {
                     + existingPayslips.size() + " existing payslip(s).");
         }
 
-        List<Employee> activeEmployees = employeeRepository.findByStatus("ACTIVE");
+        List<Employee> eligibleEmployees = employeeRepository.findEligibleEmployeesForPeriodList(period.getEndDate());
         List<Payslip> payslips = new ArrayList<>();
 
-        for (Employee emp : activeEmployees) {
+        for (Employee emp : eligibleEmployees) {
             EmployeeAggregationDTO agg = aggregateDataForEmployee(period, emp);
 
             // Look up the employee's current base salary
