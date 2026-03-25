@@ -171,160 +171,73 @@
         <!-- Scrollable content -->
         <div class="flex-1 overflow-y-auto p-8 dot-grid">
             <div class="max-w-7xl mx-auto">
-                <!-- Hero Text -->
                 <div class="mb-8 anim">
                     <h1 class="text-3xl font-black text-slate-900 tracking-tight">Department Overview</h1>
-                    <p class="text-slate-500 mt-2">Real-time insights for your team's performance and operations.</p>
+                    <p class="text-slate-500 mt-2">Live insights from your team, leave queue and review workflow.</p>
                 </div>
 
-                <!-- KPI Cards -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <!-- Team Size Card -->
                     <div class="anim anim-1 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm card-hover">
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="p-2 bg-primary/10 rounded-xl text-primary">
-                                <span class="material-symbols-outlined">groups</span>
-                            </div>
-                            <span class="text-emerald-500 text-xs font-bold flex items-center bg-emerald-50 px-2 py-0.5 rounded-full">+2% <span class="material-symbols-outlined text-[14px] ml-0.5">trending_up</span></span>
+                        <div class="p-2 bg-primary/10 rounded-xl text-primary w-fit mb-4">
+                            <span class="material-symbols-outlined">groups</span>
                         </div>
                         <p class="text-slate-400 uppercase tracking-wider text-[10px] font-bold">Team Size</p>
-                        <h3 class="text-3xl font-black text-slate-900 stat-num mt-1" th:text="${data.teamSize != null ? data.teamSize : '0'}">24</h3>
+                        <h3 class="text-3xl font-black text-slate-900 stat-num mt-1" th:text="${data.teamSize}">0</h3>
                     </div>
-
-                    <!-- Pending Approvals Card -->
                     <div class="anim anim-2 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm card-hover">
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="p-2 bg-amber-50 rounded-xl text-amber-500">
-                                <span class="material-symbols-outlined">pending_actions</span>
-                            </div>
-                            <span class="text-amber-500 text-xs font-bold bg-amber-50 px-2 py-0.5 rounded-full" th:text="'+' + ${data.newApprovals != null ? data.newApprovals : '3'} + ' new'">+3 new</span>
+                        <div class="p-2 bg-amber-50 rounded-xl text-amber-500 w-fit mb-4">
+                            <span class="material-symbols-outlined">pending_actions</span>
                         </div>
                         <p class="text-slate-400 uppercase tracking-wider text-[10px] font-bold">Pending Approvals</p>
-                        <h3 class="text-3xl font-black text-slate-900 stat-num mt-1" th:text="${data.pendingApprovals != null ? data.pendingApprovals : '8'}">8</h3>
+                        <h3 class="text-3xl font-black text-slate-900 stat-num mt-1" th:text="${data.pendingApprovals}">0</h3>
                     </div>
-
-                    <!-- Team Attendance Card -->
                     <div class="anim anim-3 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm card-hover">
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="p-2 bg-emerald-50 rounded-xl text-emerald-500">
-                                <span class="material-symbols-outlined">calendar_today</span>
-                            </div>
-                            <span class="text-rose-500 text-xs font-bold flex items-center bg-rose-50 px-2 py-0.5 rounded-full">-1% <span class="material-symbols-outlined text-[14px] ml-0.5">trending_down</span></span>
+                        <div class="p-2 bg-emerald-50 rounded-xl text-emerald-500 w-fit mb-4">
+                            <span class="material-symbols-outlined">calendar_today</span>
                         </div>
-                        <p class="text-slate-400 uppercase tracking-wider text-[10px] font-bold">Team Attendance</p>
-                        <h3 class="text-3xl font-black text-slate-900 stat-num mt-1" th:text="${data.teamAttendance != null ? data.teamAttendance : '92%'}">92%</h3>
+                        <p class="text-slate-400 uppercase tracking-wider text-[10px] font-bold">Weekly Attendance</p>
+                        <h3 class="text-3xl font-black text-slate-900 stat-num mt-1" th:text="${data.teamAttendance}">0%</h3>
                     </div>
-
-                    <!-- Next Review Card -->
                     <div class="anim anim-4 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm card-hover">
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="p-2 bg-indigo-50 rounded-xl text-indigo-500">
-                                <span class="material-symbols-outlined">rate_review</span>
-                            </div>
-                            <span class="text-slate-500 text-xs font-bold bg-slate-50 px-2 py-0.5 rounded-full">Scheduled</span>
+                        <div class="p-2 bg-indigo-50 rounded-xl text-indigo-500 w-fit mb-4">
+                            <span class="material-symbols-outlined">rate_review</span>
                         </div>
                         <p class="text-slate-400 uppercase tracking-wider text-[10px] font-bold">Next Review</p>
-                        <h3 class="text-2xl font-black text-slate-900 stat-num mt-1" th:text="${data.nextReview != null ? data.nextReview : 'Oct 15'}">Oct 15</h3>
+                        <h3 class="text-xl font-black text-slate-900 stat-num mt-1" th:text="${data.nextReview}">No pending review</h3>
                     </div>
                 </div>
 
-                <!-- Charts and Activity Section -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-                    <!-- Main Chart -->
                     <div class="anim anim-1 lg:col-span-2 bg-white p-8 rounded-2xl border border-slate-100 shadow-sm">
-                        <div class="flex items-center justify-between mb-8">
+                        <div class="flex items-center justify-between mb-6">
                             <div>
-                                <h4 class="text-lg font-bold text-slate-900">Team Performance Trends</h4>
-                                <p class="text-sm text-slate-500">Monthly aggregate department rating</p>
+                                <h4 class="text-lg font-bold text-slate-900">Team Status Breakdown</h4>
+                                <p class="text-sm text-slate-500">Current employee states inside your department.</p>
                             </div>
-                            <div class="flex items-center gap-2">
-                                <span class="h-3 w-3 rounded-full bg-primary"></span>
-                                <span class="text-xs font-bold text-slate-500">Current Year</span>
-                            </div>
+                            <a th:href="@{/dept-manager/my-team}" class="text-primary text-xs font-bold uppercase tracking-widest hover:text-primary/80 transition-colors">Open Team</a>
                         </div>
-                        <div class="relative h-[240px] w-full mt-10">
-                            <div class="flex flex-col gap-2">
-                                <p class="text-primary tracking-tight text-4xl font-black leading-tight">88%</p>
-                                <div class="flex gap-1 items-center">
-                                    <p class="text-slate-500 text-sm font-normal">Last 6 Months</p>
-                                    <p class="text-emerald-500 text-sm font-bold flex items-center ml-2">
-                                        <span class="material-symbols-outlined text-sm mr-0.5">add</span>5.4%
-                                    </p>
+                        <div class="grid sm:grid-cols-3 gap-4">
+                            <div th:each="item : ${data.statusBreakdown}" class="rounded-2xl border border-slate-100 p-5 bg-slate-50/70">
+                                <div class="flex items-center gap-3 mb-3">
+                                    <span class="size-3 rounded-full" th:classappend="${item.colorClass}"></span>
+                                    <p class="text-xs font-bold uppercase tracking-widest text-slate-400" th:text="${item.label}">Active</p>
                                 </div>
-                            </div>
-
-                            <!-- SVG Chart Simulation -->
-                            <div class="mt-8">
-                                <svg class="overflow-visible" fill="none" height="150" preserveaspectratio="none" viewbox="0 0 478 150" width="100%" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M0 109C18 109 18 21 36 21C54 21 54 41 72 41C90 41 90 93 108 93C127 93 127 33 145 33C163 33 163 101 181 101C199 101 199 61 217 61C236 61 236 45 254 45C272 45 272 121 290 121C308 121 308 149 326 149C344 149 344 1 363 1C381 1 381 81 399 81C417 81 417 129 435 129C453 129 453 25 472 25" filter="drop-shadow(0px 8px 16px rgba(20, 20, 184, 0.25))" stroke="#1414b8" stroke-linecap="round" stroke-width="4"></path>
-                                    <defs>
-                                        <lineargradient id="chartGradient" x1="0" x2="0" y1="0" y2="1">
-                                            <stop offset="0%" stop-color="#1414b8" stop-opacity="0.1"></stop>
-                                            <stop offset="100%" stop-color="#1414b8" stop-opacity="0"></stop>
-                                        </lineargradient>
-                                    </defs>
-                                </svg>
-                                <div class="flex justify-between mt-4 px-2">
-                                    <p class="text-slate-300 text-[10px] font-bold uppercase tracking-wider">May</p>
-                                    <p class="text-slate-300 text-[10px] font-bold uppercase tracking-wider">Jun</p>
-                                    <p class="text-slate-300 text-[10px] font-bold uppercase tracking-wider">Jul</p>
-                                    <p class="text-slate-300 text-[10px] font-bold uppercase tracking-wider">Aug</p>
-                                    <p class="text-slate-300 text-[10px] font-bold uppercase tracking-wider">Sep</p>
-                                    <p class="text-slate-300 text-[10px] font-bold uppercase tracking-wider">Oct</p>
-                                </div>
+                                <p class="text-3xl font-black text-slate-900 stat-num" th:text="${item.value}">0</p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Recent Activity / Notifications -->
                     <div class="anim anim-2 bg-white p-8 rounded-2xl border border-slate-100 shadow-sm flex flex-col">
                         <h4 class="text-lg font-bold text-slate-900 mb-6">Action Required</h4>
-                        <div class="space-y-6 flex-1">
-                            <!-- Example 1 -->
-                            <div class="flex gap-4">
-                                <div class="size-10 shrink-0 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                                    <span class="material-symbols-outlined text-[20px]">person_add</span>
-                                </div>
-                                <div class="flex-1">
-                                    <p class="text-sm font-bold text-slate-900 leading-tight">New Leave Request</p>
-                                    <p class="text-[11px] text-slate-500 mt-1">Marcus Lee requested 3 days sick leave</p>
-                                    <div class="flex gap-2 mt-3">
-                                        <button class="px-3 py-1 bg-primary text-white text-[11px] font-bold rounded-lg hover:bg-primary/90 transition-colors">Approve</button>
-                                        <button class="px-3 py-1 bg-slate-50 text-slate-600 border border-slate-100 text-[11px] font-bold rounded-lg hover:bg-slate-100 transition-colors">Deny</button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Example 2 -->
-                            <div class="flex gap-4">
-                                <div class="size-10 shrink-0 rounded-xl bg-amber-50 flex items-center justify-center text-amber-500">
-                                    <span class="material-symbols-outlined text-[20px]">priority_high</span>
-                                </div>
-                                <div class="flex-1">
-                                    <p class="text-sm font-bold text-slate-900 leading-tight">Performance Due</p>
-                                    <p class="text-[11px] text-slate-500 mt-1">Review for Sarah Chen expires in 2 days</p>
-                                    <button class="mt-3 text-primary text-[11px] font-bold flex items-center gap-1 hover:text-primary/80">Start Review <span class="material-symbols-outlined text-[14px]">arrow_forward</span></button>
-                                </div>
-                            </div>
-
-                            <!-- Example 3 -->
-                            <div class="flex gap-4">
-                                <div class="size-10 shrink-0 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-500">
-                                    <span class="material-symbols-outlined text-[20px]">verified</span>
-                                </div>
-                                <div class="flex-1">
-                                    <p class="text-sm font-bold text-slate-900 leading-tight">Attendance Reconciled</p>
-                                    <p class="text-[11px] text-slate-500 mt-1">Weekly reports for Eng. ready for review</p>
-                                </div>
-                            </div>
+                        <div class="space-y-4 flex-1">
+                            <a th:each="item : ${data.actionItems}" th:href="@{${item.href}}" class="block rounded-2xl border border-slate-100 bg-slate-50/70 p-4 hover:bg-slate-50 transition-colors">
+                                <p class="text-sm font-bold text-slate-900" th:text="${item.title}">Pending task</p>
+                                <p class="text-[11px] text-slate-500 mt-1" th:text="${item.description}">Description</p>
+                            </a>
                         </div>
-                        <button class="w-full mt-8 py-2.5 text-[11px] font-bold text-slate-500 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors">
-                            View All Tasks
-                        </button>
                     </div>
                 </div>
 
-                <!-- Team Snapshot -->
                 <div class="anim anim-3 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
                     <div class="px-8 py-6 border-b border-slate-50 flex justify-between items-center">
                         <h4 class="text-lg font-bold text-slate-900">Recent Team Activity</h4>
@@ -338,7 +251,6 @@
                                     <th class="px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status</th>
                                     <th class="px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Attendance</th>
                                     <th class="px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Last Review</th>
-                                    <th class="px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-50">
@@ -347,21 +259,19 @@
                                         <div class="flex items-center gap-4">
                                             <img class="size-9 rounded-full object-cover shrink-0 ring-1 ring-slate-100" th:src="${employee.avatarUrl}" th:alt="${employee.name}" />
                                             <div>
-                                                <p class="text-sm font-bold text-slate-800" th:text="${employee.name}">Sarah Chen</p>
-                                                <p class="text-[11px] font-medium text-slate-400" th:text="${employee.title}">Sr. Software Engineer</p>
+                                                <p class="text-sm font-bold text-slate-800" th:text="${employee.name}">Employee</p>
+                                                <p class="text-[11px] font-medium text-slate-400" th:text="${employee.title}">Role</p>
                                             </div>
                                         </div>
                                     </td>
                                     <td class="px-8 py-4">
                                         <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold" th:classappend="${employee.statusClass}" th:text="${employee.status}">Active</span>
                                     </td>
-                                    <td class="px-8 py-4 text-sm font-medium text-slate-600 stat-num" th:text="${employee.attendance}">98%</td>
-                                    <td class="px-8 py-4 text-[11px] font-medium text-slate-400" th:text="${employee.lastReview}">Aug 12, 2023</td>
-                                    <td class="px-8 py-4 text-right">
-                                        <button class="w-8 h-8 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors inline-flex items-center justify-center">
-                                            <span class="material-symbols-outlined text-[20px]">more_vert</span>
-                                        </button>
-                                    </td>
+                                    <td class="px-8 py-4 text-sm font-medium text-slate-600 stat-num" th:text="${employee.attendance}">On track</td>
+                                    <td class="px-8 py-4 text-[11px] font-medium text-slate-400" th:text="${employee.lastReview}">No review</td>
+                                </tr>
+                                <tr th:if="${data.recentTeamActivities == null or data.recentTeamActivities.isEmpty()}">
+                                    <td colspan="4" class="px-8 py-10 text-center text-sm text-slate-400">No team activity available yet.</td>
                                 </tr>
                             </tbody>
                         </table>

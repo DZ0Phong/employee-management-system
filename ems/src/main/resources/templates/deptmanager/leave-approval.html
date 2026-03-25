@@ -178,6 +178,15 @@
                     </div>
                 </div>
 
+                <div class="space-y-3">
+                    <div th:if="${param.success != null}" class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                        Leave request updated successfully.
+                    </div>
+                    <div th:if="${param.error != null}" class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                        That request is outside your department or can no longer be reviewed.
+                    </div>
+                </div>
+
                 <!-- Summary Cards -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="anim anim-1 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm card-hover">

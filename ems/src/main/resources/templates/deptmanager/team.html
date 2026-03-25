@@ -178,8 +178,10 @@
                         <div th:if="${param.error != null}" class="bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-xl flex items-center gap-3">
                             <span class="material-symbols-outlined">error</span>
                             <div>
-                                <p class="font-bold text-sm">Transfer Failed</p>
-                                <p class="text-xs">No available employees found for this position in the company. Please create a Recruitment request instead.</p>
+                                <p class="font-bold text-sm">Request Failed</p>
+                                <p class="text-xs" th:if="${#strings.contains(#strings.toString(param.error), 'addrequest')}">The add-member request could not be submitted. Please try again.</p>
+                                <p class="text-xs" th:if="${#strings.contains(#strings.toString(param.error), 'invalidremoval')}">That employee is not in your department, so the removal request was blocked.</p>
+                                <p class="text-xs" th:if="${#strings.contains(#strings.toString(param.error), 'notransfer')}">No eligible internal transfer targets were found for this role.</p>
                             </div>
                         </div>
                         <div th:if="${param.success != null and #strings.contains(#strings.toString(param.success), 'add')}" class="bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-xl flex items-center gap-3">
@@ -217,7 +219,7 @@
                         </div>
                         <div>
                             <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Top Performers</p>
-                            <p class="text-2xl font-black text-slate-900 dark:text-white leading-none mt-1 stat-num">12</p>
+                            <p class="text-2xl font-black text-slate-900 dark:text-white leading-none mt-1 stat-num" th:text="${data.topPerformers}">0</p>
                         </div>
                     </div>
                     <div class="anim anim-1 bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-100 dark:border-slate-800 flex items-center gap-4 shadow-sm">
@@ -226,7 +228,7 @@
                         </div>
                         <div>
                             <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">On Leave</p>
-                            <p class="text-2xl font-black text-slate-900 dark:text-white leading-none mt-1 stat-num">3</p>
+                            <p class="text-2xl font-black text-slate-900 dark:text-white leading-none mt-1 stat-num" th:text="${data.onLeaveCount}">0</p>
                         </div>
                     </div>
                     <div class="anim anim-2 bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-100 dark:border-slate-800 flex items-center gap-4 shadow-sm">
@@ -235,7 +237,7 @@
                         </div>
                         <div>
                             <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Recent Hires</p>
-                            <p class="text-2xl font-black text-slate-900 dark:text-white leading-none mt-1 stat-num">2</p>
+                            <p class="text-2xl font-black text-slate-900 dark:text-white leading-none mt-1 stat-num" th:text="${data.recentHires}">0</p>
                         </div>
                     </div>
                 </div>

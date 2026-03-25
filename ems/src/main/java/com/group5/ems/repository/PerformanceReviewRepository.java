@@ -4,10 +4,12 @@ import com.group5.ems.entity.PerformanceReview;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface PerformanceReviewRepository extends JpaRepository<PerformanceReview, Long> {
 
@@ -71,4 +73,11 @@ public interface PerformanceReviewRepository extends JpaRepository<PerformanceRe
 
     // ── New methods for Dept Manager role ────────────────────────
     List<PerformanceReview> findByEmployee_DepartmentIdOrderByUpdatedAtDesc(Long departmentId);
+
+    @EntityGraph(attributePaths = {"employee", "employee.user", "employee.position", "reviewer", "reviewer.user"})
+    Optional<PerformanceReview> findByIdAndEmployee_DepartmentId(Long id, Long departmentId);
+
+    Optional<PerformanceReview> findByEmployeeIdAndReviewPeriod(Long employeeId, String reviewPeriod);
+
+    List<PerformanceReview> findByEmployeeIdInOrderByUpdatedAtDesc(List<Long> employeeIds);
 }

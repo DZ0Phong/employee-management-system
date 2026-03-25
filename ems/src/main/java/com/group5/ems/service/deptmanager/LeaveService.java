@@ -1,7 +1,9 @@
 package com.group5.ems.service.deptmanager;
 
 import com.group5.ems.entity.Department;
+import com.group5.ems.entity.RequestApprovalHistory;
 import com.group5.ems.entity.User;
+import com.group5.ems.repository.RequestApprovalHistoryRepository;
 import com.group5.ems.repository.RequestRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,7 @@ import java.util.Map;
 public class LeaveService {
 
     private final RequestRepository requestRepository;
+    private final RequestApprovalHistoryRepository historyRepository;
     private final DeptManagerUtilService utilService;
 
     public Map<String, Object> getLeaveApprovalData() {
@@ -127,27 +130,52 @@ public class LeaveService {
     }
 
     @Transactional
-    public void approveLeaveRequest(Long requestId) {
-        requestRepository.findById(requestId).ifPresent(req -> {
+    public boolean approveLeaveRequest(Long requestId) {
+        Department department = utilService.getCurrentManagedDepartment();
+        if (department == null) {
+            return false;
+        }
+
+        return requestRepository.findByIdAndEmployeeDepartmentIdAndLeaveTypeIsNotNull(requestId, department.getId()).map(req -> {
             req.setStatus("APPROVED");
             req.setApprovedAt(java.time.LocalDateTime.now());
+            req.setCurrentApproverId(null);
             User currentUser = utilService.getCurrentUser();
             if (currentUser != null) {
                 req.setApprovedBy(currentUser.getId());
+                historyRepository.save(buildHistory(req.getId(), currentUser.getId(), "APPROVED", "Approved by Department Manager"));
             }
             requestRepository.save(req);
-        });
+            return true;
+        }).orElse(false);
     }
 
     @Transactional
-    public void rejectLeaveRequest(Long requestId) {
-        requestRepository.findById(requestId).ifPresent(req -> {
+    public boolean rejectLeaveRequest(Long requestId) {
+        Department department = utilService.getCurrentManagedDepartment();
+        if (department == null) {
+            return false;
+        }
+
+        return requestRepository.findByIdAndEmployeeDepartmentIdAndLeaveTypeIsNotNull(requestId, department.getId()).map(req -> {
             req.setStatus("REJECTED");
+            req.setCurrentApproverId(null);
             User currentUser = utilService.getCurrentUser();
             if (currentUser != null) {
                 req.setApprovedBy(currentUser.getId());
+                historyRepository.save(buildHistory(req.getId(), currentUser.getId(), "REJECTED", "Rejected by Department Manager"));
             }
             requestRepository.save(req);
-        });
+            return true;
+        }).orElse(false);
+    }
+
+    private RequestApprovalHistory buildHistory(Long requestId, Long approverId, String action, String comment) {
+        RequestApprovalHistory history = new RequestApprovalHistory();
+        history.setRequestId(requestId);
+        history.setApproverId(approverId);
+        history.setAction(action);
+        history.setComment(comment);
+        return history;
     }
 }

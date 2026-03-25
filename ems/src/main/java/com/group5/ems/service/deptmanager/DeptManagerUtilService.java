@@ -33,6 +33,12 @@ public class DeptManagerUtilService {
         return userRepository.findByUsername(auth.getName()).orElse(null);
     }
 
+    public Employee getCurrentEmployee() {
+        User currentUser = getCurrentUser();
+        if (currentUser == null) return null;
+        return employeeRepository.findByUserId(currentUser.getId()).orElse(null);
+    }
+
     public Map<String, String> getManagerMap(User user) {
         Map<String, String> manager = new HashMap<>();
         if (user != null) {
@@ -55,6 +61,37 @@ public class DeptManagerUtilService {
             return managedDepts.get(0);
         }
         return managerEmp.getDepartment();
+    }
+
+    public Department getCurrentManagedDepartment() {
+        return getDepartmentForManager(getCurrentUser());
+    }
+
+    public boolean isEmployeeInManagedDepartment(Long employeeId) {
+        Department department = getCurrentManagedDepartment();
+        if (department == null || employeeId == null) {
+            return false;
+        }
+        return employeeRepository.findById(employeeId)
+                .map(Employee::getDepartmentId)
+                .filter(department.getId()::equals)
+                .isPresent();
+    }
+
+    public Employee requireCurrentEmployee() {
+        Employee employee = getCurrentEmployee();
+        if (employee == null) {
+            throw new IllegalStateException("Current user is not linked to an employee record.");
+        }
+        return employee;
+    }
+
+    public Department requireCurrentManagedDepartment() {
+        Department department = getCurrentManagedDepartment();
+        if (department == null) {
+            throw new IllegalStateException("Current department manager is not assigned to a department.");
+        }
+        return department;
     }
 
     public int getPendingApprovalsCount(Department dept) {
