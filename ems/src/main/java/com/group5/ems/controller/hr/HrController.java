@@ -273,6 +273,8 @@ public class HrController {
         model.addAttribute("interviewers", recruitmentService.getAvailableInterviewers());
         model.addAttribute("departments", departmentRepository.findAll());
         model.addAttribute("positions", positionRepository.findAll());
+        model.addAttribute("jobPostRequests", recruitmentService.getJobPostRequests());
+        model.addAttribute("pendingJobRequests", recruitmentService.countPendingJobRequests());
         return "hr/recruitment";
     }
 
@@ -289,6 +291,8 @@ public class HrController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate openDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate closeDate,
             @RequestParam(defaultValue = "draft") String action,
+            @RequestParam(required = false) Long fromRequestId,
+            @AuthenticationPrincipal UserDetails principal,
             RedirectAttributes ra) {
 
         JobPost job = new JobPost();
@@ -304,6 +308,10 @@ public class HrController {
         job.setCloseDate(closeDate);
         job.setStatus("publish".equals(action) ? "OPEN" : "DRAFT");
         jobPostRepository.save(job);
+
+        if (fromRequestId != null && "publish".equals(action)) {
+            recruitmentService.approveJobRequest(fromRequestId, resolveCurrentUserId(principal));
+        }
 
         ra.addFlashAttribute("successMessage",
                 "publish".equals(action)
@@ -402,6 +410,28 @@ public class HrController {
     }
 
     @DeleteMapping("/recruitment/cvs/{cvId}")
+
+    @PostMapping("/recruitment/requests/{id}/approve")
+    public String approveJobRequest(@PathVariable Long id,
+            @AuthenticationPrincipal UserDetails principal,
+            RedirectAttributes ra) {
+        recruitmentService.approveJobRequest(id, resolveCurrentUserId(principal));
+        ra.addFlashAttribute("successMessage", "Job request approved successfully.");
+        return "redirect:/hr/recruitment";
+    }
+
+    @PostMapping("/recruitment/requests/{id}/reject")
+    public String rejectJobRequest(@PathVariable Long id,
+            @RequestParam(required = false) String reason,
+            @AuthenticationPrincipal UserDetails principal,
+            RedirectAttributes ra) {
+        recruitmentService.rejectJobRequest(id,
+                reason != null ? reason : "Rejected by HR",
+                resolveCurrentUserId(principal));
+        ra.addFlashAttribute("successMessage", "Job request rejected.");
+        return "redirect:/hr/recruitment";
+    }
+
     @ResponseBody
     public ResponseEntity<Void> deleteCv(@PathVariable Long cvId) {
         recruitmentService.deleteCv(cvId);

@@ -1,8 +1,19 @@
 package com.group5.ems.entity;
 
-import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "requests")
@@ -53,6 +64,14 @@ public class Request {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "is_urgent")
+    private boolean urgent;
+
+    @Column(name = "step", length = 50)
+    private String step;
+
+
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "employee_id", insertable = false, updatable = false)
@@ -119,5 +138,10 @@ public class Request {
     public void setCurrentApprover(User currentApprover) { this.currentApprover = currentApprover; }
     public User getApprovedByUser() { return approvedByUser; }
     public void setApprovedByUser(User approvedByUser) { this.approvedByUser = approvedByUser; }
+    public boolean isUrgent() { return this.urgent; }
+    public boolean getUrgent() { return this.urgent; }
+    public void setUrgent(boolean urgent) { this.urgent = urgent; }
+    public String getStep() { return this.step; }
+    public void setStep(String step) { this.step = step; }
 }
 

@@ -1,14 +1,15 @@
 package com.group5.ems.repository;
 
-import com.group5.ems.entity.Request;
+import java.time.LocalDateTime;
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.time.LocalDateTime;
-import java.util.List;
+import com.group5.ems.entity.Request;
 
 public interface RequestRepository extends JpaRepository<Request, Long> {
 
@@ -129,5 +130,18 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
 
 
     // ── Pageable queries for HR leave page (DB-level filtering) ──
+
+    @Query("""
+        SELECT r FROM Request r
+        LEFT JOIN FETCH r.employee e
+        LEFT JOIN FETCH e.user
+        LEFT JOIN FETCH e.department
+        LEFT JOIN FETCH r.requestType rt
+        WHERE rt.code = :code
+        ORDER BY r.createdAt DESC
+        """)
+    List<Request> findByRequestType_CodeOrderByCreatedAtDesc(String code);
+ 
+    long countByRequestType_CodeAndStatus(String code, String status);
 
 }
