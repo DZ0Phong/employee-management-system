@@ -43,7 +43,7 @@ public class EmployeeBankDetail {
     private String accountName;
 
     @NotNull
-    @Column(name = "account_number", nullable = false)
+    @Column(name = "account_number", nullable = false, length = 255)
     @Convert(converter = CryptoConverter.class)
     private String accountNumber;
 

@@ -1,6 +1,8 @@
 package com.group5.ems.repository;
 
 import com.group5.ems.entity.EmployeeBankDetail;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -13,6 +15,8 @@ import java.util.Optional;
 public interface EmployeeBankDetailRepository extends JpaRepository<EmployeeBankDetail, Long> {
     
     List<EmployeeBankDetail> findByEmployeeId(Long employeeId);
+
+    Page<EmployeeBankDetail> findByEmployeeId(Long employeeId, Pageable pageable);
     
     long countByEmployeeId(Long employeeId);
     

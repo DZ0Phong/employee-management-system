@@ -23,6 +23,9 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     @Query("select e from Employee  e join e.user u where u.status = :status")
     List<Employee> findByStatus(@Param("status") String status);
 
+    @Query("select e from Employee e join e.user u where u.status = :status")
+    Page<Employee> findByStatus(@Param("status") String status, Pageable pageable);
+
     @Query("select count(e) from Employee e where month(e.hireDate) = month (current_date ) and year(e.hireDate) = year(current_date )")
     long newThisMonth();
     @Query("select count(e) from Employee e where year(e.hireDate) = year(current_date )")
@@ -69,6 +72,16 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
             "WHERE YEAR(e.hireDate) = :year " +
             "GROUP BY MONTH(e.hireDate) ORDER BY MONTH(e.hireDate)")
     List<Object[]> countHiringByMonth(@Param("year") int year);
+
+    @Query("SELECT e FROM Employee e " +
+           "WHERE e.status IN ('ACTIVE', 'ON_LEAVE') " +
+           "AND e.hireDate <= :periodEndDate")
+    Page<Employee> findEligibleEmployeesForPeriod(@Param("periodEndDate") LocalDate periodEndDate, Pageable pageable);
+
+    @Query("SELECT e FROM Employee e " +
+           "WHERE e.status IN ('ACTIVE', 'ON_LEAVE') " +
+           "AND e.hireDate <= :periodEndDate")
+    List<Employee> findEligibleEmployeesForPeriodList(@Param("periodEndDate") LocalDate periodEndDate);
 
     @Query("SELECT e FROM Employee e JOIN FETCH e.user u")
     List<Employee> findAllWithUser();
