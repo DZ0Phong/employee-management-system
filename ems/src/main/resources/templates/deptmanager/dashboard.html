@@ -134,6 +134,11 @@
                     <p class="text-xs font-bold text-slate-800 truncate" th:text="${data.manager != null ? data.manager.name : 'User'}">User</p>
                     <p class="text-[11px] font-medium text-slate-400 truncate" th:text="${data.manager != null ? data.manager.role : ''}"></p>
                 </div>
+                <a th:href="@{/employee/dashboard}"
+                   class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold text-primary bg-primary/10 hover:bg-primary/15 transition-colors whitespace-nowrap">
+                    <span class="material-symbols-outlined text-[15px]">badge</span>
+                    <span>Employee View</span>
+                </a>
                 <form th:action="@{/logout}" method="post" class="shrink-0">
                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                     <button type="submit"

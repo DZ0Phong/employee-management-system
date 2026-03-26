@@ -16,33 +16,35 @@ public class CustomeLoginSuccessHandler implements AuthenticationSuccessHandler 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         var authorities = authentication.getAuthorities();
-        for( GrantedAuthority grantedAuthority : authorities ) {
-            String role = grantedAuthority.getAuthority();
-
-            switch (role) {
-                case "ROLE_ADMIN" -> {
-                    response.sendRedirect("/admin/dashboard");
-                    return;
-                }
-                case "ROLE_EMPLOYEE" -> {
-                    response.sendRedirect("/employee/dashboard");
-                    return;
-                }
-                case "ROLE_DEPT_MANAGER" -> {
-                    response.sendRedirect("/dept-manager/dashboard");
-                    return;
-                }
-                case "ROLE_HR_MANAGER" -> {
-                    response.sendRedirect("/hrmanager/dashboard");
-                    return;
-                }
-                case "ROLE_HR" -> {
-                    response.sendRedirect("/hr/dashboard");
-                    return;
-                }
-            }
-
+        if (hasRole(authorities, "ROLE_ADMIN")) {
+            response.sendRedirect("/admin/dashboard");
+            return;
+        }
+        if (hasRole(authorities, "ROLE_DEPT_MANAGER")) {
+            response.sendRedirect("/dept-manager/dashboard");
+            return;
+        }
+        if (hasRole(authorities, "ROLE_HR_MANAGER")) {
+            response.sendRedirect("/hrmanager/dashboard");
+            return;
+        }
+        if (hasRole(authorities, "ROLE_HR")) {
+            response.sendRedirect("/hr/dashboard");
+            return;
+        }
+        if (hasRole(authorities, "ROLE_EMPLOYEE")) {
+            response.sendRedirect("/employee/dashboard");
+            return;
         }
         response.sendRedirect("/login?error");
+    }
+
+    private boolean hasRole(Iterable<? extends GrantedAuthority> authorities, String role) {
+        for (GrantedAuthority grantedAuthority : authorities) {
+            if (role.equals(grantedAuthority.getAuthority())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

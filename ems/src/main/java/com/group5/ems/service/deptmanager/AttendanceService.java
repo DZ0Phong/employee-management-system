@@ -74,42 +74,6 @@ public class AttendanceService {
             // Map grouped by Employee ID
             Map<Long, List<com.group5.ems.entity.Attendance>> employeeAttendanceMap = new HashMap<>();
             for (com.group5.ems.entity.Attendance att : attendances) {
-                boolean approvedLeaveDay = approvedLeaveDays.getOrDefault(att.getEmployeeId(), Set.of()).contains(att.getWorkDate());
-                String effectiveStatus = resolveAttendanceStatus(att);
-                String displayStatus = resolveDisplayStatus(att, approvedLeaveDay);
-                if ("PRESENT".equalsIgnoreCase(displayStatus)) {
-                    onTimeCount++;
-                } else if ("LATE".equalsIgnoreCase(displayStatus)) {
-                    lateCount++;
-                } else if ("ABSENT".equalsIgnoreCase(effectiveStatus) && !approvedLeaveDay) {
-                    absenceCount++;
-                }
-
-                // Tracking violations
-                if (!approvedLeaveDay && ("LATE".equalsIgnoreCase(effectiveStatus) || "ABSENT".equalsIgnoreCase(effectiveStatus))) {
-                    Map<String, String> violation = new HashMap<>();
-                    String empName = att.getEmployee() != null && att.getEmployee().getUser() != null ? att.getEmployee().getUser().getFullName() : "Employee";
-
-                    if ("ABSENT".equalsIgnoreCase(effectiveStatus)) {
-                        violation.put("type", "Absence");
-                        violation.put("icon", "person_off");
-                        violation.put("colorClass", "bg-rose-50 border-rose-100 text-rose-500");
-                        violation.put("bgClass", "bg-rose-500");
-                        violation.put("title", empName + " - Absence");
-                        violation.put("description", att.getCheckIn() != null
-                                ? "Checked in after 10:30 at " + att.getCheckIn() + " on " + att.getWorkDate().format(java.time.format.DateTimeFormatter.ofPattern("EEE MMM dd")) + "."
-                                : "Absence on " + att.getWorkDate().format(java.time.format.DateTimeFormatter.ofPattern("EEE MMM dd")) + ".");
-                    } else {
-                        violation.put("type", "Late Arrival");
-                        violation.put("icon", "history");
-                        violation.put("colorClass", "bg-amber-50 border-amber-100 text-amber-500");
-                        violation.put("bgClass", "bg-amber-500");
-                        violation.put("title", empName + " - Late Arrival");
-                        violation.put("description", "Checked in at " + (att.getCheckIn() != null ? att.getCheckIn() : "Unknown") + " on " + att.getWorkDate().format(java.time.format.DateTimeFormatter.ofPattern("EEE MMM dd")) + ".");
-                    }
-                    latestViolations.add(0, violation); // Add to newest
-                }
-
                 employeeAttendanceMap.computeIfAbsent(att.getEmployeeId(), k -> new ArrayList<>()).add(att);
             }
 
@@ -150,14 +114,18 @@ public class AttendanceService {
                         if (a.getWorkDate().equals(day)) {
                             Map<String, String> dStat = new HashMap<>();
                             boolean approvedLeaveDay = leaveDays.contains(day);
+                            String effectiveStatus = resolveAttendanceStatus(a);
                             String displayStatus = resolveDisplayStatus(a, approvedLeaveDay);
                             if ("PRESENT".equalsIgnoreCase(displayStatus)) {
                                 dStat.put("icon", "check_circle");
                                 dStat.put("color", approvedLeaveDay ? "text-emerald-500" : "text-emerald-500");
+                                onTimeCount++;
                             } else if ("LATE".equalsIgnoreCase(displayStatus)) {
                                 dStat.put("icon", "schedule");
                                 dStat.put("color", "text-amber-500");
                                 eLate++;
+                                lateCount++;
+                                latestViolations.add(0, buildLateViolation(empRowName(emp), a.getCheckIn(), day));
                             } else if ("LEAVE".equalsIgnoreCase(displayStatus)) {
                                 dStat.put("icon", "check_circle");
                                 dStat.put("color", "text-sky-500");
@@ -166,6 +134,8 @@ public class AttendanceService {
                                 dStat.put("icon", "cancel");
                                 dStat.put("color", "text-rose-500");
                                 eAbsent++;
+                                absenceCount++;
+                                latestViolations.add(0, buildAbsenceViolation(empRowName(emp), day, a.getCheckIn(), "ABSENT".equalsIgnoreCase(effectiveStatus) && a.getCheckIn() != null));
                             }
                             dailyStatus.add(dStat);
 
@@ -188,6 +158,8 @@ public class AttendanceService {
                             dStat.put("icon", "cancel");
                             dStat.put("color", "text-rose-500");
                             eAbsent++;
+                            absenceCount++;
+                            latestViolations.add(0, buildAbsenceViolation(empRowName(emp), day, null, false));
                         } else {
                             dStat.put("icon", "remove");
                             dStat.put("color", "text-slate-300");
@@ -278,6 +250,38 @@ public class AttendanceService {
         DayOfWeek dayOfWeek = day.getDayOfWeek();
         boolean workingDay = dayOfWeek != DayOfWeek.SATURDAY && dayOfWeek != DayOfWeek.SUNDAY;
         return workingDay && !day.isAfter(today);
+    }
+
+    private String empRowName(Employee employee) {
+        return employee.getUser() != null ? employee.getUser().getFullName() : "Employee";
+    }
+
+    private Map<String, String> buildLateViolation(String employeeName, LocalTime checkIn, LocalDate workDate) {
+        Map<String, String> violation = new HashMap<>();
+        violation.put("type", "Late Arrival");
+        violation.put("icon", "history");
+        violation.put("colorClass", "bg-amber-50 border-amber-100 text-amber-500");
+        violation.put("bgClass", "bg-amber-500");
+        violation.put("title", employeeName + " - Late Arrival");
+        violation.put("description", "Checked in at "
+                + (checkIn != null ? checkIn : "Unknown")
+                + " on "
+                + workDate.format(java.time.format.DateTimeFormatter.ofPattern("EEE MMM dd"))
+                + ".");
+        return violation;
+    }
+
+    private Map<String, String> buildAbsenceViolation(String employeeName, LocalDate workDate, LocalTime checkIn, boolean afterCutoff) {
+        Map<String, String> violation = new HashMap<>();
+        violation.put("type", "Absence");
+        violation.put("icon", "person_off");
+        violation.put("colorClass", "bg-rose-50 border-rose-100 text-rose-500");
+        violation.put("bgClass", "bg-rose-500");
+        violation.put("title", employeeName + " - Absence");
+        violation.put("description", afterCutoff && checkIn != null
+                ? "Checked in after 10:30 at " + checkIn + " on " + workDate.format(java.time.format.DateTimeFormatter.ofPattern("EEE MMM dd")) + "."
+                : "No valid check-in on " + workDate.format(java.time.format.DateTimeFormatter.ofPattern("EEE MMM dd")) + ".");
+        return violation;
     }
 
     private Map<Long, Set<LocalDate>> buildApprovedLeaveDays(List<Long> employeeIds, LocalDate rangeStart, LocalDate rangeEnd) {
