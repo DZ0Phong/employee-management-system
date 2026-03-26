@@ -16,8 +16,10 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,6 +28,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.group5.ems.dto.request.BankDetailsFormDTO;
 import com.group5.ems.dto.response.ApplicationStageDTO;
 import com.group5.ems.dto.response.CandidateCvDTO;
 import com.group5.ems.dto.response.HrDashboardMetricsDTO;
@@ -46,6 +49,7 @@ import com.group5.ems.repository.JobPostRepository;
 import com.group5.ems.repository.PositionRepository;
 import com.group5.ems.repository.UserRepository;
 import com.group5.ems.service.admin.AdminService;
+import com.group5.ems.service.external.VietQrApiClient;
 import com.group5.ems.service.hr.HrAttendanceService;
 import com.group5.ems.service.hr.HrBankDetailsService;
 import com.group5.ems.service.hr.HrDashboardService;
@@ -56,6 +60,7 @@ import com.group5.ems.service.hr.HrPerformanceService;
 import com.group5.ems.service.hr.HrRecruitmentService;
 import com.group5.ems.service.hr.HrRequestService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @Controller
@@ -81,6 +86,7 @@ public class HrController {
     private final HrRequestService requestService;
     private final AdminService adminService;
     private final HrBankDetailsService bankDetailsService;
+    private final VietQrApiClient vietQrApiClient;
 
     @GetMapping({ "", "/", "/dashboard" })
     public String dashboard(Model model) {
@@ -496,15 +502,71 @@ public class HrController {
 
     // ── Bank Details Management ──────────────────────────────────────────
 
+    @GetMapping("/my-profile/bank-details")
+    public String myBankDetailsRedirect() {
+        Employee employee = adminService.getCurrentUser()
+                .map(com.group5.ems.entity.User::getEmployee)
+                .orElseThrow(() -> new RuntimeException("Logged in HR user has no employee record"));
+        return "redirect:/hr/bank-details/" + employee.getId();
+    }
+
     @GetMapping("/bank-details/{id}")
-    public String employeeBankDetails(@PathVariable Long id, Model model) {
+    public String employeeBankDetails(@PathVariable Long id,
+                                      @RequestParam(defaultValue = "0") int page,
+                                      Model model) {
         Employee employee = employeeRepository.findByIdWithDetails(id)
                 .orElseThrow(() -> new RuntimeException("Employee not found"));
 
+        
+        Pageable pageable = PageRequest.of(page, PAGE_SIZE);
+        Page<com.group5.ems.dto.response.BankDetailsResponseDTO> historyPage = bankDetailsService.getBankDetailsHistory(id, pageable);
+        
         model.addAttribute("employee", employee);
-        model.addAttribute("bankDetails", bankDetailsService.getMaskedBankDetails(id));
+        model.addAttribute("bankDetails", historyPage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", historyPage.getTotalPages());
+        model.addAttribute("totalItems", historyPage.getTotalElements());
+        model.addAttribute("banks", vietQrApiClient.getSupportedBanks());
+        
+        if (!model.containsAttribute("bankDetailsForm")) {
+            model.addAttribute("bankDetailsForm", new BankDetailsFormDTO());
+        }
+        
         model.addAttribute("currentUser", adminService.getUserDTO().orElse(null));
         return "hr/bank-details";
+    }
+
+    @PostMapping("/bank-details/{id}/add")
+    public String addBankDetails(@PathVariable Long id,
+                                 @Valid @ModelAttribute("bankDetailsForm") BankDetailsFormDTO form,
+                                 BindingResult result,
+                                 RedirectAttributes redirectAttributes,
+                                 Model model) {
+        if (result.hasErrors()) {
+            Employee employee = employeeRepository.findByIdWithDetails(id)
+                    .orElseThrow(() -> new RuntimeException("Employee not found"));
+            model.addAttribute("employee", employee);
+            
+            Pageable pageable = PageRequest.of(0, PAGE_SIZE);
+            Page<com.group5.ems.dto.response.BankDetailsResponseDTO> historyPage = bankDetailsService.getBankDetailsHistory(id, pageable);
+            
+            model.addAttribute("bankDetails", historyPage.getContent());
+            model.addAttribute("currentPage", 0);
+            model.addAttribute("totalPages", historyPage.getTotalPages());
+            model.addAttribute("totalItems", historyPage.getTotalElements());
+            
+            model.addAttribute("banks", vietQrApiClient.getSupportedBanks());
+            model.addAttribute("currentUser", adminService.getUserDTO().orElse(null));
+            return "hr/bank-details";
+        }
+
+        try {
+            bankDetailsService.addBankDetails(id, form);
+            redirectAttributes.addFlashAttribute("successMessage", "Bank details added successfully!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/hr/bank-details/" + id;
     }
 
     @PostMapping("/bank-details/{employeeId}/{bankId}/set-primary")
@@ -520,16 +582,4 @@ public class HrController {
         return "redirect:/hr/bank-details/" + employeeId;
     }
 
-    @PostMapping("/bank-details/{employeeId}/{bankId}/delete")
-    public String deleteBankDetail(@PathVariable Long employeeId,
-            @PathVariable Long bankId,
-            RedirectAttributes redirectAttributes) {
-        try {
-            bankDetailsService.deleteBankDetail(employeeId, bankId);
-            redirectAttributes.addFlashAttribute("successMessage", "Bank detail deleted!");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-        }
-        return "redirect:/hr/bank-details/" + employeeId;
-    }
 }

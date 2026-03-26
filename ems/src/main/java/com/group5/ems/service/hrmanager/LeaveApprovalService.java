@@ -1,7 +1,9 @@
 package com.group5.ems.service.hrmanager;
 
 import com.group5.ems.dto.response.hrmanager.LeaveRequestResponseDTO;
+import com.group5.ems.entity.EmployeeLeaveBalance;
 import com.group5.ems.entity.Request;
+import com.group5.ems.repository.EmployeeLeaveBalanceRepository;
 import com.group5.ems.repository.RequestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -9,6 +11,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -21,6 +24,9 @@ public class LeaveApprovalService {
 
     @Autowired
     private RequestRepository requestRepository;
+    
+    @Autowired
+    private EmployeeLeaveBalanceRepository employeeLeaveBalanceRepository;
 
     /**
      * Get all pending leave requests
@@ -37,7 +43,7 @@ public class LeaveApprovalService {
     }
 
     /**
-     * Approve a leave request
+     * Approve a leave request and update balance
      */
     public boolean approveLeaveRequest(Long requestId, Long approverId) {
         Optional<Request> requestOpt = requestRepository.findById(requestId);
@@ -46,15 +52,19 @@ public class LeaveApprovalService {
             request.setStatus("APPROVED");
             request.setApprovedBy(approverId);
             request.setApprovedAt(LocalDateTime.now());
-            request.setCurrentApproverId(null); // Clear current approver
+            request.setCurrentApproverId(null);
             requestRepository.save(request);
+            
+            // Update employee leave balance
+            updateLeaveBalanceOnApproval(request);
+            
             return true;
         }
         return false;
     }
 
     /**
-     * Reject a leave request
+     * Reject a leave request and update balance
      */
     public boolean rejectLeaveRequest(Long requestId, Long approverId, String rejectedReason) {
         Optional<Request> requestOpt = requestRepository.findById(requestId);
@@ -64,8 +74,12 @@ public class LeaveApprovalService {
             request.setApprovedBy(approverId);
             request.setApprovedAt(LocalDateTime.now());
             request.setRejectedReason(rejectedReason);
-            request.setCurrentApproverId(null); // Clear current approver
+            request.setCurrentApproverId(null);
             requestRepository.save(request);
+            
+            // Update employee leave balance (remove from pending)
+            updateLeaveBalanceOnRejection(request);
+            
             return true;
         }
         return false;
@@ -162,8 +176,58 @@ public class LeaveApprovalService {
         }
         
         return requestPage.getContent().stream()
-                .map(LeaveRequestResponseDTO::new)
+                .map(request -> {
+                    LeaveRequestResponseDTO dto = new LeaveRequestResponseDTO(request);
+                    calculateLeaveBalance(dto, request);
+                    return dto;
+                })
                 .collect(Collectors.toList());
+    }
+    
+    /**
+     * Calculate leave balance for a request using employee_leave_balances table
+     */
+    private void calculateLeaveBalance(LeaveRequestResponseDTO dto, Request request) {
+        if (request.getEmployee() == null) {
+            dto.setCurrentBalance(0);
+            dto.setUsedThisYear(0);
+            dto.setAnnualQuota(20);
+            dto.setBalanceAfterApproval(0);
+            return;
+        }
+        
+        Long employeeId = request.getEmployeeId();
+        int currentYear = java.time.LocalDate.now().getYear();
+        
+        // Query from employee_leave_balances table
+        Optional<EmployeeLeaveBalance> balanceOpt = employeeLeaveBalanceRepository
+                .findByEmployeeIdAndYear(employeeId, currentYear);
+        
+        if (balanceOpt.isPresent()) {
+            EmployeeLeaveBalance balance = balanceOpt.get();
+            
+            // Get values from database
+            int totalDays = balance.getTotalDays().intValue();
+            int usedDays = balance.getUsedDays().intValue();
+            int pendingDays = balance.getPendingDays().intValue();
+            int remainingDays = balance.getRemainingDays() != null 
+                    ? balance.getRemainingDays().intValue() 
+                    : (totalDays - usedDays - pendingDays);
+            
+            int requestDays = (int) dto.getDaysCount();
+            int balanceAfter = remainingDays - requestDays;
+            
+            dto.setCurrentBalance(remainingDays);
+            dto.setUsedThisYear(usedDays);
+            dto.setAnnualQuota(totalDays);
+            dto.setBalanceAfterApproval(Math.max(0, balanceAfter));
+        } else {
+            // Fallback if no balance record exists
+            dto.setCurrentBalance(0);
+            dto.setUsedThisYear(0);
+            dto.setAnnualQuota(20);
+            dto.setBalanceAfterApproval(0);
+        }
     }
 
     /**
@@ -236,5 +300,78 @@ public class LeaveApprovalService {
         pagination.put("totalItems", totalElements);
         
         return pagination;
+    }
+    
+    /**
+     * Update employee leave balance when request is approved
+     */
+    private void updateLeaveBalanceOnApproval(Request request) {
+        if (request.getEmployee() == null || request.getLeaveFrom() == null || request.getLeaveTo() == null) {
+            return;
+        }
+        
+        Long employeeId = request.getEmployeeId();
+        int currentYear = java.time.LocalDate.now().getYear();
+        
+        Optional<EmployeeLeaveBalance> balanceOpt = employeeLeaveBalanceRepository
+                .findByEmployeeIdAndYear(employeeId, currentYear);
+        
+        if (balanceOpt.isPresent()) {
+            EmployeeLeaveBalance balance = balanceOpt.get();
+            
+            // Calculate days
+            long days = java.time.temporal.ChronoUnit.DAYS.between(
+                    request.getLeaveFrom(), request.getLeaveTo()) + 1;
+            
+            // Update: pending -> used
+            BigDecimal daysDecimal = BigDecimal.valueOf(days);
+            balance.setPendingDays(balance.getPendingDays().subtract(daysDecimal));
+            balance.setUsedDays(balance.getUsedDays().add(daysDecimal));
+            
+            // Recalculate remaining
+            BigDecimal remaining = balance.getTotalDays()
+                    .subtract(balance.getUsedDays())
+                    .subtract(balance.getPendingDays());
+            balance.setRemainingDays(remaining);
+            balance.setUpdatedAt(java.time.Instant.now());
+            
+            employeeLeaveBalanceRepository.save(balance);
+        }
+    }
+    
+    /**
+     * Update employee leave balance when request is rejected
+     */
+    private void updateLeaveBalanceOnRejection(Request request) {
+        if (request.getEmployee() == null || request.getLeaveFrom() == null || request.getLeaveTo() == null) {
+            return;
+        }
+        
+        Long employeeId = request.getEmployeeId();
+        int currentYear = java.time.LocalDate.now().getYear();
+        
+        Optional<EmployeeLeaveBalance> balanceOpt = employeeLeaveBalanceRepository
+                .findByEmployeeIdAndYear(employeeId, currentYear);
+        
+        if (balanceOpt.isPresent()) {
+            EmployeeLeaveBalance balance = balanceOpt.get();
+            
+            // Calculate days
+            long days = java.time.temporal.ChronoUnit.DAYS.between(
+                    request.getLeaveFrom(), request.getLeaveTo()) + 1;
+            
+            // Remove from pending
+            BigDecimal daysDecimal = BigDecimal.valueOf(days);
+            balance.setPendingDays(balance.getPendingDays().subtract(daysDecimal));
+            
+            // Recalculate remaining
+            BigDecimal remaining = balance.getTotalDays()
+                    .subtract(balance.getUsedDays())
+                    .subtract(balance.getPendingDays());
+            balance.setRemainingDays(remaining);
+            balance.setUpdatedAt(java.time.Instant.now());
+            
+            employeeLeaveBalanceRepository.save(balance);
+        }
     }
 }

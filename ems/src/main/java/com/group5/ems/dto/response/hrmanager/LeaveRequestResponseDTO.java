@@ -23,6 +23,7 @@ public class LeaveRequestResponseDTO {
     private String content;
     private String status;
     private String rejectedReason;
+    private java.time.LocalDateTime createdAt;
 
     // Employee info (for HR Manager view)
     private String employeeName;
@@ -34,6 +35,12 @@ public class LeaveRequestResponseDTO {
     private String dateRange;
     private String dateRangeYear;
     private String reason;
+    
+    // Leave balance info
+    private Integer currentBalance;
+    private Integer usedThisYear;
+    private Integer annualQuota;
+    private Integer balanceAfterApproval;
 
     // Constructor from Request entity
     public LeaveRequestResponseDTO(Request request) {
@@ -45,6 +52,7 @@ public class LeaveRequestResponseDTO {
         this.content = request.getContent();
         this.rejectedReason = request.getRejectedReason();
         this.reason = request.getContent() != null ? request.getContent() : request.getTitle();
+        this.createdAt = request.getCreatedAt();
 
         // Employee info
         if (request.getEmployee() != null && request.getEmployee().getUser() != null) {

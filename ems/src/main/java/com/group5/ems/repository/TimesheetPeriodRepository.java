@@ -15,6 +15,9 @@ public interface TimesheetPeriodRepository extends JpaRepository<TimesheetPeriod
 
     Optional<TimesheetPeriod> findFirstByStartDateLessThanEqualAndEndDateGreaterThanEqual(LocalDate date, LocalDate dateEnd);
 
+    @Query("SELECT t FROM TimesheetPeriod t WHERE t.startDate < :date AND t.isLocked = true ORDER BY t.startDate DESC LIMIT 1")
+    Optional<TimesheetPeriod> findPreviousLockedPeriod(@Param("date") LocalDate date);
+
     /**
      * Check if a new date range overlaps with any existing period.
      * Uses the standard interval overlap condition: A.start <= B.end AND A.end >= B.start

@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>EMS Pro - Payroll Review</title>
+    <meta name="description" content="Review and approve payslips for a payroll period" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" th:href="@{/css/hr/hr-common.css}">
+    <script th:src="@{/js/hr/hr-common.js}"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#1414b8",
+                        "primary-light": "#e8e8fb",
+                        "bg-light": "#f6f6f8",
+                    },
+                    fontFamily: { display: ["Inter"] },
+                },
+            },
+        };
+    </script>
+</head>
+
+<body class="bg-bg-light font-display text-slate-900 min-h-screen">
+<div class="flex h-screen overflow-hidden">
+
+    <!-- SIDEBAR (Simplified for context) -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+        <!-- SIDEBAR                                                   -->
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <div th:replace="~{fragments/hr-sidebar :: sidebar('payroll-periods')}"></div>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <header class="h-16 bg-white border-b border-slate-100 flex items-center justify-between px-8 shrink-0">
+            <div>
+                <h2 class="text-base font-black text-slate-900 leading-tight">Payroll Review</h2>
+                <p class="text-xs text-slate-400" th:text="'Reviewing payslips for ' + ${summary.periodName}">Review payslips for Period</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <a th:href="@{/hr/payroll-periods}"
+                   class="flex items-center gap-2 text-slate-500 hover:text-primary px-3 py-1.5 rounded-xl text-sm font-semibold hover:bg-primary-light transition-colors">
+                    <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                    Back to Periods
+                </a>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-8 dot-grid">
+            <div class="max-w-6xl mx-auto space-y-6">
+
+                <!-- Breadcrumb -->
+                <nav class="flex items-center gap-1.5 text-xs anim anim-1" aria-label="Breadcrumb">
+                    <a th:href="@{/hr/dashboard}" class="text-slate-400 hover:text-primary transition-colors font-medium">Home</a>
+                    <span class="material-symbols-outlined text-slate-300 text-[14px]">chevron_right</span>
+                    <a th:href="@{/hr/payroll-periods}" class="text-slate-400 hover:text-primary transition-colors font-medium">Payroll Periods</a>
+                    <span class="material-symbols-outlined text-slate-300 text-[14px]">chevron_right</span>
+                    <span class="text-slate-700 font-semibold" th:text="'Review: ' + ${summary.periodName}">Review: Period</span>
+                </nav>
+
+                <!-- Page Header & Alert -->
+                <div class="space-y-4 anim anim-1">
+                    <h2 class="text-3xl font-black text-slate-800 tracking-tight" th:text="'Payroll Review: ' + ${summary.periodName}">Payroll Review: Period</h2>
+                    <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 flex gap-3 shadow-sm shadow-blue-50">
+                        <span class="material-symbols-outlined text-blue-600">info</span>
+                        <p class="text-sm text-blue-800 font-medium">
+                            Please review the calculated gross and net salaries below. Once approved, the payroll run is locked, and employees will be able to view their payslips.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Executive Summary Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 anim anim-2">
+                    <div class="bg-white shadow-sm border border-slate-200 rounded-xl p-6 hover:shadow-md transition-shadow">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Total Employees Processed</p>
+                        <p class="text-3xl font-black text-slate-800 font-mono" th:text="${summary.totalPayslips}">0</p>
+                    </div>
+                    <div class="bg-white shadow-sm border border-slate-200 rounded-xl p-6 hover:shadow-md transition-shadow">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Company Total Gross</p>
+                        <p class="text-3xl font-black text-slate-800 font-mono" 
+                           th:text="'$' + ${#numbers.formatDecimal(summary.companyTotalGross, 1, 'COMMA', 2, 'POINT')}">$0.00</p>
+                    </div>
+                    <div class="bg-white shadow-sm border border-slate-200 rounded-xl p-6 hover:shadow-md transition-shadow">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Company Total Net</p>
+                        <div class="flex items-end justify-between">
+                            <p class="text-3xl font-black text-primary font-mono" 
+                               th:text="'$' + ${#numbers.formatDecimal(summary.companyTotalNet, 1, 'COMMA', 2, 'POINT')}">$0.00</p>
+                            <span th:if="${summary.netVarianceIndicator != null}" 
+                                  th:classappend="${summary.netVarianceIndicator.startsWith('+')} ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'"
+                                  class="text-[10px] font-bold px-2 py-0.5 rounded-full mb-1"
+                                  th:text="${summary.netVarianceIndicator}">
+                                +2.4%
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Exception Filters -->
+                <div class="flex flex-wrap items-center gap-2 anim anim-3">
+                    <a th:href="@{/hr/payroll-review/{id}(id=${summary.periodId}, filter='all')}"
+                       th:classappend="${currentFilter == 'all' ? 'bg-slate-800 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'}"
+                       class="px-4 py-2 rounded-full text-xs font-bold transition-all">
+                        All (<span th:text="${summary.totalPayslips}">5000</span>)
+                    </a>
+                    <a th:href="@{/hr/payroll-review/{id}(id=${summary.periodId}, filter='anomalies')}"
+                       th:classappend="${currentFilter == 'anomalies' ? 'bg-rose-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-rose-50'}"
+                       class="px-4 py-2 rounded-full text-xs font-bold flex items-center gap-1 transition-all">
+                        <span class="material-symbols-outlined text-[14px]">warning</span>
+                        Anomalies (<span th:text="${summary.anomalyCount}">12</span>)
+                    </a>
+                    <a th:href="@{/hr/payroll-review/{id}(id=${summary.periodId}, filter='negative')}"
+                       th:classappend="${currentFilter == 'negative' ? 'bg-rose-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-rose-50'}"
+                       class="px-4 py-2 rounded-full text-xs font-bold transition-all">
+                        Negative Net Pay (<span th:text="${summary.negativeNetCount}">2</span>)
+                    </a>
+                    <a th:href="@{/hr/payroll-review/{id}(id=${summary.periodId}, filter='overtime')}"
+                       th:classappend="${currentFilter == 'overtime' ? 'bg-amber-500 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-amber-50'}"
+                       class="px-4 py-2 rounded-full text-xs font-bold transition-all">
+                        High Overtime (<span th:text="${summary.highOvertimeCount}">10</span>)
+                    </a>
+                </div>
+
+                <!-- Data Table -->
+                <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden anim anim-3 flex flex-col">
+                    <div class="p-5 border-b border-slate-50 flex items-center justify-between">
+                        <h3 class="text-sm font-black text-slate-800">Payslip Approvals</h3>
+                        <span class="text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full"
+                              th:text="${payslips.totalElements} + ' records'">0 records</span>
+                    </div>
+
+                    <div class="flex-1 overflow-auto max-h-[500px]">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                            <tr class="bg-slate-50/80 sticky top-0 z-10 whitespace-nowrap">
+                                <th class="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 italic">ID</th>
+                                <th class="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 text-center">Alerts</th>
+                                <th class="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">Employee</th>
+                                <th class="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 text-right">Gross Salary</th>
+                                <th class="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 text-right">Deductions</th>
+                                <th class="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 text-right">Net Salary</th>
+                                <th class="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 text-center">Status</th>
+                            </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-50">
+                            <tr th:each="p : ${payslips.content}" class="hover:bg-primary/[2%] transition-colors">
+                                <td class="px-5 py-4 text-[10px] font-bold text-slate-300 font-mono italic" th:text="'#' + ${p.payslipId}">#1</td>
+                                <td class="px-5 py-4 text-center">
+                                    <div class="flex items-center justify-center gap-1">
+                                        <span th:if="${p.isNegativeNet}" title="Negative or Zero Net Pay" class="material-symbols-outlined text-rose-500 text-[18px] cursor-help">warning</span>
+                                        <span th:if="${p.isHighOvertime}" title="High Overtime" class="material-symbols-outlined text-amber-500 text-[18px] cursor-help">schedule_alert</span>
+                                        <span th:if="${!p.isNegativeNet && !p.isHighOvertime}" class="text-slate-200">-</span>
+                                    </div>
+                                </td>
+                                <td class="px-5 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs"
+                                             th:text="${p.fullName.substring(0, 1).toUpperCase()}">A</div>
+                                        <div>
+                                            <p class="text-xs font-semibold text-slate-800" th:text="${p.fullName}">Full Name</p>
+                                            <p class="text-[10px] text-slate-400 font-mono" th:text="${p.employeeCode}">EMP001</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-5 py-4 text-right">
+                                    <span class="text-xs font-semibold text-slate-700 font-mono" 
+                                          th:text="${#numbers.formatDecimal(p.totalGross, 1, 2)}">0.00</span>
+                                </td>
+                                <td class="px-5 py-4 text-right">
+                                    <span class="text-xs font-semibold text-rose-500 font-mono" 
+                                          th:text="${#numbers.formatDecimal(p.totalDeductions, 1, 2)}">0.00</span>
+                                </td>
+                                <td class="px-5 py-4 text-right">
+                                    <span th:classappend="${p.isNegativeNet} ? 'text-rose-600' : 'text-emerald-600'"
+                                          class="text-sm font-bold font-mono" 
+                                          th:text="${#numbers.formatDecimal(p.netSalary, 1, 2)}">0.00</span>
+                                </td>
+                                <td class="px-5 py-4 text-center">
+                                    <span th:if="${p.status == 'PENDING'}" 
+                                          class="text-[10px] font-bold bg-amber-100 text-amber-800 px-2.5 py-1 rounded-full border border-amber-200">
+                                        PENDING
+                                    </span>
+                                    <span th:if="${p.status == 'APPROVED'}" 
+                                          class="text-[10px] font-bold bg-green-100 text-green-800 px-2.5 py-1 rounded-full border border-green-200">
+                                        APPROVED
+                                    </span>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Footer CTA & Pagination -->
+                <div class="flex flex-col md:flex-row items-center justify-between gap-6 pb-12 anim anim-4">
+                    <div th:replace="~{fragments/pagination :: pagination(pageData=${payslips}, baseUrl='/hr/payroll-review/' + ${periodId})}"></div>
+
+                    <div th:if="${!summary.isFullyApproved}" class="flex items-center gap-3">
+                        <a th:href="@{/hr/payroll-review/{periodId}/export-draft(periodId=${summary.periodId})}"
+                           class="inline-flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl px-6 py-3.5 shadow-sm transition-all text-sm font-bold active:scale-95">
+                            <span class="material-symbols-outlined text-[20px]">file_download</span>
+                            Download Draft Excel
+                        </a>
+                        <button type="button" onclick="openModal()"
+                                class="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white rounded-xl px-10 py-3.5 shadow-xl shadow-green-100 hover:shadow-2xl hover:-translate-y-1 transition-all text-sm font-bold active:scale-95">
+                            <span class="material-symbols-outlined text-[20px]">verified_user</span>
+                            Approve Payroll Run
+                        </button>
+                    </div>
+                    <div th:if="${summary.isFullyApproved}" class="flex flex-col sm:flex-row items-center gap-4">
+                        <div class="bg-slate-50 border border-slate-200 rounded-xl px-6 py-3.5 flex items-center gap-3">
+                            <span class="material-symbols-outlined text-green-600">check_circle</span>
+                            <p class="text-sm font-bold text-slate-600">This payroll run is fully approved and locked.</p>
+                        </div>
+                        <a th:href="@{/hr/payroll-periods/{periodId}/export-bank(periodId=${summary.periodId})}"
+                           class="bg-slate-800 hover:bg-slate-900 text-white shadow-sm rounded-xl px-6 py-3.5 flex items-center gap-2 text-sm font-bold transition-all hover:shadow-lg hover:-translate-y-1 active:scale-95">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                            Export Bank File (CSV)
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Approval Modal -->
+<div id="approvalModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeModal()"></div>
+    <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+        <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg border border-slate-100">
+            <div class="bg-white px-4 pb-4 pt-5 sm:p-10 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-2xl bg-emerald-50 sm:mx-0 sm:h-14 sm:w-14">
+                        <span class="material-symbols-outlined text-emerald-600 text-[32px]">shield_check</span>
+                    </div>
+                    <div class="mt-3 text-center sm:ml-6 sm:mt-0 sm:text-left">
+                        <h3 class="text-2xl font-black text-slate-800 leading-none">Approve Payroll Run?</h3>
+                        <div class="mt-4">
+                            <p class="text-sm text-slate-500 leading-relaxed">
+                                Are you sure you want to approve this payroll run? This action will <span class="font-bold text-slate-700 uppercase">finalize</span> the payslips and lock all financial data for this period.
+                            </p>
+                            <div class="mt-4 p-4 bg-rose-50 rounded-2xl border border-rose-100 flex gap-3">
+                                <span class="material-symbols-outlined text-rose-500 shrink-0">warning</span>
+                                <p class="text-[11px] text-rose-800 font-bold leading-normal uppercase">
+                                    THIS ACTION CANNOT BE UNDONE. EMPLOYEES WILL IMMEDIATELY BE NOTIFIED (IF CONFIGURED) AND DATA WILL BE READ-ONLY.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-slate-50/50 px-4 py-8 sm:flex sm:flex-row-reverse sm:px-10 gap-3">
+                <form id="approveForm" th:action="@{/hr/payroll-review/{id}/approve(id=${summary.periodId})}" method="POST">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <button type="submit" id="submitBtn"
+                            class="inline-flex w-full justify-center items-center gap-2 rounded-xl bg-emerald-600 px-8 py-3.5 text-sm font-bold text-white shadow-lg shadow-emerald-200 hover:bg-emerald-700 transition-all active:scale-95">
+                        <span id="btnText">Confirm Approval</span>
+                        <svg id="loadingSpinner" class="hidden animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </button>
+                </form>
+                <button type="button" onclick="closeModal()"
+                        class="mt-3 inline-flex w-full justify-center rounded-xl bg-white px-8 py-3.5 text-sm font-bold text-slate-700 shadow-sm ring-1 ring-inset ring-slate-200 hover:bg-slate-50 sm:mt-0 sm:w-auto transition-all">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openModal() {
+        const modal = document.getElementById('approvalModal');
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+        const modal = document.getElementById('approvalModal');
+        modal.classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+
+    // Double-Submit Prevention
+    document.getElementById('approveForm')?.addEventListener('submit', function (e) {
+        const submitBtn = document.getElementById('submitBtn');
+        const btnText = document.getElementById('btnText');
+        const spinner = document.getElementById('loadingSpinner');
+
+        submitBtn.disabled = true;
+        submitBtn.classList.add('cursor-not-allowed', 'opacity-80');
+        btnText.classList.add('hidden');
+        spinner.classList.remove('hidden');
+    });
+</script>
+</body>
+</html>

@@ -19,6 +19,9 @@ import com.group5.ems.repository.SalaryRepository;
 import com.group5.ems.repository.TimesheetPeriodRepository;
 import com.group5.ems.service.common.LogService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -66,10 +69,10 @@ public class PayrollAggregationService {
         TimesheetPeriod period = periodRepository.findById(periodId)
                 .orElseThrow(() -> new PayrollPreviewNotFoundException(periodId));
 
-        List<Employee> activeEmployees = employeeRepository.findByStatus("ACTIVE");
+        List<Employee> eligibleEmployees = employeeRepository.findEligibleEmployeesForPeriodList(period.getEndDate());
         List<EmployeeAggregationDTO> result = new ArrayList<>();
 
-        for (Employee emp : activeEmployees) {
+        for (Employee emp : eligibleEmployees) {
             result.add(aggregateDataForEmployee(period, emp));
         }
 
@@ -77,19 +80,46 @@ public class PayrollAggregationService {
     }
 
     /**
-     * Calculates top-level summary metrics for the preview dashboard cards.
+     * Returns a truly paginated slice of per-employee aggregation DTOs.
+     * Queries only the requested page of active employees from the database,
+     * then aggregates payroll data for those employees only.
      *
-     * @param periodId     the timesheet period ID
-     * @param aggregations pre-computed per-employee aggregation data
+     * @param periodId the timesheet period ID
+     * @param pageable pagination parameters
+     * @return paginated employee aggregation data
+     * @throws PayrollPreviewNotFoundException if period does not exist
+     */
+    @Transactional(readOnly = true)
+    public Page<EmployeeAggregationDTO> getPaginatedPreview(Long periodId, Pageable pageable) {
+        TimesheetPeriod period = periodRepository.findById(periodId)
+                .orElseThrow(() -> new PayrollPreviewNotFoundException(periodId));
+
+        // Query only the requested page of employees from DB
+        Page<Employee> employeePage = employeeRepository.findEligibleEmployeesForPeriod(period.getEndDate(), pageable);
+
+        List<EmployeeAggregationDTO> aggregated = employeePage.getContent().stream()
+                .map(emp -> aggregateDataForEmployee(period, emp))
+                .toList();
+
+        return new PageImpl<>(aggregated, pageable, employeePage.getTotalElements());
+    }
+
+    /**
+     * Calculates top-level summary metrics for the preview dashboard cards.
+     * Uses the Page's totalElements for employee count (from DB count query)
+     * and computes avgPayableDays from the current page content.
+     *
+     * @param periodId the timesheet period ID
+     * @param page     paginated employee aggregation data
      * @return period summary DTO for dashboard cards
      * @throws PayrollPreviewNotFoundException if period does not exist
      */
     @Transactional(readOnly = true)
-    public PeriodSummaryDTO getPeriodSummary(Long periodId, List<EmployeeAggregationDTO> aggregations) {
+    public PeriodSummaryDTO getPeriodSummary(Long periodId, Page<EmployeeAggregationDTO> page) {
         TimesheetPeriod period = periodRepository.findById(periodId)
                 .orElseThrow(() -> new PayrollPreviewNotFoundException(periodId));
 
-        double avgPayableDays = aggregations.stream()
+        double avgPayableDays = page.getContent().stream()
                 .mapToDouble(EmployeeAggregationDTO::payableDays)
                 .average()
                 .orElse(0.0);
@@ -100,7 +130,7 @@ public class PayrollAggregationService {
                 .locked(Boolean.TRUE.equals(period.getIsLocked()))
                 .startDate(period.getStartDate())
                 .endDate(period.getEndDate())
-                .totalEmployeesProcessed(aggregations.size())
+                .totalEmployeesProcessed((int) page.getTotalElements())
                 .avgPayableDays(Math.round(avgPayableDays * 100.0) / 100.0)
                 .build();
     }
@@ -130,10 +160,10 @@ public class PayrollAggregationService {
                     + existingPayslips.size() + " existing payslip(s).");
         }
 
-        List<Employee> activeEmployees = employeeRepository.findByStatus("ACTIVE");
+        List<Employee> eligibleEmployees = employeeRepository.findEligibleEmployeesForPeriodList(period.getEndDate());
         List<Payslip> payslips = new ArrayList<>();
 
-        for (Employee emp : activeEmployees) {
+        for (Employee emp : eligibleEmployees) {
             EmployeeAggregationDTO agg = aggregateDataForEmployee(period, emp);
 
             // Look up the employee's current base salary
