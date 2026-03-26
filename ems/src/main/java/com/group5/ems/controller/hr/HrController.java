@@ -87,6 +87,17 @@ public class HrController {
         return "hr/dashboard";
     }
 
+    @PostMapping("/dashboard/search")
+    public String dashboardSearch(@RequestParam("code") String code, RedirectAttributes redirectAttributes) {
+        Long empId = dashboardService.findEmployeeIdByCode(code.trim());
+        if (empId != null) {
+            return "redirect:/hr/employees?search=" + code.trim();
+        } else {
+            redirectAttributes.addFlashAttribute("errorMessage", "Employee with code '" + code + "' not found.");
+            return "redirect:/hr/dashboard";
+        }
+    }
+
     @GetMapping("/employees")
     public String employees(Model model,
                             @RequestParam(defaultValue = "0") int page,
@@ -105,11 +116,18 @@ public class HrController {
         model.addAttribute("status", status);
         model.addAttribute("currentUser", adminService.getUserDTO().orElse(null));
 
-        // Load departments for filter dropdown
         List<Department> departments = departmentRepository.findAll();
         model.addAttribute("departments", departments);
 
         return "hr/employees";
+    }
+
+    @GetMapping("/api/employees/search")
+    @ResponseBody
+    public ResponseEntity<List<HrEmployeeDTO>> searchEmployeesApi(@RequestParam String q) {
+        Pageable pageable = PageRequest.of(0, 5);
+        Page<HrEmployeeDTO> page = employeeService.searchEmployees(q, null, null, pageable);
+        return ResponseEntity.ok(page.getContent());
     }
 
     @GetMapping("/employees/{id}")
@@ -120,8 +138,31 @@ public class HrController {
     }
 
     @GetMapping("/attendance")
-    public String attendance(Model model) {
-        model.addAttribute("attendances", attendanceService.getAllAttendances());
+    public String attendance(Model model,
+                             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+                             @RequestParam(required = false) String search,
+                             @RequestParam(required = false) Long departmentId,
+                             @RequestParam(required = false) String status,
+                             @RequestParam(defaultValue = "0") int page) {
+        
+        LocalDate queryDate = (date != null) ? date : LocalDate.now();
+        
+        model.addAttribute("stats", attendanceService.getAttendanceStats(queryDate));
+        
+        Pageable pageable = PageRequest.of(page, EMPLOYEE_PAGE_SIZE);
+        org.springframework.data.domain.Page<com.group5.ems.dto.response.HrAttendanceDetailDTO> attendancePage = attendanceService.getAttendanceRecords(queryDate, search, departmentId, status, pageable);
+        
+        model.addAttribute("attendances", attendancePage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", attendancePage.getTotalPages());
+        model.addAttribute("totalItems", attendancePage.getTotalElements());
+        
+        model.addAttribute("date", queryDate);
+        model.addAttribute("search", search);
+        model.addAttribute("departmentId", departmentId);
+        model.addAttribute("status", status);
+        model.addAttribute("departments", departmentRepository.findAll());
+        
         model.addAttribute("currentUser", adminService.getUserDTO().orElse(null));
         return "hr/attendance";
     }

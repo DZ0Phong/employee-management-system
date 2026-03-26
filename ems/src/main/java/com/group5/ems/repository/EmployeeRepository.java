@@ -16,6 +16,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
     Optional<Employee> findByUserId(Long userId);
 
+    Optional<Employee> findByEmployeeCode(String employeeCode);
 
     @Query("select e from Employee e join fetch e.user u where e.departmentId = :departmentId")
     List<Employee> findByDepartmentIdWithUser(@Param("departmentId") Long departmentId);
@@ -41,13 +42,13 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     @Query("SELECT AVG(DATEDIFF(CURRENT_DATE, e.hireDate)) FROM Employee e WHERE e.status = 'ACTIVE' AND e.hireDate IS NOT NULL")
     Double getAverageTenureInDays();
 
-    @Query(value = "SELECT e FROM Employee e JOIN e.user u JOIN e.department d JOIN e.position p " +
+    @Query(value = "SELECT e FROM Employee e LEFT JOIN e.user u LEFT JOIN e.department d LEFT JOIN e.position p " +
             "WHERE (:search IS NULL OR LOWER(u.fullName) LIKE LOWER(CONCAT('%',:search,'%')) " +
             "OR LOWER(e.employeeCode) LIKE LOWER(CONCAT('%',:search,'%')) " +
             "OR LOWER(u.email) LIKE LOWER(CONCAT('%',:search,'%'))) " +
             "AND (:department IS NULL OR d.name = :department) " +
             "AND (:status IS NULL OR e.status = :status)",
-            countQuery = "SELECT COUNT(e) FROM Employee e JOIN e.user u JOIN e.department d JOIN e.position p " +
+            countQuery = "SELECT COUNT(e) FROM Employee e LEFT JOIN e.user u LEFT JOIN e.department d LEFT JOIN e.position p " +
                     "WHERE (:search IS NULL OR LOWER(u.fullName) LIKE LOWER(CONCAT('%',:search,'%')) " +
                     "OR LOWER(e.employeeCode) LIKE LOWER(CONCAT('%',:search,'%')) " +
                     "OR LOWER(u.email) LIKE LOWER(CONCAT('%',:search,'%'))) " +

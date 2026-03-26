@@ -29,7 +29,11 @@ public class HrDashboardService {
     public HrDashboardMetricsDTO getDashboardMetrics() {
         Long activeEmployees = employeeRepository.countByStatus("ACTIVE");
         int openJobPosts = jobPostRepository.countByStatus("OPEN");
-        int pendingLeaveRequests = requestRepository.countByStatusAndRequestTypeCategory("PENDING", "ATTENDANCE");
+        long pendingLeaveRequestsLong = requestRepository.countByStatusAndRequestTypeCodeIn(
+                "PENDING", 
+                java.util.Arrays.asList("LV_ANNUAL", "LV_SICK", "LEAVE_ANNUAL", "LEAVE_SICK", "LEAVE_UNPAID")
+        );
+        int pendingLeaveRequests = (int) pendingLeaveRequestsLong;
         int pendingWorkflowRequests = requestRepository.countByStatusAndRequestTypeCategory("PENDING", "HR_STATUS");
         long newHiresThisMonth = employeeRepository.newThisMonth();
         int totalApplicants = (int) applicationRepository.count();
@@ -57,9 +61,9 @@ public class HrDashboardService {
 
         // Recruitment pipeline counts
         int pipelineApplied = applicationRepository.countByStatus("APPLIED");
-        int pipelineReviewing = applicationRepository.countByStatus("REVIEWING");
+        int pipelineReviewing = applicationRepository.countByStatus("SCREENING");
         int pipelineInterviewing = applicationRepository.countByStatus("INTERVIEWING");
-        int pipelineOfferSent = applicationRepository.countByStatus("OFFER_SENT");
+        int pipelineOfferSent = applicationRepository.countByStatus("OFFER");
 
         return HrDashboardMetricsDTO.builder()
                 .activeEmployees(activeEmployees)
@@ -77,5 +81,11 @@ public class HrDashboardService {
                 .pipelineInterviewing(pipelineInterviewing)
                 .pipelineOfferSent(pipelineOfferSent)
                 .build();
+    }
+
+    public Long findEmployeeIdByCode(String code) {
+        return employeeRepository.findByEmployeeCode(code)
+                .map(com.group5.ems.entity.Employee::getId)
+                .orElse(null);
     }
 }

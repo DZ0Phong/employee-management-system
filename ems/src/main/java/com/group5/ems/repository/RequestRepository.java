@@ -32,6 +32,11 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
     @Query("SELECT COUNT(r) FROM Request r WHERE r.status = :status AND r.requestType.category = :category")
     int countByStatusAndRequestTypeCategory(@Param("status") String status, @Param("category") String category);
 
+    @Query("SELECT COUNT(r) FROM Request r JOIN r.requestType rt " +
+            "WHERE r.status = :status AND rt.code IN :codes")
+    long countByStatusAndRequestTypeCodeIn(@Param("status") String status, @Param("codes") List<String> codes);
+
+
     List<Request> findByEmployeeDepartmentIdAndLeaveTypeIsNotNullOrderByCreatedAtDesc(Long departmentId);
 
     @Query("SELECT r FROM Request r " +
