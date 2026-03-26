@@ -2484,39 +2484,13 @@
                     document.body.style.overflow = '';
                 }
             });
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('action') === 'new-job') {
+                openNewJobModal();
+                // Clean up URL without reloading
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
         });
-        applyFilters();
-    }
-
-    // ── Toast ─────────────────────────────────────────────────────────────
-    function showToast(msg) {
-        const t = document.getElementById('toast');
-        document.getElementById('toastMsg').textContent = msg;
-        t.classList.remove('hidden');
-        setTimeout(() => t.classList.add('hidden'), 3000);
-    }
-
-    // ── Init ─────────────────────────────────────────────────────────────
-    window.addEventListener('DOMContentLoaded', () => {
-        allRows = Array.from(document.querySelectorAll('.app-row'));
-        applyFilters();   // initial render + pagination
-
-        // Default open date
-        const od = document.querySelector('input[name="openDate"]');
-        if (od && !od.value) od.value = new Date().toISOString().split('T')[0];
-
-        // Flash message from redirect
-        const el = document.getElementById('serverSuccess');
-        if (el) showToast(el.dataset.msg);
-
-        // Check query param to auto-open new job modal
-        const params = new URLSearchParams(window.location.search);
-        if (params.get('action') === 'new-job') {
-            openNewJobModal();
-            // Clean up URL without reloading
-            window.history.replaceState({}, document.title, window.location.pathname);
-        }
-    });
 </script>
 </body>
 
