@@ -33,6 +33,7 @@ import com.group5.ems.dto.response.HrEmployeeDTO;
 import com.group5.ems.dto.response.HrEmployeeDetailDTO;
 import com.group5.ems.dto.response.HrLeaveRequestDTO;
 import com.group5.ems.dto.response.HrPerformanceDTO;
+import com.group5.ems.dto.response.HrRecruitmentDTO;
 import com.group5.ems.dto.response.HrRequestDTO;
 import com.group5.ems.dto.response.InterviewerDTO;
 import com.group5.ems.entity.CandidateCv;
@@ -441,6 +442,50 @@ public class HrController {
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("/recruitment/jobs")
+    public String allJobs(Model model) {
+        List<HrRecruitmentDTO> allJobs = recruitmentService.getAllJobPosts();
+        model.addAttribute("allJobs", allJobs);
+        model.addAttribute("openCount", allJobs.stream().filter(j -> "OPEN".equals(j.getStatus())).count());
+        model.addAttribute("draftCount", allJobs.stream().filter(j -> "DRAFT".equals(j.getStatus())).count());
+        model.addAttribute("closedCount", allJobs.stream().filter(j -> "CLOSED".equals(j.getStatus())).count());
+        model.addAttribute("totalApplicants", allJobs.stream().mapToLong(HrRecruitmentDTO::getApplicantCount).sum());
+        model.addAttribute("departments", departmentRepository.findAll());
+        model.addAttribute("positions", positionRepository.findAll());
+        return "hr/recruitment-jobs";
+    }
+
+    @PostMapping("/recruitment/jobs/update")
+    public String updateJobPost(
+            @RequestParam Long id,
+            @RequestParam String title,
+            @RequestParam(required = false) Long departmentId,
+            @RequestParam(required = false) String description,
+            @RequestParam(required = false) String requirements,
+            @RequestParam(required = false) String benefits,
+            @RequestParam(required = false) BigDecimal salaryMin,
+            @RequestParam(required = false) BigDecimal salaryMax,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate openDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate closeDate,
+            @RequestParam(required = false) String status,
+            RedirectAttributes ra) {
+
+        recruitmentService.updateJobPost(id, title, departmentId, description,
+                requirements, benefits, salaryMin, salaryMax, openDate, closeDate, status);
+        ra.addFlashAttribute("successMessage", "Job post \"" + title + "\" updated successfully!");
+        return "redirect:/hr/recruitment/jobs";
+    }
+
+    @PostMapping("/recruitment/jobs/delete")
+    public String deleteJobPost(
+            @RequestParam Long id,
+            RedirectAttributes ra) {
+
+        String title = recruitmentService.deleteJobPost(id);
+        ra.addFlashAttribute("successMessage", "Job post \"" + title + "\" deleted successfully.");
+        return "redirect:/hr/recruitment/jobs";
+    }
+
     private Long resolveCurrentUserId(UserDetails principal) {
         if (principal == null)
             return null;
@@ -455,7 +500,7 @@ public class HrController {
     public String employeeBankDetails(@PathVariable Long id, Model model) {
         Employee employee = employeeRepository.findByIdWithDetails(id)
                 .orElseThrow(() -> new RuntimeException("Employee not found"));
-        
+
         model.addAttribute("employee", employee);
         model.addAttribute("bankDetails", bankDetailsService.getMaskedBankDetails(id));
         model.addAttribute("currentUser", adminService.getUserDTO().orElse(null));
@@ -464,8 +509,8 @@ public class HrController {
 
     @PostMapping("/bank-details/{employeeId}/{bankId}/set-primary")
     public String setPrimaryBankDetail(@PathVariable Long employeeId,
-                                       @PathVariable Long bankId,
-                                       RedirectAttributes redirectAttributes) {
+            @PathVariable Long bankId,
+            RedirectAttributes redirectAttributes) {
         try {
             bankDetailsService.setPrimaryAccount(employeeId, bankId);
             redirectAttributes.addFlashAttribute("successMessage", "Primary account updated!");
@@ -477,8 +522,8 @@ public class HrController {
 
     @PostMapping("/bank-details/{employeeId}/{bankId}/delete")
     public String deleteBankDetail(@PathVariable Long employeeId,
-                                   @PathVariable Long bankId,
-                                   RedirectAttributes redirectAttributes) {
+            @PathVariable Long bankId,
+            RedirectAttributes redirectAttributes) {
         try {
             bankDetailsService.deleteBankDetail(employeeId, bankId);
             redirectAttributes.addFlashAttribute("successMessage", "Bank detail deleted!");

@@ -372,6 +372,44 @@ public class HrRecruitmentService {
         requestApprovalHistoryRepository.save(hist);
     }
 
+    public List<HrRecruitmentDTO> getAllJobPosts() {
+        return jobPostRepository.findAll(Sort.by(Sort.Direction.DESC, "id")).stream()
+                .map(this::mapToJobPostDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void updateJobPost(Long id, String title, Long departmentId,
+            String description, String requirements, String benefits,
+            BigDecimal salaryMin, BigDecimal salaryMax,
+            LocalDate openDate, LocalDate closeDate, String status) {
+        JobPost job = jobPostRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Job post not found: " + id));
+        job.setTitle(title);
+        job.setDepartmentId(departmentId);
+        job.setDescription(description);
+        job.setRequirements(requirements);
+        job.setBenefits(benefits);
+        job.setSalaryMin(salaryMin);
+        job.setSalaryMax(salaryMax);
+        if (openDate != null)
+            job.setOpenDate(openDate);
+        if (closeDate != null)
+            job.setCloseDate(closeDate);
+        if (status != null && !status.isBlank())
+            job.setStatus(status);
+        jobPostRepository.save(job);
+    }
+
+    @Transactional
+    public String deleteJobPost(Long id) {
+        JobPost job = jobPostRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Job post not found: " + id));
+        String title = job.getTitle();
+        jobPostRepository.deleteById(id);
+        return title;
+    }
+
     // ══════════════════════════════════════════════════════════════════════════
     // MAPPERS
     // ══════════════════════════════════════════════════════════════════════════
