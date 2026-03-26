@@ -50,7 +50,7 @@ public class HrDashboardService {
             attendanceLabels.add(day.format(labelFmt));
 
             int present = attendanceRepository.countByWorkDateAndStatus(day, "PRESENT");
-            int onLeave = attendanceRepository.countByWorkDateAndStatus(day, "ON_LEAVE");
+            int onLeave = attendanceRepository.countByWorkDateAndStatus(day, "LATE");
             int totalForDay = attendanceRepository.countByWorkDate(day);
             int absent = Math.max(0, totalForDay - present - onLeave);
 

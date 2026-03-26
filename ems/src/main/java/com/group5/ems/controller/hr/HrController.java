@@ -154,7 +154,7 @@ public class HrController {
     public String attendance(Model model,
                              @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
                              @RequestParam(required = false) String search,
-                             @RequestParam(required = false) Long departmentId,
+                             @RequestParam(required = false) String department,
                              @RequestParam(required = false) String status,
                              @RequestParam(defaultValue = "0") int page) {
         
@@ -163,7 +163,7 @@ public class HrController {
         model.addAttribute("stats", attendanceService.getAttendanceStats(queryDate));
         
         Pageable pageable = PageRequest.of(page, EMPLOYEE_PAGE_SIZE);
-        org.springframework.data.domain.Page<com.group5.ems.dto.response.HrAttendanceDetailDTO> attendancePage = attendanceService.getAttendanceRecords(queryDate, search, departmentId, status, pageable);
+        org.springframework.data.domain.Page<com.group5.ems.dto.response.HrAttendanceDetailDTO> attendancePage = attendanceService.getAttendanceRecords(queryDate, search, department, status, pageable);
         
         model.addAttribute("attendances", attendancePage.getContent());
         model.addAttribute("currentPage", page);
@@ -172,7 +172,7 @@ public class HrController {
         
         model.addAttribute("date", queryDate);
         model.addAttribute("search", search);
-        model.addAttribute("departmentId", departmentId);
+        model.addAttribute("department", department);
         model.addAttribute("status", status);
         model.addAttribute("departments", departmentRepository.findAll());
         
@@ -210,14 +210,6 @@ public class HrController {
             @RequestParam(required = false) String reason) {
         leaveService.rejectLeave(id, reason != null ? reason : "Rejected by HR");
         return "redirect:/hr/leave";
-    }
-
-    @GetMapping("/payroll")
-    public String payroll(Model model) {
-        model.addAttribute("payslips", payrollService.getAllPayslips());
-        model.addAttribute("currentUser", adminService.getUserDTO().orElse(null));
-        model.addAttribute("payrollSummary", payrollService.getPayrollSummary());
-        return "hr/payroll";
     }
 
     @GetMapping("/performance")

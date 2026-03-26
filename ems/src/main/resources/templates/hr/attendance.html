@@ -98,28 +98,54 @@
                             </div>
                         </div>
 
-                        <!-- Attendance Table -->
-                        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden anim anim-1 flex flex-col">
-                            <div class="p-5 border-b border-slate-50 flex flex-wrap lg:flex-nowrap gap-4 items-center justify-between bg-slate-50/30">
-                                <h3 class="text-sm font-black text-slate-800 whitespace-nowrap">Today's Log</h3>
-                                <div class="flex flex-wrap items-center gap-2">
-                                    <div class="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-3 py-1.5 shadow-sm">
-                                        <span class="material-symbols-outlined text-slate-400 text-sm">search</span>
-                                        <input type="text" name="search" th:value="${search}" placeholder="Search name or ID..." class="bg-transparent border-none text-xs w-48 focus:ring-0 p-0 text-slate-700" onkeypress="if(event.key === 'Enter') document.getElementById('filterForm').submit()">
-                                    </div>
-                                    <select name="departmentId" class="text-xs border-slate-200 rounded-lg focus:ring-primary focus:border-primary px-3 py-1.5 bg-white text-slate-600 font-medium shadow-sm" onchange="document.getElementById('filterForm').submit()">
+                        <!-- Filters and Summary -->
+                        <div class="flex items-center justify-between anim anim-1 flex-wrap gap-3">
+                            <div class="flex gap-2 flex-wrap">
+                                <div class="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 py-1.5 w-64 shadow-sm">
+                                    <span class="material-symbols-outlined text-slate-400 text-base">search</span>
+                                    <label>
+                                        <input type="text" name="search" th:value="${search}"
+                                            placeholder="Search name or ID..."
+                                            class="bg-transparent border-none text-sm w-full focus:ring-0 p-0 text-slate-700 placeholder-slate-400">
+                                    </label>
+                                </div>
+                                <label>
+                                    <select name="department"
+                                        class="text-sm border-slate-200 rounded-xl focus:ring-primary focus:border-primary pl-3 pr-8 py-1.5 bg-white text-slate-600 font-medium shadow-sm">
                                         <option value="">All Departments</option>
-                                        <option th:each="dept : ${departments}" th:value="${dept.id}" th:text="${dept.name}" th:selected="${dept.id == departmentId}"></option>
+                                        <option th:each="dept : ${departments}" th:value="${dept.name}"
+                                            th:text="${dept.name}" th:selected="${dept.name == department}">Dept</option>
                                     </select>
-                                    <select name="status" class="text-xs border-slate-200 rounded-lg focus:ring-primary focus:border-primary px-3 py-1.5 bg-white text-slate-600 font-medium shadow-sm" onchange="document.getElementById('filterForm').submit()">
+                                </label>
+                                <label>
+                                    <select name="status"
+                                        class="text-sm border-slate-200 rounded-xl focus:ring-primary focus:border-primary pl-3 pr-8 py-1.5 bg-white text-slate-600 font-medium shadow-sm">
                                         <option value="">Status: All</option>
                                         <option value="PRESENT" th:selected="${status == 'PRESENT'}">Present</option>
                                         <option value="LATE" th:selected="${status == 'LATE'}">Late In</option>
                                         <option value="ABSENT" th:selected="${status == 'ABSENT'}">Absent</option>
                                         <option value="LEAVE" th:selected="${status == 'LEAVE'}">On Leave</option>
                                     </select>
-                                    <button type="submit" class="bg-slate-800 text-white px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-slate-700 transition">Filter</button>
-                                </div>
+                                </label>
+                                <button type="submit"
+                                    class="flex items-center gap-1.5 bg-primary text-white px-4 py-1.5 rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors shadow-sm shadow-primary/30">
+                                    <span class="material-symbols-outlined text-[16px]">filter_alt</span>
+                                    Filter
+                                </button>
+                                <a th:href="@{/hr/attendance}"
+                                    class="flex items-center gap-1.5 bg-white border border-slate-200 text-slate-600 px-3 py-1.5 rounded-xl text-sm font-medium hover:bg-slate-50 transition-colors">
+                                    <span class="material-symbols-outlined text-[16px]">clear_all</span>
+                                    Clear
+                                </a>
+                            </div>
+                            <p class="text-sm font-semibold text-slate-500">Showing <span class="text-slate-800"
+                                    th:text="${totalItems}">0</span> entries</p>
+                        </div>
+
+                        <!-- Attendance Table -->
+                        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden anim anim-1 flex flex-col">
+                            <div class="p-5 border-b border-slate-50 flex gap-4 items-center justify-between bg-white">
+                                <h3 class="text-sm font-black text-slate-800 whitespace-nowrap">Today's Log</h3>
                             </div>
                             <div class="flex-1 overflow-auto">
                                 <table class="w-full text-left border-collapse whitespace-nowrap">

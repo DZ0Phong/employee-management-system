@@ -63,7 +63,7 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
     @Query(value = "SELECT r FROM Request r JOIN r.employee e JOIN e.user u " +
             "LEFT JOIN e.department d JOIN r.requestType rt " +
             "WHERE r.status <> 'PENDING' AND rt.category = 'ATTENDANCE' " +
-            "ORDER BY r.createdAt DESC",
+            "ORDER BY r.updatedAt DESC, r.createdAt DESC",
             countQuery = "SELECT COUNT(r) FROM Request r JOIN r.requestType rt " +
                     "WHERE r.status <> 'PENDING' AND rt.category = 'ATTENDANCE'")
     Page<Request> findLeaveHistory(Pageable pageable);

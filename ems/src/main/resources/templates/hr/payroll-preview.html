@@ -423,7 +423,7 @@
 
     // Auto-dismiss flash messages after 5 seconds
     document.addEventListener('DOMContentLoaded', function () {
-        const flashes = document.querySelectorAll('[class*="bg-emerald-50"], [class*="bg-rose-50"]');
+        const flashes = document.querySelectorAll('div.bg-emerald-50.border-emerald-200, div.bg-rose-50.border-rose-200');
         flashes.forEach(flash => {
             setTimeout(() => {
                 flash.style.transition = 'opacity 0.3s ease, transform 0.3s ease';

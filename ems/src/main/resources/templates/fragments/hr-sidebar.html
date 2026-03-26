@@ -45,12 +45,6 @@
             <span class="ml-auto text-[10px] font-bold bg-amber-100 text-amber-600 px-1.5 py-0.5 rounded-md" th:text="${pendingLeave ?: 8}">8</span>
         </a>
 
-        <a th:href="@{/hr/payroll}"
-           th:class="${activeMenu == 'payroll'} ? 'nav-active flex items-center gap-3 px-3 py-2.5 bg-primary-light text-primary rounded-xl' : 'flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:bg-slate-50 rounded-xl transition-all group'">
-            <span class="material-symbols-outlined text-[20px]" th:classappend="${activeMenu == 'payroll'} ? 'fill-icon' : 'text-slate-400 group-hover:text-primary transition-colors'">account_balance_wallet</span>
-            <span class="text-sm" th:classappend="${activeMenu == 'payroll'} ? 'font-semibold' : 'font-medium'">Payroll Data</span>
-        </a>
-
         <a th:href="@{/hr/payroll-periods}"
            th:class="${activeMenu == 'payroll-periods'} ? 'nav-active flex items-center gap-3 px-3 py-2.5 bg-primary-light text-primary rounded-xl' : 'flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:bg-slate-50 rounded-xl transition-all group'">
             <span class="material-symbols-outlined text-[20px]" th:classappend="${activeMenu == 'payroll-periods'} ? 'fill-icon' : 'text-slate-400 group-hover:text-primary transition-colors'">date_range</span>
