@@ -83,9 +83,13 @@
                     <p class="text-sm font-medium truncate" th:text="${employee.fullName}">Employee</p>
                     <p class="text-xs text-slate-500 truncate" th:text="${employee.position}">Staff</p>
                 </div>
-                <a th:href="@{/logout}">
-                    <span class="material-symbols-outlined text-slate-400 text-sm hover:text-red-500 transition-colors">logout</span>
-                </a>
+                <form th:action="@{/logout}" method="post" class="shrink-0">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <button type="submit"
+                            class="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors">
+                        <span class="material-symbols-outlined text-sm">logout</span>
+                    </button>
+                </form>
             </div>
         </div>
     </aside>
