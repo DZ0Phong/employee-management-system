@@ -43,7 +43,20 @@
         scope.querySelectorAll('.material-symbols-outlined').forEach(hydrateIconSpan);
     }
 
+    function setIcon(target, iconName) {
+        const span = typeof target === 'string' ? document.querySelector(target) : target;
+        if (!span || !iconName) {
+            return;
+        }
+
+        span.dataset.iconHydrated = 'false';
+        span.dataset.iconName = iconName;
+        span.textContent = iconName;
+        hydrateIconSpan(span);
+    }
+
     window.hydrateAppIcons = hydrate;
+    window.setAppIcon = setIcon;
 
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => hydrate(document));

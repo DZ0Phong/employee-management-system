@@ -11,7 +11,8 @@
 
     <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="/css/app-icons.css" th:href="@{/css/app-icons.css}"/>
+    <script defer src="/js/app-icons.js" th:src="@{/js/app-icons.js}"></script>
 
     <script>
         tailwind.config = {
@@ -729,6 +730,7 @@
         el.className = 'toast pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-2xl shadow-xl text-sm font-semibold text-white ' + c.bg;
         el.innerHTML = '<span class="material-symbols-outlined fill-icon text-[20px]">' + c.icon + '</span>' + msg;
         document.getElementById('toast-container').appendChild(el);
+        if (window.hydrateAppIcons) window.hydrateAppIcons(el);
         setTimeout(function () {
             el.classList.add('out');
             setTimeout(function () { el.remove(); }, 300);

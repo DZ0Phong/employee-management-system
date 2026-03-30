@@ -4,9 +4,11 @@ import com.group5.ems.dto.request.CreateLeaveRequestDTO;
 import com.group5.ems.dto.request.UpdateProfileRequest;
 import com.group5.ems.dto.response.*;
 import com.group5.ems.entity.Employee;
+import com.group5.ems.entity.Role;
 import com.group5.ems.entity.User;
 import com.group5.ems.repository.EmployeeRepository;
 import com.group5.ems.repository.UserRepository;
+import com.group5.ems.repository.UserRoleRepository;
 import com.group5.ems.service.employee.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -31,6 +33,7 @@ public class EmployeeController {
 
     private final UserRepository userRepository;
     private final EmployeeRepository employeeRepository;
+    private final UserRoleRepository userRoleRepository;
     private final DashboardService dashboardService;
     private final LeaveServiceImpl leaveService;
     private final ProfileService profileService;
@@ -57,6 +60,60 @@ public class EmployeeController {
                 .position("Unassigned")
                 .department("—")
                 .build();
+    }
+
+    @ModelAttribute
+    public void populatePortalSwitch(Authentication authentication, Model model) {
+        if (authentication == null) {
+            model.addAttribute("managementPortalUrl", null);
+            model.addAttribute("managementPortalLabel", null);
+            return;
+        }
+
+        User user = getUser(authentication);
+        List<Role> roles = userRoleRepository.getRolesByUserId(user.getId());
+
+        String portalUrl = null;
+        String portalLabel = null;
+        for (Role role : roles) {
+            if (role == null || role.getCode() == null) {
+                continue;
+            }
+
+            switch (role.getCode()) {
+                case "DEPT_MANAGER" -> {
+                    portalUrl = "/dept-manager/dashboard";
+                    portalLabel = "Department View";
+                }
+                case "HR_MANAGER" -> {
+                    if (portalUrl == null) {
+                        portalUrl = "/hrmanager/dashboard";
+                        portalLabel = "HR Manager View";
+                    }
+                }
+                case "HR" -> {
+                    if (portalUrl == null) {
+                        portalUrl = "/hr/dashboard";
+                        portalLabel = "HR View";
+                    }
+                }
+                case "ADMIN" -> {
+                    if (portalUrl == null) {
+                        portalUrl = "/admin/dashboard";
+                        portalLabel = "Admin View";
+                    }
+                }
+                default -> {
+                }
+            }
+
+            if (portalUrl != null && "DEPT_MANAGER".equals(role.getCode())) {
+                break;
+            }
+        }
+
+        model.addAttribute("managementPortalUrl", portalUrl);
+        model.addAttribute("managementPortalLabel", portalLabel);
     }
 
     // ── Dashboard ──────────────────────────────────────────

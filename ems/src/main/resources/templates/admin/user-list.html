@@ -6,7 +6,8 @@
     <title>HRM Pro - User Accounts</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="/css/app-icons.css" th:href="@{/css/app-icons.css}"/>
+    <script defer src="/js/app-icons.js" th:src="@{/js/app-icons.js}"></script>
     <script>
         tailwind.config = {
             darkMode: "class",
@@ -588,13 +589,14 @@
         el.className = 'toast pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-2xl shadow-xl text-sm font-semibold text-white ' + c.bg;
         el.innerHTML = '<span class="material-symbols-outlined fill-icon text-[20px]">'+c.icon+'</span>' + msg;
         document.getElementById('toast-container').appendChild(el);
+        if (window.hydrateAppIcons) window.hydrateAppIcons(el);
         setTimeout(function(){ el.classList.add('out'); setTimeout(function(){ el.remove(); }, 350); }, 3000);
     }
 
     // ── Add modal ─────────────────────────────────────────────────
     function openAddModal() {
         document.getElementById('modal-title').textContent = 'Add New User';
-        document.getElementById('modal-icon').textContent  = 'person_add';
+        if (window.setAppIcon) window.setAppIcon(document.getElementById('modal-icon'), 'person_add');
         document.getElementById('field-id').value       = '';
         document.getElementById('field-username').value = '';
         document.getElementById('field-email').value    = '';
@@ -612,7 +614,7 @@
     // ── Edit modal ────────────────────────────────────────────────
     function openEditModal(id, username, email, fullName, phone, status, role) {
         document.getElementById('modal-title').textContent = 'Edit User';
-        document.getElementById('modal-icon').textContent  = 'edit';
+        if (window.setAppIcon) window.setAppIcon(document.getElementById('modal-icon'), 'edit');
         document.getElementById('field-id').value       = id;
         document.getElementById('field-username').value = username || '';
         document.getElementById('field-email').value    = email || '';
