@@ -37,14 +37,15 @@ public class HrManagerController {
     @GetMapping({"", "/", "/dashboard"})
     public String dashboard(Model model,
                             @RequestParam(defaultValue = "all") String activityFilter) {
-        model.addAttribute("kpi",              dashboardService.getKpiData());
-        model.addAttribute("chartLabels",      dashboardService.getChartMonths());
-        model.addAttribute("hiringData",       dashboardService.getHiringData());
-        model.addAttribute("attritionData",    dashboardService.getAttritionData());
-        model.addAttribute("upcomingEvents",   dashboardService.getUpcomingEvents());
-        model.addAttribute("recentActivities", dashboardService.getRecentActivities(activityFilter));
-        model.addAttribute("activityFilter",   activityFilter);
-        model.addAttribute("activePage",       "dashboard");
+        model.addAttribute("kpi",                dashboardService.getKpiData());
+        model.addAttribute("chartLabels",        dashboardService.getChartMonths());
+        model.addAttribute("hiringData",         dashboardService.getHiringData());
+        model.addAttribute("attritionData",      dashboardService.getAttritionData());
+        model.addAttribute("upcomingEvents",     dashboardService.getUpcomingEvents());
+        model.addAttribute("recentActivities",   dashboardService.getRecentActivities(activityFilter));
+        model.addAttribute("activityCategories", dashboardService.getActivityCategories());
+        model.addAttribute("activityFilter",     activityFilter);
+        model.addAttribute("activePage",         "dashboard");
         return "hrmanager/dashboard";
     }
 
@@ -56,6 +57,248 @@ public class HrManagerController {
                                              @RequestParam(defaultValue = "10") int size) {
         return dashboardService.getRecentActivitiesWithPagination(filter, page, size);
     }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // ACTIVITY CENTER - NEW ENDPOINTS
+    // ══════════════════════════════════════════════════════════════════════════
+
+    /**
+     * Get Quick Stats for Activity Center (4 cards)
+     * Returns: leaveTotal, leavePending, payrollTotal, payrollPending, 
+     *          statusChanges, hrTotal, hrPending, totalPending
+     */
+    @GetMapping("/dashboard/quick-stats")
+    @ResponseBody
+    public Map<String, Object> getQuickStats() {
+        return dashboardService.getQuickStats();
+    }
+
+    /**
+     * Get activities by type with filters
+     * @param type: leave, payroll, status, hr, all
+     * @param filter: pending, approved, all (for leave/hr), or specific sub-filters
+     * @param days: number of days to look back (default 30)
+     * @param limit: max number of items to return (default 10)
+     */
+    @GetMapping("/dashboard/activities/{type}")
+    @ResponseBody
+    public Map<String, Object> getActivitiesByType(
+            @RequestParam(defaultValue = "leave") String type,
+            @RequestParam(defaultValue = "all") String filter,
+            @RequestParam(defaultValue = "30") int days,
+            @RequestParam(defaultValue = "10") int limit) {
+        
+        Map<String, Object> response = new HashMap<>();
+        java.time.LocalDateTime since = java.time.LocalDateTime.now().minusDays(days);
+        java.time.LocalDate sinceDate = java.time.LocalDate.now().minusDays(days);
+        
+        try {
+            java.util.List<com.group5.ems.dto.response.hrmanager.RecentActivityDTO> activities;
+            
+            switch (type.toLowerCase()) {
+                case "leave":
+                    activities = dashboardService.getLeaveActivities(since);
+                    // Apply sub-filter if needed
+                    if (!"all".equals(filter)) {
+                        activities = filterLeaveActivities(activities, filter);
+                    }
+                    break;
+                    
+                case "payroll":
+                    activities = dashboardService.getPayrollActivities(since);
+                    // Apply sub-filter if needed
+                    if (!"all".equals(filter)) {
+                        activities = filterPayrollActivities(activities, filter);
+                    }
+                    break;
+                    
+                case "status":
+                    activities = dashboardService.getStatusChangeActivities(sinceDate);
+                    // Apply sub-filter if needed
+                    if (!"all".equals(filter)) {
+                        activities = filterStatusActivities(activities, filter);
+                    }
+                    break;
+                    
+                case "hr":
+                    activities = dashboardService.getHRRequestActivities(since);
+                    // Apply sub-filter if needed
+                    if (!"all".equals(filter)) {
+                        activities = filterHRActivities(activities, filter);
+                    }
+                    break;
+                    
+                case "all":
+                default:
+                    activities = dashboardService.getRecentActivitiesCombined(filter, days);
+                    break;
+            }
+            
+            // Limit to specified number of items
+            int totalCount = activities.size();
+            if (activities.size() > limit) {
+                activities = activities.subList(0, limit);
+            }
+            
+            response.put("success", true);
+            response.put("activities", activities);
+            response.put("count", activities.size());
+            response.put("totalCount", totalCount);
+            response.put("hasMore", totalCount > limit);
+            response.put("type", type);
+            response.put("filter", filter);
+            
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("error", e.getMessage());
+            response.put("activities", new java.util.ArrayList<>());
+        }
+        
+        return response;
+    }
+
+    /**
+     * Get combined activities for "All Activity" tab
+     */
+    @GetMapping("/dashboard/activities/combined")
+    @ResponseBody
+    public Map<String, Object> getCombinedActivities(
+            @RequestParam(defaultValue = "all") String filter,
+            @RequestParam(defaultValue = "30") int days,
+            @RequestParam(defaultValue = "10") int limit) {
+        
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            java.util.List<com.group5.ems.dto.response.hrmanager.RecentActivityDTO> activities 
+                    = dashboardService.getRecentActivitiesCombined(filter, days);
+            
+            // Limit to specified number of items
+            int totalCount = activities.size();
+            if (activities.size() > limit) {
+                activities = activities.subList(0, limit);
+            }
+            
+            response.put("success", true);
+            response.put("activities", activities);
+            response.put("count", activities.size());
+            response.put("totalCount", totalCount);
+            response.put("hasMore", totalCount > limit);
+            response.put("filter", filter);
+            
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("error", e.getMessage());
+            response.put("activities", new java.util.ArrayList<>());
+        }
+        
+        return response;
+    }
+
+    // ── Helper methods for filtering activities ──────────────────────────────
+
+    private java.util.List<com.group5.ems.dto.response.hrmanager.RecentActivityDTO> filterLeaveActivities(
+            java.util.List<com.group5.ems.dto.response.hrmanager.RecentActivityDTO> activities, 
+            String filter) {
+        
+        return activities.stream()
+                .filter(a -> {
+                    switch (filter.toLowerCase()) {
+                        case "pending":
+                            return "PENDING".equals(a.getStatus());
+                        case "approved":
+                            return "APPROVED".equals(a.getStatus());
+                        case "annual":
+                            return a.getDetails() != null && a.getDetails().toLowerCase().contains("annual");
+                        case "sick":
+                            return a.getDetails() != null && a.getDetails().toLowerCase().contains("sick");
+                        case "maternity":
+                        case "paternity":
+                            return a.getDetails() != null && 
+                                   (a.getDetails().toLowerCase().contains("maternity") || 
+                                    a.getDetails().toLowerCase().contains("paternity"));
+                        case "unpaid":
+                            return a.getDetails() != null && a.getDetails().toLowerCase().contains("unpaid");
+                        default:
+                            return true;
+                    }
+                })
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    private java.util.List<com.group5.ems.dto.response.hrmanager.RecentActivityDTO> filterPayrollActivities(
+            java.util.List<com.group5.ems.dto.response.hrmanager.RecentActivityDTO> activities, 
+            String filter) {
+        
+        return activities.stream()
+                .filter(a -> {
+                    switch (filter.toLowerCase()) {
+                        case "pending":
+                            return "PENDING".equals(a.getStatus());
+                        case "approved":
+                            return "APPROVED".equals(a.getStatus());
+                        default:
+                            return true;
+                    }
+                })
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    private java.util.List<com.group5.ems.dto.response.hrmanager.RecentActivityDTO> filterStatusActivities(
+            java.util.List<com.group5.ems.dto.response.hrmanager.RecentActivityDTO> activities, 
+            String filter) {
+        
+        return activities.stream()
+                .filter(a -> {
+                    switch (filter.toLowerCase()) {
+                        case "newhire":
+                        case "new_hire":
+                            return "New hire".equalsIgnoreCase(a.getBadge());
+                        case "termination":
+                            return "Termination".equalsIgnoreCase(a.getBadge());
+                        case "promotion":
+                            return "Promotion".equalsIgnoreCase(a.getBadge());
+                        case "transfer":
+                            return "Transfer".equalsIgnoreCase(a.getBadge());
+                        case "onleave":
+                        case "on_leave":
+                            return a.getDetails() != null && a.getDetails().toLowerCase().contains("on leave");
+                        default:
+                            return true;
+                    }
+                })
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    private java.util.List<com.group5.ems.dto.response.hrmanager.RecentActivityDTO> filterHRActivities(
+            java.util.List<com.group5.ems.dto.response.hrmanager.RecentActivityDTO> activities, 
+            String filter) {
+        
+        return activities.stream()
+                .filter(a -> {
+                    switch (filter.toLowerCase()) {
+                        case "pending":
+                            return "PENDING".equals(a.getStatus());
+                        case "completed":
+                            return "COMPLETED".equals(a.getStatus()) || "APPROVED".equals(a.getStatus());
+                        case "contract":
+                            return a.getActionLabel() != null && a.getActionLabel().toLowerCase().contains("contract");
+                        case "benefits":
+                            return a.getActionLabel() != null && a.getActionLabel().toLowerCase().contains("benefit");
+                        case "documents":
+                            return a.getActionLabel() != null && 
+                                   (a.getActionLabel().toLowerCase().contains("document") ||
+                                    a.getActionLabel().toLowerCase().contains("letter"));
+                        default:
+                            return true;
+                    }
+                })
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // END ACTIVITY CENTER ENDPOINTS
+    // ══════════════════════════════════════════════════════════════════════════
 
     // ── Leave Approval ────────────────────────────────────────────────────────
     @GetMapping("/leave-approval")
@@ -158,16 +401,32 @@ public class HrManagerController {
     // ── Leave Approval Actions ────────────────────────────────────────────────
     @PostMapping("/leave-approval/approve")
     public String approveLeaveRequest(@RequestParam Long requestId,
-                                      @RequestParam Long approverId) {
-        leaveApprovalService.approveLeaveRequest(requestId, approverId);
+                                      @RequestParam Long approverId,
+                                      RedirectAttributes redirectAttributes) {
+        try {
+            leaveApprovalService.approveLeaveRequest(requestId, approverId);
+            redirectAttributes.addFlashAttribute("flashMessage", "Leave request approved successfully!");
+            redirectAttributes.addFlashAttribute("flashType", "success");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("flashMessage", "Failed to approve: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("flashType", "error");
+        }
         return "redirect:/hrmanager/leave-approval?tab=pending";
     }
 
     @PostMapping("/leave-approval/reject")
     public String rejectLeaveRequest(@RequestParam Long requestId,
                                      @RequestParam Long approverId,
-                                     @RequestParam String rejectedReason) {
-        leaveApprovalService.rejectLeaveRequest(requestId, approverId, rejectedReason);
+                                     @RequestParam String rejectedReason,
+                                     RedirectAttributes redirectAttributes) {
+        try {
+            leaveApprovalService.rejectLeaveRequest(requestId, approverId, rejectedReason);
+            redirectAttributes.addFlashAttribute("flashMessage", "Leave request rejected.");
+            redirectAttributes.addFlashAttribute("flashType", "success");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("flashMessage", "Failed to reject: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("flashType", "error");
+        }
         return "redirect:/hrmanager/leave-approval?tab=pending";
     }
 
