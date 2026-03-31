@@ -1,204 +1,187 @@
 package com.group5.ems.service.hrmanager;
 
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.group5.ems.dto.response.hrmanager.EventCreateDTO;
 import com.group5.ems.dto.response.hrmanager.EventResponseDTO;
 import com.group5.ems.dto.response.hrmanager.EventUpdateDTO;
 import com.group5.ems.entity.Event;
-import com.group5.ems.enums.AuditAction;
-import com.group5.ems.enums.AuditEntityType;
 import com.group5.ems.repository.EventRepository;
-import com.group5.ems.service.common.LogService;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CalendarService {
-
+    
     private final EventRepository eventRepository;
-    private final LogService logService;
-
-
-    private static final DateTimeFormatter MONTH_FMT = DateTimeFormatter.ofPattern("MMM").withLocale(java.util.Locale.ENGLISH);
-    private static final DateTimeFormatter TIME_FMT  = DateTimeFormatter.ofPattern("hh:mm a");
-
-    // ── READ ──────────────────────────────────────────────────────────────────
-
-    @Transactional(readOnly = true)
+    
+    public List<EventDTO> getUpcomingEvents() {
+        List<EventDTO> events = new ArrayList<>();
+        
+        // Sample upcoming events - you can replace this with actual database queries
+        LocalDate now = LocalDate.now();
+        
+        events.add(new EventDTO(
+            "New Employee Orientation",
+            now.plusDays(2),
+            "09:00",
+            "11:00",
+            "blue"
+        ));
+        
+        events.add(new EventDTO(
+            "Q3 Performance Reviews",
+            now.plusDays(4),
+            "00:00",
+            "23:59",
+            "purple"
+        ));
+        
+        events.add(new EventDTO(
+            "Benefits Enrollment Ends",
+            now.plusDays(5),
+            "00:00",
+            "17:00",
+            "emerald"
+        ));
+        
+        return events;
+    }
+    
     public List<EventResponseDTO> getEventsByMonth(int month, int year) {
-        return eventRepository.findByMonthAndYear(month, year)
-                .stream()
-                .map(this::mapToResponseDTO)
+        LocalDate startOfMonth = LocalDate.of(year, month, 1);
+        LocalDate endOfMonth = startOfMonth.plusMonths(1).minusDays(1);
+        
+        List<Event> events = eventRepository.findByStartTimeBetween(
+            startOfMonth, java.time.LocalTime.MIN,
+            endOfMonth, java.time.LocalTime.MAX
+        );
+        
+        return events.stream()
+                .map(this::mapToEventResponseDTO)
                 .collect(Collectors.toList());
     }
-
-    @Transactional(readOnly = true)
-    public List<EventResponseDTO> getEventsByWeek(LocalDate anyDayInWeek) {
-        LocalDate weekStart = anyDayInWeek.with(DayOfWeek.MONDAY);
-        LocalDate weekEnd   = anyDayInWeek.with(DayOfWeek.SUNDAY);
-        return eventRepository.findByWeek(weekStart, weekEnd)
-                .stream()
-                .map(this::mapToResponseDTO)
-                .collect(Collectors.toList());
-    }
-
-    @Transactional(readOnly = true)
-    public List<EventResponseDTO> getUpcomingEvents() {
-        return eventRepository.findUpcomingEvents(LocalDate.now())
-                .stream()
-                .limit(3)
-                .map(this::mapToResponseDTO)
-                .collect(Collectors.toList());
-    }
-
-    @Transactional(readOnly = true)
-    public EventResponseDTO getEventById(Long id) {
-        Event event = eventRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Event not found: " + id));
-        return mapToResponseDTO(event);
-    }
-
-    // ── CREATE ────────────────────────────────────────────────────────────────
-
+    
     @Transactional
-    public EventResponseDTO createEvent(EventCreateDTO dto, Long userId) {
-        // 1. Validate
-        validateEventData(dto.getTitle(), dto.getStartDate());
-
-        // 2. Map DTO → Entity
+    public void createEvent(EventCreateDTO dto, Long createdBy) {
         Event event = new Event();
         event.setTitle(dto.getTitle());
         event.setDescription(dto.getDescription());
         event.setStartDate(dto.getStartDate());
-        event.setEndDate(dto.getEndDate() != null ? dto.getEndDate() : dto.getStartDate());
-        event.setStartTime(dto.getStartTime());
-        event.setEndTime(dto.getEndTime());
-        event.setType(dto.getType());
-        event.setColor(dto.getColor() != null ? dto.getColor() : "blue");
-        event.setIsAllDay(dto.getIsAllDay() != null ? dto.getIsAllDay() : false);
-        event.setDepartmentId(dto.getDepartmentId());
-        event.setCreatedBy(userId);
-
-        // 3. Save
-        Event saved = eventRepository.save(event);
-
-        // 4. Audit log
-        logService.log(AuditAction.CREATE, AuditEntityType.EVENT, saved.getId(), userId);
-
-        return mapToResponseDTO(saved);
-    }
-
-    // ── UPDATE ────────────────────────────────────────────────────────────────
-
-    @Transactional
-    public EventResponseDTO updateEvent(EventUpdateDTO dto, Long userId) {
-        // 1. Tìm event
-        Event event = eventRepository.findById(dto.getId())
-                .orElseThrow(() -> new RuntimeException("Event not found: " + dto.getId()));
-
-        // 2. Validate
-        validateEventData(dto.getTitle(), dto.getStartDate());
-
-        // 3. Update fields
-        event.setTitle(dto.getTitle());
-        event.setDescription(dto.getDescription());
-        event.setStartDate(dto.getStartDate());
-        event.setEndDate(dto.getEndDate() != null ? dto.getEndDate() : dto.getStartDate());
+        event.setEndDate(dto.getEndDate());
         event.setStartTime(dto.getStartTime());
         event.setEndTime(dto.getEndTime());
         event.setType(dto.getType());
         event.setColor(dto.getColor());
         event.setIsAllDay(dto.getIsAllDay());
         event.setDepartmentId(dto.getDepartmentId());
-
-        // 4. Save
-        Event updated = eventRepository.save(event);
-
-        // 5. Audit log
-        logService.log(AuditAction.UPDATE, AuditEntityType.EVENT, updated.getId(), userId);
-
-        return mapToResponseDTO(updated);
+        event.setCreatedBy(createdBy);
+        event.setCreatedAt(LocalDateTime.now());
+        event.setUpdatedAt(LocalDateTime.now());
+        
+        eventRepository.save(event);
     }
-
-    // ── DELETE ────────────────────────────────────────────────────────────────
-
+    
     @Transactional
-    public void deleteEvent(Long id, Long userId) {
-        // 1. Kiểm tra tồn tại
+    public void updateEvent(EventUpdateDTO dto, Long updatedBy) {
+        Event event = eventRepository.findById(dto.getId())
+                .orElseThrow(() -> new RuntimeException("Event not found"));
+        
+        event.setTitle(dto.getTitle());
+        event.setDescription(dto.getDescription());
+        event.setStartDate(dto.getStartDate());
+        event.setEndDate(dto.getEndDate());
+        event.setStartTime(dto.getStartTime());
+        event.setEndTime(dto.getEndTime());
+        event.setType(dto.getType());
+        event.setColor(dto.getColor());
+        event.setIsAllDay(dto.getIsAllDay());
+        event.setDepartmentId(dto.getDepartmentId());
+        event.setUpdatedAt(LocalDateTime.now());
+        
+        eventRepository.save(event);
+    }
+    
+    @Transactional
+    public void deleteEvent(Long id, Long deletedBy) {
         Event event = eventRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Event not found: " + id));
-
-        // 2. Delete
-        eventRepository.deleteById(id);
-
-        // 3. Audit log
-        logService.log(AuditAction.DELETE, AuditEntityType.EVENT, id, userId);
+                .orElseThrow(() -> new RuntimeException("Event not found"));
+        
+        eventRepository.delete(event);
     }
-
-    // ── MAPPING ───────────────────────────────────────────────────────────────
-
-    private EventResponseDTO mapToResponseDTO(Event event) {
-        String monthLabel = event.getStartDate().format(MONTH_FMT).toUpperCase();
-        String dayLabel   = String.valueOf(event.getStartDate().getDayOfMonth());
-        String timeLabel  = buildTimeLabel(event);
-        String colorClass = buildColorClass(event.getColor());
-
-        return EventResponseDTO.builder()
-                .id(event.getId())
-                .title(event.getTitle())
-                .description(event.getDescription())
-                .startDate(event.getStartDate() != null ? event.getStartDate().toString() : null)
-                .endDate(event.getEndDate() != null ? event.getEndDate().toString() : null)
-                .startTime(event.getStartTime() != null ? event.getStartTime().toString() : null)
-                .endTime(event.getEndTime() != null ? event.getEndTime().toString() : null)
-                .type(event.getType())
-                .color(event.getColor())
-                .isAllDay(event.getIsAllDay())
-                .creatorName(event.getCreator() != null ? event.getCreator().getFullName() : "N/A")
-                .departmentName(event.getDepartment() != null ? event.getDepartment().getName() : "All Departments")
-                .monthLabel(monthLabel)
-                .dayLabel(dayLabel)
-                .timeLabel(timeLabel)
-                .colorClass(colorClass)
-                .build();
+    
+    private EventResponseDTO mapToEventResponseDTO(Event event) {
+        EventResponseDTO dto = new EventResponseDTO();
+        dto.setId(event.getId());
+        dto.setTitle(event.getTitle());
+        dto.setDescription(event.getDescription());
+        dto.setStartDate(event.getStartDate() != null ? event.getStartDate().toString() : null);
+        dto.setEndDate(event.getEndDate() != null ? event.getEndDate().toString() : null);
+        dto.setStartTime(event.getStartTime() != null ? event.getStartTime().toString() : null);
+        dto.setEndTime(event.getEndTime() != null ? event.getEndTime().toString() : null);
+        dto.setType(event.getType());
+        dto.setColor(event.getColor());
+        dto.setIsAllDay(event.getIsAllDay());
+        return dto;
     }
-
-    private String buildTimeLabel(Event event) {
-        if (Boolean.TRUE.equals(event.getIsAllDay())) return "All Day";
-        if (event.getStartTime() == null) return "TBD";
-        String start = event.getStartTime().format(TIME_FMT);
-        if (event.getEndTime() == null) return start;
-        return start + " - " + event.getEndTime().format(TIME_FMT);
-    }
-
-    private String buildColorClass(String color) {
-        if (color == null) return "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400";
-        return switch (color) {
-            case "purple"  -> "bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400";
-            case "emerald" -> "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400";
-            case "amber"   -> "bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400";
-            case "rose"    -> "bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400";
-            default        -> "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400";
-        };
-    }
-
-    // ── VALIDATION ────────────────────────────────────────────────────────────
-
-    private void validateEventData(String title, LocalDate startDate) {
-        if (title == null || title.trim().isEmpty()) {
-            throw new IllegalArgumentException("Title is required");
+    
+    public static class EventDTO {
+        private String title;
+        private LocalDate date;
+        private String startTime;
+        private String endTime;
+        private String color;
+        
+        public EventDTO(String title, LocalDate date, String startTime, String endTime, String color) {
+            this.title = title;
+            this.date = date;
+            this.startTime = startTime;
+            this.endTime = endTime;
+            this.color = color;
         }
-        if (startDate == null) {
-            throw new IllegalArgumentException("Start date is required");
+        
+        public String getTitle() {
+            return title;
+        }
+        
+        public String getMonthLabel() {
+            return date.format(DateTimeFormatter.ofPattern("MMM")).toUpperCase();
+        }
+        
+        public String getDayLabel() {
+            return String.valueOf(date.getDayOfMonth());
+        }
+        
+        public String getTimeLabel() {
+            if ("00:00".equals(startTime) && "23:59".equals(endTime)) {
+                return "All Day";
+            }
+            return startTime + " - " + endTime;
+        }
+        
+        public String getColor() {
+            return color;
+        }
+        
+        public String getColorClass() {
+            switch (color) {
+                case "blue":
+                    return "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400";
+                case "purple":
+                    return "bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400";
+                case "emerald":
+                    return "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400";
+                default:
+                    return "bg-slate-50 dark:bg-slate-900/20 text-slate-600 dark:text-slate-400";
+            }
         }
     }
 }

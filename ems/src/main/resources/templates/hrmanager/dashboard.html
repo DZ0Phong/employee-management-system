@@ -374,8 +374,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 anim anim-5">
 
                 <!-- Leave Requests Card -->
-                <div onclick="switchToTab('leave')"
-                     class="bg-white rounded-xl border border-slate-200 shadow-sm p-5 cursor-pointer card-hover transition-all hover:border-primary/30"
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5 cursor-pointer card-hover transition-all hover:border-primary/30"
                      id="quick-card-leave">
                     <div class="flex items-start justify-between mb-3">
                         <div class="w-11 h-11 rounded-lg bg-amber-50 flex items-center justify-center text-amber-600">
@@ -390,8 +389,7 @@
                 </div>
 
                 <!-- Payroll Card -->
-                <div onclick="switchToTab('payroll')"
-                     class="bg-white rounded-xl border border-slate-200 shadow-sm p-5 cursor-pointer card-hover transition-all hover:border-primary/30"
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5 cursor-pointer card-hover transition-all hover:border-primary/30"
                      id="quick-card-payroll">
                     <div class="flex items-start justify-between mb-3">
                         <div class="w-11 h-11 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
@@ -406,8 +404,7 @@
                 </div>
 
                 <!-- Status Changes Card -->
-                <div onclick="switchToTab('status')"
-                     class="bg-white rounded-xl border border-slate-200 shadow-sm p-5 cursor-pointer card-hover transition-all hover:border-primary/30"
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5 cursor-pointer card-hover transition-all hover:border-primary/30"
                      id="quick-card-status">
                     <div class="flex items-start justify-between mb-3">
                         <div class="w-11 h-11 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600">
@@ -422,8 +419,7 @@
                 </div>
 
                 <!-- HR Requests Card -->
-                <div onclick="switchToTab('hr')"
-                     class="bg-white rounded-xl border border-slate-200 shadow-sm p-5 cursor-pointer card-hover transition-all hover:border-primary/30"
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5 cursor-pointer card-hover transition-all hover:border-primary/30"
                      id="quick-card-hr">
                     <div class="flex items-start justify-between mb-3">
                         <div class="w-11 h-11 rounded-lg bg-rose-50 flex items-center justify-center text-rose-600">
@@ -457,30 +453,22 @@
                     </div>
                 </div>
 
-                <!-- Tabs Navigation -->
+                <!-- Tabs Navigation - Dynamic -->
                 <div class="border-b border-slate-200 px-6">
-                    <nav class="flex gap-8 -mb-px">
-                        <button onclick="switchToTab('leave')" data-tab="leave"
-                                class="activity-tab flex items-center gap-2 px-1 py-4 text-sm font-semibold border-b-2 transition-colors">
-                            <span>Leave Requests</span>
-                            <span class="tab-badge px-2 py-0.5 bg-slate-100 text-slate-600 text-xs font-bold rounded-full">3</span>
+                    <nav class="flex gap-8 -mb-px overflow-x-auto">
+                        <!-- Dynamic tabs from backend -->
+                        <button th:each="cat : ${activityCategories}"
+                                th:data-tab="${cat.type}"
+                                th:classappend="${cat.type == 'leave' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}"
+                                class="activity-tab flex items-center gap-2 px-1 py-4 text-sm font-semibold border-b-2 transition-colors whitespace-nowrap">
+                            <span th:text="${cat.label}">Category</span>
+                            <span th:if="${cat.count > 0}"
+                                  th:text="${cat.count}"
+                                  class="tab-badge px-2 py-0.5 bg-slate-100 text-slate-600 text-xs font-bold rounded-full">0</span>
                         </button>
-                        <button onclick="switchToTab('payroll')" data-tab="payroll"
-                                class="activity-tab flex items-center gap-2 px-1 py-4 text-sm font-semibold border-b-2 transition-colors">
-                            <span>Payroll</span>
-                            <span class="tab-badge px-2 py-0.5 bg-slate-100 text-slate-600 text-xs font-bold rounded-full">2</span>
-                        </button>
-                        <button onclick="switchToTab('status')" data-tab="status"
-                                class="activity-tab flex items-center gap-2 px-1 py-4 text-sm font-semibold border-b-2 transition-colors">
-                            <span>Status Changes</span>
-                        </button>
-                        <button onclick="switchToTab('hr')" data-tab="hr"
-                                class="activity-tab flex items-center gap-2 px-1 py-4 text-sm font-semibold border-b-2 transition-colors">
-                            <span>HR Requests</span>
-                            <span class="tab-badge px-2 py-0.5 bg-slate-100 text-slate-600 text-xs font-bold rounded-full">4</span>
-                        </button>
-                        <button onclick="switchToTab('all')" data-tab="all"
-                                class="activity-tab flex items-center gap-2 px-1 py-4 text-sm font-semibold border-b-2 transition-colors">
+                        <!-- All Activity tab -->
+                        <button data-tab="all"
+                                class="activity-tab flex items-center gap-2 px-1 py-4 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 transition-colors whitespace-nowrap">
                             <span>All Activity</span>
                         </button>
                     </nav>
@@ -752,13 +740,20 @@
         const container = document.getElementById('sub-filters');
         const filters = subFilters[tab] || [];
         container.innerHTML = filters.map(filter => `
-            <button onclick="applyFilter('${filter.value}')"
-                    data-filter="${filter.value}"
+            <button data-filter="${filter.value}"
                     class="sub-filter px-4 py-2 text-sm font-semibold rounded-full transition-colors whitespace-nowrap
                            ${filter.value === 'all' ? 'bg-primary text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">
                 ${filter.label}
             </button>
         `).join('');
+        
+        // Add event listeners to sub-filter buttons
+        container.querySelectorAll('.sub-filter').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const filter = this.dataset.filter;
+                if (filter) applyFilter(filter);
+            });
+        });
     }
 
     function applyFilter(filter) {
@@ -933,6 +928,22 @@
     document.addEventListener('DOMContentLoaded', () => {
         loadQuickStats();
         switchToTab('leave'); // Default tab
+        
+        // Add click event listeners to all activity tabs
+        document.querySelectorAll('.activity-tab').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const tab = this.dataset.tab;
+                if (tab) switchToTab(tab);
+            });
+        });
+        
+        // Add click event listeners to quick stat cards
+        document.querySelectorAll('[id^="quick-card-"]').forEach(card => {
+            card.addEventListener('click', function() {
+                const tab = this.id.replace('quick-card-', '');
+                if (tab) switchToTab(tab);
+            });
+        });
     });
 
     /*]]>*/

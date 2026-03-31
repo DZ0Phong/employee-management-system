@@ -689,4 +689,58 @@ public class HRManagerDashboardService {
             default: return "gray";
         }
     }
+    
+    /**
+     * Get activity categories with counts for dynamic tab navigation
+     */
+    public List<com.group5.ems.dto.response.hrmanager.ActivityCategoryDTO> getActivityCategories() {
+        List<com.group5.ems.dto.response.hrmanager.ActivityCategoryDTO> categories = new ArrayList<>();
+        
+        // Leave Requests
+        long leaveCount = requestRepository.countByStatusAndRequestTypeCategory("PENDING", "ATTENDANCE");
+        categories.add(com.group5.ems.dto.response.hrmanager.ActivityCategoryDTO.builder()
+                .type("leave")
+                .label("Leave Requests")
+                .icon("calendar_today")
+                .count(leaveCount)
+                .color("blue")
+                .description("Pending leave requests")
+                .build());
+        
+        // Payroll
+        long payrollCount = requestRepository.countByStatusAndRequestTypeCategory("PENDING", "PAYROLL");
+        categories.add(com.group5.ems.dto.response.hrmanager.ActivityCategoryDTO.builder()
+                .type("payroll")
+                .label("Payroll")
+                .icon("payments")
+                .count(payrollCount)
+                .color("green")
+                .description("Payroll approvals")
+                .build());
+        
+        // Status Changes
+        LocalDate thirtyDaysAgo = LocalDate.now().minusDays(30);
+        long statusCount = employeeRepository.countByUpdatedAtAfter(thirtyDaysAgo.atStartOfDay());
+        categories.add(com.group5.ems.dto.response.hrmanager.ActivityCategoryDTO.builder()
+                .type("status")
+                .label("Status Changes")
+                .icon("swap_horiz")
+                .count(statusCount)
+                .color("purple")
+                .description("Employee status updates")
+                .build());
+        
+        // HR Requests
+        long hrCount = requestRepository.countByStatusAndRequestTypeCategory("PENDING", "HR_STATUS");
+        categories.add(com.group5.ems.dto.response.hrmanager.ActivityCategoryDTO.builder()
+                .type("hr")
+                .label("HR Requests")
+                .icon("description")
+                .count(hrCount)
+                .color("orange")
+                .description("HR document requests")
+                .build());
+        
+        return categories;
+    }
 }
