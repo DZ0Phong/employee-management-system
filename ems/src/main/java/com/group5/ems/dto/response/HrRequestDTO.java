@@ -8,11 +8,18 @@ import java.time.LocalDateTime;
 public record HrRequestDTO(
     Long id,
     String requestedBy,
+    String initials,
     String department,
+    Long departmentId,
+    String employeeCode,
     String category,
+    String categoryCode,
     String title,
     String content,
     String status,
-    LocalDateTime submittedAt
+    String rejectedReason,
+    LocalDateTime submittedAt,
+    String processedAt,
+    String approverName
 ) {
 }

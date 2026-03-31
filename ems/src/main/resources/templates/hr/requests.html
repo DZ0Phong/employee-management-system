@@ -5,6 +5,7 @@
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>EMS Pro - Workflow Requests</title>
+    <meta name="description" content="HR Workflow Requests management — approve, reject, create, and analyze all non-leave requests." />
     <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
@@ -30,103 +31,476 @@
 <body class="bg-bg-light font-display text-slate-900 min-h-screen">
 <div class="flex h-screen overflow-hidden">
 
-    <!-- ══════════════════════════════════════════════════════════ -->
-    <!-- SIDEBAR                                                   -->
-    <!-- ══════════════════════════════════════════════════════════ -->
-    <!-- ══════════════════════════════════════════════════════════ -->
-        <!-- SIDEBAR                                                   -->
-        <!-- ══════════════════════════════════════════════════════════ -->
-        <div th:replace="~{fragments/hr-sidebar :: sidebar('requests')}"></div>
+    <!-- ══════ SIDEBAR ══════ -->
+    <div th:replace="~{fragments/hr-sidebar :: sidebar('requests')}"></div>
 
-    <!-- ─── Main ───────────────────────────────────────────────── -->
+    <!-- ─── Main ─────────────────────────────────────────────── -->
     <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
         <header class="h-16 bg-white border-b border-slate-100 flex items-center justify-between px-8 shrink-0">
             <div>
-                <h2 class="text-base font-black text-slate-900 leading-tight">Workflow Inbox</h2>
-                <p class="text-xs text-slate-400">Process operational requests</p>
+                <h1 class="text-base font-black text-slate-900 leading-tight">Workflow Requests</h1>
+                <p class="text-xs text-slate-400">Manage and process operational requests</p>
             </div>
         </header>
 
-        <div class="flex-1 overflow-y-auto p-8 dot-grid">
-            <div class="max-w-5xl mx-auto space-y-6">
+        <!-- ── Toast Messages ── -->
+        <div th:if="${successMessage}" id="toast-success"
+             class="fixed top-4 right-4 z-50 bg-emerald-600 text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-2 animate-slide-in">
+            <span class="material-symbols-outlined text-lg">check_circle</span>
+            <span class="text-sm font-semibold" th:text="${successMessage}"></span>
+            <button onclick="this.parentElement.remove()" class="ml-2 hover:bg-white/20 rounded-full p-0.5 transition">
+                <span class="material-symbols-outlined text-sm">close</span>
+            </button>
+        </div>
+        <div th:if="${errorMessage}" id="toast-error"
+             class="fixed top-4 right-4 z-50 bg-rose-600 text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-2 animate-slide-in">
+            <span class="material-symbols-outlined text-lg">error</span>
+            <span class="text-sm font-semibold" th:text="${errorMessage}"></span>
+            <button onclick="this.parentElement.remove()" class="ml-2 hover:bg-white/20 rounded-full p-0.5 transition">
+                <span class="material-symbols-outlined text-sm">close</span>
+            </button>
+        </div>
 
-                <!-- Requests Table -->
-                <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden anim anim-1 flex flex-col">
-                    <div class="p-5 border-b border-slate-50 flex items-center justify-between">
-                        <h3 class="text-sm font-black text-slate-800">Pending Actions</h3>
-                        <div class="flex gap-2">
-                            <select class="text-xs border-slate-200 rounded-lg focus:ring-primary focus:border-primary px-2 bg-slate-50 text-slate-600 font-medium h-7">
-                                <option>Category: All</option>
-                                <option>Equipment</option>
-                                <option>HR Action</option>
-                            </select>
+        <div class="flex-1 overflow-y-auto p-8 dot-grid">
+            <div class="max-w-6xl mx-auto space-y-6">
+
+                <!-- ══════════════════════════════════════════════════ -->
+                <!-- TAB BAR                                           -->
+                <!-- ══════════════════════════════════════════════════ -->
+                <div class="flex gap-1 bg-white rounded-xl border border-slate-100 p-1 shadow-sm anim anim-1">
+                    <button onclick="switchTab('pending')" id="tab-btn-pending"
+                            class="tab-btn flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all">
+                        <span class="material-symbols-outlined text-sm">pending_actions</span>
+                        Pending Actions
+                        <span th:if="${#lists.size(pendingList) > 0}"
+                              class="ml-1 bg-rose-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full"
+                              th:text="${#lists.size(pendingList)}">0</span>
+                    </button>
+                    <button onclick="switchTab('hrmPending')" id="tab-btn-hrmPending"
+                            class="tab-btn flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all">
+                        <span class="material-symbols-outlined text-sm">visibility</span>
+                        HRM Pending Accept
+                        <span th:if="${#lists.size(hrmPendingList) > 0}"
+                              class="ml-1 bg-slate-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full"
+                              th:text="${#lists.size(hrmPendingList)}">0</span>
+                    </button>
+                    <button onclick="switchTab('history')" id="tab-btn-history"
+                            class="tab-btn flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all">
+                        <span class="material-symbols-outlined text-sm">history</span>
+                        Request History
+                    </button>
+                    <button onclick="switchTab('create')" id="tab-btn-create"
+                            class="tab-btn flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all">
+                        <span class="material-symbols-outlined text-sm">add_circle</span>
+                        Create Request
+                    </button>
+                    <button onclick="switchTab('analytics')" id="tab-btn-analytics"
+                            class="tab-btn flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all">
+                        <span class="material-symbols-outlined text-sm">analytics</span>
+                        Analytics
+                    </button>
+                </div>
+
+                <!-- ══════════════════════════════════════════════════ -->
+                <!-- TAB 1: PENDING ACTIONS                            -->
+                <!-- ══════════════════════════════════════════════════ -->
+                <div id="tab-pending" class="tab-panel space-y-4">
+
+                    <!-- Bulk Action Bar -->
+                    <div id="bulk-bar" class="hidden bg-primary/5 border border-primary/20 rounded-xl p-3 flex items-center justify-between anim anim-2">
+                        <div class="flex items-center gap-3">
+                            <input type="checkbox" id="select-all-cb" onchange="toggleSelectAll(this)"
+                                   class="rounded border-slate-300 text-primary focus:ring-primary">
+                            <span class="text-xs font-semibold text-slate-700">
+                                <span id="selected-count">0</span> selected
+                            </span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <form th:action="@{/hr/requests/bulk-approve}" method="post" id="bulk-approve-form" class="inline">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                <button type="submit" id="bulk-approve-btn"
+                                        class="text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors text-xs font-semibold px-4 py-1.5 shadow-sm">
+                                    <span class="material-symbols-outlined text-sm align-middle mr-0.5">check_circle</span>
+                                    Approve Selected
+                                </button>
+                            </form>
+                            <button type="button" onclick="openBulkRejectModal()"
+                                    class="text-white bg-rose-600 hover:bg-rose-700 rounded-lg transition-colors text-xs font-semibold px-4 py-1.5 shadow-sm">
+                                <span class="material-symbols-outlined text-sm align-middle mr-0.5">cancel</span>
+                                Reject Selected
+                            </button>
                         </div>
                     </div>
-                    <div class="flex-1 overflow-auto">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                            <tr class="bg-slate-50/70">
-                                <th class="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">Requested By</th>
-                                <th class="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">Category</th>
-                                <th class="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">Details</th>
-                                <th class="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">Submitted</th>
-                                <th class="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 text-right">Action</th>
-                            </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-50">
-                            <tr th:each="req : ${workflowRequests}" class="hover:bg-primary/[2%] transition-colors">
-                                <td class="px-5 py-4">
-                                    <p class="text-xs font-semibold text-slate-800" th:text="${req.requestedBy}">Albert Hudson</p>
-                                    <p class="text-[10px] text-slate-400" th:text="${req.department}">Engineering</p>
-                                </td>
-                                <td class="px-5 py-4">
-                                    <span class="text-[10px] font-bold bg-sky-100 text-sky-700 px-2.5 py-1 rounded-md border border-sky-200" th:text="${req.category}">Equipment</span>
-                                </td>
-                                <td class="px-5 py-4">
-                                    <p class="text-xs font-medium text-slate-700" th:text="${req.title}">New Monitor Request</p>
-                                    <p class="text-[10px] text-slate-500 mt-0.5 truncate max-w-xs" th:text="${req.content}">Need a secondary monitor for development.</p>
-                                </td>
-                                <td class="px-5 py-4"><span class="text-xs text-slate-500" th:text="${#temporals.format(req.submittedAt, 'MMM dd, yyyy')}">2 Days ago</span></td>
-                                <td class="px-5 py-4 text-right">
-                                    <div th:if="${req.status == 'PENDING'}" class="flex items-center justify-end gap-2">
-                                        <form th:action="@{/hr/requests/{id}/reject(id=${req.id})}" method="post" class="inline">
-                                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                                            <input type="hidden" name="reason" value="Rejected by HR" />
-                                            <button type="submit" class="text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-lg transition-colors text-xs font-semibold px-3 py-1.5 border border-rose-200">Reject</button>
-                                        </form>
-                                        <form th:action="@{/hr/requests/{id}/approve(id=${req.id})}" method="post" class="inline">
-                                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                                            <button type="submit" class="text-white bg-primary hover:bg-primary/90 rounded-lg transition-colors text-xs font-semibold px-4 py-1.5 shadow-sm shadow-primary/30">Approve</button>
-                                        </form>
+
+                    <!-- Pending Cards Grid -->
+                    <div th:if="${#lists.size(pendingList) > 0}" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        <div th:each="req : ${pendingList}"
+                             class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 hover:shadow-md hover:border-primary/20 transition-all anim anim-2">
+                            <div class="flex items-start justify-between mb-3">
+                                <div class="flex items-center gap-3">
+                                    <input type="checkbox" th:value="${req.id}" name="request-cb"
+                                           onchange="updateBulkBar()"
+                                           class="rounded border-slate-300 text-primary focus:ring-primary mt-0.5">
+                                    <div class="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-black"
+                                         th:text="${req.initials}">AB</div>
+                                    <div>
+                                        <p class="text-xs font-bold text-slate-800" th:text="${req.requestedBy}">Employee Name</p>
+                                        <p class="text-[10px] text-slate-400" th:text="${req.department + ' · ' + req.employeeCode}">Dept · EMP-001</p>
                                     </div>
-                                    <span th:if="${req.status == 'APPROVED'}" class="text-emerald-700 bg-emerald-100 rounded-lg text-xs font-semibold px-4 py-1.5">Approved</span>
-                                    <span th:if="${req.status == 'REJECTED'}" class="text-rose-700 bg-rose-100 rounded-lg text-xs font-semibold px-4 py-1.5">Rejected</span>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
+                                </div>
+                                <span class="text-[10px] font-bold px-2.5 py-1 rounded-md border"
+                                      th:classappend="${req.categoryCode == 'HR'} ? 'bg-violet-100 text-violet-700 border-violet-200' :
+                                                       (${req.categoryCode == 'ADMIN'} ? 'bg-sky-100 text-sky-700 border-sky-200' :
+                                                       (${req.categoryCode == 'PAYROLL'} ? 'bg-amber-100 text-amber-700 border-amber-200' :
+                                                       'bg-slate-100 text-slate-700 border-slate-200'))"
+                                      th:text="${req.category}">Category</span>
+                            </div>
+                            <h3 class="text-sm font-bold text-slate-800 mb-1" th:text="${req.title}">Request Title</h3>
+                            <p class="text-xs text-slate-500 line-clamp-2 mb-3" th:text="${req.content}">Request content...</p>
+                            <div class="flex items-center justify-between">
+                                <span class="text-[10px] text-slate-400">
+                                    <span class="material-symbols-outlined text-[12px] align-middle mr-0.5">schedule</span>
+                                    <span th:text="${#temporals.format(req.submittedAt, 'MMM dd, yyyy HH:mm')}">Mar 31, 2026</span>
+                                </span>
+                                <div class="flex items-center gap-2">
+                                    <button type="button" th:onclick="'openRejectModal(' + ${req.id} + ')'"
+                                            class="text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-lg transition-colors text-xs font-semibold px-3 py-1.5 border border-rose-200">
+                                        <span class="material-symbols-outlined text-sm align-middle mr-0.5">close</span> Deny
+                                    </button>
+                                    <form th:action="@{/hr/requests/{id}/approve(id=${req.id})}" method="post" class="inline">
+                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                        <button type="submit"
+                                                class="text-white bg-primary hover:bg-primary/90 rounded-lg transition-colors text-xs font-semibold px-4 py-1.5 shadow-sm shadow-primary/30">
+                                            <span class="material-symbols-outlined text-sm align-middle mr-0.5">check</span> Approve
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <!-- Pagination -->
-                    <div th:if="${totalPages > 1}" class="p-4 border-t border-slate-100 flex items-center justify-between">
-                        <p class="text-xs text-slate-500">
-                            Showing page <span th:text="${currentPage + 1}" class="font-bold">1</span> of <span th:text="${totalPages}" class="font-bold">1</span>
-                            (<span th:text="${totalItems}" class="font-semibold"></span> total records)
-                        </p>
-                        <div class="flex items-center gap-1">
-                            <a th:if="${currentPage > 0}" th:href="@{/hr/requests(page=${currentPage - 1})}"
-                               class="px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-50 border border-slate-200 rounded-lg hover:bg-primary hover:text-white hover:border-primary transition-colors">
-                                <span class="material-symbols-outlined text-sm align-middle">chevron_left</span> Prev
-                            </a>
-                            <th:block th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
-                                <a th:href="@{/hr/requests(page=${i})}"
-                                   th:text="${i + 1}"
-                                   th:classappend="${i == currentPage} ? 'bg-primary text-white border-primary' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'"
-                                   class="px-3 py-1.5 text-xs font-bold border rounded-lg transition-colors">1</a>
-                            </th:block>
-                            <a th:if="${currentPage < totalPages - 1}" th:href="@{/hr/requests(page=${currentPage + 1})}"
-                               class="px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-50 border border-slate-200 rounded-lg hover:bg-primary hover:text-white hover:border-primary transition-colors">
-                                Next <span class="material-symbols-outlined text-sm align-middle">chevron_right</span>
-                            </a>
+
+                    <!-- Empty State -->
+                    <div th:if="${#lists.size(pendingList) == 0}"
+                         class="bg-white rounded-2xl border border-slate-100 shadow-sm p-12 text-center anim anim-2">
+                        <span class="material-symbols-outlined text-5xl text-slate-200 mb-3">task_alt</span>
+                        <h3 class="text-sm font-bold text-slate-600 mb-1">All caught up!</h3>
+                        <p class="text-xs text-slate-400">No pending workflow requests at this time.</p>
+                    </div>
+                </div>
+
+                <!-- ══════════════════════════════════════════════════ -->
+                <!-- NEW TAB: HRM PENDING (READ ONLY)                  -->
+                <!-- ══════════════════════════════════════════════════ -->
+                <div id="tab-hrmPending" class="tab-panel hidden space-y-4">
+                    <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 flex items-start gap-4">
+                        <div class="p-2 bg-blue-100 rounded-lg">
+                            <span class="material-symbols-outlined text-blue-600">info</span>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-bold text-blue-900">HRM Review Phase</h4>
+                            <p class="text-[11px] text-blue-700 leading-relaxed mt-0.5">
+                                These requests have passed the HR phase and are currently awaiting final decision from the <strong>HR Manager (HRM)</strong>. 
+                                These items are <strong>read-only</strong> for tracking purposes.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div th:if="${#lists.size(hrmPendingList) > 0}" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        <div th:each="req : ${hrmPendingList}"
+                             class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 opacity-90 hover:opacity-100 transition-all anim anim-2">
+                            <div class="flex items-start justify-between mb-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-xs font-black"
+                                         th:text="${req.initials}">AB</div>
+                                    <div>
+                                        <p class="text-xs font-bold text-slate-800" th:text="${req.requestedBy}">Employee Name</p>
+                                        <p class="text-[10px] text-slate-400" th:text="${req.department + ' · ' + req.employeeCode}">Dept · EMP-001</p>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col items-end gap-1">
+                                    <span class="text-[10px] font-bold px-2.5 py-1 rounded-md border bg-slate-50 text-slate-600 border-slate-200"
+                                          th:text="${req.category}">Category</span>
+                                    <span class="text-[9px] font-black px-2 py-0.5 rounded bg-blue-50 text-blue-600 border border-blue-100 uppercase tracking-tight">Awaiting HRM</span>
+                                </div>
+                            </div>
+                            <h3 class="text-sm font-bold text-slate-800 mb-1" th:text="${req.title}">Request Title</h3>
+                            <p class="text-xs text-slate-500 line-clamp-2 mb-3" th:text="${req.content}">Request content...</p>
+                            <div class="flex items-center justify-between pt-3 border-t border-dashed border-slate-100">
+                                <span class="text-[10px] text-slate-400">
+                                    <span class="material-symbols-outlined text-[12px] align-middle mr-0.5">schedule</span>
+                                    Submitted <span th:text="${#temporals.format(req.submittedAt, 'MMM dd, yyyy HH:mm')}">Mar 31, 2026</span>
+                                </span>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-[10px] font-bold text-slate-400 italic">Tracking Only</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div th:if="${#lists.size(hrmPendingList) == 0}"
+                         class="bg-white rounded-2xl border border-slate-100 shadow-sm p-12 text-center anim anim-2">
+                        <span class="material-symbols-outlined text-5xl text-slate-200 mb-3">cloud_done</span>
+                        <h3 class="text-sm font-bold text-slate-600 mb-1">No requests currently with HRM</h3>
+                        <p class="text-xs text-slate-400">All escalated workflow requests have been processed.</p>
+                    </div>
+                </div>
+
+                <!-- ══════════════════════════════════════════════════ -->
+                <!-- TAB 2: REQUEST HISTORY                            -->
+                <!-- ══════════════════════════════════════════════════ -->
+                <div id="tab-history" class="tab-panel hidden space-y-4">
+
+                    <!-- Filters -->
+                    <form th:action="@{/hr/requests}" method="get"
+                          class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 anim anim-2">
+                        <input type="hidden" name="tab" value="history" />
+                        <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+                            <select name="status" class="text-xs border-slate-200 rounded-lg focus:ring-primary focus:border-primary px-3 py-2 bg-slate-50 text-slate-600 font-medium">
+                                <option value="">Status: All</option>
+                                <option value="APPROVED" th:selected="${filterStatus == 'APPROVED'}">Approved</option>
+                                <option value="REJECTED" th:selected="${filterStatus == 'REJECTED'}">Rejected</option>
+                            </select>
+                            <select name="categoryCode" class="text-xs border-slate-200 rounded-lg focus:ring-primary focus:border-primary px-3 py-2 bg-slate-50 text-slate-600 font-medium">
+                                <option value="">Category: All</option>
+                                <option value="HR" th:selected="${filterCategory == 'HR'}">HR</option>
+                                <option value="ADMIN" th:selected="${filterCategory == 'ADMIN'}">Admin</option>
+                                <option value="PAYROLL" th:selected="${filterCategory == 'PAYROLL'}">Payroll</option>
+                            </select>
+                            <input type="text" name="search" th:value="${filterSearch}"
+                                   placeholder="Search name, code, title..."
+                                   class="text-xs border-slate-200 rounded-lg focus:ring-primary focus:border-primary px-3 py-2 bg-slate-50 text-slate-600 font-medium placeholder:text-slate-400" />
+                            <input type="date" name="dateFrom" th:value="${filterDateFrom}"
+                                   class="text-xs border-slate-200 rounded-lg focus:ring-primary focus:border-primary px-3 py-2 bg-slate-50 text-slate-600 font-medium" />
+                            <div class="flex gap-2">
+                                <input type="date" name="dateTo" th:value="${filterDateTo}"
+                                       class="text-xs border-slate-200 rounded-lg focus:ring-primary focus:border-primary px-3 py-2 bg-slate-50 text-slate-600 font-medium flex-1" />
+                                <button type="submit"
+                                        class="bg-primary text-white rounded-lg px-4 py-2 text-xs font-bold hover:bg-primary/90 transition-colors shadow-sm shadow-primary/30">
+                                    <span class="material-symbols-outlined text-sm align-middle">filter_alt</span>
+                                </button>
+                                <a th:href="@{/hr/requests(tab='history')}"
+                                   class="bg-slate-100 text-slate-600 rounded-lg px-3 py-2 text-xs font-bold hover:bg-slate-200 transition-colors flex items-center">
+                                    <span class="material-symbols-outlined text-sm">clear_all</span>
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- History Table -->
+                    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden anim anim-2 flex flex-col">
+                        <div class="p-5 border-b border-slate-50 flex items-center justify-between">
+                            <h3 class="text-sm font-black text-slate-800">Processed Requests</h3>
+                            <span class="text-xs text-slate-400" th:text="${totalItems + ' records'}">0 records</span>
+                        </div>
+                        <div class="flex-1 overflow-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                <tr class="bg-slate-50/70">
+                                    <th class="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">Requested By</th>
+                                    <th class="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">Category</th>
+                                    <th class="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">Details</th>
+                                    <th class="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">Submitted</th>
+                                    <th class="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">Status</th>
+                                    <th class="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">Processed</th>
+                                </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-50">
+                                <tr th:each="req : ${historyList}" class="hover:bg-primary/[2%] transition-colors cursor-pointer"
+                                    th:onclick="'openDetailModal(this)'"
+                                    th:data-title="${req.title}" th:data-content="${req.content}"
+                                    th:data-reason="${req.rejectedReason}" th:data-approver="${req.approverName}"
+                                    th:data-processed="${req.processedAt}" th:data-status="${req.status}">
+                                    <td class="px-5 py-4">
+                                        <div class="flex items-center gap-2.5">
+                                            <div class="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-primary text-[10px] font-black"
+                                                 th:text="${req.initials}">AB</div>
+                                            <div>
+                                                <p class="text-xs font-semibold text-slate-800" th:text="${req.requestedBy}">Name</p>
+                                                <p class="text-[10px] text-slate-400" th:text="${req.department}">Dept</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-5 py-4">
+                                        <span class="text-[10px] font-bold px-2.5 py-1 rounded-md border"
+                                              th:classappend="${req.categoryCode == 'HR'} ? 'bg-violet-100 text-violet-700 border-violet-200' :
+                                                               (${req.categoryCode == 'ADMIN'} ? 'bg-sky-100 text-sky-700 border-sky-200' :
+                                                               (${req.categoryCode == 'PAYROLL'} ? 'bg-amber-100 text-amber-700 border-amber-200' :
+                                                               'bg-slate-100 text-slate-700 border-slate-200'))"
+                                              th:text="${req.category}">Category</span>
+                                    </td>
+                                    <td class="px-5 py-4">
+                                        <p class="text-xs font-medium text-slate-700" th:text="${req.title}">Title</p>
+                                        <p class="text-[10px] text-slate-500 mt-0.5 truncate max-w-xs" th:text="${req.content}">Content</p>
+                                    </td>
+                                    <td class="px-5 py-4">
+                                        <span class="text-xs text-slate-500" th:text="${#temporals.format(req.submittedAt, 'MMM dd, yyyy')}">Date</span>
+                                    </td>
+                                    <td class="px-5 py-4">
+                                        <span th:if="${req.status == 'APPROVED'}" class="text-emerald-700 bg-emerald-100 rounded-lg text-[10px] font-bold px-2.5 py-1">Approved</span>
+                                        <span th:if="${req.status == 'REJECTED'}" class="text-rose-700 bg-rose-100 rounded-lg text-[10px] font-bold px-2.5 py-1">Rejected</span>
+                                    </td>
+                                    <td class="px-5 py-4">
+                                        <span class="text-xs text-slate-500" th:text="${req.processedAt ?: 'N/A'}">Date</span>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.size(historyList) == 0}">
+                                    <td colspan="6" class="px-5 py-12 text-center">
+                                        <span class="material-symbols-outlined text-3xl text-slate-200 mb-2">inbox</span>
+                                        <p class="text-xs text-slate-400">No processed requests found matching your filters.</p>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- Pagination -->
+                        <div th:if="${totalPages > 1}" class="p-4 border-t border-slate-100 flex items-center justify-between">
+                            <p class="text-xs text-slate-500">
+                                Page <span th:text="${currentPage + 1}" class="font-bold">1</span> of <span th:text="${totalPages}" class="font-bold">1</span>
+                                (<span th:text="${totalItems}" class="font-semibold"></span> total)
+                            </p>
+                            <div class="flex items-center gap-1">
+                                <a th:if="${currentPage > 0}"
+                                   th:href="@{/hr/requests(tab='history', page=${currentPage - 1}, status=${filterStatus}, categoryCode=${filterCategory}, search=${filterSearch}, dateFrom=${filterDateFrom}, dateTo=${filterDateTo})}"
+                                   class="px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-50 border border-slate-200 rounded-lg hover:bg-primary hover:text-white hover:border-primary transition-colors">
+                                    <span class="material-symbols-outlined text-sm align-middle">chevron_left</span> Prev
+                                </a>
+                                <th:block th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+                                    <a th:href="@{/hr/requests(tab='history', page=${i}, status=${filterStatus}, categoryCode=${filterCategory}, search=${filterSearch}, dateFrom=${filterDateFrom}, dateTo=${filterDateTo})}"
+                                       th:text="${i + 1}"
+                                       th:classappend="${i == currentPage} ? 'bg-primary text-white border-primary' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'"
+                                       class="px-3 py-1.5 text-xs font-bold border rounded-lg transition-colors">1</a>
+                                </th:block>
+                                <a th:if="${currentPage < totalPages - 1}"
+                                   th:href="@{/hr/requests(tab='history', page=${currentPage + 1}, status=${filterStatus}, categoryCode=${filterCategory}, search=${filterSearch}, dateFrom=${filterDateFrom}, dateTo=${filterDateTo})}"
+                                   class="px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-50 border border-slate-200 rounded-lg hover:bg-primary hover:text-white hover:border-primary transition-colors">
+                                    Next <span class="material-symbols-outlined text-sm align-middle">chevron_right</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ══════════════════════════════════════════════════ -->
+                <!-- TAB 3: CREATE REQUEST                             -->
+                <!-- ══════════════════════════════════════════════════ -->
+                <div id="tab-create" class="tab-panel hidden">
+                    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 max-w-2xl mx-auto anim anim-2">
+                        <div class="flex items-center gap-3 mb-6">
+                            <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                                <span class="material-symbols-outlined text-primary">post_add</span>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-black text-slate-800">New Workflow Request</h3>
+                                <p class="text-xs text-slate-400">Submit a new request as HR</p>
+                            </div>
+                        </div>
+                        <form th:action="@{/hr/requests/create}" method="post" class="space-y-4">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1.5">Request Type <span class="text-rose-500">*</span></label>
+                                <select name="requestTypeId" required id="create-type-select"
+                                        class="w-full text-xs border-slate-200 rounded-lg focus:ring-primary focus:border-primary px-3 py-2.5 bg-slate-50 text-slate-700 font-medium">
+                                    <option value="">Select a request type…</option>
+                                    <optgroup th:each="cat : ${ {'ADMIN', 'HR', 'PAYROLL', 'ATTENDANCE'} }"
+                                              th:label="${cat}">
+                                        <th:block th:each="rt : ${requestTypes}">
+                                            <option th:if="${rt.category == cat}" th:value="${rt.id}" th:text="${rt.name}">Type</option>
+                                        </th:block>
+                                    </optgroup>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1.5">Title <span class="text-rose-500">*</span></label>
+                                <input type="text" name="title" required maxlength="200" placeholder="Brief summary of your request"
+                                       class="w-full text-xs border-slate-200 rounded-lg focus:ring-primary focus:border-primary px-3 py-2.5 bg-slate-50 text-slate-700 font-medium placeholder:text-slate-400" />
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1.5">Description <span class="text-rose-500">*</span></label>
+                                <textarea name="content" required rows="5" minlength="10" placeholder="Provide detailed information about your request..."
+                                          class="w-full text-xs border-slate-200 rounded-lg focus:ring-primary focus:border-primary px-3 py-2.5 bg-slate-50 text-slate-700 font-medium placeholder:text-slate-400 resize-none"></textarea>
+                            </div>
+
+                            <div class="flex justify-end gap-3 pt-2">
+                                <button type="reset" class="text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg px-5 py-2.5 transition-colors">
+                                    Clear
+                                </button>
+                                <button type="submit"
+                                        class="text-xs font-bold text-white bg-primary hover:bg-primary/90 rounded-lg px-6 py-2.5 shadow-sm shadow-primary/30 transition-colors">
+                                    <span class="material-symbols-outlined text-sm align-middle mr-0.5">send</span>
+                                    Submit Request
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- ══════════════════════════════════════════════════ -->
+                <!-- TAB 4: ANALYTICS                                  -->
+                <!-- ══════════════════════════════════════════════════ -->
+                <div id="tab-analytics" class="tab-panel hidden space-y-4">
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 anim anim-2">
+                        <!-- Pending -->
+                        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center">
+                                    <span class="material-symbols-outlined text-amber-600 text-lg">pending_actions</span>
+                                </div>
+                            </div>
+                            <p class="text-2xl font-black text-slate-900" th:text="${stats.totalPending()}">0</p>
+                            <p class="text-[10px] text-slate-400 font-medium mt-0.5">Pending Requests</p>
+                        </div>
+                        <!-- Approved This Month -->
+                        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="w-9 h-9 rounded-xl bg-emerald-100 flex items-center justify-center">
+                                    <span class="material-symbols-outlined text-emerald-600 text-lg">check_circle</span>
+                                </div>
+                            </div>
+                            <p class="text-2xl font-black text-slate-900" th:text="${stats.approvedThisMonth()}">0</p>
+                            <p class="text-[10px] text-slate-400 font-medium mt-0.5">Approved This Month</p>
+                        </div>
+                        <!-- Rejected This Month -->
+                        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="w-9 h-9 rounded-xl bg-rose-100 flex items-center justify-center">
+                                    <span class="material-symbols-outlined text-rose-600 text-lg">cancel</span>
+                                </div>
+                            </div>
+                            <p class="text-2xl font-black text-slate-900" th:text="${stats.rejectedThisMonth()}">0</p>
+                            <p class="text-[10px] text-slate-400 font-medium mt-0.5">Rejected This Month</p>
+                        </div>
+                        <!-- Avg Processing Time -->
+                        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="w-9 h-9 rounded-xl bg-primary-light flex items-center justify-center">
+                                    <span class="material-symbols-outlined text-primary text-lg">timer</span>
+                                </div>
+                            </div>
+                            <p class="text-2xl font-black text-slate-900">
+                                <span th:text="${#numbers.formatDecimal(stats.avgProcessingHours(), 0, 1)}">0</span>
+                                <span class="text-sm font-medium text-slate-400">hrs</span>
+                            </p>
+                            <p class="text-[10px] text-slate-400 font-medium mt-0.5">Avg. Processing Time</p>
+                        </div>
+                    </div>
+
+                    <!-- Top Request Type -->
+                    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 anim anim-3">
+                        <h3 class="text-sm font-black text-slate-800 mb-3">Most Requested Type</h3>
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                                <span class="material-symbols-outlined text-primary text-2xl">trending_up</span>
+                            </div>
+                            <div>
+                                <p class="text-lg font-black text-slate-900" th:text="${stats.topRequestType()}">N/A</p>
+                                <p class="text-xs text-slate-400">
+                                    <span th:text="${stats.topRequestTypeCount()}">0</span> requests processed
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -135,5 +509,328 @@
         </div>
     </main>
 </div>
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!-- REJECTION MODAL (single)                                         -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<div id="reject-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+        <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-rose-100 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-rose-600 text-lg">block</span>
+                </div>
+                <h3 class="text-sm font-black text-slate-800">Reject Request</h3>
+            </div>
+            <button onclick="closeRejectModal()" class="text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 p-1 transition">
+                <span class="material-symbols-outlined text-lg">close</span>
+            </button>
+        </div>
+        <form id="reject-form" method="post" class="p-5 space-y-4">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+            <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1.5">Rejection Category <span class="text-rose-500">*</span></label>
+                <select name="category" required
+                        class="w-full text-xs border-slate-200 rounded-lg focus:ring-primary focus:border-primary px-3 py-2.5 bg-slate-50 font-medium">
+                    <option value="">Select a category…</option>
+                    <option th:each="entry : ${rejectionCategories}" th:value="${entry.key}" th:text="${entry.value}">Category</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1.5">
+                    Reason <span class="text-rose-500">*</span>
+                    <span id="reject-char-count" class="float-right font-normal text-slate-400">0/10 min</span>
+                </label>
+                <textarea name="reason" id="reject-reason-input" required rows="4" minlength="10"
+                          placeholder="Provide a detailed reason for rejection..."
+                          oninput="updateCharCount(this, 'reject-char-count')"
+                          class="w-full text-xs border-slate-200 rounded-lg focus:ring-primary focus:border-primary px-3 py-2.5 bg-slate-50 font-medium placeholder:text-slate-400 resize-none"></textarea>
+            </div>
+
+            <div class="flex justify-end gap-2 pt-1">
+                <button type="button" onclick="closeRejectModal()"
+                        class="text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg px-4 py-2 transition-colors">
+                    Cancel
+                </button>
+                <button type="submit"
+                        class="text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-lg px-5 py-2 shadow-sm transition-colors">
+                    <span class="material-symbols-outlined text-sm align-middle mr-0.5">block</span>
+                    Confirm Rejection
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!-- BULK REJECTION MODAL                                              -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<div id="bulk-reject-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+        <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-rose-100 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-rose-600 text-lg">playlist_remove</span>
+                </div>
+                <h3 class="text-sm font-black text-slate-800">Bulk Reject Requests</h3>
+            </div>
+            <button onclick="closeBulkRejectModal()" class="text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 p-1 transition">
+                <span class="material-symbols-outlined text-lg">close</span>
+            </button>
+        </div>
+        <form th:action="@{/hr/requests/bulk-reject}" method="post" id="bulk-reject-form" class="p-5 space-y-4">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+            <p class="text-xs text-slate-600 bg-amber-50 border border-amber-200 rounded-lg p-3">
+                <span class="material-symbols-outlined text-sm align-middle text-amber-500 mr-1">warning</span>
+                This will reject <strong id="bulk-reject-count">0</strong> selected request(s). This action cannot be undone.
+            </p>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1.5">Rejection Category <span class="text-rose-500">*</span></label>
+                <select name="category" required
+                        class="w-full text-xs border-slate-200 rounded-lg focus:ring-primary focus:border-primary px-3 py-2.5 bg-slate-50 font-medium">
+                    <option value="">Select a category…</option>
+                    <option th:each="entry : ${rejectionCategories}" th:value="${entry.key}" th:text="${entry.value}">Category</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1.5">
+                    Reason <span class="text-rose-500">*</span>
+                    <span id="bulk-reject-char-count" class="float-right font-normal text-slate-400">0/10 min</span>
+                </label>
+                <textarea name="reason" required rows="4" minlength="10"
+                          placeholder="Provide a detailed reason for rejection..."
+                          oninput="updateCharCount(this, 'bulk-reject-char-count')"
+                          class="w-full text-xs border-slate-200 rounded-lg focus:ring-primary focus:border-primary px-3 py-2.5 bg-slate-50 font-medium placeholder:text-slate-400 resize-none"></textarea>
+            </div>
+
+            <div class="flex justify-end gap-2 pt-1">
+                <button type="button" onclick="closeBulkRejectModal()"
+                        class="text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg px-4 py-2 transition-colors">
+                    Cancel
+                </button>
+                <button type="submit"
+                        class="text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-lg px-5 py-2 shadow-sm transition-colors">
+                    <span class="material-symbols-outlined text-sm align-middle mr-0.5">block</span>
+                    Confirm Bulk Rejection
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!-- DETAIL MODAL (history row click)                                  -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<div id="detail-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden">
+        <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+            <h3 class="text-sm font-black text-slate-800">Request Details</h3>
+            <button onclick="closeDetailModal()" class="text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 p-1 transition">
+                <span class="material-symbols-outlined text-lg">close</span>
+            </button>
+        </div>
+        <div class="p-5 space-y-4">
+            <div>
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Title</label>
+                <p id="detail-title" class="text-sm font-semibold text-slate-800 mt-0.5">—</p>
+            </div>
+            <div>
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Content</label>
+                <p id="detail-content" class="text-xs text-slate-600 mt-0.5 whitespace-pre-wrap">—</p>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status</label>
+                    <p id="detail-status" class="text-xs font-bold mt-0.5">—</p>
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Processed At</label>
+                    <p id="detail-processed" class="text-xs text-slate-600 mt-0.5">—</p>
+                </div>
+            </div>
+            <div id="detail-reason-section" class="hidden">
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Rejection Reason</label>
+                <p id="detail-reason" class="text-xs text-rose-600 bg-rose-50 rounded-lg p-3 mt-0.5">—</p>
+            </div>
+            <div>
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Processed By</label>
+                <p id="detail-approver" class="text-xs text-slate-600 mt-0.5">—</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const activeTab = /*[[${activeTab}]]*/ 'pending';
+
+    // ── Tab Switching ──
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+        document.querySelectorAll('.tab-btn').forEach(b => {
+            b.classList.remove('bg-primary', 'text-white', 'shadow-sm');
+            b.classList.add('text-slate-500', 'hover:bg-slate-50');
+        });
+        const panel = document.getElementById('tab-' + tabName);
+        const btn = document.getElementById('tab-btn-' + tabName);
+        if (panel) panel.classList.remove('hidden');
+        if (btn) {
+            btn.classList.add('bg-primary', 'text-white', 'shadow-sm');
+            btn.classList.remove('text-slate-500', 'hover:bg-slate-50');
+        }
+    }
+
+    // ── Checkbox / Bulk Actions ──
+    function updateBulkBar() {
+        const checked = document.querySelectorAll('input[name="request-cb"]:checked');
+        const bar = document.getElementById('bulk-bar');
+        const countSpan = document.getElementById('selected-count');
+        if (checked.length > 0) {
+            bar.classList.remove('hidden');
+            bar.classList.add('flex');
+            countSpan.textContent = checked.length;
+        } else {
+            bar.classList.add('hidden');
+            bar.classList.remove('flex');
+        }
+    }
+
+    function toggleSelectAll(masterCb) {
+        document.querySelectorAll('input[name="request-cb"]').forEach(cb => {
+            cb.checked = masterCb.checked;
+        });
+        updateBulkBar();
+    }
+
+    // Inject selected IDs into bulk forms before submit
+    document.getElementById('bulk-approve-form')?.addEventListener('submit', function(e) {
+        injectSelectedIds(this);
+    });
+
+    function injectSelectedIds(form) {
+        form.querySelectorAll('input[name="ids"]').forEach(el => el.remove());
+        document.querySelectorAll('input[name="request-cb"]:checked').forEach(cb => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'ids';
+            input.value = cb.value;
+            form.appendChild(input);
+        });
+    }
+
+    // ── Reject Modal (single) ──
+    function openRejectModal(requestId) {
+        const modal = document.getElementById('reject-modal');
+        const form = document.getElementById('reject-form');
+        form.action = '/hr/requests/' + requestId + '/reject';
+        document.getElementById('reject-reason-input').value = '';
+        document.getElementById('reject-char-count').textContent = '0/10 min';
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+
+    function closeRejectModal() {
+        const modal = document.getElementById('reject-modal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+
+    // ── Bulk Reject Modal ──
+    function openBulkRejectModal() {
+        const checked = document.querySelectorAll('input[name="request-cb"]:checked');
+        document.getElementById('bulk-reject-count').textContent = checked.length;
+        const form = document.getElementById('bulk-reject-form');
+        form.querySelectorAll('input[name="ids"]').forEach(el => el.remove());
+        checked.forEach(cb => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'ids';
+            input.value = cb.value;
+            form.appendChild(input);
+        });
+        const modal = document.getElementById('bulk-reject-modal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+
+    function closeBulkRejectModal() {
+        const modal = document.getElementById('bulk-reject-modal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+
+    // ── Detail Modal ──
+    function openDetailModal(row) {
+        document.getElementById('detail-title').textContent = row.dataset.title || '—';
+        document.getElementById('detail-content').textContent = row.dataset.content || '—';
+        document.getElementById('detail-processed').textContent = row.dataset.processed || 'N/A';
+        document.getElementById('detail-approver').textContent = row.dataset.approver || 'N/A';
+
+        const status = row.dataset.status;
+        const statusEl = document.getElementById('detail-status');
+        statusEl.textContent = status;
+        statusEl.className = 'text-xs font-bold mt-0.5 ' + (status === 'APPROVED' ? 'text-emerald-600' : 'text-rose-600');
+
+        const reasonSection = document.getElementById('detail-reason-section');
+        if (status === 'REJECTED' && row.dataset.reason) {
+            reasonSection.classList.remove('hidden');
+            document.getElementById('detail-reason').textContent = row.dataset.reason;
+        } else {
+            reasonSection.classList.add('hidden');
+        }
+
+        const modal = document.getElementById('detail-modal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+
+    function closeDetailModal() {
+        const modal = document.getElementById('detail-modal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+
+    // ── Character counter for rejection reason ──
+    function updateCharCount(textarea, countId) {
+        const count = textarea.value.length;
+        const el = document.getElementById(countId);
+        el.textContent = count + '/10 min';
+        el.classList.toggle('text-emerald-500', count >= 10);
+        el.classList.toggle('text-rose-500', count > 0 && count < 10);
+        el.classList.toggle('text-slate-400', count === 0);
+    }
+
+    // ── Toast auto-dismiss ──
+    setTimeout(() => {
+        document.getElementById('toast-success')?.remove();
+        document.getElementById('toast-error')?.remove();
+    }, 5000);
+
+    // ── Close modals on backdrop click ──
+    ['reject-modal', 'bulk-reject-modal', 'detail-modal'].forEach(id => {
+        document.getElementById(id)?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.add('hidden');
+                this.classList.remove('flex');
+            }
+        });
+    });
+
+    // Init active tab
+    document.addEventListener('DOMContentLoaded', () => switchTab(activeTab));
+    /*]]>*/
+</script>
+
+<style>
+    @keyframes slideIn { from { transform: translateX(100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    .animate-slide-in { animation: slideIn 0.3s ease-out; }
+    .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+</style>
 </body>
 </html>

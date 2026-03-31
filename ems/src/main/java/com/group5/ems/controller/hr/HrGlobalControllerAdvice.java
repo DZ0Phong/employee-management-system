@@ -28,7 +28,7 @@ public class HrGlobalControllerAdvice {
 
     @ModelAttribute("pendingLeave")
     public int pendingLeave() {
-        long count = requestRepository.countByStatusAndRequestTypeCodeIn(
+        long count = requestRepository.countByStatusAndStepWaitingHRAndRequestTypeCodeIn(
                 "PENDING", 
                 Arrays.asList("LV_ANNUAL", "LV_SICK", "LEAVE_ANNUAL", "LEAVE_SICK", "LEAVE_UNPAID")
         );
@@ -37,6 +37,6 @@ public class HrGlobalControllerAdvice {
 
     @ModelAttribute("pendingRequests")
     public int pendingRequests() {
-        return (int) requestRepository.countByStatusAndRequestTypeCategory("PENDING", "HR_STATUS");
+        return (int) requestRepository.countPendingWorkflowRequests();
     }
 }

@@ -37,7 +37,6 @@ import com.group5.ems.dto.response.HrEmployeeDetailDTO;
 import com.group5.ems.dto.response.HrLeaveRequestDTO;
 import com.group5.ems.dto.response.HrPerformanceDTO;
 import com.group5.ems.dto.response.HrRecruitmentDTO;
-import com.group5.ems.dto.response.HrRequestDTO;
 import com.group5.ems.dto.response.InterviewerDTO;
 import com.group5.ems.entity.CandidateCv;
 import com.group5.ems.entity.Department;
@@ -177,31 +176,126 @@ public class HrController {
 
     @GetMapping("/leave")
     public String leave(Model model,
-            @RequestParam(defaultValue = "0") int page) {
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) Long departmentId,
+            @RequestParam(required = false) String leaveType,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo) {
+
+        // Pending requests (current tab)
         model.addAttribute("pendingLeaves", leaveService.getPendingLeaves());
 
+        // HRM Pending (New tab - read only)
+        model.addAttribute("hrmPendingLeaves", leaveService.getHrmPendingLeaves());
+
+        // Filtered history (server-side — improvement #2)
         Pageable pageable = PageRequest.of(page, EMPLOYEE_PAGE_SIZE);
-        Page<HrLeaveRequestDTO> historyPage = leaveService.getLeaveHistory(pageable);
+        Page<HrLeaveRequestDTO> historyPage = leaveService.getLeaveHistoryFiltered(
+                status, departmentId, leaveType, search, dateFrom, dateTo, pageable);
         model.addAttribute("leaveHistory", historyPage.getContent());
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", historyPage.getTotalPages());
         model.addAttribute("totalItems", historyPage.getTotalElements());
 
+        // Statistics (improvement #6)
+        model.addAttribute("leaveStats", leaveService.getLeaveStats());
+
+        // Leave balance summary (improvement #1)
+        model.addAttribute("balanceSummary", leaveService.getLeaveBalanceSummary());
+
+        // Rejection categories for the modal dropdown (improvement #4)
+        model.addAttribute("rejectionCategories", leaveService.getRejectionCategories());
+
+        // Filter state preservation
+        model.addAttribute("filterStatus", status);
+        model.addAttribute("filterDepartmentId", departmentId);
+        model.addAttribute("filterLeaveType", leaveType);
+        model.addAttribute("filterSearch", search);
+        model.addAttribute("filterDateFrom", dateFrom);
+        model.addAttribute("filterDateTo", dateTo);
+        model.addAttribute("departments", departmentRepository.findAll());
+
         return "hr/leave";
     }
 
     @PostMapping("/leave/{id}/approve")
-    public String approveLeave(@PathVariable Long id) {
-        leaveService.approveLeave(id);
+    public String approveLeave(@PathVariable Long id, RedirectAttributes ra) {
+        try {
+            leaveService.approveLeave(id);
+            ra.addFlashAttribute("successMessage", "Leave request approved successfully.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMessage", e.getMessage());
+        }
         return "redirect:/hr/leave";
     }
 
     @PostMapping("/leave/{id}/reject")
     public String rejectLeave(@PathVariable Long id,
-            @RequestParam(required = false) String reason) {
-        leaveService.rejectLeave(id, reason != null ? reason : "Rejected by HR");
+            @RequestParam(required = false) String category,
+            @RequestParam String reason,
+            RedirectAttributes ra) {
+        try {
+            leaveService.rejectLeave(id, category, reason);
+            ra.addFlashAttribute("successMessage", "Leave request rejected.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMessage", e.getMessage());
+        }
         return "redirect:/hr/leave";
     }
+
+    // ── Bulk operations (improvement #5) ──
+
+    @PostMapping("/leave/bulk-approve")
+    public String bulkApproveLeave(@RequestParam List<Long> ids, RedirectAttributes ra) {
+        try {
+            int count = leaveService.bulkApprove(ids);
+            ra.addFlashAttribute("successMessage", count + " leave request(s) approved.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/hr/leave";
+    }
+
+    @PostMapping("/leave/bulk-reject")
+    public String bulkRejectLeave(
+            @RequestParam List<Long> ids,
+            @RequestParam(required = false) String category,
+            @RequestParam String reason,
+            RedirectAttributes ra) {
+        try {
+            int count = leaveService.bulkReject(ids, category, reason);
+            ra.addFlashAttribute("successMessage", count + " leave request(s) rejected.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/hr/leave";
+    }
+
+    // ── Calendar API (improvement #3) ──
+
+    @GetMapping("/leave/calendar")
+    @ResponseBody
+    public ResponseEntity<List<com.group5.ems.dto.response.HrLeaveCalendarEventDTO>> leaveCalendarEvents(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
+        return ResponseEntity.ok(leaveService.getCalendarEvents(start, end));
+    }
+
+    // ── CSV export (improvement #7) ──
+
+    @GetMapping("/leave/export")
+    public void exportLeaveCsv(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) Long departmentId,
+            jakarta.servlet.http.HttpServletResponse response) throws java.io.IOException {
+        response.setContentType("text/csv");
+        response.setHeader("Content-Disposition",
+                "attachment; filename=\"leave-history-" + LocalDate.now() + ".csv\"");
+        leaveService.exportLeaveHistoryToCsv(status, departmentId, response.getWriter());
+    }
+
 
     @GetMapping("/performance")
     public String performance(Model model,
@@ -276,22 +370,116 @@ public class HrController {
 
     @GetMapping("/requests")
     public String requests(Model model,
-            @RequestParam(defaultValue = "0") int page) {
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(required = false) String tab,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String categoryCode,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo) {
+
+        // Tab 1: Pending requests
+        model.addAttribute("pendingList", requestService.getPendingRequests());
+
+        // Tab: HRM Pending (read only)
+        model.addAttribute("hrmPendingList", requestService.getHrmPendingRequests());
+
+        // Tab 2: Filtered history
+        java.time.LocalDateTime dtFrom = dateFrom != null ? dateFrom.atStartOfDay() : null;
+        java.time.LocalDateTime dtTo = dateTo != null ? dateTo.atTime(23, 59, 59) : null;
 
         Pageable pageable = PageRequest.of(page, PAGE_SIZE);
-        Page<HrRequestDTO> requestPage = requestService.getAllWorkflowRequests(pageable);
-        model.addAttribute("workflowRequests", requestPage.getContent());
+        var historyPage = requestService.getRequestHistoryFiltered(
+                status, categoryCode, search, dtFrom, dtTo, pageable);
+        model.addAttribute("historyList", historyPage.getContent());
         model.addAttribute("currentPage", page);
-        model.addAttribute("totalPages", requestPage.getTotalPages());
-        model.addAttribute("totalItems", requestPage.getTotalElements());
+        model.addAttribute("totalPages", historyPage.getTotalPages());
+        model.addAttribute("totalItems", historyPage.getTotalElements());
+
+        // Tab 3: Create request form data
+        model.addAttribute("requestTypes", requestService.getCreatableRequestTypes());
+
+        // Tab 4: Analytics
+        model.addAttribute("stats", requestService.getRequestStats());
+
+        // Rejection modal data
+        model.addAttribute("rejectionCategories", requestService.getRejectionCategories());
+
+        // Preserve filter values
+        model.addAttribute("activeTab", tab != null ? tab : "pending");
+        model.addAttribute("filterStatus", status);
+        model.addAttribute("filterCategory", categoryCode);
+        model.addAttribute("filterSearch", search);
+        model.addAttribute("filterDateFrom", dateFrom);
+        model.addAttribute("filterDateTo", dateTo);
 
         return "hr/requests";
     }
 
+    @PostMapping("/requests/{id}/approve")
+    public String approveRequest(@PathVariable Long id,
+            RedirectAttributes redirectAttributes) {
+        try {
+            requestService.approveRequest(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Request #" + id + " approved successfully.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/hr/requests";
+    }
+
     @PostMapping("/requests/{id}/reject")
     public String rejectRequest(@PathVariable Long id,
-            @RequestParam(required = false) String reason) {
-        requestService.rejectRequest(id, reason != null ? reason : "Rejected by HR");
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String reason,
+            RedirectAttributes redirectAttributes) {
+        try {
+            requestService.rejectRequest(id, category, reason);
+            redirectAttributes.addFlashAttribute("successMessage", "Request #" + id + " rejected.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/hr/requests";
+    }
+
+    @PostMapping("/requests/create")
+    public String createRequest(
+            @RequestParam Long requestTypeId,
+            @RequestParam String title,
+            @RequestParam String content,
+            RedirectAttributes redirectAttributes) {
+        try {
+            requestService.createRequest(requestTypeId, title, content);
+            redirectAttributes.addFlashAttribute("successMessage", "Request created successfully.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/hr/requests?tab=pending";
+    }
+
+    @PostMapping("/requests/bulk-approve")
+    public String bulkApproveRequests(@RequestParam List<Long> ids,
+            RedirectAttributes redirectAttributes) {
+        try {
+            int count = requestService.bulkApprove(ids);
+            redirectAttributes.addFlashAttribute("successMessage", count + " request(s) approved.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/hr/requests";
+    }
+
+    @PostMapping("/requests/bulk-reject")
+    public String bulkRejectRequests(@RequestParam List<Long> ids,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String reason,
+            RedirectAttributes redirectAttributes) {
+        try {
+            int count = requestService.bulkReject(ids, category, reason);
+            redirectAttributes.addFlashAttribute("successMessage", count + " request(s) rejected.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
         return "redirect:/hr/requests";
     }
 
