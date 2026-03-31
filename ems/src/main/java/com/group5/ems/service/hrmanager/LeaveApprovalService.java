@@ -1,10 +1,13 @@
 package com.group5.ems.service.hrmanager;
 
+import com.group5.ems.constants.WorkflowConstants;
 import com.group5.ems.dto.response.hrmanager.LeaveRequestResponseDTO;
 import com.group5.ems.entity.EmployeeLeaveBalance;
 import com.group5.ems.entity.Request;
+import com.group5.ems.exception.WorkflowException;
 import com.group5.ems.repository.EmployeeLeaveBalanceRepository;
 import com.group5.ems.repository.RequestRepository;
+import com.group5.ems.service.common.ApprovalWorkflowService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,6 +30,9 @@ public class LeaveApprovalService {
     
     @Autowired
     private EmployeeLeaveBalanceRepository employeeLeaveBalanceRepository;
+    
+    @Autowired
+    private ApprovalWorkflowService workflowService;
 
     /**
      * Get all pending leave requests
@@ -50,6 +56,12 @@ public class LeaveApprovalService {
         if (requestOpt.isPresent()) {
             Request request = requestOpt.get();
             
+            // Validate workflow step
+            if (!workflowService.canApprove(request, WorkflowConstants.ROLE_HR_MANAGER)) {
+                throw new WorkflowException("Cannot approve: Request must be approved by Department Manager and HR first. Current step: " 
+                        + workflowService.getStepDisplayName(request.getStep()));
+            }
+            
             // Check for overlap before approving
             if (request.getLeaveFrom() != null && request.getLeaveTo() != null) {
                 List<Request> overlappingRequests = requestRepository
@@ -65,11 +77,8 @@ public class LeaveApprovalService {
                 }
             }
             
-            request.setStatus("APPROVED");
-            request.setApprovedBy(approverId);
-            request.setApprovedAt(LocalDateTime.now());
-            request.setCurrentApproverId(null);
-            requestRepository.save(request);
+            // Move to next step (will set to APPROVED since this is final step)
+            workflowService.moveToNextStep(request, approverId, WorkflowConstants.ROLE_HR_MANAGER);
             
             // Update employee leave balance
             updateLeaveBalanceOnApproval(request);
@@ -86,12 +95,15 @@ public class LeaveApprovalService {
         Optional<Request> requestOpt = requestRepository.findById(requestId);
         if (requestOpt.isPresent()) {
             Request request = requestOpt.get();
-            request.setStatus("REJECTED");
-            request.setApprovedBy(approverId);
-            request.setApprovedAt(LocalDateTime.now());
-            request.setRejectedReason(rejectedReason);
-            request.setCurrentApproverId(null);
-            requestRepository.save(request);
+            
+            // Validate workflow step
+            if (!workflowService.canApprove(request, WorkflowConstants.ROLE_HR_MANAGER)) {
+                throw new WorkflowException("Cannot reject: Request must be at HR Manager approval step. Current step: " 
+                        + workflowService.getStepDisplayName(request.getStep()));
+            }
+            
+            // Reject using workflow service
+            workflowService.rejectRequest(request, approverId, WorkflowConstants.ROLE_HR_MANAGER, rejectedReason);
             
             // Update employee leave balance (remove from pending)
             updateLeaveBalanceOnRejection(request);
