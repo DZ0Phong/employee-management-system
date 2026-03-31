@@ -4,6 +4,8 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <title th:text="${pageTitle != null ? pageTitle : 'EMS - HR Manager Dashboard'}">EMS - HR Manager Dashboard</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
@@ -806,10 +808,10 @@
                     </div>
                     <div class="mt-4 flex gap-2">
                         ${activity.status === 'PENDING' ? `
-                            <button class="px-4 py-2 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-bold hover:bg-emerald-200 transition-colors">
+                            <button onclick="approveActivity(event, ${activity.id})" class="px-4 py-2 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-bold hover:bg-emerald-200 transition-colors">
                                 Approve
                             </button>
-                            <button class="px-4 py-2 bg-rose-100 text-rose-700 rounded-lg text-xs font-bold hover:bg-rose-200 transition-colors">
+                            <button onclick="rejectActivity(event, ${activity.id})" class="px-4 py-2 bg-rose-100 text-rose-700 rounded-lg text-xs font-bold hover:bg-rose-200 transition-colors">
                                 Reject
                             </button>
                         ` : ''}
@@ -877,6 +879,97 @@
             });
         });
     });
+    
+    // ══════════════════════════════════════════════════════════════════════════
+    // APPROVE/REJECT ACTIONS
+    // ══════════════════════════════════════════════════════════════════════════
+    
+    function approveActivity(event, requestId) {
+        event.stopPropagation();
+        
+        if (!confirm('Are you sure you want to approve this request?')) {
+            return;
+        }
+        
+        const btn = event.target;
+        btn.disabled = true;
+        btn.textContent = 'Approving...';
+        
+        const token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        const header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+        
+        fetch('/hrmanager/dashboard/activity/approve', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                [header]: token
+            },
+            body: 'requestId=' + requestId
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showToast(data.message, 'success');
+                // Reload activities
+                loadActivities(currentTab, currentFilter);
+                loadQuickStats();
+            } else {
+                showToast(data.message, 'error');
+                btn.disabled = false;
+                btn.textContent = 'Approve';
+            }
+        })
+        .catch(err => {
+            console.error('Error approving:', err);
+            showToast('Failed to approve request', 'error');
+            btn.disabled = false;
+            btn.textContent = 'Approve';
+        });
+    }
+    
+    function rejectActivity(event, requestId) {
+        event.stopPropagation();
+        
+        const reason = prompt('Please enter rejection reason:');
+        if (reason === null) {
+            return; // User cancelled
+        }
+        
+        const btn = event.target;
+        btn.disabled = true;
+        btn.textContent = 'Rejecting...';
+        
+        const token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        const header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+        
+        fetch('/hrmanager/dashboard/activity/reject', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                [header]: token
+            },
+            body: 'requestId=' + requestId + '&reason=' + encodeURIComponent(reason)
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showToast(data.message, 'success');
+                // Reload activities
+                loadActivities(currentTab, currentFilter);
+                loadQuickStats();
+            } else {
+                showToast(data.message, 'error');
+                btn.disabled = false;
+                btn.textContent = 'Reject';
+            }
+        })
+        .catch(err => {
+            console.error('Error rejecting:', err);
+            showToast('Failed to reject request', 'error');
+            btn.disabled = false;
+            btn.textContent = 'Reject';
+        });
+    }
 
     /*]]>*/
 </script>
