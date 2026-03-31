@@ -29,9 +29,6 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
     List<Request> findByEmployeeIdAndLeaveTypeIsNotNull(Long employeeId);
     List<Request> findByEmployeeIdAndLeaveTypeIsNotNullOrderByCreatedAtDesc(Long employeeId);
 
-    @Query("SELECT COUNT(r) FROM Request r WHERE r.status = :status AND r.requestType.category = :category")
-    int countByStatusAndRequestTypeCategory(@Param("status") String status, @Param("category") String category);
-
     List<Request> findByEmployeeDepartmentIdAndLeaveTypeIsNotNullOrderByCreatedAtDesc(Long departmentId);
 
     @Query("SELECT r FROM Request r " +
@@ -110,6 +107,7 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
             "JOIN FETCH r.employee e " +
             "JOIN FETCH e.user u " +
             "LEFT JOIN FETCH e.position p " +
+            "LEFT JOIN FETCH e.department d " +
             "WHERE r.status = :status " +
             "ORDER BY r.createdAt DESC")
     Page<Request> findRequestsByStatusWithoutLeaveTypeFilter(@Param("status") String status, Pageable pageable);
@@ -118,6 +116,7 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
             "JOIN FETCH r.employee e " +
             "JOIN FETCH e.user u " +
             "LEFT JOIN FETCH e.position p " +
+            "LEFT JOIN FETCH e.department d " +
             "WHERE r.status = 'APPROVED' " +
             "ORDER BY r.approvedAt DESC")
     Page<Request> findApprovedRequestsOrderByApprovedAt(Pageable pageable);
@@ -126,6 +125,7 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
             "JOIN FETCH r.employee e " +
             "JOIN FETCH e.user u " +
             "LEFT JOIN FETCH e.position p " +
+            "LEFT JOIN FETCH e.department d " +
             "WHERE r.status = 'REJECTED' " +
             "ORDER BY r.approvedAt DESC")
     Page<Request> findRejectedRequestsOrderByApprovedAt(Pageable pageable);
@@ -134,6 +134,7 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
             "JOIN FETCH r.employee e " +
             "JOIN FETCH e.user u " +
             "LEFT JOIN FETCH e.position p " +
+            "LEFT JOIN FETCH e.department d " +
             "WHERE r.status IN ('APPROVED', 'REJECTED') " +
             "ORDER BY r.approvedAt DESC")
     Page<Request> findHistoryRequestsOrderByApprovedAt(Pageable pageable);
@@ -142,6 +143,7 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
             "JOIN FETCH r.employee e " +
             "JOIN FETCH e.user u " +
             "LEFT JOIN FETCH e.position p " +
+            "LEFT JOIN FETCH e.department d " +
             "ORDER BY r.createdAt DESC")
     Page<Request> findAllRequestsWithoutLeaveTypeFilter(Pageable pageable);
 
@@ -168,6 +170,33 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
     List<Request> findByStatusAndLeaveToGreaterThanOrderByLeaveToAsc(
             @Param("status") String status,
             @Param("date") java.time.LocalDate date);
+    
+    // Find overlapping leave requests
+    @Query("SELECT r FROM Request r " +
+           "JOIN FETCH r.employee e " +
+           "JOIN FETCH e.user u " +
+           "WHERE r.status = :status " +
+           "AND r.leaveFrom <= :endDate " +
+           "AND r.leaveTo >= :startDate " +
+           "ORDER BY r.leaveFrom ASC")
+    List<Request> findOverlappingLeaveRequests(
+            @Param("status") String status,
+            @Param("startDate") java.time.LocalDate startDate,
+            @Param("endDate") java.time.LocalDate endDate);
+
+    // Method for Recent Activities - filter by category
+    @Query("SELECT r FROM Request r " +
+           "JOIN FETCH r.employee e " +
+           "JOIN FETCH e.user u " +
+           "LEFT JOIN FETCH e.department d " +
+           "LEFT JOIN FETCH e.position p " +
+           "JOIN FETCH r.requestType rt " +
+           "WHERE rt.category = :category " +
+           "AND (r.status = 'PENDING' OR r.updatedAt >= :since) " +
+           "ORDER BY CASE WHEN r.status = 'PENDING' THEN 0 ELSE 1 END, r.createdAt DESC")
+    List<Request> findRecentRequestsByCategory(
+            @Param("category") String category,
+            @Param("since") LocalDateTime since);
 
 
     // ── Pageable queries for HR leave page (DB-level filtering) ──
@@ -223,4 +252,12 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
     java.util.Optional<Request> findByIdAndEmployeeDepartmentIdAndLeaveTypeIsNotNull(
             @Param("id") Long id,
             @Param("departmentId") Long departmentId);
+
+    // Count methods for Quick Stats
+    @Query("SELECT COUNT(r) FROM Request r JOIN r.requestType rt WHERE rt.category = :category")
+    long countByRequestTypeCategory(@Param("category") String category);
+
+    @Query("SELECT COUNT(r) FROM Request r JOIN r.requestType rt " +
+           "WHERE r.status = :status AND rt.category = :category")
+    long countByStatusAndRequestTypeCategory(@Param("status") String status, @Param("category") String category);
 }

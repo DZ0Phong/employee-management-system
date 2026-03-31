@@ -34,7 +34,7 @@ public class HrDashboardService {
                 java.util.Arrays.asList("LV_ANNUAL", "LV_SICK", "LEAVE_ANNUAL", "LEAVE_SICK", "LEAVE_UNPAID")
         );
         int pendingLeaveRequests = (int) pendingLeaveRequestsLong;
-        int pendingWorkflowRequests = requestRepository.countByStatusAndRequestTypeCategory("PENDING", "HR_STATUS");
+        int pendingWorkflowRequests = (int) requestRepository.countByStatusAndRequestTypeCategory("PENDING", "HR_STATUS");
         long newHiresThisMonth = employeeRepository.newThisMonth();
         int totalApplicants = (int) applicationRepository.count();
 

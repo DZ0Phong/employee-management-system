@@ -42,6 +42,10 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     @Query("SELECT AVG(DATEDIFF(CURRENT_DATE, e.hireDate)) FROM Employee e WHERE e.status = 'ACTIVE' AND e.hireDate IS NOT NULL")
     Double getAverageTenureInDays();
 
+    @Query("SELECT AVG(DATEDIFF(:date, e.hireDate)) FROM Employee e " +
+           "WHERE e.status = 'ACTIVE' AND e.hireDate IS NOT NULL AND e.hireDate <= :date")
+    Double getAverageTenureInDaysAtDate(@Param("date") LocalDate date);
+
     @Query(value = "SELECT e FROM Employee e LEFT JOIN e.user u LEFT JOIN e.department d LEFT JOIN e.position p " +
             "WHERE (:search IS NULL OR LOWER(u.fullName) LIKE LOWER(CONCAT('%',:search,'%')) " +
             "OR LOWER(e.employeeCode) LIKE LOWER(CONCAT('%',:search,'%')) " +
@@ -91,5 +95,35 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
            "JOIN UserRole ur ON ur.userId = u.id " +
            "JOIN ur.role r WHERE r.code IN :roleCodes")
     List<Employee> findEmployeesByRoleCodes(@Param("roleCodes") List<String> roleCodes);
+
+    // Methods for Dashboard KPI calculations
+    @Query("SELECT COUNT(e) FROM Employee e WHERE e.status = 'ACTIVE' AND e.hireDate <= :date")
+    Long countActiveEmployeesAtDate(@Param("date") LocalDate date);
+
+    @Query("SELECT COUNT(e) FROM Employee e WHERE e.status = 'TERMINATED' " +
+           "AND e.updatedAt >= :startDateTime AND e.updatedAt <= :endDateTime")
+    Long countTerminatedInPeriod(@Param("startDateTime") java.time.LocalDateTime startDateTime, 
+                                  @Param("endDateTime") java.time.LocalDateTime endDateTime);
+
+    // Methods for Status Changes Activity
+    @Query("SELECT e FROM Employee e " +
+           "JOIN FETCH e.user u " +
+           "LEFT JOIN FETCH e.department d " +
+           "LEFT JOIN FETCH e.position p " +
+           "WHERE e.hireDate >= :since " +
+           "ORDER BY e.hireDate DESC")
+    List<Employee> findNewHires(@Param("since") LocalDate since);
+
+    @Query("SELECT e FROM Employee e " +
+           "JOIN FETCH e.user u " +
+           "LEFT JOIN FETCH e.department d " +
+           "LEFT JOIN FETCH e.position p " +
+           "WHERE e.status = 'TERMINATED' " +
+           "AND e.terminationDate >= :since " +
+           "ORDER BY e.terminationDate DESC")
+    List<Employee> findRecentTerminations(@Param("since") LocalDate since);
+
+    @Query("SELECT COUNT(e) FROM Employee e WHERE e.updatedAt >= :since")
+    long countByUpdatedAtAfter(@Param("since") java.time.LocalDateTime since);
 
 }

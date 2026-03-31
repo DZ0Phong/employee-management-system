@@ -26,6 +26,12 @@ public class Employee {
     @Column(name = "position_id", nullable = false)
     private Long positionId;
 
+    @Column(name = "previous_position_id")
+    private Long previousPositionId;
+
+    @Column(name = "promotion_date")
+    private LocalDate promotionDate;
+
     @Column(name = "line_manager_id")
     private Long lineManagerId;
 
@@ -34,6 +40,12 @@ public class Employee {
 
     @Column(length = 30)
     private String status = "ACTIVE"; // ACTIVE, ON_LEAVE, TERMINATED
+
+    @Column(name = "termination_date")
+    private LocalDate terminationDate;
+
+    @Column(name = "termination_reason", length = 255)
+    private String terminationReason;
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -102,10 +114,18 @@ public class Employee {
     public void setDepartmentId(Long departmentId) { this.departmentId = departmentId; }
     public Long getPositionId() { return positionId; }
     public void setPositionId(Long positionId) { this.positionId = positionId; }
+    public Long getPreviousPositionId() { return previousPositionId; }
+    public void setPreviousPositionId(Long previousPositionId) { this.previousPositionId = previousPositionId; }
+    public LocalDate getPromotionDate() { return promotionDate; }
+    public void setPromotionDate(LocalDate promotionDate) { this.promotionDate = promotionDate; }
     public LocalDate getHireDate() { return hireDate; }
     public void setHireDate(LocalDate hireDate) { this.hireDate = hireDate; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+    public LocalDate getTerminationDate() { return terminationDate; }
+    public void setTerminationDate(LocalDate terminationDate) { this.terminationDate = terminationDate; }
+    public String getTerminationReason() { return terminationReason; }
+    public void setTerminationReason(String terminationReason) { this.terminationReason = terminationReason; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }

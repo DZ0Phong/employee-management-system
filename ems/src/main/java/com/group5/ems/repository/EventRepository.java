@@ -35,4 +35,14 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 
     // Lấy events theo department
     List<Event> findByDepartmentIdOrderByStartDateAsc(Long departmentId);
+    
+    // Lấy events theo khoảng thời gian
+    @Query("SELECT e FROM Event e WHERE " +
+           "(e.startDate > :startDate OR (e.startDate = :startDate AND e.startTime >= :startTime)) AND " +
+           "(e.startDate < :endDate OR (e.startDate = :endDate AND e.startTime <= :endTime)) " +
+           "ORDER BY e.startDate ASC, e.startTime ASC")
+    List<Event> findByStartTimeBetween(@Param("startDate") java.time.LocalDate startDate,
+                                       @Param("startTime") java.time.LocalTime startTime,
+                                       @Param("endDate") java.time.LocalDate endDate,
+                                       @Param("endTime") java.time.LocalTime endTime);
 }

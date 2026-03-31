@@ -39,4 +39,8 @@ public interface JobPostRepository extends JpaRepository<JobPost, Long> {
 
     @Query("SELECT j.title FROM JobPost j WHERE j.id = :id")
     Optional<String> findTitleById(Long id);
+
+    // Method for Dashboard KPI calculations
+    @Query("SELECT j FROM JobPost j WHERE j.status = 'OPEN' AND DATE(j.createdAt) <= :date")
+    List<JobPost> findOpenJobsAtDate(@org.springframework.data.repository.query.Param("date") java.time.LocalDate date);
 }

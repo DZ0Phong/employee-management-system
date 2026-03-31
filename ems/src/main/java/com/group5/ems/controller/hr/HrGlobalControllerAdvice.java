@@ -37,6 +37,6 @@ public class HrGlobalControllerAdvice {
 
     @ModelAttribute("pendingRequests")
     public int pendingRequests() {
-        return requestRepository.countByStatusAndRequestTypeCategory("PENDING", "HR_STATUS");
+        return (int) requestRepository.countByStatusAndRequestTypeCategory("PENDING", "HR_STATUS");
     }
 }

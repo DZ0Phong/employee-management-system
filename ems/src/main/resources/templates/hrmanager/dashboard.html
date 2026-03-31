@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="utf-8" />
@@ -30,19 +30,16 @@
         }
         .fill-icon { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
 
-        /* Animated gradient background for hero cards */
         @keyframes gradientShift {
             0%, 100% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
         }
-
         .gradient-card {
             background: linear-gradient(135deg, #1414b8, #3b3bea, #6366f1, #1414b8);
             background-size: 300% 300%;
             animation: gradientShift 6s ease infinite;
         }
 
-        /* Staggered entrance animations */
         @keyframes fadeSlideUp {
             from { opacity: 0; transform: translateY(18px); }
             to   { opacity: 1; transform: translateY(0); }
@@ -57,41 +54,31 @@
         .anim-7 { animation-delay: 0.47s; }
         .anim-8 { animation-delay: 0.54s; }
 
-        /* Subtle dot grid background */
         .dot-grid {
             background-image: radial-gradient(circle, #1414b820 1px, transparent 1px);
             background-size: 24px 24px;
         }
 
-        /* Progress bar animation */
-        @keyframes progressFill {
-            from { width: 0%; }
-        }
+        @keyframes progressFill { from { width: 0%; } }
         .progress-bar { animation: progressFill 1.2s cubic-bezier(.4,0,.2,1) forwards; }
 
-        /* Sparkline pulse */
         @keyframes pulse-dot {
             0%, 100% { transform: scale(1); opacity: 1; }
             50% { transform: scale(1.5); opacity: .6; }
         }
         .pulse-dot { animation: pulse-dot 2s ease-in-out infinite; }
 
-        /* Custom scrollbar */
         ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #1414b840; border-radius: 99px; }
 
-        /* Active nav glow */
         .nav-active { box-shadow: 0 0 0 1px #1414b830, inset 3px 0 0 #1414b8; }
 
-        /* Hover card lift */
         .card-hover { transition: transform .2s ease, box-shadow .2s ease; }
         .card-hover:hover { transform: translateY(-2px); box-shadow: 0 12px 32px -8px #1414b825; }
 
-        /* Number counter font */
         .stat-num { font-feature-settings: "tnum"; font-variant-numeric: tabular-nums; }
 
-        /* Gradient text */
         .gradient-text {
             background: linear-gradient(135deg, #1414b8, #6366f1);
             -webkit-background-clip: text;
@@ -192,672 +179,774 @@
         </div>
     </aside>
 
-        <!-- Main Content -->
-        <main class="flex-1 flex flex-col overflow-hidden">
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col overflow-hidden">
 
-            <!-- Header -->
-            <header
-                class="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-8 shrink-0">
-                <div>
-                    <h2 class="text-base font-black text-slate-900 dark:text-slate-100 leading-tight">Dashboard Overview</h2>
-                    <p class="text-xs text-slate-400">
-                        Welcome back, <span th:text="${currentUser?.firstName} ?: 'Alex'">Alex</span>. Here's what's happening today.
-                    </p>
-                </div>
-                <div class="flex items-center gap-2">
-                    <a th:href="@{/dashboard/export(format='pdf')}"
-                        class="flex items-center gap-1.5 px-3.5 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 text-xs font-semibold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm">
-                        <span class="material-symbols-outlined text-[17px]">download</span>
-                        Export PDF
-                    </a>
-                    <a th:href="@{/requests/new}"
-                        class="flex items-center gap-1.5 px-3.5 py-2 bg-primary text-white text-xs font-semibold rounded-xl hover:bg-primary/90 transition-colors shadow-sm">
-                        <span class="material-symbols-outlined text-[17px]">add</span>
-                        New Request
-                    </a>
-                    <div class="w-8 h-8 rounded-full bg-primary/10 text-primary font-bold text-xs flex items-center justify-center ml-1"
-                         th:text="${currentUser?.initials ?: 'AH'}">AH</div>
-                </div>
-            </header>
+        <!-- Header -->
+        <header class="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-8 shrink-0">
+            <div>
+                <h2 class="text-base font-black text-slate-900 dark:text-slate-100 leading-tight">Dashboard Overview</h2>
+                <p class="text-xs text-slate-400">
+                    Welcome back, <span th:text="${currentUser?.firstName} ?: 'Alex'">Alex</span>. Here's what's happening today.
+                </p>
+            </div>
+            <div class="flex items-center gap-2">
+                <a th:href="@{/dashboard/export(format='pdf')}"
+                   class="flex items-center gap-1.5 px-3.5 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 text-xs font-semibold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm">
+                    <span class="material-symbols-outlined text-[17px]">download</span>
+                    Export PDF
+                </a>
+                <a th:href="@{/requests/new}"
+                   class="flex items-center gap-1.5 px-3.5 py-2 bg-primary text-white text-xs font-semibold rounded-xl hover:bg-primary/90 transition-colors shadow-sm">
+                    <span class="material-symbols-outlined text-[17px]">add</span>
+                    New Request
+                </a>
+                <div class="w-8 h-8 rounded-full bg-primary/10 text-primary font-bold text-xs flex items-center justify-center ml-1"
+                     th:text="${currentUser?.initials ?: 'AH'}">AH</div>
+            </div>
+        </header>
 
-            <!-- Dashboard Body -->
-            <div class="flex-1 overflow-y-auto p-8 space-y-8">
+        <!-- Dashboard Body -->
+        <div class="flex-1 overflow-y-auto p-8 space-y-8">
 
-                <!-- KPI Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <!-- KPI Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
 
-                    <!-- Total Headcount -->
-                    <div
-                        class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                        <div class="flex justify-between items-start mb-4">
-                            <div
-                                class="size-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center text-blue-600 dark:text-blue-400">
-                                <span class="material-symbols-outlined">groups</span>
-                            </div>
-                            <span th:text="${kpi?.headcountChange != null ? kpi.headcountChange : '+2.5%'}"
-                                th:classappend="${kpi?.headcountChangePositive != null ? (kpi.headcountChangePositive ? 'text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10' : 'text-rose-500 bg-rose-50 dark:bg-rose-500/10') : 'text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10'}"
-                                class="text-xs font-bold px-2 py-1 rounded">+2.5%</span>
+                <!-- Total Headcount -->
+                <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="size-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center text-blue-600 dark:text-blue-400">
+                            <span class="material-symbols-outlined">groups</span>
                         </div>
-                        <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Total Headcount</p>
-                        <h3 class="text-3xl font-bold mt-1"
-                            th:text="${kpi?.totalHeadcount != null ? #numbers.formatInteger(kpi.totalHeadcount, 1, 'COMMA') : '1,248'}">
-                            1,248</h3>
+                        <span th:text="${kpi?.headcountChange != null ? kpi.headcountChange : '+2.5%'}"
+                              th:classappend="${kpi?.headcountChangePositive != null ? (kpi.headcountChangePositive ? 'text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10' : 'text-rose-500 bg-rose-50 dark:bg-rose-500/10') : 'text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10'}"
+                              class="text-xs font-bold px-2 py-1 rounded">+2.5%</span>
                     </div>
-
-                    <!-- Open Requisitions -->
-                    <div
-                        class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                        <div class="flex justify-between items-start mb-4">
-                            <div
-                                class="size-10 bg-amber-100 dark:bg-amber-900/30 rounded-lg flex items-center justify-center text-amber-600 dark:text-amber-400">
-                                <span class="material-symbols-outlined">work_outline</span>
-                            </div>
-                            <span th:text="${kpi?.openReqChange != null ? kpi.openReqChange : '-10%'}"
-                                th:classappend="${kpi?.openReqChangePositive != null ? (kpi.openReqChangePositive ? 'text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10' : 'text-rose-500 bg-rose-50 dark:bg-rose-500/10') : 'text-rose-500 bg-rose-50 dark:bg-rose-500/10'}"
-                                class="text-xs font-bold px-2 py-1 rounded">-10%</span>
-                        </div>
-                        <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Open Requisitions</p>
-                        <h3 class="text-3xl font-bold mt-1"
-                            th:text="${kpi?.openRequisitions != null ? kpi.openRequisitions : 24}">24</h3>
-                    </div>
-
-                    <!-- Monthly Turnover -->
-                    <div
-                        class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                        <div class="flex justify-between items-start mb-4">
-                            <div
-                                class="size-10 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center text-emerald-600 dark:text-emerald-400">
-                                <span class="material-symbols-outlined">trending_down</span>
-                            </div>
-                            <span th:text="${kpi?.turnoverChange != null ? kpi.turnoverChange : '+0.1%'}"
-                                th:classappend="${kpi?.turnoverChangePositive != null ? (kpi.turnoverChangePositive ? 'text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10' : 'text-rose-500 bg-rose-50 dark:bg-rose-500/10') : 'text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10'}"
-                                class="text-xs font-bold px-2 py-1 rounded">+0.1%</span>
-                        </div>
-                        <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Monthly Turnover</p>
-                        <h3 class="text-3xl font-bold mt-1"
-                            th:text="${kpi?.monthlyTurnover != null ? kpi.monthlyTurnover : '1.2%'}">1.2%</h3>
-                    </div>
-
-                    <!-- Average Tenure -->
-                    <div
-                        class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                        <div class="flex justify-between items-start mb-4">
-                            <div
-                                class="size-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center text-purple-600 dark:text-purple-400">
-                                <span class="material-symbols-outlined">timer</span>
-                            </div>
-                            <span th:text="${kpi?.tenureChange != null ? kpi.tenureChange : '-0.2%'}"
-                                th:classappend="${kpi?.tenureChangePositive != null ? (kpi.tenureChangePositive ? 'text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10' : 'text-rose-500 bg-rose-50 dark:bg-rose-500/10') : 'text-rose-500 bg-rose-50 dark:bg-rose-500/10'}"
-                                class="text-xs font-bold px-2 py-1 rounded">-0.2%</span>
-                        </div>
-                        <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Average Tenure</p>
-                        <h3 class="text-3xl font-bold mt-1"
-                            th:text="${kpi?.averageTenure != null ? kpi.averageTenure : '4.5 Yrs'}">4.5 Yrs</h3>
-                    </div>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Total Headcount</p>
+                    <h3 class="text-3xl font-bold mt-1"
+                        th:text="${kpi?.totalHeadcount != null ? #numbers.formatInteger(kpi.totalHeadcount, 1, 'COMMA') : '1,248'}">1,248</h3>
                 </div>
 
-                <!-- Chart + Upcoming Events -->
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-                    <!-- Hiring vs Attrition Chart -->
-                    <div
-                        class="lg:col-span-2 bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                        <div class="flex justify-between items-center mb-8">
-                            <div>
-                                <h4 class="text-lg font-bold">Hiring vs. Attrition</h4>
-                                <p class="text-sm text-slate-500">Employee lifecycle trends over the last 6 months</p>
-                            </div>
-                            <div class="flex items-center gap-4 text-sm font-medium">
-                                <div class="flex items-center gap-2">
-                                    <span class="size-3 rounded-full bg-primary"></span>
-                                    <span>Hiring</span>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <span class="size-3 rounded-full bg-slate-300 dark:bg-slate-600"></span>
-                                    <span>Attrition</span>
-                                </div>
-                            </div>
+                <!-- Open Requisitions -->
+                <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="size-10 bg-amber-100 dark:bg-amber-900/30 rounded-lg flex items-center justify-center text-amber-600 dark:text-amber-400">
+                            <span class="material-symbols-outlined">work_outline</span>
                         </div>
-                        <div class="relative" style="height: 256px;">
-                            <canvas id="hiringAttritionChart"></canvas>
+                        <span th:text="${kpi?.openReqChange != null ? kpi.openReqChange : '-10%'}"
+                              th:classappend="${kpi?.openReqChangePositive != null ? (kpi.openReqChangePositive ? 'text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10' : 'text-rose-500 bg-rose-50 dark:bg-rose-500/10') : 'text-rose-500 bg-rose-50 dark:bg-rose-500/10'}"
+                              class="text-xs font-bold px-2 py-1 rounded">-10%</span>
+                    </div>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Open Requisitions</p>
+                    <h3 class="text-3xl font-bold mt-1"
+                        th:text="${kpi?.openRequisitions != null ? kpi.openRequisitions : 24}">24</h3>
+                </div>
+
+                <!-- Monthly Turnover -->
+                <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="size-10 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                            <span class="material-symbols-outlined">trending_down</span>
+                        </div>
+                        <span th:text="${kpi?.turnoverChange != null ? kpi.turnoverChange : '+0.1%'}"
+                              th:classappend="${kpi?.turnoverChangePositive != null ? (kpi.turnoverChangePositive ? 'text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10' : 'text-rose-500 bg-rose-50 dark:bg-rose-500/10') : 'text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10'}"
+                              class="text-xs font-bold px-2 py-1 rounded">+0.1%</span>
+                    </div>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Monthly Turnover</p>
+                    <h3 class="text-3xl font-bold mt-1"
+                        th:text="${kpi?.monthlyTurnover != null ? kpi.monthlyTurnover : '1.2%'}">1.2%</h3>
+                </div>
+
+                <!-- Average Tenure -->
+                <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="size-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center text-purple-600 dark:text-purple-400">
+                            <span class="material-symbols-outlined">timer</span>
+                        </div>
+                        <span th:text="${kpi?.tenureChange != null ? kpi.tenureChange : '-0.2%'}"
+                              th:classappend="${kpi?.tenureChangePositive != null ? (kpi.tenureChangePositive ? 'text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10' : 'text-rose-500 bg-rose-50 dark:bg-rose-500/10') : 'text-rose-500 bg-rose-50 dark:bg-rose-500/10'}"
+                              class="text-xs font-bold px-2 py-1 rounded">-0.2%</span>
+                    </div>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Average Tenure</p>
+                    <h3 class="text-3xl font-bold mt-1"
+                        th:text="${kpi?.averageTenure != null ? kpi.averageTenure : '4.5 Yrs'}">4.5 Yrs</h3>
+                </div>
+            </div>
+
+            <!-- Chart + Upcoming Events -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+                <!-- Hiring vs Attrition Chart -->
+                <div class="lg:col-span-2 bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex justify-between items-center mb-8">
+                        <div>
+                            <h4 class="text-lg font-bold">Hiring vs. Attrition</h4>
+                            <p class="text-sm text-slate-500">Employee lifecycle trends over the last 6 months</p>
+                        </div>
+                        <div class="flex items-center gap-4 text-sm font-medium">
+                            <div class="flex items-center gap-2">
+                                <span class="size-3 rounded-full bg-primary"></span>
+                                <span>Hiring</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="size-3 rounded-full bg-slate-300 dark:bg-slate-600"></span>
+                                <span>Attrition</span>
+                            </div>
                         </div>
                     </div>
-
-                    <!-- Upcoming Events -->
-                    <div
-                        class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                        <h4 class="text-lg font-bold mb-6">Upcoming Events</h4>
-                        <div class="space-y-6">
-
-                            <!--/* Dynamic events từ backend */-->
-                            <th:block th:if="${upcomingEvents != null and !upcomingEvents.empty}">
-                                <div th:each="event : ${upcomingEvents}" class="flex gap-4">
-                                    <div th:classappend="${event.colorClass != null ? event.colorClass : 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'}"
-                                        class="p-3 rounded-lg flex flex-col items-center justify-center min-w-[60px]">
-                                        <span class="text-sm font-bold" th:text="${event.monthLabel}">OCT</span>
-                                        <span class="text-xl font-black" th:text="${event.day}">12</span>
-                                    </div>
-                                    <div class="flex-1">
-                                        <p class="text-sm font-bold" th:text="${event.title}">Event Title</p>
-                                        <p class="text-xs text-slate-500 mt-1 flex items-center gap-1">
-                                            <span class="material-symbols-outlined text-xs">schedule</span>
-                                            <span th:text="${event.timeLabel}">09:00 AM - 11:00 AM</span>
-                                        </p>
-                                    </div>
-                                </div>
-                            </th:block>
-
-                            <!--/* Fallback static events */-->
-                            <th:block th:if="${upcomingEvents == null or upcomingEvents.empty}">
-                                <div class="flex gap-4">
-                                    <div
-                                        class="bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 p-3 rounded-lg flex flex-col items-center justify-center min-w-[60px]">
-                                        <span class="text-sm font-bold">OCT</span>
-                                        <span class="text-xl font-black">12</span>
-                                    </div>
-                                    <div class="flex-1">
-                                        <p class="text-sm font-bold">New Employee Orientation</p>
-                                        <p class="text-xs text-slate-500 mt-1 flex items-center gap-1">
-                                            <span class="material-symbols-outlined text-xs">schedule</span> 09:00 AM -
-                                            11:00 AM
-                                        </p>
-                                    </div>
-                                </div>
-                                <div class="flex gap-4">
-                                    <div
-                                        class="bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 p-3 rounded-lg flex flex-col items-center justify-center min-w-[60px]">
-                                        <span class="text-sm font-bold">OCT</span>
-                                        <span class="text-xl font-black">14</span>
-                                    </div>
-                                    <div class="flex-1">
-                                        <p class="text-sm font-bold">Q3 Performance Reviews</p>
-                                        <p class="text-xs text-slate-500 mt-1 flex items-center gap-1">
-                                            <span class="material-symbols-outlined text-xs">schedule</span> All Day
-                                        </p>
-                                    </div>
-                                </div>
-                                <div class="flex gap-4">
-                                    <div
-                                        class="bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 p-3 rounded-lg flex flex-col items-center justify-center min-w-[60px]">
-                                        <span class="text-sm font-bold">OCT</span>
-                                        <span class="text-xl font-black">15</span>
-                                    </div>
-                                    <div class="flex-1">
-                                        <p class="text-sm font-bold">Benefits Enrollment Ends</p>
-                                        <p class="text-xs text-slate-500 mt-1 flex items-center gap-1">
-                                            <span class="material-symbols-outlined text-xs">schedule</span> 05:00 PM
-                                            Deadline
-                                        </p>
-                                    </div>
-                                </div>
-                            </th:block>
-
-                        </div>
+                    <div class="relative" style="height: 256px;">
+                        <canvas id="hiringAttritionChart"></canvas>
                     </div>
                 </div>
 
-                <!-- Recent Activity Table -->
-                <div
-                    class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-                    <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
-                        <h4 class="text-lg font-bold">Recent Activity</h4>
-                        <div class="flex gap-2">
-                            <button onclick="filterActivities('all')" data-filter="all"
-                                th:classappend="${activityFilter == 'all' or activityFilter == null ? 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}"
-                                class="activity-filter px-3 py-1.5 text-xs font-bold rounded-md transition-colors">All</button>
-                            <button onclick="filterActivities('pending')" data-filter="pending"
-                                th:classappend="${activityFilter == 'pending' ? 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}"
-                                class="activity-filter px-3 py-1.5 text-xs font-bold rounded-md transition-colors">Pending</button>
-                            <button onclick="filterActivities('approved')" data-filter="approved"
-                                th:classappend="${activityFilter == 'approved' ? 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}"
-                                class="activity-filter px-3 py-1.5 text-xs font-bold rounded-md transition-colors">Approved</button>
-                        </div>
+                <!-- Upcoming Events -->
+                <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <h4 class="text-lg font-bold mb-6">Upcoming Events</h4>
+                    <div class="space-y-6">
+
+                        <!-- Dynamic events from backend -->
+                        <th:block th:if="${upcomingEvents != null and !upcomingEvents.empty}">
+                            <div th:each="event : ${upcomingEvents}" class="flex gap-4">
+                                <div th:classappend="${event.colorClass != null ? event.colorClass : 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'}"
+                                     class="p-3 rounded-lg flex flex-col items-center justify-center min-w-[60px]">
+                                    <span class="text-sm font-bold" th:text="${event.monthLabel}">OCT</span>
+                                    <span class="text-xl font-black" th:text="${event.day}">12</span>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-bold" th:text="${event.title}">Event Title</p>
+                                    <p class="text-xs text-slate-500 mt-1 flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-xs">schedule</span>
+                                        <span th:text="${event.timeLabel}">09:00 AM - 11:00 AM</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </th:block>
+
+                        <!-- Fallback static events -->
+                        <th:block th:if="${upcomingEvents == null or upcomingEvents.empty}">
+                            <div class="flex gap-4">
+                                <div class="bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 p-3 rounded-lg flex flex-col items-center justify-center min-w-[60px]">
+                                    <span class="text-sm font-bold">OCT</span>
+                                    <span class="text-xl font-black">12</span>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-bold">New Employee Orientation</p>
+                                    <p class="text-xs text-slate-500 mt-1 flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-xs">schedule</span> 09:00 AM - 11:00 AM
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="flex gap-4">
+                                <div class="bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 p-3 rounded-lg flex flex-col items-center justify-center min-w-[60px]">
+                                    <span class="text-sm font-bold">OCT</span>
+                                    <span class="text-xl font-black">14</span>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-bold">Q3 Performance Reviews</p>
+                                    <p class="text-xs text-slate-500 mt-1 flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-xs">schedule</span> All Day
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="flex gap-4">
+                                <div class="bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 p-3 rounded-lg flex flex-col items-center justify-center min-w-[60px]">
+                                    <span class="text-sm font-bold">OCT</span>
+                                    <span class="text-xl font-black">15</span>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-bold">Benefits Enrollment Ends</p>
+                                    <p class="text-xs text-slate-500 mt-1 flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-xs">schedule</span> 05:00 PM Deadline
+                                    </p>
+                                </div>
+                            </div>
+                        </th:block>
+
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left">
-                            <thead class="bg-slate-50 dark:bg-slate-800/50">
-                                <tr>
-                                    <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">
-                                        Employee</th>
-                                    <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">
-                                        Action</th>
-                                    <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">Date
-                                    </th>
-                                    <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">
-                                        Status</th>
-                                    <th
-                                        class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 text-right">
-                                        Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="activity-tbody" class="divide-y divide-slate-100 dark:divide-slate-800">
+                </div>
+            </div>
 
-                                <!--/* Dynamic rows */-->
-                                <th:block th:if="${recentActivities != null and !recentActivities.empty}">
-                                    <tr th:each="activity : ${recentActivities}">
-                                        <td class="px-6 py-4">
-                                            <div class="flex items-center gap-3">
-                                                <div class="size-8 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-500 text-xs"
-                                                    th:text="${activity.employeeInitials}">SR</div>
-                                                <div>
-                                                    <p class="text-sm font-bold" th:text="${activity.employeeName}">Name
-                                                    </p>
-                                                    <p class="text-xs text-slate-500"
-                                                        th:text="${activity.employeePosition}">Position</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <span class="text-sm" th:text="${activity.actionLabel}">Action</span>
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <span class="text-sm"
-                                                th:text="${#temporals.format(activity.date, 'MMM dd, yyyy')}">Oct 10,
-                                                2023</span>
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <span th:switch="${activity.status}"
-                                                class="px-2.5 py-1 text-xs font-bold rounded-full">
-                                                <span th:case="'PENDING'"
-                                                    class="px-2.5 py-1 text-xs font-bold rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">Pending</span>
-                                                <span th:case="'APPROVED'"
-                                                    class="px-2.5 py-1 text-xs font-bold rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400">Approved</span>
-                                                <span th:case="'IN_PROGRESS'"
-                                                    class="px-2.5 py-1 text-xs font-bold rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">In
-                                                    Progress</span>
-                                                <span th:case="'REJECTED'"
-                                                    class="px-2.5 py-1 text-xs font-bold rounded-full bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400">Rejected</span>
-                                                <span th:case="*"
-                                                    class="px-2.5 py-1 text-xs font-bold rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
-                                                    th:text="${activity.status}">Other</span>
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 text-right">
-                                            <a th:href="@{/requests/{id}(id=${activity.id})}"
-                                                class="text-primary font-bold text-sm hover:underline transition-all">Review</a>
-                                        </td>
-                                    </tr>
-                                </th:block>
+            <!-- ══════════════════════════════════════════════════════════════════════════ -->
+            <!-- ACTIVITY CENTER                                                           -->
+            <!-- ══════════════════════════════════════════════════════════════════════════ -->
 
-                                <!--/* Fallback static rows */-->
-                                <th:block th:if="${recentActivities == null or recentActivities.empty}">
-                                    <tr>
-                                        <td class="px-6 py-4">
-                                            <div class="flex items-center gap-3">
-                                                <div
-                                                    class="size-8 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-500 text-xs">
-                                                    SR</div>
-                                                <div>
-                                                    <p class="text-sm font-bold">Sarah Rodriguez</p>
-                                                    <p class="text-xs text-slate-500">Marketing Specialist</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4"><span class="text-sm">Sick Leave Request</span></td>
-                                        <td class="px-6 py-4"><span class="text-sm">Oct 10, 2023</span></td>
-                                        <td class="px-6 py-4">
-                                            <span
-                                                class="px-2.5 py-1 text-xs font-bold rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">Pending</span>
-                                        </td>
-                                        <td class="px-6 py-4 text-right">
-                                            <a href="#"
-                                                class="text-primary font-bold text-sm hover:underline transition-all">Review</a>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="px-6 py-4">
-                                            <div class="flex items-center gap-3">
-                                                <div
-                                                    class="size-8 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-500 text-xs">
-                                                    MJ</div>
-                                                <div>
-                                                    <p class="text-sm font-bold">Marcus Johnson</p>
-                                                    <p class="text-xs text-slate-500">Product Designer</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4"><span class="text-sm">Bonus Approval</span></td>
-                                        <td class="px-6 py-4"><span class="text-sm">Oct 09, 2023</span></td>
-                                        <td class="px-6 py-4">
-                                            <span
-                                                class="px-2.5 py-1 text-xs font-bold rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400">Approved</span>
-                                        </td>
-                                        <td class="px-6 py-4 text-right">
-                                            <a href="#"
-                                                class="text-primary font-bold text-sm hover:underline transition-all">Review</a>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="px-6 py-4">
-                                            <div class="flex items-center gap-3">
-                                                <div
-                                                    class="size-8 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-500 text-xs">
-                                                    EL</div>
-                                                <div>
-                                                    <p class="text-sm font-bold">Elena Lee</p>
-                                                    <p class="text-xs text-slate-500">Data Analyst</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4"><span class="text-sm">Hiring Contract</span></td>
-                                        <td class="px-6 py-4"><span class="text-sm">Oct 08, 2023</span></td>
-                                        <td class="px-6 py-4">
-                                            <span
-                                                class="px-2.5 py-1 text-xs font-bold rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">In
-                                                Progress</span>
-                                        </td>
-                                        <td class="px-6 py-4 text-right">
-                                            <a href="#"
-                                                class="text-primary font-bold text-sm hover:underline transition-all">Review</a>
-                                        </td>
-                                    </tr>
-                                </th:block>
+            <!-- Quick Stats Bar (4 clickable cards) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 anim anim-5">
 
-                            </tbody>
-                        </table>
-                    </div>
-                    <!-- Pagination -->
-                    <div id="activity-pagination" class="px-6 py-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                        <span id="pagination-info" class="text-xs text-slate-400">Showing 1-10 of 0</span>
-                        <div id="pagination-buttons" class="flex items-center gap-1.5">
-                            <!-- Rendered by JS -->
+                <!-- Leave Requests Card -->
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5 cursor-pointer card-hover transition-all hover:border-primary/30"
+                     id="quick-card-leave">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="w-11 h-11 rounded-lg bg-amber-50 flex items-center justify-center text-amber-600">
+                            <span class="material-symbols-outlined text-[22px]">calendar_today</span>
                         </div>
+                        <span id="leave-pending-badge" class="px-2.5 py-1 bg-amber-100 text-amber-700 text-xs font-bold rounded-full">
+                            3 pending
+                        </span>
+                    </div>
+                    <p class="text-slate-500 text-sm font-medium mb-1">Leave Requests</p>
+                    <h3 class="text-3xl font-black text-slate-900" id="leave-total">12</h3>
+                </div>
+
+                <!-- Payroll Card -->
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5 cursor-pointer card-hover transition-all hover:border-primary/30"
+                     id="quick-card-payroll">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="w-11 h-11 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
+                            <span class="material-symbols-outlined text-[22px]">payments</span>
+                        </div>
+                        <span id="payroll-pending-badge" class="px-2.5 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">
+                            2 pending
+                        </span>
+                    </div>
+                    <p class="text-slate-500 text-sm font-medium mb-1">Payroll</p>
+                    <h3 class="text-3xl font-black text-slate-900" id="payroll-total">$847K</h3>
+                </div>
+
+                <!-- Status Changes Card -->
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5 cursor-pointer card-hover transition-all hover:border-primary/30"
+                     id="quick-card-status">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="w-11 h-11 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600">
+                            <span class="material-symbols-outlined text-[22px]">group</span>
+                        </div>
+                        <span class="px-2.5 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full">
+                            this month
+                        </span>
+                    </div>
+                    <p class="text-slate-500 text-sm font-medium mb-1">Status Changes</p>
+                    <h3 class="text-3xl font-black text-slate-900" id="status-total">7</h3>
+                </div>
+
+                <!-- HR Requests Card -->
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5 cursor-pointer card-hover transition-all hover:border-primary/30"
+                     id="quick-card-hr">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="w-11 h-11 rounded-lg bg-rose-50 flex items-center justify-center text-rose-600">
+                            <span class="material-symbols-outlined text-[22px]">description</span>
+                        </div>
+                        <span id="hr-pending-badge" class="px-2.5 py-1 bg-rose-100 text-rose-700 text-xs font-bold rounded-full">
+                            4 pending
+                        </span>
+                    </div>
+                    <p class="text-slate-500 text-sm font-medium mb-1">HR Requests</p>
+                    <h3 class="text-3xl font-black text-slate-900" id="hr-total">9</h3>
+                </div>
+            </div>
+
+            <!-- Activity Center Main Container -->
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden anim anim-6">
+
+                <!-- Header -->
+                <div class="p-6 border-b border-slate-200 flex justify-between items-center">
+                    <div class="flex items-center gap-3">
+                        <h4 class="text-lg font-bold">Activity Center</h4>
+                        <span id="total-pending-badge" class="px-2.5 py-1 bg-rose-100 text-rose-700 text-xs font-bold rounded-full">
+                            9 needs attention
+                        </span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="flex items-center gap-1.5 px-3.5 py-2 bg-white border border-slate-200 text-slate-500 text-xs font-semibold rounded-xl hover:bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[17px]">download</span>
+                            Export
+                        </button>
                     </div>
                 </div>
 
-            </div><!-- end dashboard body -->
-        </main>
-    </div>
+                <!-- Tabs Navigation - Dynamic -->
+                <div class="border-b border-slate-200 px-6">
+                    <nav class="flex gap-8 -mb-px overflow-x-auto">
+                        <!-- Dynamic tabs from backend -->
+                        <button th:each="cat : ${activityCategories}"
+                                th:data-tab="${cat.type}"
+                                th:classappend="${cat.type == 'leave' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}"
+                                class="activity-tab flex items-center gap-2 px-1 py-4 text-sm font-semibold border-b-2 transition-colors whitespace-nowrap">
+                            <span th:text="${cat.label}">Category</span>
+                            <span th:if="${cat.count > 0}"
+                                  th:text="${cat.count}"
+                                  class="tab-badge px-2 py-0.5 bg-slate-100 text-slate-600 text-xs font-bold rounded-full">0</span>
+                        </button>
+                        <!-- All Activity tab -->
+                        <button data-tab="all"
+                                class="activity-tab flex items-center gap-2 px-1 py-4 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 transition-colors whitespace-nowrap">
+                            <span>All Activity</span>
+                        </button>
+                    </nav>
+                </div>
 
-    <!-- Toast Notification -->
-    <div id="toast"
-        class="fixed bottom-6 right-6 z-50 hidden items-center gap-3 px-5 py-3 rounded-xl shadow-lg text-white text-sm font-semibold transition-all duration-300">
-        <span id="toast-icon" class="material-symbols-outlined text-[20px]">check_circle</span>
-        <span id="toast-msg">Done</span>
-    </div>
+                <!-- Sub-filters -->
+                <div class="px-6 py-4 border-b border-slate-200 overflow-x-auto">
+                    <div id="sub-filters" class="flex gap-2 flex-nowrap">
+                        <!-- Rendered by JavaScript -->
+                    </div>
+                </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+                <!-- Activity Items List -->
+                <div id="activity-list" class="divide-y divide-slate-100">
+                    <div class="px-6 py-12 text-center">
+                        <span class="material-symbols-outlined text-slate-300 text-4xl animate-spin">progress_activity</span>
+                        <p class="text-sm text-slate-400 mt-2">Loading activities...</p>
+                    </div>
+                </div>
 
-    <script th:inline="javascript">
-        /*<![CDATA[*/
+                <!-- Footer / Load More -->
+                <div class="px-6 py-4 border-t border-slate-200 text-center">
+                    <button id="load-more-btn" class="text-primary font-bold text-sm hover:underline transition-all">
+                        Load all activities →
+                    </button>
+                </div>
+            </div>
 
-        // ── Chart.js: Hiring vs Attrition ─────────────────────────────────────────
-        // Dữ liệu từ backend (Spring truyền vào model).
-        // Fallback là mảng mẫu để trang không bị trắng khi chưa tích hợp.
-        const chartLabels = /*[[${chartLabels}]]*/['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
-        const hiringData = /*[[${hiringData}]]*/[45, 62, 38, 71, 55, 49];
-        const attritionData = /*[[${attritionData}]]*/[12, 18, 10, 22, 15, 20];
+        </div><!-- end dashboard body -->
+    </main>
+</div>
 
-        // Phát hiện dark mode để đổi màu grid/text
-        const isDark = document.documentElement.classList.contains('dark');
-        const gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
-        const tickColor = isDark ? '#94a3b8' : '#64748b';
+<!-- Toast Notification -->
+<div id="toast"
+     class="fixed bottom-6 right-6 z-50 hidden items-center gap-3 px-5 py-3 rounded-xl shadow-lg text-white text-sm font-semibold transition-all duration-300">
+    <span id="toast-icon" class="material-symbols-outlined text-[20px]">check_circle</span>
+    <span id="toast-msg">Done</span>
+</div>
 
-        const ctx = document.getElementById('hiringAttritionChart').getContext('2d');
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
-        // Gradient fill cho đường Hiring
-        const gradient = ctx.createLinearGradient(0, 0, 0, 256);
-        gradient.addColorStop(0, 'rgba(20,20,184,0.18)');
-        gradient.addColorStop(1, 'rgba(20,20,184,0)');
+<script th:inline="javascript">
+    /*<![CDATA[*/
 
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: chartLabels,
-                datasets: [
-                    {
-                        label: 'Hiring',
-                        data: hiringData,
-                        borderColor: '#1414b8',
-                        backgroundColor: gradient,
-                        borderWidth: 2.5,
-                        fill: true,
-                        tension: 0.45,
-                        pointRadius: 4,
-                        pointBackgroundColor: '#1414b8',
-                        pointBorderColor: '#fff',
-                        pointBorderWidth: 2,
-                        pointHoverRadius: 6,
-                    },
-                    {
-                        label: 'Attrition',
-                        data: attritionData,
-                        borderColor: '#94a3b8',
-                        backgroundColor: 'transparent',
-                        borderWidth: 2,
-                        borderDash: [6, 4],
-                        fill: false,
-                        tension: 0.45,
-                        pointRadius: 4,
-                        pointBackgroundColor: '#94a3b8',
-                        pointBorderColor: '#fff',
-                        pointBorderWidth: 2,
-                        pointHoverRadius: 6,
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: { mode: 'index', intersect: false },
-                plugins: {
-                    legend: { display: false },  // legend tuỳ chỉnh đã có trong HTML
-                    tooltip: {
-                        backgroundColor: isDark ? '#1e293b' : '#fff',
-                        borderColor: isDark ? '#334155' : '#e2e8f0',
-                        borderWidth: 1,
-                        titleColor: isDark ? '#f1f5f9' : '#0f172a',
-                        bodyColor: isDark ? '#94a3b8' : '#475569',
-                        padding: 12,
-                        callbacks: {
-                            label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y} `
-                        }
-                    }
+    // ── Chart.js: Hiring vs Attrition ─────────────────────────────────────────
+    // Data from backend (passed by Spring into model).
+    // Fallback sample data — prevents blank page before backend integration.
+    const chartLabels = /*[[${chartLabels}]]*/['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+    const hiringData = /*[[${hiringData}]]*/[45, 62, 38, 71, 55, 49];
+    const attritionData = /*[[${attritionData}]]*/[12, 18, 10, 22, 15, 20];
+
+    // Detect dark mode for grid/text colors
+    const isDark = document.documentElement.classList.contains('dark');
+    const gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+    const tickColor = isDark ? '#94a3b8' : '#64748b';
+
+    const ctx = document.getElementById('hiringAttritionChart').getContext('2d');
+
+    // Gradient fill for Hiring line
+    const gradient = ctx.createLinearGradient(0, 0, 0, 256);
+    gradient.addColorStop(0, 'rgba(20,20,184,0.18)');
+    gradient.addColorStop(1, 'rgba(20,20,184,0)');
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: chartLabels,
+            datasets: [
+                {
+                    label: 'Hiring',
+                    data: hiringData,
+                    borderColor: '#1414b8',
+                    backgroundColor: gradient,
+                    borderWidth: 2.5,
+                    fill: true,
+                    tension: 0.45,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#1414b8',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointHoverRadius: 6,
                 },
-                scales: {
-                    x: {
-                        grid: { color: gridColor, drawBorder: false },
-                        ticks: { color: tickColor, font: { family: 'Inter', size: 12, weight: '600' } }
-                    },
-                    y: {
-                        beginAtZero: true,
-                        grid: { color: gridColor, drawBorder: false },
-                        ticks: {
-                            color: tickColor,
-                            font: { family: 'Inter', size: 12 },
-                            stepSize: 10,
-                            callback: val => val
-                        }
+                {
+                    label: 'Attrition',
+                    data: attritionData,
+                    borderColor: '#94a3b8',
+                    backgroundColor: 'transparent',
+                    borderWidth: 2,
+                    borderDash: [6, 4],
+                    fill: false,
+                    tension: 0.45,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#94a3b8',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointHoverRadius: 6,
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { display: false }, // custom legend already present in HTML
+                tooltip: {
+                    backgroundColor: isDark ? '#1e293b' : '#fff',
+                    borderColor: isDark ? '#334155' : '#e2e8f0',
+                    borderWidth: 1,
+                    titleColor: isDark ? '#f1f5f9' : '#0f172a',
+                    bodyColor: isDark ? '#94a3b8' : '#475569',
+                    padding: 12,
+                    callbacks: {
+                        label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y} `
                     }
                 }
+            },
+            scales: {
+                x: {
+                    grid: { color: gridColor, drawBorder: false },
+                    ticks: { color: tickColor, font: { family: 'Inter', size: 12, weight: '600' } }
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: { color: gridColor, drawBorder: false },
+                    ticks: {
+                        color: tickColor,
+                        font: { family: 'Inter', size: 12 },
+                        stepSize: 10,
+                        callback: val => val
+                    }
+                }
+            }
+        }
+    });
+
+    // ── Flash toast ────────────────────────────────────────────────────────────
+    const flashMessage = /*[[${flashMessage}]]*/ null;
+    const flashType = /*[[${flashType}]]*/ 'success';
+
+    function showToast(message, type) {
+        const toast = document.getElementById('toast');
+        const icon = document.getElementById('toast-icon');
+        const msgEl = document.getElementById('toast-msg');
+        msgEl.textContent = message;
+        icon.textContent = type === 'success' ? 'check_circle' : 'error';
+        toast.className = toast.className.replace(/bg-\S+/g, '');
+        toast.classList.add(type === 'success' ? 'bg-emerald-600' : 'bg-rose-600');
+        toast.classList.remove('hidden');
+        toast.classList.add('flex');
+        setTimeout(() => { toast.classList.add('hidden'); toast.classList.remove('flex'); }, 3000);
+    }
+
+    if (flashMessage) showToast(flashMessage, flashType);
+
+    // ── Activity Center ────────────────────────────────────────────────────────
+    let currentTab = 'leave';
+    let currentFilter = 'all';
+    let quickStats = {};
+
+    // Sub-filter definitions for each tab
+    const subFilters = {
+        leave: [
+            { value: 'all',       label: 'All' },
+            { value: 'annual',    label: 'Annual' },
+            { value: 'sick',      label: 'Sick' },
+            { value: 'maternity', label: 'Maternity / Paternity' },
+            { value: 'unpaid',    label: 'Unpaid' },
+            { value: 'pending',   label: 'Pending' },
+            { value: 'approved',  label: 'Approved' }
+        ],
+        payroll: [
+            { value: 'all',      label: 'All' },
+            { value: 'pending',  label: 'Pending' },
+            { value: 'approved', label: 'Approved' }
+        ],
+        status: [
+            { value: 'all',         label: 'All' },
+            { value: 'newhire',     label: 'New Hire' },
+            { value: 'termination', label: 'Termination' },
+            { value: 'promotion',   label: 'Promotion' },
+            { value: 'transfer',    label: 'Transfer' }
+        ],
+        hr: [
+            { value: 'all',       label: 'All' },
+            { value: 'contract',  label: 'Contract' },
+            { value: 'benefits',  label: 'Benefits' },
+            { value: 'documents', label: 'Documents' },
+            { value: 'pending',   label: 'Pending' },
+            { value: 'completed', label: 'Completed' }
+        ],
+        all: [
+            { value: 'all',      label: 'All' },
+            { value: 'pending',  label: 'Pending' },
+            { value: 'approved', label: 'Approved' }
+        ]
+    };
+
+    // Load quick stats on page load
+    function loadQuickStats() {
+        fetch('/hrmanager/dashboard/quick-stats')
+            .then(res => res.json())
+            .then(data => {
+                quickStats = data;
+                updateQuickStatsUI(data);
+            })
+            .catch(err => console.error('Error loading quick stats:', err));
+    }
+
+    function updateQuickStatsUI(data) {
+        document.getElementById('leave-total').textContent = data.leaveTotal || 0;
+        document.getElementById('leave-pending-badge').textContent = `${data.leavePending || 0} pending`;
+
+        document.getElementById('payroll-total').textContent = data.payrollTotal || '$0';
+        document.getElementById('payroll-pending-badge').textContent = `${data.payrollPending || 0} pending`;
+
+        document.getElementById('status-total').textContent = data.statusChanges || 0;
+
+        document.getElementById('hr-total').textContent = data.hrTotal || 0;
+        document.getElementById('hr-pending-badge').textContent = `${data.hrPending || 0} pending`;
+
+        document.getElementById('total-pending-badge').textContent = `${data.totalPending || 0} needs attention`;
+
+        updateTabBadge('leave',   data.leavePending);
+        updateTabBadge('payroll', data.payrollPending);
+        updateTabBadge('hr',      data.hrPending);
+    }
+
+    function updateTabBadge(tab, count) {
+        const tabBtn = document.querySelector(`[data-tab="${tab}"]`);
+        if (!tabBtn) return;
+        const badge = tabBtn.querySelector('.tab-badge');
+        if (badge && count > 0) {
+            badge.textContent = count;
+            badge.style.display = 'inline-block';
+        } else if (badge) {
+            badge.style.display = 'none';
+        }
+    }
+
+    // Switch tab
+    function switchToTab(tab) {
+        currentTab = tab;
+        currentFilter = 'all';
+
+        // Highlight active quick card
+        document.querySelectorAll('[id^="quick-card-"]').forEach(card => {
+            card.classList.remove('border-primary', 'shadow-md', 'shadow-primary/20');
+        });
+        const activeCard = document.getElementById(`quick-card-${tab}`);
+        if (activeCard) activeCard.classList.add('border-primary', 'shadow-md', 'shadow-primary/20');
+
+        // Update tab buttons
+        document.querySelectorAll('.activity-tab').forEach(btn => {
+            if (btn.dataset.tab === tab) {
+                btn.classList.add('border-primary', 'text-primary');
+                btn.classList.remove('border-transparent', 'text-slate-500');
+            } else {
+                btn.classList.remove('border-primary', 'text-primary');
+                btn.classList.add('border-transparent', 'text-slate-500');
             }
         });
 
-        // ── Flash toast ────────────────────────────────────────────────────────────
-        const flashMessage = /*[[${flashMessage}]]*/ null;
-        const flashType = /*[[${flashType}]]*/ 'success';
+        renderSubFilters(tab);
+        loadActivities(tab, 'all');
+    }
 
-        function showToast(message, type) {
-            const toast = document.getElementById('toast');
-            const icon = document.getElementById('toast-icon');
-            const msgEl = document.getElementById('toast-msg');
-            msgEl.textContent = message;
-            icon.textContent = type === 'success' ? 'check_circle' : 'error';
-            toast.className = toast.className.replace(/bg-\S+/g, '');
-            toast.classList.add(type === 'success' ? 'bg-emerald-600' : 'bg-rose-600');
-            toast.classList.remove('hidden');
-            toast.classList.add('flex');
-            setTimeout(() => { toast.classList.add('hidden'); toast.classList.remove('flex'); }, 3000);
-        }
-
-        if (flashMessage) showToast(flashMessage, flashType);
-
-        // ── Activity Filter (AJAX) ────────────────────────────────────────────────
-        let currentFilter = /*[[${activityFilter}]]*/ 'all';
-        let currentPage = 0;
-        let totalPages = 0;
-        let pageSize = 10;
-
-        function filterActivities(filter, page = 0) {
-            currentFilter = filter;
-            currentPage = page;
-
-            // Update button states
-            document.querySelectorAll('.activity-filter').forEach(btn => {
-                if (btn.dataset.filter === filter) {
-                    btn.classList.add('bg-slate-100', 'dark:bg-slate-800', 'text-slate-600', 'dark:text-slate-400');
-                    btn.classList.remove('text-slate-500', 'hover:bg-slate-50', 'dark:hover:bg-slate-800');
-                } else {
-                    btn.classList.remove('bg-slate-100', 'dark:bg-slate-800', 'text-slate-600', 'dark:text-slate-400');
-                    btn.classList.add('text-slate-500', 'hover:bg-slate-50', 'dark:hover:bg-slate-800');
-                }
+    function renderSubFilters(tab) {
+        const container = document.getElementById('sub-filters');
+        const filters = subFilters[tab] || [];
+        container.innerHTML = filters.map(filter => `
+            <button data-filter="${filter.value}"
+                    class="sub-filter px-4 py-2 text-sm font-semibold rounded-full transition-colors whitespace-nowrap
+                           ${filter.value === 'all' ? 'bg-primary text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">
+                ${filter.label}
+            </button>
+        `).join('');
+        
+        // Add event listeners to sub-filter buttons
+        container.querySelectorAll('.sub-filter').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const filter = this.dataset.filter;
+                if (filter) applyFilter(filter);
             });
+        });
+    }
 
-            // Show loading state
-            const tbody = document.getElementById('activity-tbody');
-            tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-8 text-center text-slate-400"><span class="material-symbols-outlined animate-spin">progress_activity</span></td></tr>';
+    function applyFilter(filter) {
+        currentFilter = filter;
+        document.querySelectorAll('.sub-filter').forEach(btn => {
+            if (btn.dataset.filter === filter) {
+                btn.classList.remove('bg-slate-100', 'text-slate-600', 'hover:bg-slate-200');
+                btn.classList.add('bg-primary', 'text-white');
+            } else {
+                btn.classList.add('bg-slate-100', 'text-slate-600', 'hover:bg-slate-200');
+                btn.classList.remove('bg-primary', 'text-white');
+            }
+        });
+        loadActivities(currentTab, filter);
+    }
 
-            // Fetch activities
-            fetch(`/hrmanager/dashboard/activities?filter=${filter}&page=${page}&size=${pageSize}`)
-                .then(response => response.json())
-                .then(data => {
+    function loadActivities(type, filter) {
+        const listContainer = document.getElementById('activity-list');
+        listContainer.innerHTML = `
+            <div class="px-6 py-12 text-center">
+                <span class="material-symbols-outlined text-slate-300 text-4xl animate-spin">progress_activity</span>
+                <p class="text-sm text-slate-400 mt-2">Loading activities...</p>
+            </div>`;
+
+        const url = type === 'all'
+            ? `/hrmanager/dashboard/activities/combined?filter=${filter}&days=30`
+            : `/hrmanager/dashboard/activities/${type}?filter=${filter}&days=30&limit=10`;
+
+        fetch(url)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
                     renderActivities(data.activities);
-                    renderPagination(data);
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-8 text-center text-rose-500">Failed to load activities</td></tr>';
-                });
+                    updateLoadMoreButton(type, filter, data);
+                } else {
+                    listContainer.innerHTML = `
+                        <div class="px-6 py-12 text-center text-rose-500">
+                            <p>Error: ${data.error || 'Failed to load activities'}</p>
+                        </div>`;
+                }
+            })
+            .catch(() => {
+                listContainer.innerHTML = `
+                    <div class="px-6 py-12 text-center text-rose-500">
+                        <p>Failed to load activities</p>
+                    </div>`;
+            });
+    }
+
+    function updateLoadMoreButton(type, filter, data) {
+        const loadMoreBtn = document.getElementById('load-more-btn');
+        const typeLabels = {
+            leave:   'Leave Requests',
+            payroll: 'Payroll',
+            status:  'Status Changes',
+            hr:      'HR Requests',
+            all:     'Activities'
+        };
+        if (data.hasMore) {
+            loadMoreBtn.innerHTML = `View all ${typeLabels[type] || 'Activities'} (${data.totalCount}) →`;
+            loadMoreBtn.onclick = () => window.location.href = getViewAllUrl(type, filter);
+            loadMoreBtn.style.display = 'inline-block';
+        } else {
+            loadMoreBtn.style.display = 'none';
         }
+    }
 
-        function renderActivities(activities) {
-            const tbody = document.getElementById('activity-tbody');
-            
-            if (!activities || activities.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="5" class="px-6 py-12 text-center">
-                            <div class="flex flex-col items-center gap-2">
-                                <span class="material-symbols-outlined text-slate-300 text-4xl">inbox</span>
-                                <p class="text-sm text-slate-400">No activities found</p>
-                            </div>
-                        </td>
-                    </tr>`;
-                return;
-            }
-
-            tbody.innerHTML = activities.map(activity => {
-                const statusBadge = getStatusBadge(activity.status);
-                const dateFormatted = formatDate(activity.date);
-                
-                return `
-                    <tr>
-                        <td class="px-6 py-4">
-                            <div class="flex items-center gap-3">
-                                <div class="size-8 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-500 text-xs">
-                                    ${activity.employeeInitials || 'NA'}
-                                </div>
-                                <div>
-                                    <p class="text-sm font-bold">${activity.employeeName || 'N/A'}</p>
-                                    <p class="text-xs text-slate-500">${activity.employeePosition || ''}</p>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4">
-                            <span class="text-sm">${activity.actionLabel || 'N/A'}</span>
-                        </td>
-                        <td class="px-6 py-4">
-                            <span class="text-sm">${dateFormatted}</span>
-                        </td>
-                        <td class="px-6 py-4">${statusBadge}</td>
-                        <td class="px-6 py-4 text-right">
-                            <a href="/requests/${activity.id}" class="text-primary font-bold text-sm hover:underline transition-all">Review</a>
-                        </td>
-                    </tr>`;
-            }).join('');
+    function getViewAllUrl(type, filter) {
+        switch (type) {
+            case 'leave':   return filter === 'pending' ? '/hrmanager/leave-approval?tab=pending' : '/hrmanager/leave-approval';
+            case 'payroll': return '/hrmanager/payroll-approval';
+            case 'status':
+            case 'hr':      return '/hrmanager/hr-analytics';
+            default:        return '/hrmanager/dashboard';
         }
+    }
 
-        function renderPagination(data) {
-            totalPages = data.totalPages;
-            const start = data.currentPage * data.pageSize + 1;
-            const end = Math.min((data.currentPage + 1) * data.pageSize, data.totalElements);
-            
-            // Update info text
-            document.getElementById('pagination-info').textContent = 
-                `Showing ${start}-${end} of ${data.totalElements}`;
-
-            // Render pagination buttons
-            const buttonsContainer = document.getElementById('pagination-buttons');
-            
-            if (totalPages <= 1) {
-                buttonsContainer.innerHTML = '';
-                return;
-            }
-
-            let html = '';
-
-            // Prev button
-            html += `
-                <button onclick="filterActivities('${currentFilter}', ${data.currentPage - 1})" 
-                        ${data.currentPage === 0 ? 'disabled class="opacity-30 cursor-not-allowed"' : ''}
-                        class="w-8 h-8 flex items-center justify-center rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-colors text-slate-500">
-                    <span class="material-symbols-outlined text-[18px]">chevron_left</span>
-                </button>`;
-
-            // Page numbers
-            const maxVisible = 5;
-            let startPage = Math.max(0, data.currentPage - 2);
-            let endPage = Math.min(totalPages - 1, startPage + maxVisible - 1);
-            
-            if (endPage - startPage < maxVisible - 1) {
-                startPage = Math.max(0, endPage - maxVisible + 1);
-            }
-
-            for (let i = startPage; i <= endPage; i++) {
-                const isActive = i === data.currentPage;
-                html += `
-                    <button onclick="filterActivities('${currentFilter}', ${i})"
-                            class="w-8 h-8 flex items-center justify-center rounded-xl text-xs font-bold transition-colors
-                                   ${isActive 
-                                     ? 'bg-primary text-white shadow-md shadow-primary/25' 
-                                     : 'border border-slate-200 bg-white text-slate-500 hover:bg-primary/5'}">
-                        ${i + 1}
-                    </button>`;
-            }
-
-            // Next button
-            html += `
-                <button onclick="filterActivities('${currentFilter}', ${data.currentPage + 1})" 
-                        ${data.currentPage + 1 >= totalPages ? 'disabled class="opacity-30 cursor-not-allowed"' : ''}
-                        class="w-8 h-8 flex items-center justify-center rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-colors text-slate-500">
-                    <span class="material-symbols-outlined text-[18px]">chevron_right</span>
-                </button>`;
-
-            buttonsContainer.innerHTML = html;
+    function renderActivities(activities) {
+        const listContainer = document.getElementById('activity-list');
+        if (!activities || activities.length === 0) {
+            listContainer.innerHTML = `
+                <div class="px-6 py-12 text-center">
+                    <span class="material-symbols-outlined text-slate-300 text-4xl">inbox</span>
+                    <p class="text-sm text-slate-400 mt-2">No activities found</p>
+                </div>`;
+            return;
         }
+        listContainer.innerHTML = activities.map((activity, index) => `
+            <div class="activity-item px-6 py-4 hover:bg-slate-50 transition-colors cursor-pointer"
+                 onclick="toggleActivityDetail(${index})" data-index="${index}">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3 flex-1">
+                        <div class="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center font-bold text-slate-600 text-sm">
+                            ${activity.employeeInitials || 'NA'}
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm font-bold text-slate-900">
+                                ${activity.employeeName || 'N/A'}
+                                <span class="text-slate-500 font-normal">— ${activity.employeePosition || ''}</span>
+                            </p>
+                            <p class="text-xs text-slate-500 mt-0.5">
+                                ${activity.details || activity.actionLabel} • ${formatDate(activity.date)}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        ${getStatusBadge(activity.status, activity.statusLabel)}
+                        <button class="px-3 py-1.5 text-primary font-bold text-xs hover:bg-primary/5 rounded-lg transition-colors">
+                            View
+                        </button>
+                        <span class="material-symbols-outlined text-slate-400 text-[20px] expand-icon">expand_more</span>
+                    </div>
+                </div>
+                <div class="activity-detail hidden mt-4 pt-4 border-t border-slate-100">
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <p class="text-slate-500 text-xs mb-1">Department</p>
+                            <p class="font-semibold">${activity.department || 'N/A'}</p>
+                        </div>
+                        <div>
+                            <p class="text-slate-500 text-xs mb-1">Priority</p>
+                            <p class="font-semibold">${activity.priority || 'Normal'}</p>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex gap-2">
+                        ${activity.status === 'PENDING' ? `
+                            <button class="px-4 py-2 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-bold hover:bg-emerald-200 transition-colors">
+                                Approve
+                            </button>
+                            <button class="px-4 py-2 bg-rose-100 text-rose-700 rounded-lg text-xs font-bold hover:bg-rose-200 transition-colors">
+                                Reject
+                            </button>
+                        ` : ''}
+                        <button class="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-xs font-bold hover:bg-slate-200 transition-colors">
+                            View Full Detail →
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
 
-        function getStatusBadge(status) {
-            const badges = {
-                'PENDING': '<span class="px-2.5 py-1 text-xs font-bold rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">Pending</span>',
-                'APPROVED': '<span class="px-2.5 py-1 text-xs font-bold rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400">Approved</span>',
-                'IN_PROGRESS': '<span class="px-2.5 py-1 text-xs font-bold rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">In Progress</span>',
-                'REJECTED': '<span class="px-2.5 py-1 text-xs font-bold rounded-full bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400">Rejected</span>'
-            };
-            return badges[status] || `<span class="px-2.5 py-1 text-xs font-bold rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">${status}</span>`;
-        }
+    function toggleActivityDetail(index) {
+        const item = document.querySelector(`.activity-item[data-index="${index}"]`);
+        if (!item) return;
+        const detail = item.querySelector('.activity-detail');
+        const icon   = item.querySelector('.expand-icon');
+        const hidden = detail.classList.contains('hidden');
+        detail.classList.toggle('hidden', !hidden);
+        icon.textContent = hidden ? 'expand_less' : 'expand_more';
+    }
 
-        function formatDate(dateStr) {
-            if (!dateStr) return 'N/A';
-            const date = new Date(dateStr);
-            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            return months[date.getMonth()] + ' ' + date.getDate() + ', ' + date.getFullYear();
-        }
+    function getStatusBadge(status, label) {
+        const badges = {
+            PENDING:   'bg-amber-100 text-amber-700',
+            APPROVED:  'bg-emerald-100 text-emerald-700',
+            REJECTED:  'bg-rose-100 text-rose-700',
+            COMPLETED: 'bg-blue-100 text-blue-700'
+        };
+        const cls = badges[status] || 'bg-slate-100 text-slate-600';
+        return `<span class="px-2.5 py-1 text-xs font-bold rounded-full ${cls}">${label || status}</span>`;
+    }
 
-        // Initial load
-        filterActivities(currentFilter, 0);
+    function formatDate(dateStr) {
+        if (!dateStr) return 'N/A';
+        const d = new Date(dateStr);
+        const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+    }
 
-        /*]]>*/
-    </script>
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        loadQuickStats();
+        switchToTab('leave'); // Default tab
+        
+        // Add click event listeners to all activity tabs
+        document.querySelectorAll('.activity-tab').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const tab = this.dataset.tab;
+                if (tab) switchToTab(tab);
+            });
+        });
+        
+        // Add click event listeners to quick stat cards
+        document.querySelectorAll('[id^="quick-card-"]').forEach(card => {
+            card.addEventListener('click', function() {
+                const tab = this.id.replace('quick-card-', '');
+                if (tab) switchToTab(tab);
+            });
+        });
+    });
+
+    /*]]>*/
+</script>
 </body>
-
 </html>

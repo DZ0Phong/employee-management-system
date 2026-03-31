@@ -114,4 +114,14 @@ public interface PayslipRepository extends JpaRepository<Payslip, Long> {
 
     @Query("SELECT COUNT(p) FROM Payslip p WHERE p.periodId = :periodId")
     int countByPeriodId(@Param("periodId") Long periodId);
+
+    // Method for Recent Activities
+    @Query("SELECT p FROM Payslip p " +
+           "JOIN FETCH p.employee e " +
+           "JOIN FETCH e.user u " +
+           "JOIN FETCH e.department d " +
+           "LEFT JOIN FETCH p.period " +
+           "WHERE p.status IN ('PENDING', 'APPROVED') " +
+           "ORDER BY p.id DESC")
+    List<Payslip> findRecentPayrollActivities(@Param("since") java.time.LocalDateTime since);
 }
