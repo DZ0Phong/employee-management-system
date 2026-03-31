@@ -1797,7 +1797,19 @@
 
         function bulkApprove() {
             if (selectedIds.size === 0) return;
-            if (!confirm('Approve ' + selectedIds.size + ' selected request(s)?')) return;
+            
+            // Show loading on bulk approve button
+            const bulkBtn = event.target.closest('button');
+            if (bulkBtn) {
+                bulkBtn.disabled = true;
+                const icon = bulkBtn.querySelector('.material-symbols-outlined');
+                if (icon) {
+                    icon.textContent = 'progress_activity';
+                    icon.classList.add('animate-spin');
+                }
+                bulkBtn.innerHTML = bulkBtn.innerHTML.replace(/Approve.*/, 'Approving...');
+            }
+            
             var ids = Array.from(selectedIds);
             submitBulkAction('/hrmanager/leave-approval/bulk-approve', ids, null);
         }
@@ -1834,7 +1846,28 @@
 
         // ── Approve / Reject single ───────────────────────────────────
         function handleApprove(id) {
-            if (!confirm('Approve this leave request?')) return;
+            // Find the button that was clicked
+            const btn = event.target.closest('button');
+            if (!btn) return;
+            
+            // Show loading state
+            btn.disabled = true;
+            const icon = btn.querySelector('.material-symbols-outlined');
+            const originalContent = btn.innerHTML;
+            
+            if (icon) {
+                icon.textContent = 'progress_activity';
+                icon.classList.add('animate-spin');
+            }
+            
+            // Update button text
+            const textNodes = Array.from(btn.childNodes).filter(node => node.nodeType === 3);
+            textNodes.forEach(node => {
+                if (node.textContent.includes('Approve')) {
+                    node.textContent = 'Approving...';
+                }
+            });
+            
             var form = document.createElement('form');
             form.method = 'POST';
             form.action = '/hrmanager/leave-approval/approve';

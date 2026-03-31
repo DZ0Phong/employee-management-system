@@ -85,7 +85,34 @@
         .gradient-text {
             background: linear-gradient(135deg, #1414b8, #6366f1);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
+        }
+
+        /* Modal styles */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+        .modal-backdrop.open { display: flex; }
+        .modal-box {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            max-width: 32rem;
+            width: 100%;
+            animation: modalSlideIn 0.3s ease;
+        }
+        @keyframes modalSlideIn {
+            from { opacity: 0; transform: translateY(-20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
     </style>
 </head>
@@ -427,6 +454,63 @@
     <span id="toast-msg">Done</span>
 </div>
 
+<!-- ══ REJECT MODAL ═══════════════════════════════════════════ -->
+<div id="reject-modal" class="modal-backdrop">
+    <div class="modal-box">
+        <div class="p-6 border-b border-slate-100">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-rose-100 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-rose-600">cancel</span>
+                </div>
+                <div>
+                    <h3 class="text-base font-bold text-slate-900">Reject Request</h3>
+                    <p class="text-xs text-slate-500 mt-0.5" id="reject-modal-subtitle">Please provide a reason</p>
+                </div>
+            </div>
+        </div>
+        <div class="p-6 space-y-4">
+            <div>
+                <label class="block text-xs font-bold text-slate-600 mb-2">Rejection reason <span
+                        class="text-rose-500">*</span></label>
+                <textarea id="reject-reason" rows="4"
+                    placeholder="e.g. Insufficient leave balance, critical project deadline, team coverage issue..."
+                    class="w-full px-4 py-3 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-rose-400 resize-none transition-all"></textarea>
+                <p class="text-xs text-slate-400 mt-1">This reason will be sent to the employee via email
+                    notification.</p>
+            </div>
+            <!-- Quick reasons -->
+            <div>
+                <p class="text-xs text-slate-400 mb-2 font-medium">Quick select:</p>
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="setRejectReason('Insufficient leave balance remaining')"
+                        class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:border-rose-300 hover:bg-rose-50 transition-all">Insufficient
+                        balance</button>
+                    <button onclick="setRejectReason('Critical project deadline during requested period')"
+                        class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:border-rose-300 hover:bg-rose-50 transition-all">Project
+                        deadline</button>
+                    <button onclick="setRejectReason('Team coverage issue — too many members on leave')"
+                        class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:border-rose-300 hover:bg-rose-50 transition-all">Team
+                        coverage</button>
+                    <button onclick="setRejectReason('Incomplete documentation provided')"
+                        class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:border-rose-300 hover:bg-rose-50 transition-all">Incomplete
+                        docs</button>
+                </div>
+            </div>
+        </div>
+        <div class="px-6 pb-6 flex gap-3">
+            <button onclick="closeRejectModal()"
+                class="flex-1 px-4 py-3 border border-slate-200 text-slate-600 rounded-xl text-sm font-semibold hover:bg-slate-50 transition-colors">
+                Cancel
+            </button>
+            <button onclick="submitReject()"
+                class="flex-1 px-4 py-3 bg-rose-500 text-white rounded-xl text-sm font-bold hover:bg-rose-600 transition-colors flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined text-[18px]">send</span>
+                Send Rejection
+            </button>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
 <script th:inline="javascript">
@@ -552,6 +636,7 @@
     let currentTab = 'leave';
     let currentFilter = 'all';
     let quickStats = {};
+    let rejectTargetId = null;
 
     // Sub-filter definitions for each tab
     const subFilters = {
@@ -808,10 +893,14 @@
                     </div>
                     <div class="mt-4 flex gap-2">
                         ${activity.status === 'PENDING' ? `
-                            <button onclick="approveActivity(event, ${activity.id})" class="px-4 py-2 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-bold hover:bg-emerald-200 transition-colors">
-                                Approve
+                            <button onclick="approveActivity(event, ${activity.id})" 
+                                    class="approve-btn px-4 py-2 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-bold hover:bg-emerald-200 transition-colors flex items-center gap-1.5">
+                                <span class="material-symbols-outlined text-[16px]">check_circle</span>
+                                <span class="btn-text">Approve</span>
                             </button>
-                            <button onclick="rejectActivity(event, ${activity.id})" class="px-4 py-2 bg-rose-100 text-rose-700 rounded-lg text-xs font-bold hover:bg-rose-200 transition-colors">
+                            <button onclick="openRejectModal(${activity.id}, '${activity.employeeName || 'Request'}')" 
+                                    class="px-4 py-2 bg-rose-100 text-rose-700 rounded-lg text-xs font-bold hover:bg-rose-200 transition-colors flex items-center gap-1.5">
+                                <span class="material-symbols-outlined text-[16px]">cancel</span>
                                 Reject
                             </button>
                         ` : ''}
@@ -887,13 +976,17 @@
     function approveActivity(event, requestId) {
         event.stopPropagation();
         
-        if (!confirm('Are you sure you want to approve this request?')) {
-            return;
-        }
+        const btn = event.target.closest('.approve-btn');
+        if (!btn) return;
         
-        const btn = event.target;
+        // Show loading state
         btn.disabled = true;
-        btn.textContent = 'Approving...';
+        const icon = btn.querySelector('.material-symbols-outlined');
+        const textSpan = btn.querySelector('.btn-text');
+        
+        icon.textContent = 'progress_activity';
+        icon.classList.add('animate-spin');
+        textSpan.textContent = 'Approving...';
         
         const token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
         const header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
@@ -909,35 +1002,68 @@
         .then(res => res.json())
         .then(data => {
             if (data.success) {
-                showToast(data.message, 'success');
+                showToast(data.message || 'Request approved successfully', 'success');
                 // Reload activities
                 loadActivities(currentTab, currentFilter);
                 loadQuickStats();
             } else {
-                showToast(data.message, 'error');
+                showToast(data.message || 'Failed to approve request', 'error');
+                // Reset button state
                 btn.disabled = false;
-                btn.textContent = 'Approve';
+                icon.textContent = 'check_circle';
+                icon.classList.remove('animate-spin');
+                textSpan.textContent = 'Approve';
             }
         })
         .catch(err => {
             console.error('Error approving:', err);
             showToast('Failed to approve request', 'error');
+            // Reset button state
             btn.disabled = false;
-            btn.textContent = 'Approve';
+            icon.textContent = 'check_circle';
+            icon.classList.remove('animate-spin');
+            textSpan.textContent = 'Approve';
         });
     }
     
-    function rejectActivity(event, requestId) {
-        event.stopPropagation();
-        
-        const reason = prompt('Please enter rejection reason:');
-        if (reason === null) {
-            return; // User cancelled
+    // ══════════════════════════════════════════════════════════════════════════
+    // REJECT MODAL FUNCTIONS
+    // ══════════════════════════════════════════════════════════════════════════
+    
+    function openRejectModal(requestId, employeeName) {
+        rejectTargetId = requestId;
+        document.getElementById('reject-modal-subtitle').textContent = 
+            `Request #${requestId} — ${employeeName || 'Employee'} — reason will be emailed`;
+        document.getElementById('reject-reason').value = '';
+        document.getElementById('reject-modal').classList.add('open');
+    }
+    
+    function closeRejectModal() {
+        document.getElementById('reject-modal').classList.remove('open');
+        rejectTargetId = null;
+    }
+    
+    function setRejectReason(text) {
+        document.getElementById('reject-reason').value = text;
+        document.getElementById('reject-reason').focus();
+    }
+    
+    function submitReject() {
+        const reason = document.getElementById('reject-reason').value.trim();
+        if (!reason) {
+            const textarea = document.getElementById('reject-reason');
+            textarea.focus();
+            textarea.classList.add('ring-2', 'ring-rose-400');
+            setTimeout(() => {
+                textarea.classList.remove('ring-2', 'ring-rose-400');
+            }, 1500);
+            return;
         }
         
-        const btn = event.target;
-        btn.disabled = true;
-        btn.textContent = 'Rejecting...';
+        if (!rejectTargetId) {
+            showToast('Invalid request ID', 'error');
+            return;
+        }
         
         const token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
         const header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
@@ -948,28 +1074,38 @@
                 'Content-Type': 'application/x-www-form-urlencoded',
                 [header]: token
             },
-            body: 'requestId=' + requestId + '&reason=' + encodeURIComponent(reason)
+            body: 'requestId=' + rejectTargetId + '&reason=' + encodeURIComponent(reason)
         })
         .then(res => res.json())
         .then(data => {
+            closeRejectModal();
             if (data.success) {
-                showToast(data.message, 'success');
+                showToast(data.message || 'Request rejected successfully', 'success');
                 // Reload activities
                 loadActivities(currentTab, currentFilter);
                 loadQuickStats();
             } else {
-                showToast(data.message, 'error');
-                btn.disabled = false;
-                btn.textContent = 'Reject';
+                showToast(data.message || 'Failed to reject request', 'error');
             }
         })
         .catch(err => {
             console.error('Error rejecting:', err);
+            closeRejectModal();
             showToast('Failed to reject request', 'error');
-            btn.disabled = false;
-            btn.textContent = 'Reject';
         });
     }
+    
+    // Close modal on backdrop click
+    document.getElementById('reject-modal').addEventListener('click', function (e) {
+        if (e.target === this) closeRejectModal();
+    });
+    
+    // Close modal on Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && document.getElementById('reject-modal').classList.contains('open')) {
+            closeRejectModal();
+        }
+    });
 
     /*]]>*/
 </script>
