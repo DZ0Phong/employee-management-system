@@ -70,6 +70,9 @@
     <symbol id="expand_more" viewBox="0 0 24 24">
         <path d="M6.5 9.5L12 15l5.5-5.5"/>
     </symbol>
+    <symbol id="expand_less" viewBox="0 0 24 24">
+        <path d="M6.5 14.5L12 9l5.5 5.5"/>
+    </symbol>
     <symbol id="fact_check" viewBox="0 0 24 24">
         <rect x="5" y="4" width="14" height="16" rx="2"/>
         <path d="M9 9l1.5 1.5L13 8M9 13l1.5 1.5L13 12M14.5 9H16M14.5 13H16"/>
@@ -365,10 +368,65 @@
         <path d="M10 21H6a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h4"/>
         <path d="M10 10l3-6 1 1v4h4a2 2 0 0 1 2 2l-1 6a2 2 0 0 1-2 2h-7z"/>
     </symbol>
+    <symbol id="bolt" viewBox="0 0 24 24">
+        <path d="M13 3L6 13h4l-1 8 9-12h-5z"/>
+    </symbol>
+    <symbol id="calendar_month" viewBox="0 0 24 24">
+        <path d="M7 4v3M17 4v3M4 9h16"/>
+        <rect x="4" y="5.5" width="16" height="14.5" rx="2"/>
+        <path d="M8 12h3M13 12h3M8 16h3M13 16h3"/>
+    </symbol>
+    <symbol id="description" viewBox="0 0 24 24">
+        <path d="M7 4h7l4 4v12H7z"/>
+        <path d="M14 4v4h4"/>
+        <path d="M9 12h6M9 15h6"/>
+    </symbol>
+    <symbol id="edit_note" viewBox="0 0 24 24">
+        <path d="M4 7h8M4 11h8M4 15h5"/>
+        <path d="M13.5 14.5l4.8-4.8a1.4 1.4 0 1 1 2 2l-4.8 4.8-3.5 1z"/>
+    </symbol>
+    <symbol id="inbox" viewBox="0 0 24 24">
+        <path d="M4 6h16v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/>
+        <path d="M4 13h4l2 3h4l2-3h4"/>
+    </symbol>
+    <symbol id="monitoring" viewBox="0 0 24 24">
+        <path d="M5 19V8M10 19V5M15 19v-7M20 19v-11"/>
+    </symbol>
+    <symbol id="person_check" viewBox="0 0 24 24">
+        <circle cx="10" cy="8" r="3"/>
+        <path d="M4.5 18a5.5 5.5 0 0 1 8.5-4.7"/>
+        <path d="M15 12.5l1.8 1.8 3.2-3.3"/>
+    </symbol>
+    <symbol id="progress_activity" viewBox="0 0 24 24">
+        <path d="M12 4a8 8 0 1 0 8 8" />
+        <path d="M12 2v4M22 12h-4M19.8 4.2l-2.8 2.8"/>
+    </symbol>
+    <symbol id="search_off" viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="5.5"/>
+        <path d="M16 16l4 4"/>
+        <path d="M4 4l16 16"/>
+    </symbol>
+    <symbol id="send" viewBox="0 0 24 24">
+        <path d="M4 20l16-8L4 4l2 6 7 2-7 2z"/>
+    </symbol>
+    <symbol id="trending_down" viewBox="0 0 24 24">
+        <path d="M4 8l6 6 4-4 6 7"/>
+        <path d="M15 17h5v-5"/>
+    </symbol>
     <symbol id="timer" viewBox="0 0 24 24">
         <circle cx="12" cy="13" r="7"/>
         <path d="M12 13l3-2"/>
         <path d="M9 3h6"/>
         <path d="M12 6V3"/>
+    </symbol>
+    <symbol id="work" viewBox="0 0 24 24">
+        <rect x="4" y="7" width="16" height="11" rx="2"/>
+        <path d="M9 7V5h6v2"/>
+        <path d="M4 11h16"/>
+    </symbol>
+    <symbol id="work_outline" viewBox="0 0 24 24">
+        <rect x="4" y="7" width="16" height="11" rx="2"/>
+        <path d="M9 7V5h6v2"/>
+        <path d="M4 11h16"/>
     </symbol>
 </svg>
