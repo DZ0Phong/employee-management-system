@@ -513,6 +513,8 @@ public class HrController {
             @RequestParam(required = false) Long fromRequestId,
             @AuthenticationPrincipal UserDetails principal,
             RedirectAttributes ra) {
+        recruitmentService.validateCreateJobPost(
+                openDate != null ? openDate : LocalDate.now(), closeDate, action);
 
         JobPost job = new JobPost();
         job.setTitle(title);
@@ -684,6 +686,7 @@ public class HrController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate closeDate,
             @RequestParam(required = false) String status,
             RedirectAttributes ra) {
+        recruitmentService.validateUpdateJobPost(id, openDate, closeDate, status);
 
         recruitmentService.updateJobPost(id, title, departmentId, description,
                 requirements, benefits, salaryMin, salaryMax, openDate, closeDate, status);
@@ -695,6 +698,7 @@ public class HrController {
     public String deleteJobPost(
             @RequestParam Long id,
             RedirectAttributes ra) {
+        recruitmentService.validateDeleteJobPost(id);
 
         String title = recruitmentService.deleteJobPost(id);
         ra.addFlashAttribute("successMessage", "Job post \"" + title + "\" deleted successfully.");
@@ -721,48 +725,51 @@ public class HrController {
 
     @GetMapping("/bank-details/{id}")
     public String employeeBankDetails(@PathVariable Long id,
-                                      @RequestParam(defaultValue = "0") int page,
-                                      Model model) {
+            @RequestParam(defaultValue = "0") int page,
+            Model model) {
         Employee employee = employeeRepository.findByIdWithDetails(id)
                 .orElseThrow(() -> new RuntimeException("Employee not found"));
 
-        
         Pageable pageable = PageRequest.of(page, PAGE_SIZE);
-        Page<com.group5.ems.dto.response.BankDetailsResponseDTO> historyPage = bankDetailsService.getBankDetailsHistory(id, pageable);
-        
+        Page<com.group5.ems.dto.response.BankDetailsResponseDTO> historyPage = bankDetailsService
+                .getBankDetailsHistory(id, pageable);
+
         model.addAttribute("employee", employee);
         model.addAttribute("bankDetails", historyPage.getContent());
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", historyPage.getTotalPages());
         model.addAttribute("totalItems", historyPage.getTotalElements());
         model.addAttribute("banks", vietQrApiClient.getSupportedBanks());
-        
+
         if (!model.containsAttribute("bankDetailsForm")) {
             model.addAttribute("bankDetailsForm", new BankDetailsFormDTO());
         }
         
+
+        model.addAttribute("currentUser", adminService.getUserDTO().orElse(null));
         return "hr/bank-details";
     }
 
     @PostMapping("/bank-details/{id}/add")
     public String addBankDetails(@PathVariable Long id,
-                                 @Valid @ModelAttribute("bankDetailsForm") BankDetailsFormDTO form,
-                                 BindingResult result,
-                                 RedirectAttributes redirectAttributes,
-                                 Model model) {
+            @Valid @ModelAttribute("bankDetailsForm") BankDetailsFormDTO form,
+            BindingResult result,
+            RedirectAttributes redirectAttributes,
+            Model model) {
         if (result.hasErrors()) {
             Employee employee = employeeRepository.findByIdWithDetails(id)
                     .orElseThrow(() -> new RuntimeException("Employee not found"));
             model.addAttribute("employee", employee);
-            
+
             Pageable pageable = PageRequest.of(0, PAGE_SIZE);
-            Page<com.group5.ems.dto.response.BankDetailsResponseDTO> historyPage = bankDetailsService.getBankDetailsHistory(id, pageable);
-            
+            Page<com.group5.ems.dto.response.BankDetailsResponseDTO> historyPage = bankDetailsService
+                    .getBankDetailsHistory(id, pageable);
+
             model.addAttribute("bankDetails", historyPage.getContent());
             model.addAttribute("currentPage", 0);
             model.addAttribute("totalPages", historyPage.getTotalPages());
             model.addAttribute("totalItems", historyPage.getTotalElements());
-            
+
             model.addAttribute("banks", vietQrApiClient.getSupportedBanks());
             return "hr/bank-details";
         }

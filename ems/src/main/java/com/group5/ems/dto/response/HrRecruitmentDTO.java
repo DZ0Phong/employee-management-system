@@ -12,6 +12,7 @@ public class HrRecruitmentDTO {
     private Long   id;
     private String jobTitle;
     private String department;
+    private Long departmentId;
     private String position;    
     private String status;
     private int    applicantCount;

@@ -1,49 +1,50 @@
 package com.group5.ems.repository;
 
-import com.group5.ems.entity.Request;
+import java.time.LocalDateTime;
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.time.LocalDateTime;
-import java.util.List;
+import com.group5.ems.entity.Request;
 
 public interface RequestRepository extends JpaRepository<Request, Long> {
 
-    List<Request> findByEmployeeId(Long employeeId);
+        List<Request> findByEmployeeId(Long employeeId);
 
-    List<Request> findByEmployeeIdAndStatus(Long employeeId, String status);
+        List<Request> findByEmployeeIdAndStatus(Long employeeId, String status);
 
-    List<Request> findByStatus(String status);
+        List<Request> findByStatus(String status);
 
-    @Query("SELECT r FROM Request r " +
-            "JOIN FETCH r.employee e " +
-            "JOIN FETCH e.user u " +
-            "LEFT JOIN FETCH e.position p " +
-            "WHERE r.status = :status " +
-            "ORDER BY r.createdAt DESC")
-    List<Request> findByStatusWithDetails(@Param("status") String status);
+        @Query("SELECT r FROM Request r " +
+                        "JOIN FETCH r.employee e " +
+                        "JOIN FETCH e.user u " +
+                        "LEFT JOIN FETCH e.position p " +
+                        "WHERE r.status = :status " +
+                        "ORDER BY r.createdAt DESC")
+        List<Request> findByStatusWithDetails(@Param("status") String status);
 
-    List<Request> findByEmployeeIdAndLeaveTypeIsNotNull(Long employeeId);
-    List<Request> findByEmployeeIdAndLeaveTypeIsNotNullOrderByCreatedAtDesc(Long employeeId);
+        List<Request> findByEmployeeIdAndLeaveTypeIsNotNull(Long employeeId);
 
-    List<Request> findByEmployeeDepartmentIdAndLeaveTypeIsNotNullOrderByCreatedAtDesc(Long departmentId);
+        List<Request> findByEmployeeIdAndLeaveTypeIsNotNullOrderByCreatedAtDesc(Long employeeId);
 
-    @Query("SELECT r FROM Request r " +
-            "JOIN FETCH r.employee e " +
-            "JOIN FETCH e.user u " +
-            "LEFT JOIN FETCH e.position p " +
-            "WHERE r.status = 'PENDING' OR " +
-            "(r.approvedAt IS NOT NULL AND r.approvedAt >= :since) " +
-            "ORDER BY r.createdAt DESC")
-    List<Request> findRecentActivities(@Param("since") LocalDateTime since);
 
-    @Query("SELECT COUNT(r) FROM Request r WHERE r.status = :status")
-    Long countByStatus(@Param("status") String status);
+        List<Request> findByEmployeeDepartmentIdAndLeaveTypeIsNotNullOrderByCreatedAtDesc(Long departmentId);
 
-    // ── Pageable queries for HR leave page (DB-level filtering) ──
+        @Query("SELECT r FROM Request r " +
+                        "JOIN FETCH r.employee e " +
+                        "JOIN FETCH e.user u " +
+                        "LEFT JOIN FETCH e.position p " +
+                        "WHERE r.status = 'PENDING' OR " +
+                        "(r.approvedAt IS NOT NULL AND r.approvedAt >= :since) " +
+                        "ORDER BY r.createdAt DESC")
+        List<Request> findRecentActivities(@Param("since") LocalDateTime since);
+
+        @Query("SELECT COUNT(r) FROM Request r WHERE r.status = :status")
+        Long countByStatus(@Param("status") String status);
 
     @Query("SELECT r FROM Request r JOIN FETCH r.employee e JOIN FETCH e.user u " +
             "LEFT JOIN FETCH e.department d JOIN FETCH r.requestType rt " +
@@ -65,48 +66,46 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
                     "WHERE r.status <> 'PENDING' AND rt.category = 'ATTENDANCE'")
     Page<Request> findLeaveHistory(Pageable pageable);
 
-    // ── Pageable queries for HR workflow requests ──
+        // ── Pageable queries for HR workflow requests ──
 
-    @Query(value = "SELECT r FROM Request r JOIN r.employee e JOIN e.user u " +
-            "LEFT JOIN e.department d JOIN r.requestType rt " +
-            "WHERE rt.category = 'HR_STATUS' ORDER BY r.createdAt DESC",
-            countQuery = "SELECT COUNT(r) FROM Request r JOIN r.requestType rt WHERE rt.category = 'HR_STATUS'")
-    Page<Request> findWorkflowRequests(Pageable pageable);
+        @Query(value = "SELECT r FROM Request r JOIN r.employee e JOIN e.user u " +
+                        "LEFT JOIN e.department d JOIN r.requestType rt " +
+                        "WHERE rt.category = 'HR_STATUS' ORDER BY r.createdAt DESC", countQuery = "SELECT COUNT(r) FROM Request r JOIN r.requestType rt WHERE rt.category = 'HR_STATUS'")
+        Page<Request> findWorkflowRequests(Pageable pageable);
 
+        // Thêm vào RequestRepository.java
+        @Query("SELECT r FROM Request r " +
+                        "JOIN FETCH r.employee e " +
+                        "JOIN FETCH e.user u " +
+                        "LEFT JOIN FETCH e.position p " +
+                        "WHERE r.leaveType IS NOT NULL AND r.status = :status " +
+                        "ORDER BY r.createdAt DESC")
+        Page<Request> findLeaveRequestsByStatus(@Param("status") String status, Pageable pageable);
 
-    // Thêm vào RequestRepository.java
-    @Query("SELECT r FROM Request r " +
-            "JOIN FETCH r.employee e " +
-            "JOIN FETCH e.user u " +
-            "LEFT JOIN FETCH e.position p " +
-            "WHERE r.leaveType IS NOT NULL AND r.status = :status " +
-            "ORDER BY r.createdAt DESC")
-    Page<Request> findLeaveRequestsByStatus(@Param("status") String status, Pageable pageable);
+        @Query("SELECT r FROM Request r " +
+                        "JOIN FETCH r.employee e " +
+                        "JOIN FETCH e.user u " +
+                        "LEFT JOIN FETCH e.position p " +
+                        "WHERE r.leaveType IS NOT NULL " +
+                        "ORDER BY r.createdAt DESC")
+        Page<Request> findAllLeaveRequests(Pageable pageable);
 
-    @Query("SELECT r FROM Request r " +
-            "JOIN FETCH r.employee e " +
-            "JOIN FETCH e.user u " +
-            "LEFT JOIN FETCH e.position p " +
-            "WHERE r.leaveType IS NOT NULL " +
-            "ORDER BY r.createdAt DESC")
-    Page<Request> findAllLeaveRequests(Pageable pageable);
+        // Đếm số NV đang nghỉ hôm nay
+        @Query("SELECT COUNT(r) FROM Request r WHERE r.status = 'APPROVED' " +
+                        "AND r.leaveFrom <= CURRENT_DATE AND r.leaveTo >= CURRENT_DATE")
+        int countOnLeaveToday();
 
-    // Đếm số NV đang nghỉ hôm nay
-    @Query("SELECT COUNT(r) FROM Request r WHERE r.status = 'APPROVED' " +
-            "AND r.leaveFrom <= CURRENT_DATE AND r.leaveTo >= CURRENT_DATE")
-    int countOnLeaveToday();
+        // Đếm số request được approve hôm nay
+        @Query("SELECT COUNT(r) FROM Request r WHERE r.status = 'APPROVED' " +
+                        "AND DATE(r.approvedAt) = CURRENT_DATE")
+        int countApprovedToday();
 
-    // Đếm số request được approve hôm nay
-    @Query("SELECT COUNT(r) FROM Request r WHERE r.status = 'APPROVED' " +
-            "AND DATE(r.approvedAt) = CURRENT_DATE")
-    int countApprovedToday();
+        // Methods for LeaveApprovalService
+        List<Request> findByStatusOrderByCreatedAtDesc(String status);
 
-    // Methods for LeaveApprovalService
-    List<Request> findByStatusOrderByCreatedAtDesc(String status);
+        List<Request> findByStatusOrderByApprovedAtDesc(String status);
 
-    List<Request> findByStatusOrderByApprovedAtDesc(String status);
-
-    List<Request> findByEmployeeIdOrderByCreatedAtDesc(Long employeeId);
+        List<Request> findByEmployeeIdOrderByCreatedAtDesc(Long employeeId);
 
     // Alternative queries without leaveType restriction
     @Query("SELECT r FROM Request r " +
@@ -153,30 +152,32 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
             "ORDER BY r.createdAt DESC")
     Page<Request> findAllRequestsWithoutLeaveTypeFilter(Pageable pageable);
 
-    @Query("SELECT COUNT(r) FROM Request r WHERE r.status = :status " +
-            "AND r.approvedAt BETWEEN :startDate AND :endDate")
-    long countByStatusAndApprovedAtBetween(@Param("status") String status,
-                                           @Param("startDate") LocalDateTime startDate,
-                                           @Param("endDate") LocalDateTime endDate);
+        @Query("SELECT COUNT(r) FROM Request r WHERE r.status = :status " +
+                        "AND r.approvedAt BETWEEN :startDate AND :endDate")
+        long countByStatusAndApprovedAtBetween(@Param("status") String status,
+                        @Param("startDate") LocalDateTime startDate,
+                        @Param("endDate") LocalDateTime endDate);
 
-    @Query("SELECT COUNT(r) FROM Request r WHERE r.createdAt BETWEEN :startDate AND :endDate")
-    long countByCreatedAtBetween(@Param("startDate") LocalDateTime startDate,
-                                 @Param("endDate") LocalDateTime endDate);
+        @Query("SELECT COUNT(r) FROM Request r WHERE r.createdAt BETWEEN :startDate AND :endDate")
+        long countByCreatedAtBetween(@Param("startDate") LocalDateTime startDate,
+                        @Param("endDate") LocalDateTime endDate);
 
-    @Query("SELECT COUNT(r) FROM Request r WHERE r.status = :status " +
-            "AND r.leaveFrom <= :date AND r.leaveTo >= :date")
-    long countByStatusAndLeaveFromLessThanEqualAndLeaveToGreaterThanEqual(
-            @Param("status") String status,
-            @Param("date") java.time.LocalDate date1,
-            @Param("date") java.time.LocalDate date2);
+        @Query("SELECT COUNT(r) FROM Request r WHERE r.status = :status " +
+                        "AND r.leaveFrom <= :date AND r.leaveTo >= :date")
+        long countByStatusAndLeaveFromLessThanEqualAndLeaveToGreaterThanEqual(
+                        @Param("status") String status,
+                        @Param("date") java.time.LocalDate date1,
+                        @Param("date") java.time.LocalDate date2);
 
-    @Query(value = "SELECT r FROM Request r WHERE r.status = :status " +
-            "AND r.leaveTo > :date ORDER BY r.leaveTo ASC",
-            nativeQuery = false)
-    List<Request> findByStatusAndLeaveToGreaterThanOrderByLeaveToAsc(
-            @Param("status") String status,
-            @Param("date") java.time.LocalDate date);
+        @Query(value = "SELECT r FROM Request r WHERE r.status = :status " +
+                        "AND r.leaveTo > :date ORDER BY r.leaveTo ASC", nativeQuery = false)
+        List<Request> findByStatusAndLeaveToGreaterThanOrderByLeaveToAsc(
+                        @Param("status") String status,
+                        @Param("date") java.time.LocalDate date);
 
+        // ── Pageable queries for HR leave page (DB-level filtering) ──
+
+        List<Request> findByRequestType_CodeInOrderByCreatedAtDesc(List<String> codes);
     // Find overlapping leave requests
     @Query("SELECT r FROM Request r " +
            "JOIN FETCH r.employee e " +
@@ -205,32 +206,45 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
             @Param("since") LocalDateTime since);
 
 
-    // ── Payroll Aggregation queries ──
+        // ── Payroll Aggregation queries ──
+        long countByRequestType_CodeInAndStatus(List<String> codes, String status);
 
-    /**
-     * Finds approved unpaid leave requests overlapping a given date range for a specific employee.
-     * Uses Request.startDate / Request.endDate (Instant fields).
-     */
-    @Query("SELECT r FROM Request r JOIN r.requestType rt " +
-           "WHERE r.employeeId = :empId AND r.status = 'APPROVED' " +
-           "AND rt.code = 'LEAVE_UNPAID' " +
-           "AND r.startDate <= :endInstant AND r.endDate >= :startInstant")
-    List<Request> findApprovedUnpaidLeave(@Param("empId") Long empId,
-                                          @Param("startInstant") java.time.Instant startInstant,
-                                          @Param("endInstant") java.time.Instant endInstant);
+        // ── Payroll Aggregation queries ──
 
-    /**
-     * Finds approved overtime requests overlapping a given date range for a specific employee.
-     * Uses Request.startDate / Request.endDate (Instant fields).
-     */
-    @Query("SELECT r FROM Request r JOIN r.requestType rt " +
-           "WHERE r.employeeId = :empId AND r.status = 'APPROVED' " +
-           "AND rt.code = 'ATT_OVERTIME' " +
-           "AND r.startDate <= :endInstant AND r.endDate >= :startInstant")
-    List<Request> findApprovedOvertime(@Param("empId") Long empId,
-                                       @Param("startInstant") java.time.Instant startInstant,
-                                       @Param("endInstant") java.time.Instant endInstant);
+        /**
+         * Finds approved unpaid leave requests overlapping a given date range for a
+         * specific employee.
+         * Uses Request.startDate / Request.endDate (Instant fields).
+         */
+        @Query("SELECT r FROM Request r JOIN r.requestType rt " +
+                        "WHERE r.employeeId = :empId AND r.status = 'APPROVED' " +
+                        "AND rt.code = 'LEAVE_UNPAID' " +
+                        "AND r.startDate <= :endInstant AND r.endDate >= :startInstant")
+        List<Request> findApprovedUnpaidLeave(@Param("empId") Long empId,
+                        @Param("startInstant") java.time.Instant startInstant,
+                        @Param("endInstant") java.time.Instant endInstant);
 
+        /**
+         * Finds approved overtime requests overlapping a given date range for a
+         * specific employee.
+         * Uses Request.startDate / Request.endDate (Instant fields).
+         */
+        @Query("SELECT r FROM Request r JOIN r.requestType rt " +
+                        "WHERE r.employeeId = :empId AND r.status = 'APPROVED' " +
+                        "AND rt.code = 'ATT_OVERTIME' " +
+                        "AND r.startDate <= :endInstant AND r.endDate >= :startInstant")
+        List<Request> findApprovedOvertime(@Param("empId") Long empId,
+                        @Param("startInstant") java.time.Instant startInstant,
+                        @Param("endInstant") java.time.Instant endInstant);
+
+        // Missing methods that are used by other services
+
+
+        /**
+         * Finds approved overtime requests overlapping a given date range for a
+         * specific employee.
+         * Uses Request.startDate / Request.endDate (Instant fields).
+         */
     // Missing methods that are used by other services
     List<Request> findByRequestType_CodeOrderByCreatedAtDesc(String code);
 

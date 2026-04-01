@@ -35,247 +35,188 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class GuestController {
 
-    private final GuestService guestService;
-    private final JobPostService jobPostService;
-    private final CompanyService companyService;
-    private final CandidateCvService candidateCvService;
-    private final ApplicationService applicationService;
-    private final EmailService emailService;
-    private final DepartmentService departmentService;
+        private final GuestService guestService;
+        private final JobPostService jobPostService;
+        private final CompanyService companyService;
+        private final CandidateCvService candidateCvService;
+        private final ApplicationService applicationService;
+        private final EmailService emailService;
+        private final DepartmentService departmentService;
 
-    // =============================
-    // COMPANY INFO
-    // =============================
+        // =============================
+        // HOME
+        // =============================
 
-    @GetMapping("/info")
-    public String viewCompanyInfo(Model model) {
+        @GetMapping({ "", "/" })
+        public String home(Model model) {
 
-        model.addAttribute("info",
-                companyService.getPublicCompanyInfo());
+                List<JobPost> jobs = jobPostService.getOpenJobs();
+                List<Department> departments = departmentService.getAllDepartments();
 
-        return "home/company-info";
-    }
+                // Tin tức công khai (loại bỏ các key đặc biệt dùng cho hero/stats)
+                List<String> specialKeys = List.of(
+                                "hero_title", "hero_subtitle",
+                                "stats_employees", "stats_offices", "stats_founded", "stats_rating",
+                                "cta_title", "cta_subtitle");
+                var news = companyService.getPublicCompanyInfo()
+                                .stream()
+                                .filter(c -> !specialKeys.contains(c.getInfoKey()))
+                                .limit(6)
+                                .toList();
 
-    // =============================
-    // APPLICATIONS
-    // =============================
+                model.addAttribute("companyNews", news);
+                model.addAttribute("featuredJobs", jobs.stream().limit(6).toList());
+                model.addAttribute("openCount", jobs.size());
+                model.addAttribute("deptCount", departments.size()); // số dept thực tế
+                model.addAttribute("topRewards",
+                                companyService.getTopRewards(3));
 
-    @GetMapping("/applications/{candidateId}")
-    public String viewApplications(
-            @PathVariable Long candidateId,
-            Model model) {
+                // Map key → content cho Hero / Stats / CTA (dùng trong Thymeleaf như
+                // ${homeConfig['hero_title']})
+                model.addAttribute("homeConfig", companyService.getHomeConfigMap());
 
-        model.addAttribute("applications",
-                applicationService.getApplicationsByCandidate(candidateId));
-
-        return "home/applications";
-    }
-
-    // =============================
-    // APPLY JOB
-    // =============================
-
-    @PostMapping(value = "/apply-full", consumes = "multipart/form-data")
-    @ResponseBody
-    public ApplicationResponseDTO applyFull(
-            @ModelAttribute ApplyJobRequestDTO request) throws Exception {
-
-        return guestService.applyJobFullFlow(request);
-    }
-
-    @PostMapping("/apply")
-    @ResponseBody
-    public String applyJob(
-            @RequestParam Long candidateId,
-            @RequestParam Long jobId,
-            @RequestParam Long cvId) {
-
-        applicationService.applyJob(candidateId, jobId, cvId);
-
-        return "ok";
-    }
-
-    // =============================
-    // CANDIDATE CVS
-    // =============================
-
-    @GetMapping("/candidate-cv/{candidateId}")
-    public String viewCandidateCv(
-            @PathVariable Long candidateId,
-            Model model) {
-
-        model.addAttribute("cvs",
-                candidateCvService.getCandidateCvs(candidateId));
-
-        return "home/candidate-cv";
-    }
-
-    // =============================
-    // HOME
-    // =============================
-
-    @GetMapping({ "", "/" })
-    public String home(Model model) {
-
-        List<JobPost> jobs = jobPostService.getOpenJobs();
-
-        model.addAttribute("companyNews",
-                companyService.getPublicCompanyInfo());
-
-        model.addAttribute("featuredJobs",
-                jobs.stream().limit(6).toList());
-
-        model.addAttribute("openCount",
-                jobs.size());
-
-        model.addAttribute("deptCount",
-                jobPostService.countJobsByDepartment(null));
-
-        return "home/index";
-    }
-
-    // =============================
-    // JOB LIST
-    // =============================
-
-    @GetMapping("/jobs")
-    public String jobs(Model model) {
-
-        List<JobPost> jobs = jobPostService.getOpenJobs();
-        List<Department> departments = departmentService.getAllDepartments();
-
-        Map<Long, Long> deptCounts = new HashMap<>();
-
-        for (Department d : departments) {
-            deptCounts.put(d.getId(),
-                    jobPostService.countJobsByDepartment(d.getId()));
+                return "home/index";
         }
 
-        model.addAttribute("jobs", jobs);
-        model.addAttribute("departments", departments);
-        model.addAttribute("deptCounts", deptCounts);
-        model.addAttribute("openCount", jobs.size());
+        // =============================
+        // JOB LIST
+        // =============================
 
-        return "home/jobs";
-    }
+        @GetMapping("/jobs")
+        public String jobs(Model model) {
 
-    @GetMapping("/jobs/department/{id}")
-    public String jobsByDepartment(
-            @PathVariable Long id,
-            Model model) {
+                List<JobPost> jobs = jobPostService.getOpenJobs();
+                List<Department> departments = departmentService.getAllDepartments();
 
-        model.addAttribute("jobs",
-                jobPostService.getJobsByDepartment(id));
+                Map<Long, Long> deptCounts = new HashMap<>();
+                for (Department d : departments) {
+                        deptCounts.put(d.getId(), jobPostService.countJobsByDepartment(d.getId()));
+                }
 
-        model.addAttribute("departments",
-                departmentService.getAllDepartments());
+                model.addAttribute("jobs", jobs);
+                model.addAttribute("departments", departments);
+                model.addAttribute("deptCounts", deptCounts);
+                model.addAttribute("openCount", jobs.size());
 
-        model.addAttribute("openCount",
-                jobPostService.getOpenJobs().size());
-
-        return "home/jobs";
-    }
-
-    // =============================
-    // JOB DETAIL
-    // =============================
-
-    @GetMapping("/jobs/{id}")
-    public String jobDetail(
-            @PathVariable Long id,
-            Model model) {
-
-        JobPost job = jobPostService.getJobDetail(id);
-
-        if (job == null) {
-            return "redirect:/home/jobs";
+                return "home/jobs";
         }
 
-        model.addAttribute("jobs",
-                jobPostService.getOpenJobs());
+        @GetMapping("/jobs/department/{id}")
+        public String jobsByDepartment(@PathVariable Long id, Model model) {
 
-        model.addAttribute("departments",
-                departmentService.getAllDepartments());
+                model.addAttribute("jobs", jobPostService.getJobsByDepartment(id));
+                model.addAttribute("departments", departmentService.getAllDepartments());
+                model.addAttribute("openCount", jobPostService.getOpenJobs().size());
 
-        model.addAttribute("openCount",
-                jobPostService.getOpenJobs().size());
+                return "home/jobs";
+        }
 
-        model.addAttribute("openJobId", id);
+        // =============================
+        // JOB DETAIL
+        // =============================
 
-        return "home/jobs";
-    }
+        @GetMapping("/jobs/{id}")
+        public String jobDetail(@PathVariable Long id, Model model) {
 
-    // =============================
-    // ABOUT
-    // =============================
+                JobPost job = jobPostService.getJobDetail(id);
+                if (job == null)
+                        return "redirect:/home/jobs";
 
-    @GetMapping("/about")
-    public String about(Model model) {
+                model.addAttribute("jobs", jobPostService.getOpenJobs());
+                model.addAttribute("departments", departmentService.getAllDepartments());
+                model.addAttribute("openCount", jobPostService.getOpenJobs().size());
+                model.addAttribute("openJobId", id);
 
-        model.addAttribute("companyInfoList",
-                companyService.getPublicCompanyInfo());
+                return "home/jobs";
+        }
 
-        return "home/about";
-    }
+        // =============================
+        // ABOUT
+        // =============================
 
-    // =============================
-    // CONTACT
-    // =============================
+        @GetMapping("/about")
+        public String about(Model model) {
+                model.addAttribute("companyInfoList", companyService.getPublicCompanyInfo());
+                return "home/about";
+        }
 
-    @GetMapping("/contact")
-    public String contact() {
-        return "home/contact";
-    }
+        // =============================
+        // CONTACT
+        // =============================
 
-    @PostMapping("/contact/send")
-    @ResponseBody
-    public String sendContact(@RequestBody ContactRequestDTO request) {
+        @GetMapping("/contact")
+        public String contact() {
+                return "home/contact";
+        }
 
-        emailService.sendContactEmail(
-                request.getSenderName(),
-                request.getSenderEmail(),
-                request.getSenderPhone(),
-                request.getTopic(),
-                request.getMessage());
+        @PostMapping("/contact/send")
+        @ResponseBody
+        public String sendContact(@RequestBody ContactRequestDTO request) {
+                emailService.sendContactEmail(
+                                request.getSenderName(), request.getSenderEmail(),
+                                request.getSenderPhone(), request.getTopic(), request.getMessage());
+                return "success";
+        }
 
-        return "success";
-    }
+        // =============================
+        // COMPANY INFO (public)
+        // =============================
 
-    // =============================
-    // TRACK APPLICATION
-    // =============================
+        @GetMapping("/info")
+        public String viewCompanyInfo(Model model) {
+                model.addAttribute("info", companyService.getPublicCompanyInfo());
+                return "home/company-info";
+        }
 
-    @GetMapping("/track/api/{token}")
-    @ResponseBody
-    public ApplicationResponseDTO trackApplicationApi(
-            @PathVariable String token) {
+        // =============================
+        // APPLICATIONS
+        // =============================
 
-        return applicationService.trackApplicationDTO(token);
-    }
+        @GetMapping("/applications/{candidateId}")
+        public String viewApplications(@PathVariable Long candidateId, Model model) {
+                model.addAttribute("applications", applicationService.getApplicationsByCandidate(candidateId));
+                return "home/applications";
+        }
 
-    @PostMapping("/application/delete/{token}")
-    @ResponseBody
-    public String deleteApplication(@PathVariable String token) {
+        @PostMapping(value = "/apply-full", consumes = "multipart/form-data")
+        @ResponseBody
+        public ApplicationResponseDTO applyFull(@ModelAttribute ApplyJobRequestDTO request) throws Exception {
+                return guestService.applyJobFullFlow(request);
+        }
 
-        applicationService.deleteApplicationByToken(token);
+        @PostMapping("/apply")
+        @ResponseBody
+        public String applyJob(@RequestParam Long candidateId,
+                        @RequestParam Long jobId,
+                        @RequestParam Long cvId) {
+                applicationService.applyJob(candidateId, jobId, cvId);
+                return "ok";
+        }
 
-        return "deleted";
-    }
+        // =============================
+        // CANDIDATE CVS
+        // =============================
 
-    // =============================
-    // DOWNLOAD CV
-    // =============================
+        @GetMapping("/candidate-cv/{candidateId}")
+        public String viewCandidateCv(@PathVariable Long candidateId, Model model) {
+                model.addAttribute("cvs", candidateCvService.getCandidateCvs(candidateId));
+                return "home/candidate-cv";
+        }
 
-//     @GetMapping("/cv/{id}")
-//     @ResponseBody
-//     public ResponseEntity<byte[]> downloadCv(@PathVariable Long id) {
+        // =============================
+        // TRACK APPLICATION
+        // =============================
 
-//         CandidateCv cv = candidateCvService.getCandidateCvById(id);
+        @GetMapping("/track/api/{token}")
+        @ResponseBody
+        public ApplicationResponseDTO trackApplicationApi(@PathVariable String token) {
+                return applicationService.trackApplicationDTO(token);
+        }
 
-//         return ResponseEntity.ok()
-//                 .header("Content-Disposition",
-//                         "attachment; filename=\"" + cv.getFileName() + "\"")
-//                 .header("Content-Type", cv.getFileType())
-//                 .body(cv.getFileData());
-//     }
+        @PostMapping("/application/delete/{token}")
+        @ResponseBody
+        public String deleteApplication(@PathVariable String token) {
+                applicationService.deleteApplicationByToken(token);
+                return "deleted";
+        }
 }

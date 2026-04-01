@@ -1043,8 +1043,8 @@
                   placeholder="123 Street, City" /></div>
               <div class="form-group"><label>Years of Experience</label><input id="a-exp" type="number" min="0"
                   placeholder="3" /></div>
-              <div class="form-group"><label>Expected Salary (VND)</label><input id="a-sal" type="number"
-                  placeholder="15000000" /></div>
+              <div class="form-group"><label>Expected Salary (USD)</label><input id="a-sal" type="number"
+                  placeholder="1000" /></div>
               <div class="form-group full"><label>Professional Headline</label><input id="a-head" type="text"
                   placeholder="Full-Stack Developer | 3 yrs exp" /></div>
               <div class="form-group full"><label>Brief Introduction</label><textarea id="a-intro"
@@ -1282,7 +1282,7 @@
           'Department': _selectedJob?.dept || '—',
           'CV File': _uploadedFile?.name || '—',
           'Experience': document.getElementById('a-exp').value ? document.getElementById('a-exp').value + ' years' : '—',
-          'Expected Salary': document.getElementById('a-sal').value ? Number(document.getElementById('a-sal').value).toLocaleString() + ' VND' : '—',
+          'Expected Salary': document.getElementById('a-sal').value ? '$' + Number(document.getElementById('a-sal').value).toLocaleString() : '—',
         };
         document.getElementById('confirm-grid').innerHTML = Object.entries(items).map(([k, v]) =>
           `<div style="background:white;border-radius:9px;padding:10px 12px;border:1px solid var(--border);">

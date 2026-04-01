@@ -30,6 +30,7 @@ import com.group5.ems.entity.InterviewAssignment;
 import com.group5.ems.entity.JobPost;
 import com.group5.ems.entity.Request;
 import com.group5.ems.entity.RequestApprovalHistory;
+import com.group5.ems.exception.JobPostException;
 import com.group5.ems.repository.ApplicationRepository;
 import com.group5.ems.repository.ApplicationStageRepository;
 import com.group5.ems.repository.CandidateCvRepository;
@@ -190,49 +191,27 @@ public class HrRecruitmentService {
     // 5. INTERVIEWER ASSIGNMENT
     // ══════════════════════════════════════════════════════════════════════════
 
-    /**
-     * Danh sách employee cho assign modal.
-     *
-     * Mapping schema thực tế:
-     * employees.user_id → users.id
-     * users.full_name → InterviewerDTO.fullName
-     * users.avatar_url → InterviewerDTO.avatarUrl
-     * employees.employee_code → InterviewerDTO.employeeCode
-     * positions.name → InterviewerDTO.jobTitle
-     * departments.name → InterviewerDTO.departmentName
-     *
-     * interview_assignments.interviewer_id → users.id (KHÔNG phải employees.id)
-     * Employees không có user account bị loại trừ.
-     */
     public List<InterviewerDTO> getAvailableInterviewers() {
         return employeeRepository.findAllWithUser().stream()
                 .map(emp -> {
                     if (emp.getUser() == null)
                         return null;
-
                     String name = emp.getUser().getFullName();
                     if (name == null || name.isBlank())
                         return null;
-
                     return new InterviewerDTO(
-                            emp.getUser().getId(), // users.id → interviewer_id FK
-                            name, // users.full_name
+                            emp.getUser().getId(),
+                            name,
                             buildInitials(name),
-                            emp.getEmployeeCode(), // employees.employee_code
+                            emp.getEmployeeCode(),
                             emp.getPosition() != null ? emp.getPosition().getName() : null,
                             emp.getDepartment() != null ? emp.getDepartment().getName() : null,
-                            emp.getUser().getAvatarUrl() // users.avatar_url
-                    );
+                            emp.getUser().getAvatarUrl());
                 })
                 .filter(java.util.Objects::nonNull)
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Interviewers đang được assign cho một application.
-     * employeeCode / jobTitle / departmentName = null vì chỉ join từ User,
-     * không join thêm sang Employee để tránh thêm query.
-     */
     public List<InterviewerDTO> getAssignedInterviewers(Long applicationId) {
         return interviewAssignmentRepository
                 .findByApplicationId(applicationId).stream()
@@ -244,22 +223,15 @@ public class HrRecruitmentService {
                             ? u.getFullName()
                             : u.getUsername();
                     return new InterviewerDTO(
-                            u.getId(),
-                            name,
-                            buildInitials(name),
-                            null,
-                            null,
-                            null,
-                            u.getAvatarUrl());
+                            u.getId(), name, buildInitials(name),
+                            null, null, null, u.getAvatarUrl());
                 })
                 .filter(java.util.Objects::nonNull)
                 .collect(Collectors.toList());
     }
 
     @Transactional
-    public void assignInterviewers(Long applicationId,
-            List<Long> interviewerIds,
-            Long assignedBy) {
+    public void assignInterviewers(Long applicationId, List<Long> interviewerIds, Long assignedBy) {
         applicationRepository.findById(applicationId)
                 .orElseThrow(() -> new IllegalArgumentException("Application not found: " + applicationId));
 
@@ -288,7 +260,7 @@ public class HrRecruitmentService {
 
     public List<HrJobRequestDTO> getJobPostRequests() {
         return requestRepository
-                .findByRequestType_CodeOrderByCreatedAtDesc("RECRUITMENT")
+                .findByRequestType_CodeInOrderByCreatedAtDesc(List.of("RECRUITMENT", "HR_RECRUIT"))
                 .stream()
                 .map(this::mapToJobRequestDTO)
                 .collect(Collectors.toList());
@@ -296,16 +268,14 @@ public class HrRecruitmentService {
 
     public long countPendingJobRequests() {
         return requestRepository
-                .countByRequestType_CodeAndStatus("RECRUITMENT", "PENDING");
+                .countByRequestType_CodeInAndStatus(List.of("RECRUITMENT", "HR_RECRUIT"), "PENDING");
     }
 
     private HrJobRequestDTO mapToJobRequestDTO(Request req) {
         String submitter = "";
         String department = "";
-
         if (req.getEmployee() != null) {
             var emp = req.getEmployee();
-            // Ưu tiên full_name từ User, fallback sang employee_code
             if (emp.getUser() != null && emp.getUser().getFullName() != null) {
                 submitter = emp.getUser().getFullName();
             } else {
@@ -315,7 +285,6 @@ public class HrRecruitmentService {
                 department = emp.getDepartment().getName();
             }
         }
-
         return HrJobRequestDTO.builder()
                 .id(req.getId())
                 .title(req.getTitle())
@@ -327,12 +296,8 @@ public class HrRecruitmentService {
                 .requestedByName(submitter)
                 .departmentName(department)
                 .rejectedReason(req.getRejectedReason())
-                .submittedAtFormatted(req.getCreatedAt() != null
-                        ? req.getCreatedAt().format(DATETIME_FMT)
-                        : "")
-                .updatedAtFormatted(req.getUpdatedAt() != null
-                        ? req.getUpdatedAt().format(DATETIME_FMT)
-                        : "")
+                .submittedAtFormatted(req.getCreatedAt() != null ? req.getCreatedAt().format(DATETIME_FMT) : "")
+                .updatedAtFormatted(req.getUpdatedAt() != null ? req.getUpdatedAt().format(DATETIME_FMT) : "")
                 .build();
     }
 
@@ -340,13 +305,12 @@ public class HrRecruitmentService {
     public void approveJobRequest(Long requestId, Long approverId) {
         Request req = requestRepository.findById(requestId)
                 .orElseThrow(() -> new IllegalArgumentException("Request not found: " + requestId));
-
         req.setStatus("APPROVED");
+        req.setStep("DONE");
         req.setApprovedBy(approverId);
         req.setApprovedAt(LocalDateTime.now());
         requestRepository.save(req);
 
-        // Ghi lịch sử
         RequestApprovalHistory hist = new RequestApprovalHistory();
         hist.setRequestId(requestId);
         hist.setApproverId(approverId);
@@ -359,8 +323,8 @@ public class HrRecruitmentService {
     public void rejectJobRequest(Long requestId, String reason, Long approverId) {
         Request req = requestRepository.findById(requestId)
                 .orElseThrow(() -> new IllegalArgumentException("Request not found: " + requestId));
-
         req.setStatus("REJECTED");
+        req.setStep("DONE");
         req.setRejectedReason(reason);
         requestRepository.save(req);
 
@@ -384,7 +348,7 @@ public class HrRecruitmentService {
             BigDecimal salaryMin, BigDecimal salaryMax,
             LocalDate openDate, LocalDate closeDate, String status) {
         JobPost job = jobPostRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Job post not found: " + id));
+                .orElseThrow(() -> JobPostException.notFound(id));
         job.setTitle(title);
         job.setDepartmentId(departmentId);
         job.setDescription(description);
@@ -404,10 +368,44 @@ public class HrRecruitmentService {
     @Transactional
     public String deleteJobPost(Long id) {
         JobPost job = jobPostRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Job post not found: " + id));
+                .orElseThrow(() -> JobPostException.notFound(id));
         String title = job.getTitle();
         jobPostRepository.deleteById(id);
         return title;
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // 7. BUSINESS RULE VALIDATION
+    // ══════════════════════════════════════════════════════════════════════════
+
+    public void validateCreateJobPost(LocalDate openDate, LocalDate closeDate, String action) {
+        if ("publish".equals(action) && openDate != null && closeDate != null) {
+            if (closeDate.isBefore(openDate)) {
+                throw JobPostException.closeDateBeforeOpenDate();
+            }
+        }
+    }
+
+    public void validateUpdateJobPost(Long jobId, LocalDate openDate, LocalDate closeDate, String newStatus) {
+        JobPost job = jobPostRepository.findById(jobId)
+                .orElseThrow(() -> JobPostException.notFound(jobId));
+
+        LocalDate effectiveOpen = openDate != null ? openDate : job.getOpenDate();
+        LocalDate effectiveClose = closeDate != null ? closeDate : job.getCloseDate();
+
+        if (effectiveOpen != null && effectiveClose != null && effectiveClose.isBefore(effectiveOpen)) {
+            throw JobPostException.closeDateBeforeOpenDate();
+        }
+        if ("OPEN".equals(newStatus) && effectiveClose != null && effectiveClose.isBefore(LocalDate.now())) {
+            throw JobPostException.cannotOpenWithPastCloseDate(effectiveClose);
+        }
+    }
+
+    public void validateDeleteJobPost(Long jobId) {
+        long count = applicationRepository.countByJobPostId(jobId);
+        if (count > 0) {
+            throw JobPostException.hasActiveApplicants(count);
+        }
     }
 
     // ══════════════════════════════════════════════════════════════════════════
@@ -421,11 +419,11 @@ public class HrRecruitmentService {
         Long daysLeft = job.getCloseDate() != null
                 ? ChronoUnit.DAYS.between(LocalDate.now(), job.getCloseDate())
                 : null;
-
         return HrRecruitmentDTO.builder()
                 .id(job.getId())
                 .jobTitle(job.getTitle())
                 .department(dept)
+                .departmentId(job.getDepartmentId())
                 .position(job.getPosition() != null ? job.getPosition().getName() : null)
                 .status(job.getStatus())
                 .applicantCount(applicants)
@@ -443,19 +441,8 @@ public class HrRecruitmentService {
                 .build();
     }
 
-    /**
-     * Map Application → HrApplicantDTO.
-     *
-     * Candidate entity thực tế có các field:
-     * fullName, email, phone, headline, summary,
-     * yearsExperience, expectedSalary,
-     * address, dateOfBirth, introduction
-     */
     private HrApplicantDTO mapToApplicantDTO(Application app) {
-        String name = "Unknown";
-        String email = "";
-        String phone = "";
-        String initials = "?";
+        String name = "Unknown", email = "", phone = "", initials = "?";
         Integer yearsExp = null;
         BigDecimal salary = null;
 
@@ -477,7 +464,6 @@ public class HrRecruitmentService {
             }
         }
 
-        // Lấy stage mới nhất từ ApplicationStage; fallback về application.status
         String stage = app.getStatus();
         if (app.getStages() != null && !app.getStages().isEmpty()) {
             stage = app.getStages().stream()
@@ -496,9 +482,7 @@ public class HrRecruitmentService {
                 .appliedJob(jobTitle)
                 .department(department)
                 .appliedDate(app.getAppliedAt())
-                .appliedDateFormatted(app.getAppliedAt() != null
-                        ? app.getAppliedAt().format(DATE_FMT)
-                        : "")
+                .appliedDateFormatted(app.getAppliedAt() != null ? app.getAppliedAt().format(DATE_FMT) : "")
                 .stage(stage)
                 .yearsExperience(yearsExp)
                 .expectedSalary(salary)
@@ -525,13 +509,13 @@ public class HrRecruitmentService {
         if (min == null && max == null)
             return null;
         if (min != null && max != null)
-            return formatVnd(min) + " – " + formatVnd(max) + " VND";
+            return formatUsd(min) + " – " + formatUsd(max);
         if (min != null)
-            return "From " + formatVnd(min) + " VND";
-        return "Up to " + formatVnd(max) + " VND";
+            return "From " + formatUsd(min);
+        return "Up to " + formatUsd(max);
     }
 
-    private String formatVnd(BigDecimal amount) {
-        return NumberFormat.getNumberInstance(new Locale("vi", "VN")).format(amount);
+    private String formatUsd(BigDecimal amount) {
+        return NumberFormat.getCurrencyInstance(Locale.US).format(amount);
     }
 }
