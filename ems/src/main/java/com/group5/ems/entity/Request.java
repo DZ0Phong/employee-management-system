@@ -89,6 +89,15 @@ public class Request {
     @Column(name = "is_urgent")
     private boolean urgent;
 
+    @Size(max = 20)
+    @Column(name = "priority", length = 20)
+    @ColumnDefault("'NORMAL'")
+    private String priority = "NORMAL"; // CRITICAL, URGENT, HIGH, NORMAL
+
+    @Column(name = "priority_score")
+    @ColumnDefault("0")
+    private Integer priorityScore = 0;
+
     // ── Timestamps ────────────────────────────────────────────────
     @Column(name = "approved_at")
     private LocalDateTime approvedAt;
