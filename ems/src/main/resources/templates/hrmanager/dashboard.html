@@ -914,7 +914,6 @@
                     <div class="flex items-center gap-2">
                         ${getPriorityBadge(activity.priority)}
                         ${getStatusBadge(activity.status, activity.statusLabel)}
-
                     </div>
                 </div>
                 <div class="activity-detail hidden mt-4 pt-4 border-t border-slate-100">
@@ -1025,6 +1024,9 @@
             return;
         }
         
+        // Save ID before closing modal
+        const requestIdToApprove = approveTargetId;
+        
         const token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
         const header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
         
@@ -1038,7 +1040,7 @@
                 'Content-Type': 'application/x-www-form-urlencoded',
                 [header]: token
             },
-            body: 'requestId=' + approveTargetId
+            body: 'requestId=' + requestIdToApprove
         })
         .then(res => res.json())
         .then(data => {
