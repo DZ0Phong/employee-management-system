@@ -101,10 +101,12 @@
 
                 <div class="space-y-3">
                     <div th:if="${param.success != null}" class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-                        Leave request updated successfully.
+                        <span th:if="${param.success[0] == 'forwarded'}">Leave request forwarded to HR successfully.</span>
+                        <span th:if="${param.success[0] == 'rejected'}">Leave request rejected successfully.</span>
+                        <span th:unless="${param.success[0] == 'forwarded' or param.success[0] == 'rejected'}">Leave request updated successfully.</span>
                     </div>
                     <div th:if="${param.error != null}" class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-                        That request is outside your department or can no longer be reviewed.
+                        That request is outside your department, can no longer be reviewed, or the rejection reason was missing.
                     </div>
                 </div>
 
@@ -237,29 +239,57 @@
                                         <div class="text-[10px] text-slate-400 font-medium mt-0.5" th:text="'Applied ' + ${req.appliedOn}">Applied Oct 05</div>
                                     </td>
                                     <td class="px-6 py-4">
-                                        <span th:class="'text-[10px] tracking-widest font-bold uppercase px-2 py-1 rounded-lg border ' + ${req.statusClass}" th:text="${req.statusDisplay}">Pending Review</span>
+                                        <div class="flex flex-col items-start gap-1">
+                                            <span th:class="'text-[10px] tracking-widest font-bold uppercase px-2 py-1 rounded-lg border ' + ${req.statusClass}" th:text="${req.statusDisplay}">Pending Review</span>
+                                            <span th:if="${req.status == 'PENDING'}" class="text-[10px] text-slate-400 font-medium" th:text="${req.stepDisplay}">Waiting for Department Manager</span>
+                                        </div>
                                     </td>
                                     <td class="px-6 py-4 text-right">
-                                        <div class="flex justify-end gap-1.5" th:if="${req.status == 'PENDING'}">
-                                            <form th:action="@{/dept-manager/leave-approval/{id}/reject(id=${req.id})}" method="post">
-                                                <button type="submit" class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors" title="Reject">
-                                                    <span class="material-symbols-outlined text-[18px]">close</span>
-                                                </button>
-                                            </form>
-                                            <form th:action="@{/dept-manager/leave-approval/{id}/approve(id=${req.id})}" method="post">
-                                                <button type="submit" class="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors" title="Approve">
-                                                    <span class="material-symbols-outlined text-[18px]">check</span>
-                                                </button>
-                                            </form>
+                                        <div class="flex justify-end" th:if="${req.canReview}">
+                                            <button type="button"
+                                                    class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 transition-colors hover:border-primary hover:text-primary"
+                                                    title="Review request"
+                                                    th:attr="data-request-id=${req.id},
+                                                             data-employee-name=${req.employee.name},
+                                                             data-employee-role=${req.employee.role},
+                                                             data-employee-code=${req.employeeCode},
+                                                             data-avatar-url=${req.employee.avatarUrl},
+                                                             data-leave-type=${req.typeDisplay},
+                                                             data-duration=${req.durationDays} + ' Days',
+                                                             data-dates=${req.dates},
+                                                             data-applied-on=${req.appliedOn},
+                                                             data-reason=${req.reason},
+                                                             data-step-display=${req.stepDisplay}"
+                                                    data-review-trigger>
+                                                <span class="material-symbols-outlined text-[18px]">visibility</span>
+                                                <span>Review</span>
+                                            </button>
                                         </div>
-                                        <div th:unless="${req.status == 'PENDING'}">
+                                        <div th:if="${req.status != 'PENDING'}">
                                             <span class="text-xs text-slate-400 italic">Actioned</span>
+                                        </div>
+                                        <div th:if="${req.status == 'PENDING' and !req.canReview}">
+                                            <span class="text-xs text-slate-400 italic">Forwarded</span>
                                         </div>
                                     </td>
                                 </tr>
 
                             </tbody>
                         </table>
+                    </div>
+                    <div class="flex flex-col gap-3 border-t border-slate-100 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+                        <p id="pagination-summary" class="text-xs font-medium text-slate-400">Showing 0 requests</p>
+                        <div class="flex items-center justify-end gap-2">
+                            <button type="button" id="pagination-prev" class="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-500 transition hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-40">
+                                <span class="material-symbols-outlined text-[16px]">chevron_left</span>
+                                <span>Prev</span>
+                            </button>
+                            <div id="pagination-pages" class="flex items-center gap-2"></div>
+                            <button type="button" id="pagination-next" class="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-500 transition hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-40">
+                                <span>Next</span>
+                                <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -268,14 +298,106 @@
                     <span class="material-symbols-outlined text-primary text-[28px] shrink-0">info</span>
                     <div>
                         <h4 class="text-sm font-bold text-slate-900 dark:text-white">Decision Guidelines</h4>
-                        <p class="text-xs text-slate-500 mt-0.5">Leave approvals should consider project deadlines and current team capacity. If you reject a request, please provide a constructive reason for the employee.</p>
+                        <p class="text-xs text-slate-500 mt-0.5">Department Managers perform the first review only. Approved requests are forwarded to HR for validation, then to HR Manager for the final decision.</p>
                     </div>
                 </div>
 
             </div>
         </div>
     </main>
+</div>
+
+<div id="review-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/45 px-4">
+    <div class="w-full max-w-[42rem] overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl">
+        <div class="flex items-start justify-between border-b border-slate-100 px-5 py-4">
+            <div>
+                <p class="text-xs font-bold uppercase tracking-[0.18em] text-primary">Leave Review</p>
+                <h3 class="mt-1 text-lg font-black text-slate-900">Review Leave Request</h3>
+                <p class="mt-1 text-xs text-slate-500">Check the request details before forwarding it to HR or rejecting it.</p>
+            </div>
+            <button type="button" id="close-review-modal" class="rounded-xl p-2 text-slate-400 transition-colors hover:bg-slate-50 hover:text-slate-700">
+                <span class="material-symbols-outlined text-[20px]">close</span>
+            </button>
+        </div>
+
+        <div class="space-y-4 px-5 py-5">
+            <div class="flex items-center gap-3 rounded-2xl bg-slate-50 px-4 py-3">
+                <img id="modal-avatar" src="" alt="Employee avatar" class="h-12 w-12 rounded-2xl object-cover shadow-sm"/>
+                <div class="min-w-0">
+                    <h4 id="modal-employee-name" class="text-sm font-bold text-slate-900">Employee Name</h4>
+                    <p id="modal-employee-role" class="text-sm text-slate-500">Position</p>
+                    <p class="mt-1 text-xs font-semibold uppercase tracking-wider text-slate-400">Employee ID: <span id="modal-employee-code">N/A</span></p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+                <div class="rounded-2xl border border-slate-100 bg-slate-50/70 px-4 py-3">
+                    <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Leave Type</p>
+                    <p id="modal-leave-type" class="mt-1.5 text-sm font-semibold text-slate-900">Annual Leave</p>
+                </div>
+                <div class="rounded-2xl border border-slate-100 bg-slate-50/70 px-4 py-3">
+                    <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Duration</p>
+                    <p id="modal-duration" class="mt-1.5 text-sm font-semibold text-slate-900">3 Days</p>
+                </div>
+                <div class="rounded-2xl border border-slate-100 bg-slate-50/70 px-4 py-3">
+                    <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Leave Dates</p>
+                    <p id="modal-dates" class="mt-1.5 text-sm font-semibold text-slate-900">Apr 01 - Apr 03</p>
+                </div>
+                <div class="rounded-2xl border border-slate-100 bg-slate-50/70 px-4 py-3">
+                    <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Current Step</p>
+                    <p id="modal-step-display" class="mt-1.5 text-sm font-semibold text-slate-900">Waiting for Department Manager</p>
+                </div>
+            </div>
+
+            <div class="rounded-2xl border border-slate-100 bg-white px-4 py-3">
+                <div class="flex items-center justify-between gap-4">
+                    <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Applied On</p>
+                    <p id="modal-applied-on" class="text-sm font-semibold text-slate-700">Apr 01</p>
+                </div>
+                <div class="mt-3 border-t border-slate-100 pt-3">
+                    <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Reason</p>
+                    <p id="modal-reason" class="mt-1.5 whitespace-pre-line text-sm leading-6 text-slate-600">No reason provided.</p>
+                </div>
+            </div>
+
+            <form id="review-action-form" class="space-y-4">
+                <input type="hidden" id="modal-request-id" name="requestId" value=""/>
+                <div>
+                    <div class="mb-2 flex items-center justify-between gap-3">
+                        <label for="modal-rejection-reason" class="text-sm font-semibold text-slate-700">Reject reason</label>
+                        <span class="text-[11px] text-slate-400">Required only when rejecting</span>
+                    </div>
+                    <textarea id="modal-rejection-reason"
+                              name="rejectionReason"
+                              rows="3"
+                              placeholder="Explain clearly why this leave request is being rejected..."
+                              class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-primary focus:bg-white focus:ring-1 focus:ring-primary"></textarea>
+                    <p id="modal-rejection-error" class="mt-2 hidden text-xs font-medium text-rose-600">Please enter a rejection reason before rejecting this request.</p>
+                </div>
+
+                <div class="flex flex-col-reverse gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:justify-end">
+                    <button type="button" id="modal-forward-btn" class="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-95">
+                        <span class="material-symbols-outlined text-[18px]">send</span>
+                        <span>Forward to HR</span>
+                    </button>
+                    <button type="button" id="modal-reject-btn" class="inline-flex items-center justify-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-sm font-semibold text-rose-600 transition hover:bg-rose-100">
+                        <span class="material-symbols-outlined text-[18px]">close</span>
+                        <span>Reject Request</span>
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
+</div>
+
+<form id="modal-forward-form" method="post" class="hidden">
+    <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+</form>
+
+<form id="modal-reject-form" method="post" class="hidden">
+    <input type="hidden" name="rejectionReason" id="modal-reject-hidden-reason" />
+    <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+</form>
 
     <script th:inline="javascript">
         document.addEventListener('DOMContentLoaded', () => {
@@ -286,14 +408,41 @@
 
             const filterTypeSelect = document.getElementById('filter-type-select');
             const sortSelect = document.getElementById('sort-select');
+            const reviewModal = document.getElementById('review-modal');
+            const closeReviewModalBtn = document.getElementById('close-review-modal');
+            const reviewButtons = document.querySelectorAll('[data-review-trigger]');
+            const modalRequestId = document.getElementById('modal-request-id');
+            const modalEmployeeName = document.getElementById('modal-employee-name');
+            const modalEmployeeRole = document.getElementById('modal-employee-role');
+            const modalEmployeeCode = document.getElementById('modal-employee-code');
+            const modalAvatar = document.getElementById('modal-avatar');
+            const modalLeaveType = document.getElementById('modal-leave-type');
+            const modalDuration = document.getElementById('modal-duration');
+            const modalDates = document.getElementById('modal-dates');
+            const modalAppliedOn = document.getElementById('modal-applied-on');
+            const modalReason = document.getElementById('modal-reason');
+            const modalStepDisplay = document.getElementById('modal-step-display');
+            const modalRejectReason = document.getElementById('modal-rejection-reason');
+            const modalRejectError = document.getElementById('modal-rejection-error');
+            const modalForwardBtn = document.getElementById('modal-forward-btn');
+            const modalRejectBtn = document.getElementById('modal-reject-btn');
+            const paginationSummary = document.getElementById('pagination-summary');
+            const paginationPages = document.getElementById('pagination-pages');
+            const paginationPrev = document.getElementById('pagination-prev');
+            const paginationNext = document.getElementById('pagination-next');
+            const modalForwardForm = document.getElementById('modal-forward-form');
+            const modalRejectForm = document.getElementById('modal-reject-form');
+            const modalRejectHiddenReason = document.getElementById('modal-reject-hidden-reason');
 
             let currentTab = 'all'; // all, approved, rejected
             let searchTerm = '';
             let filterType = 'all';
             let currentSort = 'newest';
+            let currentPage = 1;
+            const pageSize = 8;
 
-            function filterRows() {
-                rows.forEach(row => {
+            function getFilteredRows() {
+                return rows.filter(row => {
                     const status = row.getAttribute('data-status').toLowerCase();
                     const name = row.getAttribute('data-name').toLowerCase();
                     const type = row.getAttribute('data-type');
@@ -306,20 +455,12 @@
                     if (filterType === 'sick' && !type.includes('sick')) matchesType = false;
                     if (filterType === 'other' && (type.includes('annual') || type.includes('sick'))) matchesType = false;
 
-                    if (matchesTab && matchesSearch && matchesType) {
-                        row.style.display = '';
-                    } else {
-                        row.style.display = 'none';
-                    }
+                    return matchesTab && matchesSearch && matchesType;
                 });
-
-                sortRows();
             }
 
-            function sortRows() {
-                const visibleRows = rows.filter(r => r.style.display !== 'none');
-                
-                visibleRows.sort((a, b) => {
+            function sortRows(filteredRows) {
+                filteredRows.sort((a, b) => {
                     if (currentSort === 'newest') return parseInt(b.getAttribute('data-id')) - parseInt(a.getAttribute('data-id'));
                     if (currentSort === 'oldest') return parseInt(a.getAttribute('data-id')) - parseInt(b.getAttribute('data-id'));
                     
@@ -329,13 +470,69 @@
                     if (currentSort === 'name-asc') return a.getAttribute('data-name').localeCompare(b.getAttribute('data-name'));
                     return 0;
                 });
+            }
 
-                visibleRows.forEach(r => tbody.appendChild(r));
+            function renderPagination(totalItems, totalPages) {
+                paginationPages.innerHTML = '';
+
+                if (totalItems === 0) {
+                    paginationSummary.textContent = 'No requests match the current filters';
+                    paginationPrev.disabled = true;
+                    paginationNext.disabled = true;
+                    return;
+                }
+
+                const startItem = (currentPage - 1) * pageSize + 1;
+                const endItem = Math.min(currentPage * pageSize, totalItems);
+                paginationSummary.textContent = `Showing ${startItem}-${endItem} of ${totalItems} requests`;
+
+                paginationPrev.disabled = currentPage <= 1;
+                paginationNext.disabled = currentPage >= totalPages;
+
+                for (let page = 1; page <= totalPages; page++) {
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.textContent = page;
+                    button.className = page === currentPage
+                        ? 'h-9 min-w-[2.25rem] rounded-xl bg-primary px-3 text-xs font-bold text-white'
+                        : 'h-9 min-w-[2.25rem] rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-500 transition hover:border-primary hover:text-primary';
+                    button.addEventListener('click', () => {
+                        currentPage = page;
+                        filterRows();
+                    });
+                    paginationPages.appendChild(button);
+                }
+            }
+
+            function filterRows() {
+                const filteredRows = getFilteredRows();
+                sortRows(filteredRows);
+
+                const totalPages = Math.max(1, Math.ceil(filteredRows.length / pageSize));
+                if (currentPage > totalPages) {
+                    currentPage = totalPages;
+                }
+
+                const startIndex = (currentPage - 1) * pageSize;
+                const endIndex = startIndex + pageSize;
+                const pageRows = filteredRows.slice(startIndex, endIndex);
+
+                rows.forEach(row => {
+                    row.style.display = 'none';
+                });
+
+                filteredRows.forEach(row => tbody.appendChild(row));
+                pageRows.forEach(row => {
+                    row.style.display = '';
+                });
+
+                renderPagination(filteredRows.length, totalPages);
             }
 
             tabs.forEach(tab => {
                 tab.addEventListener('click', () => {
                     currentTab = tab.getAttribute('data-tab');
+                    currentPage = 1;
                     
                     // Update active styles
                     tabs.forEach(t => {
@@ -352,6 +549,7 @@
             if (searchInput) {
                 searchInput.addEventListener('input', (e) => {
                     searchTerm = e.target.value.toLowerCase();
+                    currentPage = 1;
                     filterRows();
                 });
             }
@@ -359,6 +557,7 @@
             if (filterTypeSelect) {
                 filterTypeSelect.addEventListener('change', (e) => {
                     filterType = e.target.value;
+                    currentPage = 1;
                     filterRows();
                 });
             }
@@ -366,9 +565,90 @@
             if (sortSelect) {
                 sortSelect.addEventListener('change', (e) => {
                     currentSort = e.target.value;
-                    sortRows();
+                    currentPage = 1;
+                    filterRows();
                 });
             }
+
+            paginationPrev?.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage -= 1;
+                    filterRows();
+                }
+            });
+
+            paginationNext?.addEventListener('click', () => {
+                const filteredRows = getFilteredRows();
+                const totalPages = Math.max(1, Math.ceil(filteredRows.length / pageSize));
+                if (currentPage < totalPages) {
+                    currentPage += 1;
+                    filterRows();
+                }
+            });
+
+            function openReviewModal(button) {
+                modalRequestId.value = button.dataset.requestId || '';
+                modalEmployeeName.textContent = button.dataset.employeeName || 'Unknown';
+                modalEmployeeRole.textContent = button.dataset.employeeRole || 'Employee';
+                modalEmployeeCode.textContent = button.dataset.employeeCode || 'N/A';
+                modalAvatar.src = button.dataset.avatarUrl || '';
+                modalLeaveType.textContent = button.dataset.leaveType || 'N/A';
+                modalDuration.textContent = button.dataset.duration || 'N/A';
+                modalDates.textContent = button.dataset.dates || 'N/A';
+                modalAppliedOn.textContent = button.dataset.appliedOn || 'N/A';
+                modalReason.textContent = button.dataset.reason || 'No reason provided.';
+                modalStepDisplay.textContent = button.dataset.stepDisplay || 'Waiting for Department Manager';
+                modalRejectReason.value = '';
+                modalRejectError.classList.add('hidden');
+                reviewModal.classList.remove('hidden');
+                reviewModal.classList.add('flex');
+            }
+
+            function closeReviewModal() {
+                reviewModal.classList.add('hidden');
+                reviewModal.classList.remove('flex');
+                modalRejectReason.value = '';
+                modalRejectError.classList.add('hidden');
+            }
+
+            reviewButtons.forEach(button => {
+                button.addEventListener('click', () => openReviewModal(button));
+            });
+
+            closeReviewModalBtn?.addEventListener('click', closeReviewModal);
+
+            reviewModal?.addEventListener('click', (event) => {
+                if (event.target === reviewModal) {
+                    closeReviewModal();
+                }
+            });
+
+            modalRejectReason?.addEventListener('input', () => {
+                if (modalRejectReason.value.trim().length > 0) {
+                    modalRejectError.classList.add('hidden');
+                }
+            });
+
+            modalForwardBtn?.addEventListener('click', () => {
+                if (!modalRequestId.value) return;
+                modalForwardForm.action = `/dept-manager/leave-approval/${modalRequestId.value}/approve`;
+                modalForwardForm.submit();
+            });
+
+            modalRejectBtn?.addEventListener('click', () => {
+                const reason = modalRejectReason.value.trim();
+                if (!modalRequestId.value) return;
+                if (!reason) {
+                    modalRejectError.classList.remove('hidden');
+                    modalRejectReason.focus();
+                    return;
+                }
+                modalRejectForm.action = `/dept-manager/leave-approval/${modalRequestId.value}/reject`;
+                modalRejectHiddenReason.value = reason;
+                modalRejectForm.submit();
+            });
+
+            filterRows();
         });
     </script>
 </body>

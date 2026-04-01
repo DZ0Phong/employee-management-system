@@ -4,8 +4,11 @@ import com.group5.ems.dto.request.UpdateProfileRequest;
 import com.group5.ems.dto.response.EmployeeProfileDTO;
 import com.group5.ems.entity.Employee;
 import com.group5.ems.entity.User;
+import com.group5.ems.enums.AuditAction;
+import com.group5.ems.enums.AuditEntityType;
 import com.group5.ems.repository.EmployeeRepository;
 import com.group5.ems.repository.UserRepository;
+import com.group5.ems.service.common.LogService;
 import com.group5.ems.service.employee.ProfileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,6 +20,7 @@ public class ProfileServiceImpl implements ProfileService {
 
     private final EmployeeRepository employeeRepository;
     private final UserRepository userRepository;
+    private final LogService logService;
 
     @Override
     @Transactional(readOnly = true)
@@ -68,6 +72,7 @@ public class ProfileServiceImpl implements ProfileService {
             user.setAvatarUrl(dto.getAvatarUrl());
         }
 
-        userRepository.save(user);
+        User savedUser = userRepository.save(user);
+        logService.log(AuditAction.UPDATE, AuditEntityType.USER, savedUser.getId());
     }
 }

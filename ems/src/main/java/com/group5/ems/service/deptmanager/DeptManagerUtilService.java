@@ -1,5 +1,6 @@
 package com.group5.ems.service.deptmanager;
 
+import com.group5.ems.constants.WorkflowConstants;
 import com.group5.ems.entity.Department;
 import com.group5.ems.entity.Employee;
 import com.group5.ems.entity.User;
@@ -99,7 +100,8 @@ public class DeptManagerUtilService {
         if (dept != null) {
             List<com.group5.ems.entity.Request> requests = requestRepository.findByEmployeeDepartmentIdAndLeaveTypeIsNotNullOrderByCreatedAtDesc(dept.getId());
             for (com.group5.ems.entity.Request req : requests) {
-                if ("PENDING".equalsIgnoreCase(req.getStatus())) {
+                String step = req.getStep() != null ? req.getStep() : WorkflowConstants.STEP_WAITING_DM;
+                if ("PENDING".equalsIgnoreCase(req.getStatus()) && WorkflowConstants.STEP_WAITING_DM.equals(step)) {
                     pendingApprovals++;
                 }
             }

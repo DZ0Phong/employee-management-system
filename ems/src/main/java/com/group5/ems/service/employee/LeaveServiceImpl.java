@@ -6,9 +6,12 @@ import com.group5.ems.dto.response.LeaveRequestDTO;
 import com.group5.ems.entity.Employee;
 import com.group5.ems.entity.Request;
 import com.group5.ems.entity.RequestType;
+import com.group5.ems.enums.AuditAction;
+import com.group5.ems.enums.AuditEntityType;
 import com.group5.ems.repository.EmployeeRepository;
 import com.group5.ems.repository.RequestRepository;
 import com.group5.ems.repository.RequestTypeRepository;
+import com.group5.ems.service.common.LogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +30,7 @@ public class LeaveServiceImpl {
     private final EmployeeRepository employeeRepository;
     private final RequestRepository requestRepository;
     private final RequestTypeRepository requestTypeRepository;
+    private final LogService logService;
 
     @Transactional(readOnly = true)
     public List<LeaveBalanceDTO> getLeaveBalances(Long employeeId) {
@@ -115,7 +119,8 @@ public class LeaveServiceImpl {
         request.setCreatedAt(LocalDateTime.now());
         request.setUpdatedAt(LocalDateTime.now());
 
-        requestRepository.save(request);
+        Request savedRequest = requestRepository.save(request);
+        logService.log(AuditAction.CREATE, AuditEntityType.LEAVE, savedRequest.getId());
     }
 
     // ── Helper methods ──────────────────────────────────────

@@ -3,7 +3,10 @@ package com.group5.ems.service.employee;
 import com.group5.ems.dto.response.AttendanceDTO;
 import com.group5.ems.dto.response.AttendanceStatsDTO;
 import com.group5.ems.entity.Attendance;
+import com.group5.ems.enums.AuditAction;
+import com.group5.ems.enums.AuditEntityType;
 import com.group5.ems.repository.AttendanceRepository;
+import com.group5.ems.service.common.LogService;
 import com.group5.ems.service.employee.AttendanceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,6 +24,7 @@ import java.util.stream.Collectors;
 public class AttendanceServiceImpl implements AttendanceService {
 
     private final AttendanceRepository attendanceRepository;
+    private final LogService logService;
 
     // Giờ bắt đầu làm việc chuẩn
     private static final LocalTime LATE_AFTER = LocalTime.of(9, 0);
@@ -104,14 +108,16 @@ public class AttendanceServiceImpl implements AttendanceService {
             }
             att.setCheckIn(now);
             att.setStatus(resolveStatusByCheckIn(now));
-            attendanceRepository.save(att);
+            Attendance savedAttendance = attendanceRepository.save(att);
+            logService.log(AuditAction.UPDATE, AuditEntityType.ATTENDANCE, savedAttendance.getId());
         } else {
             Attendance att = new Attendance();
             att.setEmployeeId(employeeId);
             att.setWorkDate(today);
             att.setCheckIn(now);
             att.setStatus(resolveStatusByCheckIn(now));
-            attendanceRepository.save(att);
+            Attendance savedAttendance = attendanceRepository.save(att);
+            logService.log(AuditAction.CREATE, AuditEntityType.ATTENDANCE, savedAttendance.getId());
         }
     }
 
@@ -129,12 +135,14 @@ public class AttendanceServiceImpl implements AttendanceService {
         }
 
         att.setCheckOut(now);
-        attendanceRepository.save(att);
+        Attendance savedAttendance = attendanceRepository.save(att);
+        logService.log(AuditAction.UPDATE, AuditEntityType.ATTENDANCE, savedAttendance.getId());
     }
 
     @Override
     public byte[] exportReport(Long employeeId, int year, int month) {
         List<AttendanceDTO> records = getAttendanceHistory(employeeId, year, month);
+        logService.log(AuditAction.ACCESS, AuditEntityType.ATTENDANCE, employeeId);
 
         // Tạo CSV đơn giản
         StringBuilder csv = new StringBuilder();

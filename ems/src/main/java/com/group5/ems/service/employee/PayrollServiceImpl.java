@@ -4,8 +4,11 @@ import com.group5.ems.dto.response.PayrollSummaryDTO;
 import com.group5.ems.dto.response.PayslipDTO;
 import com.group5.ems.entity.Payslip;
 import com.group5.ems.entity.Salary;
+import com.group5.ems.enums.AuditAction;
+import com.group5.ems.enums.AuditEntityType;
 import com.group5.ems.repository.PayslipRepository;
 import com.group5.ems.repository.SalaryRepository;
+import com.group5.ems.service.common.LogService;
 import com.group5.ems.service.employee.PayrollService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,6 +25,7 @@ public class PayrollServiceImpl implements PayrollService {
 
     private final PayslipRepository payslipRepository;
     private final SalaryRepository salaryRepository;
+    private final LogService logService;
 
     @Override
     @Transactional(readOnly = true)
@@ -75,6 +79,7 @@ public class PayrollServiceImpl implements PayrollService {
     @Override
     public byte[] exportPayslipCsv(Long employeeId) {
         List<PayslipDTO> payslips = getPayslipHistory(employeeId);
+        logService.log(AuditAction.ACCESS, AuditEntityType.PAYROLL, employeeId);
 
         StringBuilder csv = new StringBuilder();
         csv.append("Period,Gross Pay,Deductions,Net Pay,Status\n");

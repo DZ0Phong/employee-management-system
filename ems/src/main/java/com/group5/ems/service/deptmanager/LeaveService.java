@@ -1,12 +1,13 @@
 package com.group5.ems.service.deptmanager;
 
+import com.group5.ems.constants.WorkflowConstants;
 import com.group5.ems.entity.Department;
-import com.group5.ems.entity.RequestApprovalHistory;
 import com.group5.ems.entity.User;
 import com.group5.ems.enums.AuditAction;
 import com.group5.ems.enums.AuditEntityType;
-import com.group5.ems.repository.RequestApprovalHistoryRepository;
+import com.group5.ems.exception.WorkflowException;
 import com.group5.ems.repository.RequestRepository;
+import com.group5.ems.service.common.ApprovalWorkflowService;
 import com.group5.ems.service.common.LogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,9 +25,9 @@ import java.util.Map;
 public class LeaveService {
 
     private final RequestRepository requestRepository;
-    private final RequestApprovalHistoryRepository historyRepository;
     private final DeptManagerUtilService utilService;
     private final LogService logService;
+    private final ApprovalWorkflowService workflowService;
 
     public Map<String, Object> getLeaveApprovalData() {
         Map<String, Object> data = new HashMap<>();
@@ -41,7 +42,7 @@ public class LeaveService {
         }
         requests = requests.stream()
                 .sorted(Comparator
-                        .comparing((com.group5.ems.entity.Request req) -> !"PENDING".equalsIgnoreCase(req.getStatus()))
+                        .comparing((com.group5.ems.entity.Request req) -> !workflowService.canApprove(req, WorkflowConstants.ROLE_DEPT_MANAGER))
                         .thenComparing(com.group5.ems.entity.Request::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())))
                 .toList();
 
@@ -55,8 +56,11 @@ public class LeaveService {
         List<Map<String, Object>> mappedRequests = new ArrayList<>();
 
         for (com.group5.ems.entity.Request req : requests) {
+            boolean canReview = workflowService.canApprove(req, WorkflowConstants.ROLE_DEPT_MANAGER);
+            String step = req.getStep() != null ? req.getStep() : WorkflowConstants.STEP_WAITING_DM;
+
             // Metrics
-            if ("PENDING".equalsIgnoreCase(req.getStatus())) {
+            if (canReview) {
                 pendingApprovals++;
             } else if ("APPROVED".equalsIgnoreCase(req.getStatus())) {
                 if (req.getApprovedAt() != null && java.time.YearMonth.from(req.getApprovedAt()).equals(currentMonth)) {
@@ -115,17 +119,35 @@ public class LeaveService {
             }
             reqMap.put("dates", dates);
             reqMap.put("appliedOn", req.getCreatedAt() != null ? req.getCreatedAt().format(dtf) : "N/A");
+            reqMap.put("employeeCode", req.getEmployee() != null && req.getEmployee().getEmployeeCode() != null
+                    ? req.getEmployee().getEmployeeCode()
+                    : "N/A");
+            reqMap.put("reason", req.getContent() != null && !req.getContent().isBlank()
+                    ? req.getContent().trim()
+                    : "No reason provided.");
 
             reqMap.put("status", req.getStatus());
-            if ("PENDING".equalsIgnoreCase(req.getStatus())) {
-                reqMap.put("statusClass", "bg-amber-50 dark:bg-amber-900/20 text-amber-600 border-amber-100");
-                reqMap.put("statusDisplay", "Pending Review");
-            } else if ("APPROVED".equalsIgnoreCase(req.getStatus())) {
+            reqMap.put("step", step);
+            reqMap.put("stepDisplay", workflowService.getStepDisplayName(step));
+            reqMap.put("canReview", canReview);
+            if ("APPROVED".equalsIgnoreCase(req.getStatus())) {
                 reqMap.put("statusClass", "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 border-emerald-100");
                 reqMap.put("statusDisplay", "Approved");
-            } else {
+            } else if ("REJECTED".equalsIgnoreCase(req.getStatus())) {
                 reqMap.put("statusClass", "bg-rose-50 dark:bg-rose-900/20 text-rose-600 border-rose-100");
                 reqMap.put("statusDisplay", "Rejected");
+            } else if (WorkflowConstants.STEP_WAITING_DM.equals(step)) {
+                reqMap.put("statusClass", "bg-amber-50 dark:bg-amber-900/20 text-amber-600 border-amber-100");
+                reqMap.put("statusDisplay", "Pending Your Review");
+            } else if (WorkflowConstants.STEP_WAITING_HR.equals(step)) {
+                reqMap.put("statusClass", "bg-sky-50 dark:bg-sky-900/20 text-sky-600 border-sky-100");
+                reqMap.put("statusDisplay", "Sent to HR");
+            } else if (WorkflowConstants.STEP_WAITING_HRM.equals(step)) {
+                reqMap.put("statusClass", "bg-violet-50 dark:bg-violet-900/20 text-violet-600 border-violet-100");
+                reqMap.put("statusDisplay", "Sent to HR Manager");
+            } else {
+                reqMap.put("statusClass", "bg-slate-100 dark:bg-slate-800 text-slate-600 border-slate-200");
+                reqMap.put("statusDisplay", workflowService.getStepDisplayName(step));
             }
 
             mappedRequests.add(reqMap);
@@ -147,47 +169,44 @@ public class LeaveService {
         }
 
         return requestRepository.findByIdAndEmployeeDepartmentIdAndLeaveTypeIsNotNull(requestId, department.getId()).map(req -> {
-            req.setStatus("APPROVED");
-            req.setApprovedAt(java.time.LocalDateTime.now());
-            req.setCurrentApproverId(null);
             User currentUser = utilService.getCurrentUser();
-            if (currentUser != null) {
-                req.setApprovedBy(currentUser.getId());
-                historyRepository.save(buildHistory(req.getId(), currentUser.getId(), "APPROVED", "Approved by Department Manager"));
+            if (currentUser == null || !workflowService.canApprove(req, WorkflowConstants.ROLE_DEPT_MANAGER)) {
+                return false;
             }
-            requestRepository.save(req);
-            logService.log(AuditAction.UPDATE, AuditEntityType.LEAVE, req.getId());
-            return true;
+            try {
+                workflowService.moveToNextStep(req, currentUser.getId(), WorkflowConstants.ROLE_DEPT_MANAGER);
+                logService.log(AuditAction.UPDATE, AuditEntityType.LEAVE, req.getId());
+                return true;
+            } catch (WorkflowException ex) {
+                return false;
+            }
         }).orElse(false);
     }
 
     @Transactional
-    public boolean rejectLeaveRequest(Long requestId) {
+    public boolean rejectLeaveRequest(Long requestId, String rejectionReason) {
         Department department = utilService.getCurrentManagedDepartment();
         if (department == null) {
             return false;
         }
 
-        return requestRepository.findByIdAndEmployeeDepartmentIdAndLeaveTypeIsNotNull(requestId, department.getId()).map(req -> {
-            req.setStatus("REJECTED");
-            req.setCurrentApproverId(null);
-            User currentUser = utilService.getCurrentUser();
-            if (currentUser != null) {
-                req.setApprovedBy(currentUser.getId());
-                historyRepository.save(buildHistory(req.getId(), currentUser.getId(), "REJECTED", "Rejected by Department Manager"));
-            }
-            requestRepository.save(req);
-            logService.log(AuditAction.UPDATE, AuditEntityType.LEAVE, req.getId());
-            return true;
-        }).orElse(false);
-    }
+        String normalizedReason = rejectionReason != null ? rejectionReason.trim() : "";
+        if (normalizedReason.isBlank()) {
+            return false;
+        }
 
-    private RequestApprovalHistory buildHistory(Long requestId, Long approverId, String action, String comment) {
-        RequestApprovalHistory history = new RequestApprovalHistory();
-        history.setRequestId(requestId);
-        history.setApproverId(approverId);
-        history.setAction(action);
-        history.setComment(comment);
-        return history;
+        return requestRepository.findByIdAndEmployeeDepartmentIdAndLeaveTypeIsNotNull(requestId, department.getId()).map(req -> {
+            User currentUser = utilService.getCurrentUser();
+            if (currentUser == null || !workflowService.canApprove(req, WorkflowConstants.ROLE_DEPT_MANAGER)) {
+                return false;
+            }
+            try {
+                workflowService.rejectRequest(req, currentUser.getId(), WorkflowConstants.ROLE_DEPT_MANAGER, normalizedReason);
+                logService.log(AuditAction.UPDATE, AuditEntityType.LEAVE, req.getId());
+                return true;
+            } catch (WorkflowException ex) {
+                return false;
+            }
+        }).orElse(false);
     }
 }

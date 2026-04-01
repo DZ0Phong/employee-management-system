@@ -104,13 +104,14 @@ public class DeptManagerController {
     public String approveLeave(@PathVariable Long id) {
         boolean success = leaveService.approveLeaveRequest(id);
         return success
-                ? "redirect:/dept-manager/leave-approval?success=approved"
+                ? "redirect:/dept-manager/leave-approval?success=forwarded"
                 : "redirect:/dept-manager/leave-approval?error=forbidden";
     }
 
     @PostMapping("/leave-approval/{id}/reject")
-    public String rejectLeave(@PathVariable Long id) {
-        boolean success = leaveService.rejectLeaveRequest(id);
+    public String rejectLeave(@PathVariable Long id,
+                              @RequestParam(name = "rejectionReason", required = false) String rejectionReason) {
+        boolean success = leaveService.rejectLeaveRequest(id, rejectionReason);
         return success
                 ? "redirect:/dept-manager/leave-approval?success=rejected"
                 : "redirect:/dept-manager/leave-approval?error=forbidden";
