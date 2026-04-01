@@ -317,6 +317,7 @@
 
               btn.disabled = false;
               btn.innerHTML = '<span class="material-symbols-outlined">send</span> Send Message';
+              window.hydrateAppIcons?.(btn);
 
               document.getElementById('contact-form').reset();
               document.getElementById('char-count').textContent = '0';
@@ -333,6 +334,7 @@
 
               btn.disabled = false;
               btn.innerHTML = '<span class="material-symbols-outlined">send</span> Send Message';
+              window.hydrateAppIcons?.(btn);
 
               showContactError("Failed to send message");
 

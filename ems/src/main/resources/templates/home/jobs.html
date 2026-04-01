@@ -1211,6 +1211,7 @@
       ${j.description ? `<div class="detail-section"><h4><span class="material-symbols-outlined fill-icon" style="font-size:16px">description</span> Description</h4><p>${j.description}</p></div>` : ''}
       ${j.requirements ? `<div class="detail-section"><h4><span class="material-symbols-outlined fill-icon" style="font-size:16px">checklist</span> Requirements</h4><pre>${j.requirements}</pre></div>` : ''}
       ${j.benefits ? `<div class="detail-section"><h4><span class="material-symbols-outlined fill-icon" style="font-size:16px">card_giftcard</span> Benefits</h4><pre>${j.benefits}</pre></div>` : ''}`;
+        window.hydrateAppIcons?.(document.getElementById('detail-body'));
         document.getElementById('detail-overlay').classList.remove('hidden');
       }
       function closeDetail() { document.getElementById('detail-overlay').classList.add('hidden'); }
@@ -1254,6 +1255,7 @@
         btnNext.innerHTML = n === 3
           ? '<span class="spinner" id="sub-spin" style="display:none"></span><span class="material-symbols-outlined" style="font-size:15px">send</span> Submit'
           : 'Next <span class="material-symbols-outlined" style="font-size:15px">arrow_forward</span>';
+        window.hydrateAppIcons?.(btnNext);
       }
 
       function nextStep() {
