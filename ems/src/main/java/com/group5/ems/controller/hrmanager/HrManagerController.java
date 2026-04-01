@@ -300,15 +300,17 @@ public class HrManagerController {
     // END ACTIVITY CENTER ENDPOINTS
     // ══════════════════════════════════════════════════════════════════════════
 
-    // ── Leave Approval ────────────────────────────────────────────────────────
-    @GetMapping("/leave-approval")
-    public String leaveApproval(Model model,
+    // ── Request Management (renamed from Leave Approval) ─────────────────────
+    @GetMapping({"/leave-approval", "/request-management"})
+    public String requestManagement(Model model,
                                 @RequestParam(defaultValue = "pending") String tab,
+                                @RequestParam(defaultValue = "all") String category,
                                 @RequestParam(defaultValue = "1") int page) {
         model.addAttribute("stats",         leaveApprovalService.getStats());
         model.addAttribute("leaveRequests", leaveApprovalService.getLeaveRequests(tab, page));
         model.addAttribute("pagination",    leaveApprovalService.getPagination(tab, page));
         model.addAttribute("activeTab",     tab);
+        model.addAttribute("activeCategory", category);
         model.addAttribute("activePage",    "leave");
         return "hrmanager/leave_approval";
     }
@@ -398,14 +400,14 @@ public class HrManagerController {
         return "redirect:/hrmanager/calendar";
     }
 
-    // ── Leave Approval Actions ────────────────────────────────────────────────
-    @PostMapping("/leave-approval/approve")
-    public String approveLeaveRequest(@RequestParam Long requestId,
+    // ── Request Management Actions (renamed from Leave Approval Actions) ─────
+    @PostMapping({"/leave-approval/approve", "/request-management/approve"})
+    public String approveRequest(@RequestParam Long requestId,
                                       @RequestParam Long approverId,
                                       RedirectAttributes redirectAttributes) {
         try {
             leaveApprovalService.approveLeaveRequest(requestId, approverId);
-            redirectAttributes.addFlashAttribute("flashMessage", "Leave request approved successfully!");
+            redirectAttributes.addFlashAttribute("flashMessage", "Request approved successfully!");
             redirectAttributes.addFlashAttribute("flashType", "success");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("flashMessage", "Failed to approve: " + e.getMessage());
@@ -414,20 +416,42 @@ public class HrManagerController {
         return "redirect:/hrmanager/leave-approval?tab=pending";
     }
 
-    @PostMapping("/leave-approval/reject")
-    public String rejectLeaveRequest(@RequestParam Long requestId,
+    @PostMapping({"/leave-approval/reject", "/request-management/reject"})
+    public String rejectRequest(@RequestParam Long requestId,
                                      @RequestParam Long approverId,
                                      @RequestParam String rejectedReason,
                                      RedirectAttributes redirectAttributes) {
         try {
             leaveApprovalService.rejectLeaveRequest(requestId, approverId, rejectedReason);
-            redirectAttributes.addFlashAttribute("flashMessage", "Leave request rejected.");
+            redirectAttributes.addFlashAttribute("flashMessage", "Request rejected.");
             redirectAttributes.addFlashAttribute("flashType", "success");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("flashMessage", "Failed to reject: " + e.getMessage());
             redirectAttributes.addFlashAttribute("flashType", "error");
         }
         return "redirect:/hrmanager/leave-approval?tab=pending";
+    }
+
+    // ── Revert Request (24h window) - Phase 3 ────────────────────────────────
+    @PostMapping({"/leave-approval/revert", "/request-management/revert"})
+    public String revertRequest(@RequestParam Long requestId,
+                                @RequestParam(required = false) String reason,
+                                RedirectAttributes redirectAttributes) {
+        try {
+            Long userId = getCurrentUserId();
+            boolean success = leaveApprovalService.revertRequest(requestId, userId, reason);
+            if (success) {
+                redirectAttributes.addFlashAttribute("flashMessage", "Request reverted to pending status.");
+                redirectAttributes.addFlashAttribute("flashType", "success");
+            } else {
+                redirectAttributes.addFlashAttribute("flashMessage", "Cannot revert: 24h window expired or not authorized.");
+                redirectAttributes.addFlashAttribute("flashType", "error");
+            }
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("flashMessage", "Failed to revert: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("flashType", "error");
+        }
+        return "redirect:/hrmanager/leave-approval";
     }
 
     // ── Payroll Approve by Department ─────────────────────────────────────────

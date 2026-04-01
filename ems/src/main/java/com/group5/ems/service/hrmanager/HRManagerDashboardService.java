@@ -11,6 +11,7 @@ import com.group5.ems.repository.EmployeeRepository;
 import com.group5.ems.repository.RequestRepository;
 import com.group5.ems.repository.JobPostRepository;
 import com.group5.ems.repository.PayslipRepository;
+import com.group5.ems.util.PriorityCalculator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -411,10 +412,21 @@ public class HRManagerDashboardService {
                         details = leaveType + ": " + days + " day" + (days > 1 ? "s" : "");
                     }
                     
-                    // Determine priority
+                    // Calculate priority using advanced logic
                     String priority = "NORMAL";
+                    int priorityScore = 0;
                     if ("PENDING".equals(request.getStatus())) {
-                        priority = "URGENT";
+                        Object[] priorityResult = PriorityCalculator.calculatePriority(request, employee);
+                        priorityScore = (Integer) priorityResult[0];
+                        priority = (String) priorityResult[1];
+                        
+                        // Update request entity with calculated priority
+                        request.setPriority(priority);
+                        request.setPriorityScore(priorityScore);
+                    } else {
+                        // For non-pending, use stored priority or default
+                        priority = request.getPriority() != null ? request.getPriority() : "NORMAL";
+                        priorityScore = request.getPriorityScore() != null ? request.getPriorityScore() : 0;
                     }
                     
                     // Status label
@@ -433,6 +445,7 @@ public class HRManagerDashboardService {
                             .status(request.getStatus())
                             .statusLabel(statusLabel)
                             .priority(priority)
+                            .priorityScore(priorityScore)
                             .icon("calendar_today")
                             .color(getColorByStatus(request.getStatus()))
                             .badge("")
@@ -463,7 +476,21 @@ public class HRManagerDashboardService {
                             ? request.getContent().substring(0, 50) + "..." 
                             : (request.getContent() != null ? request.getContent() : "");
                     
-                    String priority = "PENDING".equals(request.getStatus()) ? "URGENT" : "NORMAL";
+                    // Calculate priority using advanced logic
+                    String priority = "NORMAL";
+                    int priorityScore = 0;
+                    if ("PENDING".equals(request.getStatus())) {
+                        Object[] priorityResult = PriorityCalculator.calculatePriority(request, employee);
+                        priorityScore = (Integer) priorityResult[0];
+                        priority = (String) priorityResult[1];
+                        
+                        request.setPriority(priority);
+                        request.setPriorityScore(priorityScore);
+                    } else {
+                        priority = request.getPriority() != null ? request.getPriority() : "NORMAL";
+                        priorityScore = request.getPriorityScore() != null ? request.getPriorityScore() : 0;
+                    }
+                    
                     String statusLabel = getStatusLabel(request.getStatus());
                     
                     return RecentActivityDTO.builder()
@@ -479,6 +506,7 @@ public class HRManagerDashboardService {
                             .status(request.getStatus())
                             .statusLabel(statusLabel)
                             .priority(priority)
+                            .priorityScore(priorityScore)
                             .icon("description")
                             .color(getColorByStatus(request.getStatus()))
                             .badge("")
@@ -507,7 +535,10 @@ public class HRManagerDashboardService {
                     String netSalary = formatCurrency(payslip.getNetSalary());
                     String details = "Net Salary: " + netSalary;
                     
+                    // Payroll priority: PENDING = URGENT, others = NORMAL
                     String priority = "PENDING".equals(payslip.getStatus()) ? "URGENT" : "NORMAL";
+                    int priorityScore = "PENDING".equals(payslip.getStatus()) ? 40 : 10;
+                    
                     String statusLabel = getStatusLabel(payslip.getStatus());
                     
                     // Use paymentDate or current date
@@ -528,6 +559,7 @@ public class HRManagerDashboardService {
                             .status(payslip.getStatus())
                             .statusLabel(statusLabel)
                             .priority(priority)
+                            .priorityScore(priorityScore)
                             .icon("payments")
                             .color(getColorByStatus(payslip.getStatus()))
                             .badge("")
@@ -637,6 +669,7 @@ public class HRManagerDashboardService {
 
     /**
      * STEP 4 Part 6: Refactor getRecentActivities to combine all activity types
+     * UPDATED: Filter to show only URGENT/CRITICAL pending + processed within 7 days
      */
     public List<RecentActivityDTO> getRecentActivitiesCombined(String filter, int days) {
         LocalDateTime since = LocalDateTime.now().minusDays(days);
@@ -650,7 +683,25 @@ public class HRManagerDashboardService {
         allActivities.addAll(getPayrollActivities(since));
         allActivities.addAll(getStatusChangeActivities(sinceDate));
         
-        // Filter by status if needed
+        // DASHBOARD FILTER: Only show URGENT/CRITICAL pending + processed within 7 days
+        LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(7);
+        allActivities = allActivities.stream()
+                .filter(activity -> {
+                    // Show if PENDING and priority is URGENT or CRITICAL
+                    if ("PENDING".equals(activity.getStatus())) {
+                        return "URGENT".equals(activity.getPriority()) || 
+                               "CRITICAL".equals(activity.getPriority());
+                    }
+                    // Show if APPROVED/REJECTED within last 7 days
+                    if ("APPROVED".equals(activity.getStatus()) || "REJECTED".equals(activity.getStatus())) {
+                        return activity.getDate() != null && 
+                               !activity.getDate().isBefore(sevenDaysAgo.toLocalDate());
+                    }
+                    return false;
+                })
+                .collect(Collectors.toList());
+        
+        // Apply additional filter if specified
         if ("pending".equals(filter)) {
             allActivities = allActivities.stream()
                     .filter(a -> "PENDING".equals(a.getStatus()))
@@ -661,8 +712,18 @@ public class HRManagerDashboardService {
                     .collect(Collectors.toList());
         }
         
-        // Sort by date descending
-        allActivities.sort((a, b) -> b.getDate().compareTo(a.getDate()));
+        // Sort by priority score (highest first), then by date (newest first)
+        allActivities.sort((a, b) -> {
+            // First compare by priority score
+            int scoreCompare = Integer.compare(
+                    b.getPriorityScore() != null ? b.getPriorityScore() : 0,
+                    a.getPriorityScore() != null ? a.getPriorityScore() : 0
+            );
+            if (scoreCompare != 0) return scoreCompare;
+            
+            // Then by date
+            return b.getDate().compareTo(a.getDate());
+        });
         
         return allActivities;
     }

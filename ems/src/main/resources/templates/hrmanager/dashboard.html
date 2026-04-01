@@ -89,6 +89,12 @@
             -webkit-text-fill-color: transparent;
         }
 
+        /* Priority badge styles */
+        .priority-critical { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+        .priority-urgent { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; }
+        .priority-high { background: #fefce8; color: #854d0e; border: 1px solid #fef08a; }
+        .priority-normal { background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; }
+
         /* Modal styles */
         .modal-backdrop {
             position: fixed;
@@ -452,6 +458,39 @@
      class="fixed bottom-6 right-6 z-50 hidden items-center gap-3 px-5 py-3 rounded-xl shadow-lg text-white text-sm font-semibold transition-all duration-300">
     <span id="toast-icon" class="material-symbols-outlined text-[20px]">check_circle</span>
     <span id="toast-msg">Done</span>
+</div>
+
+<!-- ══ APPROVE CONFIRM MODAL ═════════════════════════════════ -->
+<div id="approve-modal" class="modal-backdrop">
+    <div class="modal-box max-w-md">
+        <div class="p-6 border-b border-slate-100">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-emerald-600">check_circle</span>
+                </div>
+                <div>
+                    <h3 class="text-base font-bold text-slate-900">Approve Request</h3>
+                    <p class="text-xs text-slate-500 mt-0.5" id="approve-modal-subtitle">Confirm approval</p>
+                </div>
+            </div>
+        </div>
+        <div class="p-6">
+            <p class="text-sm text-slate-600">
+                Are you sure you want to approve this request? This action will immediately approve the request and notify the employee.
+            </p>
+        </div>
+        <div class="px-6 pb-6 flex gap-3">
+            <button onclick="closeApproveModal()"
+                class="flex-1 px-4 py-3 border border-slate-200 text-slate-600 rounded-xl text-sm font-semibold hover:bg-slate-50 transition-colors">
+                Cancel
+            </button>
+            <button onclick="confirmApprove()"
+                class="flex-1 px-4 py-3 bg-emerald-500 text-white rounded-xl text-sm font-bold hover:bg-emerald-600 transition-colors flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined text-[18px]">check_circle</span>
+                Approve Request
+            </button>
+        </div>
+    </div>
 </div>
 
 <!-- ══ REJECT MODAL ═══════════════════════════════════════════ -->
@@ -873,11 +912,8 @@
                         </div>
                     </div>
                     <div class="flex items-center gap-2">
+                        ${getPriorityBadge(activity.priority)}
                         ${getStatusBadge(activity.status, activity.statusLabel)}
-                        <button class="px-3 py-1.5 text-primary font-bold text-xs hover:bg-primary/5 rounded-lg transition-colors">
-                            View
-                        </button>
-                        <span class="material-symbols-outlined text-slate-400 text-[20px] expand-icon">expand_more</span>
                     </div>
                 </div>
                 <div class="activity-detail hidden mt-4 pt-4 border-t border-slate-100">
@@ -888,12 +924,12 @@
                         </div>
                         <div>
                             <p class="text-slate-500 text-xs mb-1">Priority</p>
-                            <p class="font-semibold">${activity.priority || 'Normal'}</p>
+                            ${getPriorityBadge(activity.priority)}
                         </div>
                     </div>
                     <div class="mt-4 flex gap-2">
                         ${activity.status === 'PENDING' ? `
-                            <button onclick="approveActivity(event, ${activity.id})" 
+                            <button onclick="hardApprove(event, ${activity.id}, '${activity.employeeName || 'Request'}')" 
                                     class="approve-btn px-4 py-2 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-bold hover:bg-emerald-200 transition-colors flex items-center gap-1.5">
                                 <span class="material-symbols-outlined text-[16px]">check_circle</span>
                                 <span class="btn-text">Approve</span>
@@ -904,7 +940,7 @@
                                 Reject
                             </button>
                         ` : ''}
-                        <button class="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-xs font-bold hover:bg-slate-200 transition-colors">
+                        <button onclick="viewFullDetail(event, ${activity.id})" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-xs font-bold hover:bg-slate-200 transition-colors">
                             View Full Detail →
                         </button>
                     </div>
@@ -940,6 +976,89 @@
         return `<span class="px-2.5 py-1 text-xs font-bold rounded-full ${cls}">${label || status}</span>`;
     }
 
+    function getPriorityBadge(priority) {
+        if (!priority || priority === 'NORMAL') return '';
+        
+        const badges = {
+            CRITICAL: { class: 'priority-critical', icon: 'error', label: 'CRITICAL' },
+            URGENT:   { class: 'priority-urgent', icon: 'warning', label: 'URGENT' },
+            HIGH:     { class: 'priority-high', icon: 'flag', label: 'HIGH' },
+            NORMAL:   { class: 'priority-normal', icon: 'outlined_flag', label: 'NORMAL' }
+        };
+        
+        const badge = badges[priority] || badges.NORMAL;
+        return `<span class="px-2.5 py-1 text-xs font-bold rounded-full ${badge.class} flex items-center gap-1">
+            <span class="material-symbols-outlined text-[14px]">${badge.icon}</span>
+            ${badge.label}
+        </span>`;
+    }
+
+    function viewFullDetail(event, requestId) {
+        event.stopPropagation();
+        window.location.href = `/hrmanager/leave-approval?requestId=${requestId}`;
+    }
+
+    let approveTargetId = null;
+    let approveTargetName = null;
+
+    function hardApprove(event, requestId, employeeName) {
+        event.stopPropagation();
+        
+        approveTargetId = requestId;
+        approveTargetName = employeeName;
+        
+        document.getElementById('approve-modal-subtitle').textContent = 
+            `Request from ${employeeName || 'Employee'}`;
+        document.getElementById('approve-modal').classList.add('open');
+    }
+    
+    function closeApproveModal() {
+        document.getElementById('approve-modal').classList.remove('open');
+        approveTargetId = null;
+        approveTargetName = null;
+    }
+    
+    function confirmApprove() {
+        if (!approveTargetId) {
+            showToast('Invalid request ID', 'error');
+            return;
+        }
+        
+        // Save ID before closing modal
+        const requestIdToApprove = approveTargetId;
+        
+        const token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        const header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+        
+        // Close modal and show loading toast
+        closeApproveModal();
+        showToast('Approving request...', 'info');
+        
+        fetch('/hrmanager/dashboard/activity/approve', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                [header]: token
+            },
+            body: 'requestId=' + requestIdToApprove
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showToast(data.message || 'Request approved successfully', 'success');
+                // Reload activities
+                loadActivities(currentTab, currentFilter);
+                loadQuickStats();
+            } else {
+                showToast(data.message || 'Failed to approve request', 'error');
+            }
+        })
+        .catch(err => {
+            console.error('Error approving:', err);
+            showToast('Failed to approve request', 'error');
+        });
+    }
+
     function formatDate(dateStr) {
         if (!dateStr) return 'N/A';
         const d = new Date(dateStr);
@@ -970,60 +1089,12 @@
     });
     
     // ══════════════════════════════════════════════════════════════════════════
-    // APPROVE/REJECT ACTIONS
+    // APPROVE/REJECT ACTIONS (Legacy - kept for compatibility)
     // ══════════════════════════════════════════════════════════════════════════
     
     function approveActivity(event, requestId) {
-        event.stopPropagation();
-        
-        const btn = event.target.closest('.approve-btn');
-        if (!btn) return;
-        
-        // Show loading state
-        btn.disabled = true;
-        const icon = btn.querySelector('.material-symbols-outlined');
-        const textSpan = btn.querySelector('.btn-text');
-        
-        icon.textContent = 'progress_activity';
-        icon.classList.add('animate-spin');
-        textSpan.textContent = 'Approving...';
-        
-        const token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
-        const header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
-        
-        fetch('/hrmanager/dashboard/activity/approve', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                [header]: token
-            },
-            body: 'requestId=' + requestId
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                showToast(data.message || 'Request approved successfully', 'success');
-                // Reload activities
-                loadActivities(currentTab, currentFilter);
-                loadQuickStats();
-            } else {
-                showToast(data.message || 'Failed to approve request', 'error');
-                // Reset button state
-                btn.disabled = false;
-                icon.textContent = 'check_circle';
-                icon.classList.remove('animate-spin');
-                textSpan.textContent = 'Approve';
-            }
-        })
-        .catch(err => {
-            console.error('Error approving:', err);
-            showToast('Failed to approve request', 'error');
-            // Reset button state
-            btn.disabled = false;
-            icon.textContent = 'check_circle';
-            icon.classList.remove('animate-spin');
-            textSpan.textContent = 'Approve';
-        });
+        // Redirect to hardApprove
+        hardApprove(event, requestId, 'Request');
     }
     
     // ══════════════════════════════════════════════════════════════════════════
@@ -1100,10 +1171,19 @@
         if (e.target === this) closeRejectModal();
     });
     
+    document.getElementById('approve-modal').addEventListener('click', function (e) {
+        if (e.target === this) closeApproveModal();
+    });
+    
     // Close modal on Escape key
     document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && document.getElementById('reject-modal').classList.contains('open')) {
-            closeRejectModal();
+        if (e.key === 'Escape') {
+            if (document.getElementById('reject-modal').classList.contains('open')) {
+                closeRejectModal();
+            }
+            if (document.getElementById('approve-modal').classList.contains('open')) {
+                closeApproveModal();
+            }
         }
     });
 

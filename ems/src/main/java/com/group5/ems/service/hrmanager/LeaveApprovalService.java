@@ -456,6 +456,107 @@ public class LeaveApprovalService {
     }
 
     /**
+     * Revert request (soft revert within 24h window) - Phase 3
+     * Only the original approver can revert
+     */
+    @org.springframework.transaction.annotation.Transactional
+    public boolean revertRequest(Long requestId, Long userId, String reason) {
+        Optional<Request> requestOpt = requestRepository.findById(requestId);
+        if (!requestOpt.isPresent()) {
+            throw new RuntimeException("Request not found");
+        }
+        
+        Request request = requestOpt.get();
+        
+        // Check if can revert
+        if (!canRevert(request, userId)) {
+            return false;
+        }
+        
+        String previousStatus = request.getStatus();
+        
+        // Revert to PENDING
+        request.setStatus("PENDING");
+        request.setApprovedBy(null);
+        request.setApprovedAt(null);
+        request.setRejectedReason(null);
+        request.setUpdatedAt(LocalDateTime.now());
+        
+        requestRepository.save(request);
+        
+        // If was APPROVED, revert leave balance
+        if ("APPROVED".equals(previousStatus)) {
+            revertLeaveBalanceOnRevert(request);
+        }
+        
+        return true;
+    }
+
+    /**
+     * Check if request can be reverted
+     * Rules:
+     * - Status must be APPROVED or REJECTED
+     * - Within 24 hours of approval/rejection
+     * - User must be the original approver
+     */
+    public boolean canRevert(Request request, Long userId) {
+        if (request == null) return false;
+        
+        // Check status
+        if (!"APPROVED".equals(request.getStatus()) && 
+            !"REJECTED".equals(request.getStatus())) {
+            return false;
+        }
+        
+        // Check if within 24 hours
+        if (request.getUpdatedAt() == null) return false;
+        long hoursSinceUpdate = java.time.temporal.ChronoUnit.HOURS.between(
+                request.getUpdatedAt(), LocalDateTime.now());
+        if (hoursSinceUpdate >= 24) return false;
+        
+        // Check if user is the original approver
+        if (request.getApprovedBy() == null) return false;
+        return request.getApprovedBy().equals(userId);
+    }
+
+    /**
+     * Revert leave balance when request is reverted from APPROVED
+     */
+    private void revertLeaveBalanceOnRevert(Request request) {
+        if (request.getEmployee() == null || request.getLeaveFrom() == null || request.getLeaveTo() == null) {
+            return;
+        }
+        
+        Long employeeId = request.getEmployeeId();
+        int currentYear = java.time.LocalDate.now().getYear();
+        
+        Optional<EmployeeLeaveBalance> balanceOpt = employeeLeaveBalanceRepository
+                .findByEmployeeIdAndYear(employeeId, currentYear);
+        
+        if (balanceOpt.isPresent()) {
+            EmployeeLeaveBalance balance = balanceOpt.get();
+            
+            // Calculate days
+            long days = java.time.temporal.ChronoUnit.DAYS.between(
+                    request.getLeaveFrom(), request.getLeaveTo()) + 1;
+            
+            // Revert: used -> pending
+            BigDecimal daysDecimal = BigDecimal.valueOf(days);
+            balance.setUsedDays(balance.getUsedDays().subtract(daysDecimal));
+            balance.setPendingDays(balance.getPendingDays().add(daysDecimal));
+            
+            // Recalculate remaining
+            BigDecimal remaining = balance.getTotalDays()
+                    .subtract(balance.getUsedDays())
+                    .subtract(balance.getPendingDays());
+            balance.setRemainingDays(remaining);
+            balance.setUpdatedAt(java.time.Instant.now());
+            
+            employeeLeaveBalanceRepository.save(balance);
+        }
+    }
+
+    /**
      * Calculate team overlap for a leave request
      */
     private void calculateTeamOverlap(LeaveRequestResponseDTO dto, Request request) {
