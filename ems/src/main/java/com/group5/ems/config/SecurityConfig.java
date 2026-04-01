@@ -21,14 +21,12 @@ public class SecurityConfig {
         http
 
         .csrf(csrf -> csrf
-                .ignoringRequestMatchers("/home/**")
+                .ignoringRequestMatchers("/guest/**", "/forgot-password/**")
             )
-        .headers(headers -> headers
-        .frameOptions(frame -> frame.sameOrigin())
-    )    
-        
+
         .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/login", "/error", "/home", "/home/**", "/css/**", "/js/**", "/icons/**", "/images/**").permitAll()
+                .requestMatchers("/login", "/error", "/guest", "/guest/**", "/access-denied",
+                        "/forgot-password", "/forgot-password/**", "/reset-password").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/employee/**").hasAnyRole("EMPLOYEE", "DEPT_MANAGER", "HR", "HR_MANAGER")
                 .requestMatchers("/dept-manager/**").hasRole("DEPT_MANAGER")
