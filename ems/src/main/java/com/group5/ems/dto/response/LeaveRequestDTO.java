@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
 @Data
@@ -20,6 +21,10 @@ public class LeaveRequestDTO {
     private String content;
     private String status;      // PENDING, APPROVED, REJECTED
     private String rejectedReason;
+    private String step;
+    private String statusDisplay;
+    private String stepDisplay;
+    private LocalDateTime createdAt;
 
     public long getDaysCount() {
         if (leaveFrom == null || leaveTo == null) return 0;

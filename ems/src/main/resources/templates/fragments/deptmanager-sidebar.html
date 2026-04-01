@@ -20,7 +20,7 @@
             <p class="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Main</p>
             <nav class="space-y-1">
                 <a th:href="@{/dept-manager/dashboard}"
-                   th:class="${activeMenu == 'dashboard'} ? 'nav-active flex items-center px-3 py-2 rounded-xl bg-primary-light text-primary transition-colors' : 'group flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:bg-slate-50 rounded-xl transition-all'">
+                   th:class="${activeMenu == 'dashboard'} ? 'nav-active flex items-center gap-3 px-3 py-2 rounded-xl bg-primary-light text-primary transition-colors' : 'group flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:bg-slate-50 rounded-xl transition-all'">
                     <div class="flex items-center gap-3">
                         <span class="material-symbols-outlined text-[20px]"
                               th:classappend="${activeMenu == 'dashboard'} ? ' fill-icon' : ' group-hover:text-primary transition-all'">dashboard</span>
@@ -29,14 +29,14 @@
                 </a>
 
                 <a th:href="@{/dept-manager/my-department}"
-                   th:class="${activeMenu == 'department'} ? 'nav-active flex items-center px-3 py-2 rounded-xl bg-primary-light text-primary transition-colors' : 'group flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:bg-slate-50 rounded-xl transition-all'">
+                   th:class="${activeMenu == 'department'} ? 'nav-active flex items-center gap-3 px-3 py-2 rounded-xl bg-primary-light text-primary transition-colors' : 'group flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:bg-slate-50 rounded-xl transition-all'">
                     <span class="material-symbols-outlined text-[20px]"
                           th:classappend="${activeMenu == 'department'} ? ' fill-icon' : ' group-hover:text-primary transition-all'">domain</span>
                     <span class="text-sm" th:classappend="${activeMenu == 'department'} ? ' font-semibold' : ' font-medium'">My Department</span>
                 </a>
 
                 <a th:href="@{/dept-manager/my-team}"
-                   th:class="${activeMenu == 'team'} ? 'nav-active flex items-center px-3 py-2 rounded-xl bg-primary-light text-primary transition-colors' : 'group flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:bg-slate-50 rounded-xl transition-all'">
+                   th:class="${activeMenu == 'team'} ? 'nav-active flex items-center gap-3 px-3 py-2 rounded-xl bg-primary-light text-primary transition-colors' : 'group flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:bg-slate-50 rounded-xl transition-all'">
                     <span class="material-symbols-outlined text-[20px]"
                           th:classappend="${activeMenu == 'team'} ? ' fill-icon' : ' group-hover:text-primary transition-all'">groups</span>
                     <span class="text-sm" th:classappend="${activeMenu == 'team'} ? ' font-semibold' : ' font-medium'">Team Members</span>
@@ -54,14 +54,14 @@
                 </a>
 
                 <a th:href="@{/dept-manager/attendance-review}"
-                   th:class="${activeMenu == 'attendance'} ? 'nav-active flex items-center px-3 py-2 rounded-xl bg-primary-light text-primary transition-colors' : 'group flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:bg-slate-50 rounded-xl transition-all'">
+                   th:class="${activeMenu == 'attendance'} ? 'nav-active flex items-center gap-3 px-3 py-2 rounded-xl bg-primary-light text-primary transition-colors' : 'group flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:bg-slate-50 rounded-xl transition-all'">
                     <span class="material-symbols-outlined text-[20px]"
                           th:classappend="${activeMenu == 'attendance'} ? ' fill-icon' : ' group-hover:text-primary transition-all'">fact_check</span>
                     <span class="text-sm" th:classappend="${activeMenu == 'attendance'} ? ' font-semibold' : ' font-medium'">Attendance Review</span>
                 </a>
 
                 <a th:href="@{/dept-manager/performance-review}"
-                   th:class="${activeMenu == 'performance'} ? 'nav-active flex items-center px-3 py-2 rounded-xl bg-primary-light text-primary transition-colors' : 'group flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:bg-slate-50 rounded-xl transition-all'">
+                   th:class="${activeMenu == 'performance'} ? 'nav-active flex items-center gap-3 px-3 py-2 rounded-xl bg-primary-light text-primary transition-colors' : 'group flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:bg-slate-50 rounded-xl transition-all'">
                     <span class="material-symbols-outlined text-[20px]"
                           th:classappend="${activeMenu == 'performance'} ? ' fill-icon' : ' group-hover:text-primary transition-all'">rate_review</span>
                     <span class="text-sm" th:classappend="${activeMenu == 'performance'} ? ' font-semibold' : ' font-medium'">Performance Review</span>

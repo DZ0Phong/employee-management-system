@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -15,4 +17,10 @@ public class EmployeeDashboardDTO {
     private String attendanceTrend;
     private Double lastPayroll;
     private Double performanceRating;
+    private String leaveBadge;
+    private String payrollBadge;
+    private String performanceBadge;
+    private List<String> trendLabels;
+    private List<Double> trendCurrent;
+    private List<Double> trendPrevious;
 }

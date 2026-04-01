@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Employee Performance - HRM Pro</title>
+    <title>Employee Performance - EMS Pro</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
     <link rel="stylesheet" href="/css/app-icons.css" th:href="@{/css/app-icons.css}"/>
@@ -15,6 +15,7 @@
                 extend: {
                     colors: {
                         "primary": "#1414b8",
+                        "primary-light": "#e8e8fb",
                         "background-light": "#f6f6f8",
                         "background-dark": "#111121",
                     },
@@ -24,16 +25,19 @@
             },
         }
     </script>
+    <style>
+        .nav-active { box-shadow: 0 0 0 1px #1414b830, inset 3px 0 0 #1414b8; }
+    </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
-<div class="flex min-h-screen">
+<div class="flex h-screen overflow-hidden">
 
     <!-- Sidebar -->
     <aside th:replace="~{fragments/employee-sidebar :: sidebar('performance', ${employee}, ${managementPortalUrl}, ${managementPortalLabel}, ${managementRoleLabel})}"></aside>
 
     <!-- Main Content -->
-    <main class="flex-1 ml-64">
-        <div class="p-8 max-w-7xl mx-auto space-y-8">
+    <main class="flex-1 overflow-y-auto">
+        <div class="w-full p-8 space-y-8">
 
             <!-- Page Header -->
             <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -98,6 +102,20 @@
                     </div>
                     <p class="text-xs text-slate-400 mt-1">KPIs completed</p>
                 </div>
+
+                <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col">
+                    <div class="flex items-center justify-between mb-4">
+                        <p class="text-sm font-medium text-slate-500">Verified Skills</p>
+                        <div class="w-10 h-10 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
+                            <span class="material-symbols-outlined">workspace_premium</span>
+                        </div>
+                    </div>
+                    <div class="flex items-baseline gap-2">
+                        <h3 class="text-4xl font-black" th:text="${summary.skillsCount}">0</h3>
+                        <span class="text-lg font-medium text-slate-400">skills</span>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-3">Validated from your employee skill records</p>
+                </div>
             </div>
 
             <!-- Review History Table -->
@@ -120,9 +138,9 @@
                         <tr th:if="${#lists.isEmpty(reviews)}">
                             <td colspan="5" class="px-6 py-8 text-center text-slate-400">No performance reviews found</td>
                         </tr>
-                        <tr th:each="r : ${reviews}" class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                        <tr th:each="r : ${reviews}" class="performance-row hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
                             <td class="px-6 py-4">
-                                <p class="text-sm font-semibold" th:text="${r.reviewPeriod}">-</p>
+                                <p class="text-sm font-semibold" th:text="${r.reviewPeriodDisplay}">-</p>
                                 <p class="text-xs text-slate-400" th:text="${r.createdAt != null ? #temporals.format(r.createdAt, 'MMM dd, yyyy') : ''}"></p>
                             </td>
                             <td class="px-6 py-4">
@@ -140,11 +158,19 @@
                                 <span class="inline-flex items-center gap-1.5 text-xs font-bold px-2 py-1 rounded-md"
                                       th:classappend="${r.status == 'COMPLETED'} ? 'text-emerald-600 bg-emerald-100' :
                                                      (${r.status == 'DRAFT'} ? 'text-slate-500 bg-slate-100' : 'text-primary bg-primary/10')"
-                                      th:text="${r.status}">-</span>
+                                      th:text="${r.statusDisplay}">-</span>
                             </td>
                         </tr>
                         </tbody>
                     </table>
+                </div>
+                <div class="flex items-center justify-between border-t border-slate-200 px-6 py-4 dark:border-slate-800">
+                    <p id="performance-pagination-summary" class="text-sm text-slate-500">Showing 0 reviews</p>
+                    <div class="flex items-center gap-2">
+                        <button type="button" id="performance-prev" class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-500 transition hover:border-primary hover:text-primary disabled:opacity-40">Prev</button>
+                        <div id="performance-pages" class="flex items-center gap-2"></div>
+                        <button type="button" id="performance-next" class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-500 transition hover:border-primary hover:text-primary disabled:opacity-40">Next</button>
+                    </div>
                 </div>
             </div>
 
@@ -172,5 +198,66 @@
         </div>
     </main>
 </div>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const rows = Array.from(document.querySelectorAll('.performance-row'));
+        const summary = document.getElementById('performance-pagination-summary');
+        const prev = document.getElementById('performance-prev');
+        const next = document.getElementById('performance-next');
+        const pages = document.getElementById('performance-pages');
+        const pageSize = 6;
+        let currentPage = 1;
+
+        function render() {
+            const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
+            if (currentPage > totalPages) currentPage = totalPages;
+            const start = (currentPage - 1) * pageSize;
+            const pageRows = rows.slice(start, start + pageSize);
+
+            rows.forEach(row => { row.style.display = 'none'; });
+            pageRows.forEach(row => { row.style.display = ''; });
+
+            if (!rows.length) {
+                summary.textContent = 'No performance reviews available';
+            } else {
+                summary.textContent = `Showing ${start + 1}-${Math.min(currentPage * pageSize, rows.length)} of ${rows.length} reviews`;
+            }
+
+            prev.disabled = currentPage <= 1;
+            next.disabled = currentPage >= totalPages;
+            pages.innerHTML = '';
+            for (let page = 1; page <= totalPages; page++) {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.textContent = page;
+                button.className = page === currentPage
+                    ? 'rounded-lg bg-primary px-3 py-2 text-xs font-bold text-white'
+                    : 'rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-500 transition hover:border-primary hover:text-primary';
+                button.addEventListener('click', () => {
+                    currentPage = page;
+                    render();
+                });
+                pages.appendChild(button);
+            }
+        }
+
+        prev?.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage -= 1;
+                render();
+            }
+        });
+
+        next?.addEventListener('click', () => {
+            const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
+            if (currentPage < totalPages) {
+                currentPage += 1;
+                render();
+            }
+        });
+
+        render();
+    });
+</script>
 </body>
 </html>

@@ -220,9 +220,18 @@ public class EmployeeController {
         } else {
             model.addAttribute("employee", buildDefaultEmployeeInfo(user));
             model.addAttribute("dashboard", EmployeeDashboardDTO.builder()
-                    .leaveBalance(0.0).attendanceRate(0.0)
-                    .attendanceTrend("+0%").lastPayroll(0.0)
-                    .performanceRating(0.0).build());
+                    .leaveBalance(0.0)
+                    .leaveBadge("No Balance")
+                    .attendanceRate(0.0)
+                    .attendanceTrend("+0%")
+                    .lastPayroll(0.0)
+                    .payrollBadge("No Payroll")
+                    .performanceRating(0.0)
+                    .performanceBadge("No Review")
+                    .trendLabels(List.of("Jan", "Feb", "Mar", "Apr", "May", "Jun"))
+                    .trendCurrent(List.of(0.0, 0.0, 0.0, 0.0, 0.0, 0.0))
+                    .trendPrevious(List.of(0.0, 0.0, 0.0, 0.0, 0.0, 0.0))
+                    .build());
             model.addAttribute("activities", List.of());
         }
 

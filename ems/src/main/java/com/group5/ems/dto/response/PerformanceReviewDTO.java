@@ -22,5 +22,7 @@ public class PerformanceReviewDTO {
     private String strengths;
     private String areasToImprove;
     private String status;
+    private String statusDisplay;
+    private String reviewPeriodDisplay;
     private LocalDateTime createdAt;
 }

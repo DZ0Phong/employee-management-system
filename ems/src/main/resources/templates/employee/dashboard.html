@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>HRM Pro - Employee Dashboard</title>
+    <title>EMS Pro - Employee Dashboard</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
     <link rel="stylesheet" href="/css/app-icons.css" th:href="@{/css/app-icons.css}"/>
@@ -15,6 +15,7 @@
                 extend: {
                     colors: {
                         "primary": "#1414b8",
+                        "primary-light": "#e8e8fb",
                         "background-light": "#f6f6f8",
                         "background-dark": "#111121",
                     },
@@ -24,154 +25,255 @@
             },
         }
     </script>
+    <style>
+        .nav-active { box-shadow: 0 0 0 1px #1414b830, inset 3px 0 0 #1414b8; }
+    </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100">
-<div class="flex min-h-screen">
+<div class="flex h-screen overflow-hidden">
 
     <aside th:replace="~{fragments/employee-sidebar :: sidebar('dashboard', ${employee}, ${managementPortalUrl}, ${managementPortalLabel}, ${managementRoleLabel})}"></aside>
 
-    <!-- Main Content -->
-    <main class="flex-1 ml-64 p-8">
+    <main class="flex-1 overflow-y-auto p-8">
         <header class="mb-8">
-            <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Dashboard</h2>
-            <p class="text-slate-500 dark:text-slate-400 mt-1"
-               th:text="'Welcome back, ' + ${employee.firstName} + '! Here\'s what\'s happening today.'">
-                Welcome back, Alex! Here's what's happening today.
+            <h2 class="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">Dashboard</h2>
+            <p class="mt-1 text-slate-500 dark:text-slate-400"
+               th:text="'Welcome back, ' + ${employee.firstName} + '! Here is what is happening today.'">
+                Welcome back! Here is what is happening today.
             </p>
         </header>
 
-        <!-- KPI Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                <div class="flex items-center justify-between mb-4">
-                    <span class="material-symbols-outlined text-primary bg-primary/10 p-2 rounded-lg">event_available</span>
-                    <span class="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded">Annual</span>
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4 mb-8">
+            <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                <div class="mb-4 flex items-center justify-between">
+                    <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                        <span class="material-symbols-outlined text-[20px]">event_available</span>
+                    </div>
+                    <span class="rounded bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-600"
+                          th:text="${dashboard.leaveBadge}">Healthy</span>
                 </div>
-                <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Leave Balance</p>
-                <p class="text-2xl font-bold mt-1" th:text="${dashboard.leaveBalance} + ' Days'">12 Days</p>
+                <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Leave Balance</p>
+                <p class="mt-1 text-2xl font-bold" th:text="${dashboard.leaveBalance} + ' Days'">0 Days</p>
             </div>
-            <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                <div class="flex items-center justify-between mb-4">
-                    <span class="material-symbols-outlined text-primary bg-primary/10 p-2 rounded-lg">fact_check</span>
-                    <span class="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded"
-                          th:text="${dashboard.attendanceTrend}">+2.4%</span>
+
+            <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                <div class="mb-4 flex items-center justify-between">
+                    <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                        <span class="material-symbols-outlined text-[20px]">fact_check</span>
+                    </div>
+                    <span class="rounded bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-600"
+                          th:text="${dashboard.attendanceTrend}">+0.0%</span>
                 </div>
-                <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Attendance (Month)</p>
-                <p class="text-2xl font-bold mt-1" th:text="${dashboard.attendanceRate} + '%'">98.2%</p>
+                <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Attendance (Month)</p>
+                <p class="mt-1 text-2xl font-bold" th:text="${dashboard.attendanceRate} + '%'">0.0%</p>
             </div>
-            <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                <div class="flex items-center justify-between mb-4">
-                    <span class="material-symbols-outlined text-primary bg-primary/10 p-2 rounded-lg">account_balance_wallet</span>
-                    <span class="text-xs font-semibold text-slate-500 bg-slate-50 px-2 py-1 rounded">Processed</span>
+
+            <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                <div class="mb-4 flex items-center justify-between">
+                    <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                        <span class="material-symbols-outlined text-[20px]">account_balance_wallet</span>
+                    </div>
+                    <span class="rounded bg-slate-50 px-2 py-1 text-xs font-semibold text-slate-500"
+                          th:text="${dashboard.payrollBadge}">Processed</span>
                 </div>
-                <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Last Payroll</p>
-                <p class="text-2xl font-bold mt-1"
-                   th:text="${'$' + #numbers.formatDecimal(dashboard.lastPayroll, 1, 'COMMA', 2, 'POINT')}">$4,250.00</p>
+                <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Last Payroll</p>
+                <p class="mt-1 text-2xl font-bold"
+                   th:text="${'$' + #numbers.formatDecimal(dashboard.lastPayroll, 1, 'COMMA', 2, 'POINT')}">$0.00</p>
             </div>
-            <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                <div class="flex items-center justify-between mb-4">
-                    <span class="material-symbols-outlined text-primary bg-primary/10 p-2 rounded-lg">grade</span>
-                    <span class="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded">Exceeds</span>
+
+            <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                <div class="mb-4 flex items-center justify-between">
+                    <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                        <span class="material-symbols-outlined text-[20px]">grade</span>
+                    </div>
+                    <span class="rounded bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-600"
+                          th:text="${dashboard.performanceBadge}">No Review</span>
                 </div>
-                <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Performance Rating</p>
-                <p class="text-2xl font-bold mt-1" th:text="${dashboard.performanceRating} + ' / 5.0'">4.8 / 5.0</p>
+                <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Performance Rating</p>
+                <p class="mt-1 text-2xl font-bold" th:text="${dashboard.performanceRating} + ' / 5.0'">0.0 / 5.0</p>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Attendance Trend Chart -->
-            <div class="lg:col-span-2 bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-lg font-bold">Monthly Attendance Trend</h3>
-                    <div class="flex gap-2">
-                        <span class="flex items-center gap-1 text-xs text-slate-500 font-medium">
-                            <span class="w-3 h-3 rounded-full bg-primary/30"></span> Last Year
+        <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
+            <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 lg:col-span-2">
+                <div class="mb-6 flex items-center justify-between">
+                    <div>
+                        <h3 class="text-lg font-bold">Monthly Attendance Trend</h3>
+                        <p class="mt-1 text-xs text-slate-400">Attendance rate across the last 6 months</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <span class="flex items-center gap-1 text-xs font-medium text-slate-500">
+                            <span class="h-3 w-3 rounded-full bg-primary/25"></span> Last Year
                         </span>
-                        <span class="flex items-center gap-1 text-xs text-slate-500 font-medium">
-                            <span class="w-3 h-3 rounded-full bg-primary"></span> Current
+                        <span class="flex items-center gap-1 text-xs font-medium text-slate-500">
+                            <span class="h-3 w-3 rounded-full bg-primary"></span> Current
                         </span>
                     </div>
                 </div>
-                <div class="h-[250px] w-full relative">
-                    <svg class="w-full h-full" preserveaspectratio="none" viewbox="0 0 500 150">
-                        <line class="text-slate-100 dark:text-slate-800" stroke="currentColor" stroke-width="1" x1="0" x2="500" y1="30" y2="30"></line>
-                        <line class="text-slate-100 dark:text-slate-800" stroke="currentColor" stroke-width="1" x1="0" x2="500" y1="75" y2="75"></line>
-                        <line class="text-slate-100 dark:text-slate-800" stroke="currentColor" stroke-width="1" x1="0" x2="500" y1="120" y2="120"></line>
-                        <path class="fill-primary/5" d="M0,120 Q50,40 100,60 T200,30 T300,50 T400,20 T500,40 L500,150 L0,150 Z"></path>
-                        <path class="stroke-primary" d="M0,120 Q50,40 100,60 T200,30 T300,50 T400,20 T500,40" fill="none" stroke-linecap="round" stroke-width="3"></path>
-                        <circle class="fill-white stroke-primary" cx="100" cy="60" r="4" stroke-width="2"></circle>
-                        <circle class="fill-white stroke-primary" cx="200" cy="30" r="4" stroke-width="2"></circle>
-                        <circle class="fill-white stroke-primary" cx="300" cy="50" r="4" stroke-width="2"></circle>
-                        <circle class="fill-white stroke-primary" cx="400" cy="20" r="4" stroke-width="2"></circle>
-                    </svg>
-                    <div class="flex justify-between mt-4 text-xs font-medium text-slate-400">
-                        <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span>
+
+                <div id="attendance-trend-chart"
+                     class="w-full"
+                     th:attr="data-labels=${#strings.listJoin(dashboard.trendLabels, ',')},
+                              data-current=${#strings.listJoin(dashboard.trendCurrent, ',')},
+                              data-previous=${#strings.listJoin(dashboard.trendPrevious, ',')}">
+                    <svg id="attendance-trend-svg" class="h-[260px] w-full" viewBox="0 0 640 260" preserveAspectRatio="none"></svg>
+                    <div class="mt-4 flex justify-between text-xs font-medium text-slate-400">
+                        <span th:each="label : ${dashboard.trendLabels}" th:text="${label}">Jan</span>
+                    </div>
+                    <div id="attendance-trend-summary" class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                        <div class="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
+                            <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">Current Avg</p>
+                            <p id="trend-current-average" class="mt-1 text-lg font-black text-slate-900">0%</p>
+                        </div>
+                        <div class="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
+                            <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">Best Month</p>
+                            <p id="trend-best-month" class="mt-1 text-lg font-black text-slate-900">N/A</p>
+                        </div>
+                        <div class="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
+                            <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">Insight</p>
+                            <p id="trend-insight" class="mt-1 text-sm font-semibold text-slate-600">Attendance trend is waiting for more records.</p>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Recent Activity -->
-            <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col">
-                <h3 class="text-lg font-bold mb-6">Recent Activity</h3>
-                <div class="space-y-6 flex-1">
-                    <div th:each="activity, iterStat : ${activities}" class="flex gap-4 relative">
-                        <div th:unless="${iterStat.last}"
-                             class="absolute left-4 top-8 bottom-[-24px] w-px bg-slate-100 dark:bg-slate-800"></div>
-                        <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 z-10"
+            <div class="flex flex-col rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                <div class="mb-6 flex items-center justify-between">
+                    <h3 class="text-lg font-bold">Recent Activity</h3>
+                    <a th:href="@{/employee/leave}" class="text-xs font-semibold text-primary hover:underline">Open leave</a>
+                </div>
+                <div class="flex-1 space-y-6">
+                    <div th:each="activity, iterStat : ${activities}" class="relative flex gap-4">
+                        <div th:unless="${iterStat.last}" class="absolute bottom-[-24px] left-4 top-8 w-px bg-slate-100 dark:bg-slate-800"></div>
+                        <div class="z-10 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full"
                              th:classappend="${activity.iconBg}">
                             <span class="material-symbols-outlined text-sm"
                                   th:classappend="${activity.iconColor}"
                                   th:text="${activity.icon}">check_circle</span>
                         </div>
-                        <div>
+                        <div class="min-w-0">
                             <p class="text-sm font-semibold" th:text="${activity.title}">Activity Title</p>
-                            <p class="text-xs text-slate-500 mt-0.5" th:text="${activity.description}">Description.</p>
-                            <span class="text-[10px] text-slate-400 mt-2 block font-medium"
+                            <p class="mt-0.5 text-xs text-slate-500" th:text="${activity.description}">Description</p>
+                            <span class="mt-2 block text-[10px] font-medium text-slate-400"
                                   th:text="${activity.timeAgo}">2 hours ago</span>
                         </div>
                     </div>
                     <div th:if="${#lists.isEmpty(activities)}"
-                         class="text-sm text-slate-400 text-center py-4">No recent activity.</div>
+                         class="rounded-xl border border-dashed border-slate-200 px-4 py-6 text-center text-sm text-slate-400">
+                        No recent activity yet.
+                    </div>
                 </div>
-                <a th:href="@{/employee/dashboard}">
-                    <button class="mt-6 w-full py-2.5 px-4 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-lg text-sm font-semibold hover:bg-slate-100 transition-colors">
-                        View All Activity
-                    </button>
-                </a>
             </div>
         </div>
 
-        <!-- Quick Actions -->
-        <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-            <a th:href="@{/employee/leave}" class="flex items-center gap-4 p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-primary/50 cursor-pointer transition-all group">
-                <div class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
+        <div class="mt-8 grid grid-cols-1 gap-6 md:grid-cols-3">
+            <a th:href="@{/employee/leave}" class="group flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-4 transition-all hover:border-primary/50 dark:border-slate-800 dark:bg-slate-900">
+                <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary transition-all group-hover:bg-primary group-hover:text-white">
                     <span class="material-symbols-outlined">add_circle</span>
                 </div>
                 <div>
-                    <p class="font-bold text-sm">Request Leave</p>
-                    <p class="text-xs text-slate-500">Submit a new request</p>
+                    <p class="text-sm font-bold">Request Leave</p>
+                    <p class="text-xs text-slate-500">Submit and track your leave workflow</p>
                 </div>
             </a>
-            <a th:href="@{/employee/attendance}" class="flex items-center gap-4 p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-primary/50 cursor-pointer transition-all group">
-                <div class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
+            <a th:href="@{/employee/attendance}" class="group flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-4 transition-all hover:border-primary/50 dark:border-slate-800 dark:bg-slate-900">
+                <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary transition-all group-hover:bg-primary group-hover:text-white">
                     <span class="material-symbols-outlined">timer</span>
                 </div>
                 <div>
-                    <p class="font-bold text-sm">Clock In/Out</p>
-                    <p class="text-xs text-slate-500">Record your work hours</p>
+                    <p class="text-sm font-bold">Attendance</p>
+                    <p class="text-xs text-slate-500">Clock in, clock out, and review your logs</p>
                 </div>
             </a>
-            <a th:href="@{/employee/profile}" class="flex items-center gap-4 p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-primary/50 cursor-pointer transition-all group">
-                <div class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
-                    <span class="material-symbols-outlined">support_agent</span>
+            <a th:href="@{/employee/profile}" class="group flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-4 transition-all hover:border-primary/50 dark:border-slate-800 dark:bg-slate-900">
+                <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary transition-all group-hover:bg-primary group-hover:text-white">
+                    <span class="material-symbols-outlined">badge</span>
                 </div>
                 <div>
-                    <p class="font-bold text-sm">My Profile</p>
-                    <p class="text-xs text-slate-500">View your information</p>
+                    <p class="text-sm font-bold">My Profile</p>
+                    <p class="text-xs text-slate-500">Update your personal information</p>
                 </div>
             </a>
         </div>
     </main>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const chartContainer = document.getElementById('attendance-trend-chart');
+        const svg = document.getElementById('attendance-trend-svg');
+        if (!chartContainer || !svg) return;
+
+        const labels = (chartContainer.dataset.labels || '').split(',').filter(Boolean);
+        const current = (chartContainer.dataset.current || '').split(',').map(Number);
+        const previous = (chartContainer.dataset.previous || '').split(',').map(Number);
+
+        const width = 640;
+        const height = 260;
+        const paddingX = 24;
+        const paddingY = 24;
+        const baseline = height - paddingY;
+        const chartHeight = height - paddingY * 2;
+        const maxValue = Math.max(100, ...current, ...previous);
+        const currentAverage = current.length ? current.reduce((sum, value) => sum + value, 0) / current.length : 0;
+        const bestValue = current.length ? Math.max(...current) : 0;
+        const bestIndex = current.findIndex(value => value === bestValue);
+
+        const currentAverageEl = document.getElementById('trend-current-average');
+        const bestMonthEl = document.getElementById('trend-best-month');
+        const insightEl = document.getElementById('trend-insight');
+
+        if (currentAverageEl) currentAverageEl.textContent = `${currentAverage.toFixed(1)}%`;
+        if (bestMonthEl) bestMonthEl.textContent = bestValue > 0 && bestIndex >= 0 ? `${labels[bestIndex]} (${bestValue.toFixed(1)}%)` : 'No attendance';
+        if (insightEl) {
+            if (current.every(value => value === 0)) {
+                insightEl.textContent = 'No attendance records were found for these months yet.';
+            } else if (current[current.length - 1] > current[0]) {
+                insightEl.textContent = 'Recent attendance is trending better than the start of the period.';
+            } else {
+                insightEl.textContent = 'Attendance is uneven across the last 6 months and needs follow-up.';
+            }
+        }
+
+        const buildPoints = (series) => {
+            if (!series.length) return [];
+            const stepX = (width - paddingX * 2) / Math.max(1, series.length - 1);
+            return series.map((value, index) => {
+                const x = paddingX + stepX * index;
+                const y = baseline - (value / maxValue) * chartHeight;
+                return { x, y };
+            });
+        };
+
+        const linePath = (points) => {
+            if (!points.length) return '';
+            return points.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`).join(' ');
+        };
+
+        const areaPath = (points) => {
+            if (!points.length) return '';
+            return `${linePath(points)} L ${points[points.length - 1].x} ${baseline} L ${points[0].x} ${baseline} Z`;
+        };
+
+        const currentPoints = buildPoints(current);
+        const previousPoints = buildPoints(previous);
+        const yTicks = [0, 25, 50, 75, 100];
+
+        svg.innerHTML = `
+            ${yTicks.map(tick => {
+                const y = baseline - (tick / 100) * chartHeight;
+                return `
+                    <line x1="${paddingX}" y1="${y}" x2="${width}" y2="${y}" stroke="${tick === 0 ? '#e2e8f0' : '#eef2ff'}" stroke-width="1" />
+                    <text x="0" y="${y + 4}" fill="#94a3b8" font-size="11" font-weight="600">${tick}%</text>
+                `;
+            }).join('')}
+            <path d="${areaPath(previousPoints)}" fill="rgba(20,20,184,0.04)"></path>
+            <path d="${linePath(previousPoints)}" fill="none" stroke="rgba(20,20,184,0.20)" stroke-width="3" stroke-dasharray="6 6" stroke-linecap="round"></path>
+            <path d="${areaPath(currentPoints)}" fill="rgba(20,20,184,0.08)"></path>
+            <path d="${linePath(currentPoints)}" fill="none" stroke="#1414b8" stroke-width="4" stroke-linecap="round"></path>
+            ${currentPoints.map(point => `<circle cx="${point.x}" cy="${point.y}" r="5" fill="#ffffff" stroke="#1414b8" stroke-width="3"></circle>`).join('')}
+        `;
+    });
+</script>
 </body>
 </html>
