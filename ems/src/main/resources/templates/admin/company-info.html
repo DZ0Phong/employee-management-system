@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Company Info — EMS Pro Admin</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { primary: "#1414b8", "primary-light": "#e8e8fb", "bg-light": "#f6f6f8" },
+                    fontFamily: { display: ["Inter"] },
+                },
+            },
+        };
+    </script>
+    <style>
+        .material-symbols-outlined { font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24; }
+        .fill-icon { font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24; }
+        @keyframes fadeSlideUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+        .anim { opacity:0; animation:fadeSlideUp .45s ease forwards; }
+        .anim-1{animation-delay:.05s} .anim-2{animation-delay:.1s} .anim-3{animation-delay:.15s} .anim-4{animation-delay:.2s}
+        .nav-active { box-shadow:inset 3px 0 0 #1414b8; }
+        @keyframes pulse-dot { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.5);opacity:.6} }
+        .pulse-dot { animation:pulse-dot 2s ease-in-out infinite; }
+        ::-webkit-scrollbar{width:5px} ::-webkit-scrollbar-track{background:transparent} ::-webkit-scrollbar-thumb{background:#1414b840;border-radius:99px}
+        @keyframes toastIn { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
+        .toast { animation:toastIn .3s ease; }
+        @keyframes modalIn { from{transform:scale(.95) translateY(8px);opacity:0} to{transform:scale(1) translateY(0);opacity:1} }
+        .modal-anim { animation:modalIn .2s ease; }
+        .overlay-bg { background:rgba(15,23,42,.5); backdrop-filter:blur(4px); }
+        .dot-grid { background-image:radial-gradient(circle,#1414b820 1px,transparent 1px); background-size:24px 24px; }
+        .line-clamp-2 { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+
+        .badge-config {
+            display:inline-flex; align-items:center; gap:3px;
+            font-size:9px; font-weight:700; padding:2px 6px;
+            background:#fef3c7; color:#b45309;
+            border:1px solid #fde68a; border-radius:6px;
+            white-space:nowrap; letter-spacing:.3px;
+        }
+        .badge-news {
+            display:inline-flex; align-items:center; gap:3px;
+            font-size:9px; font-weight:700; padding:2px 6px;
+            background:#dbeafe; color:#1d4ed8;
+            border:1px solid #bfdbfe; border-radius:6px;
+            white-space:nowrap; letter-spacing:.3px;
+        }
+
+        .row-config { background: #fffbeb !important; }
+        .row-config:hover { background: #fef3c7 !important; }
+    </style>
+</head>
+
+<body class="bg-bg-light font-display text-slate-900 min-h-screen">
+<div class="flex h-screen overflow-hidden">
+
+<!-- ══════════════════ SIDEBAR ══════════════════ -->
+<div th:replace="~{fragments/admin-sidebar :: sidebar('company-info')}"></div>
+
+<!-- ══════════════════ MAIN ══════════════════ -->
+<main class="flex-1 flex flex-col min-w-0 overflow-hidden">
+
+    <header class="h-16 bg-white border-b border-slate-100 flex items-center justify-between px-8 shrink-0">
+        <div>
+            <h2 class="text-base font-black text-slate-900 leading-tight">Company Info</h2>
+            <p class="text-xs text-slate-400">Manage content displayed on the Home &amp; About pages</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <button class="relative w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-50 text-slate-500 transition-colors">
+                <span class="material-symbols-outlined text-[20px]">notifications</span>
+                <span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 border-2 border-white"></span>
+            </button>
+            <button class="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-50 text-slate-500 transition-colors">
+                <span class="material-symbols-outlined text-[20px]">help_outline</span>
+            </button>
+            <button onclick="openCreateModal()"
+                    class="flex items-center gap-2 px-4 py-2 bg-primary text-white text-sm font-bold rounded-xl shadow-lg shadow-primary/25 hover:bg-primary/90 transition-all active:scale-95 ml-2">
+                <span class="material-symbols-outlined text-[18px]">add</span> Add Entry
+            </button>
+        </div>
+    </header>
+
+    <div class="flex-1 overflow-y-auto p-8 dot-grid">
+        <div class="max-w-7xl mx-auto space-y-6">
+
+            <!-- ── Page heading ── -->
+            <div class="anim anim-1 flex flex-wrap items-end justify-between gap-4">
+                <div>
+                    <h3 class="text-3xl font-black text-slate-900 tracking-tight">Company Info</h3>
+                    <p class="text-sm text-slate-400 mt-0.5">
+                        <span th:text="${#lists.size(companyInfoList)}">0</span> entries
+                    </p>
+                </div>
+                <a th:href="@{/home}" target="_blank"
+                   class="flex items-center gap-2 px-4 py-2 border border-slate-200 text-slate-500 text-sm font-semibold rounded-xl hover:border-primary hover:text-primary hover:bg-primary-light transition-all">
+                    <span class="material-symbols-outlined text-[16px]">open_in_new</span> View Home Page
+                </a>
+            </div>
+
+            <!-- ── Stat cards ── -->
+            <div class="anim anim-2 grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+                    <div class="w-9 h-9 bg-primary-light rounded-xl flex items-center justify-center mb-3">
+                        <span class="material-symbols-outlined fill-icon text-primary text-[20px]">article</span>
+                    </div>
+                    <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider">Total Entries</p>
+                    <p class="text-3xl font-black text-slate-800 mt-0.5" th:text="${#lists.size(companyInfoList)}">0</p>
+                </div>
+                <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+                    <div class="w-9 h-9 bg-emerald-50 rounded-xl flex items-center justify-center mb-3">
+                        <span class="material-symbols-outlined fill-icon text-emerald-500 text-[20px]">visibility</span>
+                    </div>
+                    <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider">Public</p>
+                    <p class="text-3xl font-black text-emerald-600 mt-0.5"
+                       th:text="${#lists.size(companyInfoList.?[isPublic == true])}">0</p>
+                </div>
+                <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+                    <div class="w-9 h-9 bg-slate-100 rounded-xl flex items-center justify-center mb-3">
+                        <span class="material-symbols-outlined text-slate-400 text-[20px]">visibility_off</span>
+                    </div>
+                    <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider">Hidden</p>
+                    <p class="text-3xl font-black text-slate-500 mt-0.5"
+                       th:text="${#lists.size(companyInfoList.?[isPublic == false])}">0</p>
+                </div>
+                <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+                    <div class="w-9 h-9 bg-amber-50 rounded-xl flex items-center justify-center mb-3">
+                        <span class="material-symbols-outlined fill-icon text-amber-500 text-[20px]">key</span>
+                    </div>
+                    <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider">Special Keys</p>
+                    <p class="text-3xl font-black text-amber-600 mt-0.5">8</p>
+                </div>
+            </div>
+
+            <!-- ── Info banner ── -->
+            <div class="anim anim-2 bg-primary-light border border-primary/20 rounded-2xl p-4 flex items-start gap-3">
+                <span class="material-symbols-outlined fill-icon text-primary text-[20px] mt-0.5 shrink-0">info</span>
+                <div class="text-xs text-blue-800 leading-relaxed">
+                    <p class="mb-1">
+                        <span class="font-bold">How it works:</span>
+                        Entries tagged <span class="badge-news">📰 NEWS</span> with
+                        <code class="bg-blue-100 px-1 rounded font-mono">isPublic = true</code>
+                        appear in the <strong>Company News</strong> section on the Home page.
+                    </p>
+                    <p>
+                        Entries tagged <span class="badge-config">⚙ CONFIG</span> use special keys like
+                        <code class="bg-blue-100 px-1 rounded font-mono">hero_title</code>,
+                        <code class="bg-blue-100 px-1 rounded font-mono">stats_employees</code>,
+                        <code class="bg-blue-100 px-1 rounded font-mono">cta_title</code>...
+                        to customize the Hero, Stats bar, and CTA sections —
+                        <strong>no need to enable isPublic</strong>.
+                    </p>
+                </div>
+            </div>
+
+            <!-- ── Table ── -->
+            <div class="anim anim-3 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                <div class="flex items-center justify-between px-6 py-4 border-b border-slate-50">
+                    <div>
+                        <h3 class="text-sm font-black text-slate-800">Content List</h3>
+                        <p class="text-xs text-slate-400 mt-0.5" th:text="${#lists.size(companyInfoList)} + ' entries'">0 entries</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <!-- Filter tabs -->
+                        <div class="flex items-center gap-1 bg-slate-50 border border-slate-100 rounded-xl p-1">
+                            <button onclick="filterType('all')" id="tab-all"
+                                    class="tab-btn px-3 py-1 text-[11px] font-bold rounded-lg bg-white shadow-sm text-slate-700 transition-all">
+                                All
+                            </button>
+                            <button onclick="filterType('config')" id="tab-config"
+                                    class="tab-btn px-3 py-1 text-[11px] font-bold rounded-lg text-slate-400 hover:text-amber-600 transition-all">
+                                ⚙ Config
+                            </button>
+                            <button onclick="filterType('news')" id="tab-news"
+                                    class="tab-btn px-3 py-1 text-[11px] font-bold rounded-lg text-slate-400 hover:text-blue-600 transition-all">
+                                📰 News
+                            </button>
+                        </div>
+                        <!-- Search -->
+                        <div class="flex items-center gap-2 bg-slate-50 border border-slate-100 rounded-xl px-3 py-1.5">
+                            <span class="material-symbols-outlined text-slate-300 text-base">search</span>
+                            <input type="text" id="search-input"
+                                   placeholder="Search by key or title..."
+                                   oninput="filterTable()"
+                                   class="bg-transparent text-xs text-slate-600 outline-none w-44 placeholder-slate-300"/>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                        <tr class="bg-slate-50/70">
+                            <th class="px-6 py-3 text-left text-[10px] font-bold text-slate-400 uppercase tracking-wider">Info Key</th>
+                            <th class="px-4 py-3 text-left text-[10px] font-bold text-slate-400 uppercase tracking-wider">Title</th>
+                            <th class="px-4 py-3 text-left text-[10px] font-bold text-slate-400 uppercase tracking-wider">Content</th>
+                            <th class="px-4 py-3 text-left text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status</th>
+                            <th class="px-4 py-3 text-left text-[10px] font-bold text-slate-400 uppercase tracking-wider">Updated</th>
+                            <th class="px-4 py-3 text-left text-[10px] font-bold text-slate-400 uppercase tracking-wider">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-50">
+
+                        <tr th:if="${companyInfoList == null or #lists.isEmpty(companyInfoList)}">
+                            <td colspan="6" class="px-6 py-16 text-center">
+                                <span class="material-symbols-outlined text-slate-200 text-5xl block mb-3">apartment</span>
+                                <p class="text-sm font-semibold text-slate-400">No content yet</p>
+                                <p class="text-xs text-slate-300 mt-1">Click <strong>Add Entry</strong> to get started</p>
+                            </td>
+                        </tr>
+
+                        <!-- Data rows -->
+                        <tr th:each="info : ${companyInfoList}"
+                            th:data-key="${info.infoKey}"
+                            th:data-title="${info.title}"
+                            th:data-type="${#lists.contains({'hero_title','hero_subtitle','stats_employees','stats_offices','stats_founded','stats_rating','cta_title','cta_subtitle'}, info.infoKey) ? 'config' : 'news'}"
+                            th:classappend="${#lists.contains({'hero_title','hero_subtitle','stats_employees','stats_offices','stats_founded','stats_rating','cta_title','cta_subtitle'}, info.infoKey) ? 'row-config' : ''}"
+                            class="hover:bg-primary/[3%] transition-colors info-row">
+
+                            <!-- Info Key + Badge -->
+                            <td class="px-6 py-3.5">
+                                <div class="flex flex-col gap-1.5">
+                                    <code class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md whitespace-nowrap w-fit"
+                                          th:text="${info.infoKey}">key</code>
+                                    <span th:if="${#lists.contains({'hero_title','hero_subtitle','stats_employees','stats_offices','stats_founded','stats_rating','cta_title','cta_subtitle'}, info.infoKey)}"
+                                          class="badge-config w-fit">
+                                        ⚙ CONFIG
+                                    </span>
+                                    <span th:unless="${#lists.contains({'hero_title','hero_subtitle','stats_employees','stats_offices','stats_founded','stats_rating','cta_title','cta_subtitle'}, info.infoKey)}"
+                                          class="badge-news w-fit">
+                                        📰 NEWS
+                                    </span>
+                                </div>
+                            </td>
+
+                            <td class="px-4 py-3.5 max-w-[200px]">
+                                <p class="text-sm font-semibold text-slate-800 truncate" th:text="${info.title}">Title</p>
+                            </td>
+
+                            <td class="px-4 py-3.5 max-w-xs">
+                                <p class="text-xs text-slate-500 line-clamp-2 leading-relaxed"
+                                   th:text="${info.content != null ? #strings.abbreviate(info.content, 100) : ''}">Content...</p>
+                            </td>
+
+                            <td class="px-4 py-3.5">
+                                <span th:if="${info.isPublic == true}"
+                                      class="inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 bg-emerald-100 text-emerald-700 rounded-full whitespace-nowrap">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span> Public
+                                </span>
+                                <span th:unless="${info.isPublic}"
+                                      class="inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 bg-slate-100 text-slate-500 rounded-full whitespace-nowrap">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-slate-400 inline-block"></span> Hidden
+                                </span>
+                                <span th:if="${#lists.contains({'hero_title','hero_subtitle','stats_employees','stats_offices','stats_founded','stats_rating','cta_title','cta_subtitle'}, info.infoKey)}"
+                                      class="block text-[9px] text-amber-500 font-medium mt-1">
+                                    public not required
+                                </span>
+                            </td>
+
+                            <td class="px-4 py-3.5 text-[11px] text-slate-400 whitespace-nowrap"
+                                th:text="${info.updatedAt != null ? #temporals.format(info.updatedAt, 'dd/MM/yyyy HH:mm') : '—'}">—</td>
+
+                            <td class="px-4 py-3.5">
+                                <div class="flex items-center gap-1">
+                                    <button type="button"
+                                            th:data-id="${info.id}"
+                                            th:data-key="${info.infoKey}"
+                                            th:data-title="${info.title}"
+                                            th:data-content="${info.content}"
+                                            th:data-public="${info.isPublic}"
+                                            onclick="openEditModalFromBtn(this)"
+                                            class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-primary hover:bg-primary-light transition-colors"
+                                            title="Edit">
+                                        <span class="material-symbols-outlined text-[16px]">edit</span>
+                                    </button>
+                                    <button type="button"
+                                            th:data-id="${info.id}"
+                                            th:data-key="${info.infoKey}"
+                                            onclick="openDeleteModalFromBtn(this)"
+                                            class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors"
+                                            title="Delete">
+                                        <span class="material-symbols-outlined text-[16px]">delete</span>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ── Key guide ── -->
+            <div class="anim anim-4 bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+                <h3 class="text-sm font-black text-slate-800 mb-1 flex items-center gap-2">
+                    <span class="material-symbols-outlined fill-icon text-amber-500 text-[18px]">key</span>
+                    <span class="badge-config">⚙ CONFIG</span> Keys — control the Home page UI
+                </h3>
+                <p class="text-xs text-slate-400 mb-4">
+                    Create an entry with one of the keys below to override the default content.
+                    Other keys (<span class="badge-news">📰 NEWS</span>) appear in <strong>Company News</strong> when isPublic is enabled.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    <div class="flex items-start gap-2.5 bg-amber-50 border border-amber-100 rounded-xl p-3">
+                        <code class="text-xs font-mono text-amber-700 font-bold shrink-0 mt-0.5 min-w-[130px]">hero_title</code>
+                        <p class="text-[11px] text-slate-500">Main heading in the Hero section <span class="text-amber-500">(HTML supported)</span></p>
+                    </div>
+                    <div class="flex items-start gap-2.5 bg-amber-50 border border-amber-100 rounded-xl p-3">
+                        <code class="text-xs font-mono text-amber-700 font-bold shrink-0 mt-0.5 min-w-[130px]">hero_subtitle</code>
+                        <p class="text-[11px] text-slate-500">Short description below the Hero heading</p>
+                    </div>
+                    <div class="flex items-start gap-2.5 bg-amber-50 border border-amber-100 rounded-xl p-3">
+                        <code class="text-xs font-mono text-amber-700 font-bold shrink-0 mt-0.5 min-w-[130px]">stats_employees</code>
+                        <p class="text-[11px] text-slate-500">Employee count in the Stats bar (e.g. 500+)</p>
+                    </div>
+                    <div class="flex items-start gap-2.5 bg-amber-50 border border-amber-100 rounded-xl p-3">
+                        <code class="text-xs font-mono text-amber-700 font-bold shrink-0 mt-0.5 min-w-[130px]">stats_offices</code>
+                        <p class="text-[11px] text-slate-500">Number of global offices (e.g. 12)</p>
+                    </div>
+                    <div class="flex items-start gap-2.5 bg-amber-50 border border-amber-100 rounded-xl p-3">
+                        <code class="text-xs font-mono text-amber-700 font-bold shrink-0 mt-0.5 min-w-[130px]">stats_founded</code>
+                        <p class="text-[11px] text-slate-500">Year founded (e.g. 2020)</p>
+                    </div>
+                    <div class="flex items-start gap-2.5 bg-amber-50 border border-amber-100 rounded-xl p-3">
+                        <code class="text-xs font-mono text-amber-700 font-bold shrink-0 mt-0.5 min-w-[130px]">stats_rating</code>
+                        <p class="text-[11px] text-slate-500">Rating score (e.g. 4.8★)</p>
+                    </div>
+                    <div class="flex items-start gap-2.5 bg-amber-50 border border-amber-100 rounded-xl p-3">
+                        <code class="text-xs font-mono text-amber-700 font-bold shrink-0 mt-0.5 min-w-[130px]">cta_title</code>
+                        <p class="text-[11px] text-slate-500">Heading for the CTA banner at the bottom of the Home page</p>
+                    </div>
+                    <div class="flex items-start gap-2.5 bg-amber-50 border border-amber-100 rounded-xl p-3">
+                        <code class="text-xs font-mono text-amber-700 font-bold shrink-0 mt-0.5 min-w-[130px]">cta_subtitle</code>
+                        <p class="text-[11px] text-slate-500">Description for the CTA banner at the bottom of the Home page</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</main>
+</div>
+
+<!-- ══════════════════ CREATE / EDIT MODAL ══════════════════ -->
+<div id="modal-overlay" class="fixed inset-0 z-50 overlay-bg hidden flex items-center justify-center p-4">
+    <div class="modal-anim bg-white rounded-2xl w-full max-w-lg shadow-2xl max-h-[92vh] flex flex-col">
+
+        <div class="flex items-center gap-3 px-6 py-5 border-b border-slate-100 shrink-0">
+            <div class="w-9 h-9 rounded-xl bg-primary-light flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined fill-icon text-primary text-[20px]" id="modal-icon">add</span>
+            </div>
+            <h3 class="text-base font-black flex-1" id="modal-title">Add New Entry</h3>
+            <button onclick="closeModal()" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-100 transition-colors">
+                <span class="material-symbols-outlined text-[18px]">close</span>
+            </button>
+        </div>
+
+        <form id="modal-form" method="post" class="flex-1 overflow-y-auto flex flex-col">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <input type="hidden" name="id" id="field-id"/>
+
+            <div class="px-6 py-5 space-y-4 flex-1">
+
+                <!-- Info Key -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1.5">
+                        Info Key <span class="text-rose-500">*</span>
+                        <span class="font-normal text-slate-400">&nbsp;(letters, numbers, _ or - only)</span>
+                    </label>
+                    <input type="text" name="infoKey" id="field-key" required
+                           pattern="[a-zA-Z0-9_\-]+"
+                           placeholder="e.g. about_us, hero_title, recruitment_policy"
+                           oninput="previewKeyType(this.value)"
+                           class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-mono focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all placeholder-slate-300"/>
+                    <div class="flex items-center justify-between mt-1">
+                        <p class="text-[10px] text-slate-400">Cannot be changed after creation.</p>
+                        <div id="key-type-preview" class="hidden">
+                            <span id="key-type-badge"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Title -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1.5">
+                        Title <span class="text-rose-500">*</span>
+                    </label>
+                    <input type="text" name="title" id="field-title" required
+                           placeholder="e.g. About Our Company"
+                           class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all placeholder-slate-300"/>
+                </div>
+
+                <!-- Content -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1.5">
+                        Content <span class="text-rose-500">*</span>
+                    </label>
+                    <textarea name="content" id="field-content" required rows="6"
+                              placeholder="Enter content..."
+                              class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm resize-none focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all leading-relaxed placeholder-slate-300"></textarea>
+                    <p class="text-[10px] text-slate-400 mt-1"><span id="char-count">0</span> characters</p>
+                </div>
+
+                <!-- Is Public toggle -->
+                <div class="flex items-center justify-between bg-slate-50 rounded-xl px-4 py-3 border border-slate-100">
+                    <div>
+                        <p class="text-sm font-semibold text-slate-700">Visible on Home Page</p>
+                        <p class="text-xs text-slate-400 mt-0.5">
+                            Displays in the <span class="badge-news">📰 NEWS</span> section for candidates.
+                            <span class="badge-config">⚙ CONFIG</span> keys do not need this enabled.
+                        </p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer shrink-0 ml-4">
+                        <input type="checkbox" name="isPublic" id="field-public" value="true" class="sr-only peer"/>
+                        <div class="w-11 h-6 bg-slate-200 peer-focus:ring-2 peer-focus:ring-primary/30 rounded-full
+                                    peer peer-checked:bg-primary transition-all
+                                    after:content-[''] after:absolute after:top-[2px] after:left-[2px]
+                                    after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all
+                                    peer-checked:after:translate-x-5"></div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="flex gap-3 justify-end px-6 pb-5 pt-2 border-t border-slate-50 shrink-0">
+                <button type="button" onclick="closeModal()"
+                        class="px-5 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-500 hover:bg-slate-50 transition-colors">
+                    Cancel
+                </button>
+                <button type="submit"
+                        class="px-6 py-2.5 rounded-xl bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-all active:scale-95 flex items-center gap-2 shadow-lg shadow-primary/25">
+                    <span class="material-symbols-outlined text-[16px]">save</span>
+                    <span id="submit-label">Save</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ══════════════════ DELETE MODAL ══════════════════ -->
+<div id="delete-overlay" class="fixed inset-0 z-50 overlay-bg hidden flex items-center justify-center p-4">
+    <div class="modal-anim bg-white rounded-2xl w-full max-w-sm shadow-2xl p-6 text-center">
+        <div class="w-14 h-14 rounded-full bg-rose-100 flex items-center justify-center mx-auto mb-4">
+            <span class="material-symbols-outlined fill-icon text-rose-500 text-3xl">delete_forever</span>
+        </div>
+        <h3 class="text-base font-black text-slate-800 mb-2">Delete this entry?</h3>
+        <p class="text-sm text-slate-500 mb-1">
+            Key: <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs font-mono font-bold text-slate-700" id="delete-key-label">—</code>
+        </p>
+        <div id="delete-config-warning" class="hidden mb-3 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+            <p class="text-xs text-amber-700 font-semibold flex items-center gap-1.5 justify-center">
+                <span class="material-symbols-outlined fill-icon text-[14px]">warning</span>
+                This is a CONFIG key — the Home page will revert to its default value after deletion.
+            </p>
+        </div>
+        <p class="text-xs text-rose-400 mb-6 font-medium">This action cannot be undone.</p>
+        <form id="delete-form" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <div class="flex gap-3 justify-center">
+                <button type="button" onclick="closeDeleteModal()"
+                        class="px-5 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-500 hover:bg-slate-50 transition-colors">
+                    Keep It
+                </button>
+                <button type="submit"
+                        class="px-5 py-2.5 rounded-xl bg-rose-500 text-white text-sm font-bold hover:bg-rose-600 transition-all active:scale-95 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[16px]">delete</span> Delete
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ══════════════════ TOAST ══════════════════ -->
+<div id="toast-container" class="fixed bottom-6 right-6 z-[60] flex flex-col gap-2 pointer-events-none"></div>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    var successMsg = /*[[${successMsg}]]*/ null;
+    var errorMsg   = /*[[${errorMsg}]]*/   null;
+    /*]]>*/
+
+    const SPECIAL_KEYS = [
+        'hero_title','hero_subtitle',
+        'stats_employees','stats_offices','stats_founded','stats_rating',
+        'cta_title','cta_subtitle'
+    ];
+
+    // ── Toast ──────────────────────────────────────────────────────────
+    function showToast(msg, type) {
+        var cfg = {
+            success: { bg: 'bg-emerald-600', icon: 'check_circle' },
+            error:   { bg: 'bg-rose-600',    icon: 'error' },
+            info:    { bg: 'bg-primary',      icon: 'info' }
+        };
+        var c = cfg[type] || cfg.info;
+        var el = document.createElement('div');
+        el.className = 'toast pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-2xl shadow-xl text-sm font-semibold text-white ' + c.bg;
+        el.innerHTML = '<span class="material-symbols-outlined fill-icon text-[18px]">' + c.icon + '</span>' + msg;
+        document.getElementById('toast-container').appendChild(el);
+        setTimeout(function () {
+            el.style.transition = 'opacity .3s';
+            el.style.opacity = '0';
+            setTimeout(function () { el.remove(); }, 300);
+        }, 3500);
+    }
+
+    if (successMsg) showToast(successMsg, 'success');
+    if (errorMsg)   showToast(errorMsg, 'error');
+
+    // ── Filter tabs + Search ────────────────────────────────────────────
+    var currentTypeFilter = 'all';
+
+    function filterType(type) {
+        currentTypeFilter = type;
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('bg-white', 'shadow-sm', 'text-slate-700', 'text-amber-600', 'text-blue-600');
+            btn.classList.add('text-slate-400');
+        });
+        var activeTab = document.getElementById('tab-' + type);
+        activeTab.classList.remove('text-slate-400');
+        activeTab.classList.add('bg-white', 'shadow-sm', 'text-slate-700');
+        filterTable();
+    }
+
+    function filterTable() {
+        var q = (document.getElementById('search-input').value || '').toLowerCase().trim();
+        document.querySelectorAll('.info-row').forEach(function (row) {
+            var key   = (row.getAttribute('data-key')   || '').toLowerCase();
+            var title = (row.getAttribute('data-title') || '').toLowerCase();
+            var type  = row.getAttribute('data-type') || 'news';
+            var matchSearch = !q || key.includes(q) || title.includes(q);
+            var matchType   = currentTypeFilter === 'all' || type === currentTypeFilter;
+            row.style.display = (matchSearch && matchType) ? '' : 'none';
+        });
+    }
+
+    // ── Char count ──────────────────────────────────────────────────────
+    document.getElementById('field-content').addEventListener('input', function () {
+        document.getElementById('char-count').textContent = this.value.length;
+    });
+
+    // ── Key type preview on input ──────────────────────────────────────
+    function previewKeyType(val) {
+        var preview = document.getElementById('key-type-preview');
+        var badge   = document.getElementById('key-type-badge');
+        if (!val.trim()) { preview.classList.add('hidden'); return; }
+        preview.classList.remove('hidden');
+        if (SPECIAL_KEYS.includes(val.trim())) {
+            badge.className = 'badge-config';
+            badge.textContent = '⚙ CONFIG key — will control the Home page UI';
+        } else {
+            badge.className = 'badge-news';
+            badge.textContent = '📰 NEWS key — appears in Company News';
+        }
+    }
+
+    // ── Create Modal ────────────────────────────────────────────────────
+    function openCreateModal() {
+        document.getElementById('modal-title').textContent  = 'Add New Entry';
+        document.getElementById('modal-icon').textContent   = 'add';
+        document.getElementById('submit-label').textContent = 'Create';
+        document.getElementById('modal-form').action        = '/admin/company-info/create';
+        document.getElementById('field-id').value           = '';
+        var keyEl = document.getElementById('field-key');
+        keyEl.value    = '';
+        keyEl.readOnly = false;
+        keyEl.classList.remove('bg-slate-50', 'cursor-not-allowed', 'opacity-60');
+        document.getElementById('field-title').value        = '';
+        document.getElementById('field-content').value      = '';
+        document.getElementById('field-public').checked     = true;
+        document.getElementById('char-count').textContent   = '0';
+        document.getElementById('key-type-preview').classList.add('hidden');
+        document.getElementById('modal-overlay').classList.remove('hidden');
+        setTimeout(function () { keyEl.focus(); }, 80);
+    }
+
+    // ── Edit Modal ──────────────────────────────────────────────────────
+    function openEditModal(id, key, title, content, isPublic) {
+        document.getElementById('modal-title').textContent  = 'Edit Entry';
+        document.getElementById('modal-icon').textContent   = 'edit';
+        document.getElementById('submit-label').textContent = 'Save Changes';
+        document.getElementById('modal-form').action        = '/admin/company-info/update';
+        document.getElementById('field-id').value           = id;
+        var keyEl = document.getElementById('field-key');
+        keyEl.value    = key;
+        keyEl.readOnly = true;
+        keyEl.classList.add('bg-slate-50', 'cursor-not-allowed', 'opacity-60');
+        document.getElementById('field-title').value        = title;
+        document.getElementById('field-content').value      = content;
+        document.getElementById('field-public').checked     = isPublic;
+        document.getElementById('char-count').textContent   = String(content).length;
+        previewKeyType(key);
+        document.getElementById('modal-overlay').classList.remove('hidden');
+        setTimeout(function () { document.getElementById('field-title').focus(); }, 80);
+    }
+
+    function openEditModalFromBtn(btn) {
+        const d = btn.dataset;
+        openEditModal(d.id, d.key, d.title || '', d.content || '', d.public === 'true');
+    }
+
+    function closeModal() {
+        document.getElementById('modal-overlay').classList.add('hidden');
+    }
+
+    document.getElementById('modal-overlay').addEventListener('click', function (e) {
+        if (e.target === this) closeModal();
+    });
+
+    // ── Delete Modal ──────────────────────────────────────────────────
+    function openDeleteModal(id, key) {
+        document.getElementById('delete-key-label').textContent = key;
+        document.getElementById('delete-form').action = '/admin/company-info/delete/' + id;
+        var warning = document.getElementById('delete-config-warning');
+        if (SPECIAL_KEYS.includes(key)) {
+            warning.classList.remove('hidden');
+        } else {
+            warning.classList.add('hidden');
+        }
+        document.getElementById('delete-overlay').classList.remove('hidden');
+    }
+
+    function openDeleteModalFromBtn(btn) {
+        openDeleteModal(btn.dataset.id, btn.dataset.key);
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('delete-overlay').classList.add('hidden');
+    }
+
+    document.getElementById('delete-overlay').addEventListener('click', function (e) {
+        if (e.target === this) closeDeleteModal();
+    });
+
+    // ── ESC ───────────────────────────────────────────────────────────
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') { closeModal(); closeDeleteModal(); }
+    });
+</script>
+</body>
+</html>

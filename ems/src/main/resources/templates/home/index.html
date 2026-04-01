@@ -1,259 +1,975 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{home/layout :: layout('Home', ~{::content}, 'home')}">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{home/layout :: layout('Home', ~{::content}, 'home')}">
+
 <body>
-<th:block th:fragment="content">
-<style>
-  @keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
-  @keyframes gradientFlow { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
-  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
-  @keyframes pulseDot { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.6);opacity:.5} }
-  @keyframes modalIn { from{transform:scale(.95) translateY(10px);opacity:0} to{transform:scale(1) translateY(0);opacity:1} }
-  @keyframes spin { to{transform:rotate(360deg)} }
+  <th:block th:fragment="content">
+    <style>
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          transform: translateY(24px)
+        }
 
-  .anim-1{animation:fadeUp .6s ease both .05s}
-  .anim-2{animation:fadeUp .6s ease both .15s}
-  .anim-3{animation:fadeUp .6s ease both .25s}
-  .anim-4{animation:fadeUp .6s ease both .35s}
-  .anim-5{animation:fadeUp .6s ease both .45s}
+        to {
+          opacity: 1;
+          transform: translateY(0)
+        }
+      }
 
-  /* Hero */
-  .hero {
-    background:linear-gradient(135deg,#1414b8,#3b3bea,#6366f1,#1414b8);
-    background-size:300% 300%; animation:gradientFlow 8s ease infinite;
-    position:relative; overflow:hidden; padding:90px 24px 100px;
-  }
-  .hero::before { content:''; position:absolute; inset:0; background-image:radial-gradient(circle,rgba(255,255,255,.06) 1px,transparent 1px); background-size:28px 28px; }
-  .hero::after { content:''; position:absolute; bottom:-2px; left:0; right:0; height:60px; background:var(--bg-light); clip-path:ellipse(55% 100% at 50% 100%); }
-  .hero-inner { max-width:1200px; margin:0 auto; display:flex; align-items:center; gap:60px; position:relative; z-index:1; }
-  .hero-badge {
-    display:inline-flex; align-items:center; gap:7px;
-    background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.25);
-    border-radius:99px; padding:5px 14px; font-size:12px; font-weight:600; color:white;
-    margin-bottom:20px; backdrop-filter:blur(4px);
-  }
-  .hero-badge .dot { width:6px; height:6px; border-radius:50%; background:#4ade80; animation:pulseDot 2s ease-in-out infinite; }
-  .hero h1 { font-size:clamp(32px,5vw,52px); font-weight:800; color:white; line-height:1.15; margin-bottom:18px; }
-  .hero h1 span { color:#a5b4fc; }
-  .hero p { font-size:16px; color:rgba(255,255,255,.75); line-height:1.7; max-width:500px; margin-bottom:32px; }
-  .hero-actions { display:flex; gap:12px; flex-wrap:wrap; }
-  .btn-hero-primary {
-    display:inline-flex; align-items:center; gap:8px; padding:13px 26px; border-radius:12px;
-    background:white; color:var(--primary); font-size:14px; font-weight:700;
-    text-decoration:none; transition:all .2s; box-shadow:0 4px 20px -4px rgba(0,0,0,.2); border:none; cursor:pointer;
-  }
-  .btn-hero-primary:hover { transform:translateY(-2px); box-shadow:0 8px 28px -6px rgba(0,0,0,.3); }
-  .btn-hero-secondary {
-    display:inline-flex; align-items:center; gap:8px; padding:13px 26px; border-radius:12px;
-    background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.3);
-    color:white; font-size:14px; font-weight:600; text-decoration:none; transition:all .2s;
-  }
-  .btn-hero-secondary:hover { background:rgba(255,255,255,.2); transform:translateY(-2px); }
-  .hero-cards { display:flex; flex-direction:column; gap:12px; animation:float 4s ease-in-out infinite; flex-shrink:0; }
-  .hero-card { background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.2); border-radius:14px; padding:14px 18px; backdrop-filter:blur(8px); min-width:200px; }
-  .hero-card-label { font-size:11px; color:rgba(255,255,255,.55); font-weight:500; margin-bottom:4px; }
-  .hero-card-val { font-family:'Sora',sans-serif; font-size:22px; font-weight:800; color:white; }
-  .hero-card-sub { font-size:11px; color:rgba(255,255,255,.6); margin-top:2px; }
+      @keyframes gradientFlow {
 
-  /* Stats bar */
-  .stats-bar { background:white; border-bottom:1px solid var(--border); }
-  .stats-inner { max-width:1200px; margin:0 auto; padding:28px 24px; display:grid; grid-template-columns:repeat(4,1fr); gap:24px; text-align:center; }
-  .stat-num { font-family:'Sora',sans-serif; font-size:32px; font-weight:800; color:var(--primary); }
-  .stat-label { font-size:13px; color:var(--text-muted); margin-top:4px; }
+        0%,
+        100% {
+          background-position: 0% 50%
+        }
 
-  /* News */
-  .section { max-width:1200px; margin:0 auto; padding:64px 24px; }
-  .section-eyebrow { font-size:12px; font-weight:700; color:var(--primary); text-transform:uppercase; letter-spacing:2px; margin-bottom:6px; }
-  .section-title { font-size:26px; font-weight:800; margin-bottom:6px; }
-  .section-sub { font-size:14px; color:var(--text-muted); margin-bottom:36px; }
-  .news-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:20px; }
-  .news-card { background:white; border-radius:16px; border:1px solid var(--border); overflow:hidden; transition:all .2s; cursor:pointer; }
-  .news-card:hover { transform:translateY(-3px); box-shadow:0 12px 32px -8px #1414b820; }
-  .news-card-img { height:140px; display:flex; align-items:center; justify-content:center; }
-  .news-card-img.bg1 { background:linear-gradient(135deg,var(--primary-light),#ddd6fe); }
-  .news-card-img.bg2 { background:linear-gradient(135deg,#dbeafe,#e0f2fe); }
-  .news-card-img.bg3 { background:linear-gradient(135deg,#dcfce7,#d1fae5); }
-  .news-card-body { padding:18px; }
-  .news-tag { display:inline-block; padding:3px 10px; border-radius:99px; font-size:11px; font-weight:600; background:var(--primary-light); color:var(--primary); margin-bottom:10px; }
-  .news-card h3 { font-size:15px; font-weight:700; margin-bottom:7px; line-height:1.4; }
-  .news-card p { font-size:13px; color:var(--text-mid); line-height:1.6; }
-  .news-date { font-size:11px; color:var(--text-muted); margin-top:10px; display:flex; align-items:center; gap:5px; }
+        50% {
+          background-position: 100% 50%
+        }
+      }
 
-  /* Job preview */
-  .jobs-preview { background:white; border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
-  .jobs-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:16px; }
-  .job-card { background:var(--bg-light); border-radius:16px; border:1px solid var(--border); padding:20px; transition:all .2s; cursor:pointer; position:relative; overflow:hidden; }
-  .job-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg,var(--primary),var(--accent)); transform:scaleX(0); transform-origin:left; transition:transform .25s; }
-  .job-card:hover::before { transform:scaleX(1); }
-  .job-card:hover { transform:translateY(-3px); box-shadow:0 12px 32px -8px #1414b820; background:white; }
-  .job-title { font-size:15px; font-weight:700; margin-bottom:4px; }
-  .job-dept  { font-size:12px; color:var(--text-muted); margin-bottom:12px; }
-  .job-tags  { display:flex; gap:7px; flex-wrap:wrap; margin-bottom:14px; }
-  .job-tag { padding:3px 10px; border-radius:99px; font-size:11px; font-weight:600; background:white; color:var(--text-mid); border:1px solid var(--border); }
-  .job-tag.open { background:#dcfce7; color:#16a34a; border-color:#bbf7d0; }
-  .job-salary { font-size:13px; font-weight:700; color:var(--primary); }
-  .btn-view-all {
-    display:inline-flex; align-items:center; gap:8px; margin-top:32px;
-    padding:12px 28px; border-radius:12px; background:var(--primary); color:white;
-    font-size:14px; font-weight:600; text-decoration:none; transition:all .2s;
-  }
-  .btn-view-all:hover { background:var(--primary-mid); transform:translateY(-1px); }
+      @keyframes float {
 
-  /* CTA banner */
-  .cta-banner {
-    background:linear-gradient(135deg,#1414b8,#6366f1);
-    border-radius:20px; padding:48px 40px; text-align:center; color:white;
-    position:relative; overflow:hidden;
-  }
-  .cta-banner::before { content:''; position:absolute; inset:0; background-image:radial-gradient(circle,rgba(255,255,255,.07) 1px,transparent 1px); background-size:22px 22px; }
-  .cta-banner h2 { font-size:28px; font-weight:800; margin-bottom:10px; position:relative; }
-  .cta-banner p  { font-size:15px; color:rgba(255,255,255,.75); max-width:480px; margin:0 auto 28px; position:relative; }
-  .cta-banner .btns { display:flex; gap:14px; justify-content:center; flex-wrap:wrap; position:relative; }
+        0%,
+        100% {
+          transform: translateY(0)
+        }
 
-  @media(max-width:768px) { .hero-cards,.stats-inner { display:none; } .hero-inner { flex-direction:column; } }
-</style>
+        50% {
+          transform: translateY(-10px)
+        }
+      }
 
-<!-- ── HERO ────────────────────────────────────────────────── -->
-<section class="hero">
-  <div class="hero-inner">
-    <div style="flex:1;">
-      <div class="hero-badge anim-1">
-        <span class="dot"></span> We're Hiring — <span th:text="${openCount}">0</span> open positions
-      </div>
-      <h1 class="anim-2">Find Your Dream<br/><span>Career With Us</span></h1>
-      <p class="anim-3">Join a team of passionate professionals. Explore open positions across all departments and take the next step in your career journey.</p>
-      <div class="hero-actions anim-4">
-        <a th:href="@{/home/jobs}" class="btn-hero-primary">
-          <span class="material-symbols-outlined">work</span> Browse Open Jobs
-        </a>
-        <a th:href="@{/home/about}" class="btn-hero-secondary">
-          <span class="material-symbols-outlined">info</span> Learn About Us
-        </a>
-      </div>
-    </div>
-    <div class="hero-cards anim-5">
-      <div class="hero-card">
-        <div class="hero-card-label">Open Positions</div>
-        <div class="hero-card-val" th:text="${openCount}">—</div>
-        <div class="hero-card-sub">Across all departments</div>
-      </div>
-      <div class="hero-card">
-        <div class="hero-card-label">Departments</div>
-        <div class="hero-card-val" th:text="${deptCount ?: '8+'}">8+</div>
-        <div class="hero-card-sub">Teams to join</div>
-      </div>
-      <div class="hero-card">
-        <div class="hero-card-label">Applications</div>
-        <div class="hero-card-val">Fast</div>
-        <div class="hero-card-sub">5-minute process</div>
-      </div>
-    </div>
-  </div>
-</section>
+      @keyframes pulseDot {
 
-<!-- ── STATS ──────────────────────────────────────────────── -->
-<div class="stats-bar">
-  <div class="stats-inner">
-    <div><div class="stat-num">500+</div><div class="stat-label">Employees Worldwide</div></div>
-    <div><div class="stat-num">12</div><div class="stat-label">Offices Globally</div></div>
-    <div><div class="stat-num" th:text="${openCount}">—</div><div class="stat-label">Open Positions</div></div>
-    <div><div class="stat-num">4.8★</div><div class="stat-label">Employee Rating</div></div>
-  </div>
-</div>
+        0%,
+        100% {
+          transform: scale(1);
+          opacity: 1
+        }
 
-<!-- ── COMPANY NEWS ──────────────────────────────────────── -->
-<section>
-  <div class="section">
-    <p class="section-eyebrow">Company Updates</p>
-    <h2 class="section-title">Latest News &amp; Announcements</h2>
-    <p class="section-sub">Stay up to date with what's happening at EMS Pro</p>
-    <div class="news-grid">
-      <div th:each="info,idx : ${companyNews}" class="news-card">
-        <div class="news-card-img" th:classappend="${idx.index == 0 ? 'bg1' : (idx.index == 1 ? 'bg2' : 'bg3')}">
-          <span class="material-symbols-outlined fill-icon" style="font-size:52px;opacity:.3;color:var(--primary)">newspaper</span>
+        50% {
+          transform: scale(1.6);
+          opacity: .5
+        }
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg)
+        }
+      }
+
+      @keyframes countUp {
+        from {
+          opacity: 0;
+          transform: translateY(8px)
+        }
+
+        to {
+          opacity: 1;
+          transform: translateY(0)
+        }
+      }
+
+      .anim-1 {
+        animation: fadeUp .6s ease both .05s
+      }
+
+      .anim-2 {
+        animation: fadeUp .6s ease both .15s
+      }
+
+      .anim-3 {
+        animation: fadeUp .6s ease both .25s
+      }
+
+      .anim-4 {
+        animation: fadeUp .6s ease both .35s
+      }
+
+      .anim-5 {
+        animation: fadeUp .6s ease both .45s
+      }
+
+      /* Hero */
+      .hero {
+        background: linear-gradient(135deg, #1414b8, #3b3bea, #6366f1, #1414b8);
+        background-size: 300% 300%;
+        animation: gradientFlow 8s ease infinite;
+        position: relative;
+        overflow: hidden;
+        padding: 90px 24px 100px;
+      }
+
+      .hero::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image: radial-gradient(circle, rgba(255, 255, 255, .06) 1px, transparent 1px);
+        background-size: 28px 28px;
+      }
+
+      .hero::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        right: 0;
+        height: 60px;
+        background: var(--bg-light);
+        clip-path: ellipse(55% 100% at 50% 100%);
+      }
+
+      .hero-inner {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        gap: 60px;
+        position: relative;
+        z-index: 1;
+      }
+
+      .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        background: rgba(255, 255, 255, .15);
+        border: 1px solid rgba(255, 255, 255, .25);
+        border-radius: 99px;
+        padding: 5px 14px;
+        font-size: 12px;
+        font-weight: 600;
+        color: white;
+        margin-bottom: 20px;
+        backdrop-filter: blur(4px);
+      }
+
+      .hero-badge .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #4ade80;
+        animation: pulseDot 2s ease-in-out infinite;
+      }
+
+      .hero h1 {
+        font-size: clamp(32px, 5vw, 52px);
+        font-weight: 800;
+        color: white;
+        line-height: 1.15;
+        margin-bottom: 18px;
+      }
+
+      .hero h1 span {
+        color: #a5b4fc;
+      }
+
+      .hero p {
+        font-size: 16px;
+        color: rgba(255, 255, 255, .75);
+        line-height: 1.7;
+        max-width: 500px;
+        margin-bottom: 32px;
+      }
+
+      .hero-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .btn-hero-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 13px 26px;
+        border-radius: 12px;
+        background: white;
+        color: var(--primary);
+        font-size: 14px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all .2s;
+        box-shadow: 0 4px 20px -4px rgba(0, 0, 0, .2);
+        border: none;
+        cursor: pointer;
+      }
+
+      .btn-hero-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 28px -6px rgba(0, 0, 0, .3);
+      }
+
+      .btn-hero-secondary {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 13px 26px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, .12);
+        border: 1px solid rgba(255, 255, 255, .3);
+        color: white;
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all .2s;
+      }
+
+      .btn-hero-secondary:hover {
+        background: rgba(255, 255, 255, .2);
+        transform: translateY(-2px);
+      }
+
+      .hero-cards {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        animation: float 4s ease-in-out infinite;
+        flex-shrink: 0;
+      }
+
+      .hero-card {
+        background: rgba(255, 255, 255, .12);
+        border: 1px solid rgba(255, 255, 255, .2);
+        border-radius: 14px;
+        padding: 14px 18px;
+        backdrop-filter: blur(8px);
+        min-width: 200px;
+      }
+
+      .hero-card-label {
+        font-size: 11px;
+        color: rgba(255, 255, 255, .55);
+        font-weight: 500;
+        margin-bottom: 4px;
+      }
+
+      .hero-card-val {
+        font-family: 'Sora', sans-serif;
+        font-size: 22px;
+        font-weight: 800;
+        color: white;
+      }
+
+      .hero-card-sub {
+        font-size: 11px;
+        color: rgba(255, 255, 255, .6);
+        margin-top: 2px;
+      }
+
+      /* Stats bar */
+      .stats-bar {
+        background: white;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .stats-inner {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 28px 24px;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 24px;
+        text-align: center;
+      }
+
+      .stat-num {
+        font-family: 'Sora', sans-serif;
+        font-size: 32px;
+        font-weight: 800;
+        color: var(--primary);
+        animation: countUp .6s ease both;
+      }
+
+      .stat-label {
+        font-size: 13px;
+        color: var(--text-muted);
+        margin-top: 4px;
+      }
+
+      /* Why join us */
+      .section {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 64px 24px;
+      }
+
+      .section-eyebrow {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--primary);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-bottom: 6px;
+      }
+
+      .section-title {
+        font-size: 26px;
+        font-weight: 800;
+        margin-bottom: 6px;
+      }
+
+      .section-sub {
+        font-size: 14px;
+        color: var(--text-muted);
+        margin-bottom: 36px;
+      }
+
+      .why-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 20px;
+      }
+
+      .why-card {
+        background: white;
+        border-radius: 16px;
+        border: 1px solid var(--border);
+        padding: 24px;
+        transition: all .2s;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .why-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--primary), var(--accent));
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform .25s;
+      }
+
+      .why-card:hover::before {
+        transform: scaleX(1);
+      }
+
+      .why-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 32px -8px #1414b820;
+      }
+
+      .why-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        background: var(--primary-light);
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 14px;
+        transition: all .2s;
+      }
+
+      .why-card:hover .why-icon {
+        background: var(--primary);
+        color: white;
+      }
+
+      .why-card h3 {
+        font-size: 15px;
+        font-weight: 700;
+        margin-bottom: 7px;
+      }
+
+      .why-card p {
+        font-size: 13px;
+        color: var(--text-mid);
+        line-height: 1.65;
+      }
+
+      /* Testimonials */
+      .testimonials-bg {
+        background: white;
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .testimonials-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
+      }
+
+      .testimonial-card {
+        background: var(--bg-light);
+        border-radius: 16px;
+        border: 1px solid var(--border);
+        padding: 22px;
+      }
+
+      .testimonial-stars {
+        color: #f59e0b;
+        font-size: 14px;
+        margin-bottom: 12px;
+      }
+
+      .testimonial-card p {
+        font-size: 14px;
+        color: var(--text-mid);
+        line-height: 1.7;
+        font-style: italic;
+        margin-bottom: 16px;
+      }
+
+      .testimonial-author {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .testimonial-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 13px;
+        font-weight: 700;
+        flex-shrink: 0;
+      }
+
+      .testimonial-name {
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .testimonial-role {
+        font-size: 11px;
+        color: var(--text-muted);
+      }
+
+      /* News */
+      .news-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+      }
+
+      .news-card {
+        background: white;
+        border-radius: 16px;
+        border: 1px solid var(--border);
+        overflow: hidden;
+        transition: all .2s;
+        cursor: pointer;
+      }
+
+      .news-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 32px -8px #1414b820;
+      }
+
+      .news-card-img {
+        height: 140px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .news-card-img.bg1 {
+        background: linear-gradient(135deg, var(--primary-light), #ddd6fe);
+      }
+
+      .news-card-img.bg2 {
+        background: linear-gradient(135deg, #dbeafe, #e0f2fe);
+      }
+
+      .news-card-img.bg3 {
+        background: linear-gradient(135deg, #dcfce7, #d1fae5);
+      }
+
+      .news-card-body {
+        padding: 18px;
+      }
+
+      .news-tag {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 99px;
+        font-size: 11px;
+        font-weight: 600;
+        background: var(--primary-light);
+        color: var(--primary);
+        margin-bottom: 10px;
+      }
+
+      .news-card h3 {
+        font-size: 15px;
+        font-weight: 700;
+        margin-bottom: 7px;
+        line-height: 1.4;
+      }
+
+      .news-card p {
+        font-size: 13px;
+        color: var(--text-mid);
+        line-height: 1.6;
+      }
+
+      .news-date {
+        font-size: 11px;
+        color: var(--text-muted);
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      /* Job preview */
+      .jobs-preview {
+        background: white;
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .jobs-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 16px;
+      }
+
+      .job-card {
+        background: var(--bg-light);
+        border-radius: 16px;
+        border: 1px solid var(--border);
+        padding: 20px;
+        transition: all .2s;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .job-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--primary), var(--accent));
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform .25s;
+      }
+
+      .job-card:hover::before {
+        transform: scaleX(1);
+      }
+
+      .job-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 32px -8px #1414b820;
+        background: white;
+      }
+
+      .job-title {
+        font-size: 15px;
+        font-weight: 700;
+        margin-bottom: 4px;
+      }
+
+      .job-dept {
+        font-size: 12px;
+        color: var(--text-muted);
+        margin-bottom: 12px;
+      }
+
+      .job-tags {
+        display: flex;
+        gap: 7px;
+        flex-wrap: wrap;
+        margin-bottom: 14px;
+      }
+
+      .job-tag {
+        padding: 3px 10px;
+        border-radius: 99px;
+        font-size: 11px;
+        font-weight: 600;
+        background: white;
+        color: var(--text-mid);
+        border: 1px solid var(--border);
+      }
+
+      .job-tag.open {
+        background: #dcfce7;
+        color: #16a34a;
+        border-color: #bbf7d0;
+      }
+
+      .job-deadline {
+        font-size: 11px;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .job-salary {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--primary);
+      }
+
+      .btn-view-all {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 32px;
+        padding: 12px 28px;
+        border-radius: 12px;
+        background: var(--primary);
+        color: white;
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all .2s;
+      }
+
+      .btn-view-all:hover {
+        background: var(--primary-mid);
+        transform: translateY(-1px);
+      }
+
+      /* CTA banner */
+      .cta-banner {
+        background: linear-gradient(135deg, #1414b8, #6366f1);
+        border-radius: 20px;
+        padding: 48px 40px;
+        text-align: center;
+        color: white;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .cta-banner::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image: radial-gradient(circle, rgba(255, 255, 255, .07) 1px, transparent 1px);
+        background-size: 22px 22px;
+      }
+
+      .cta-banner h2 {
+        font-size: 28px;
+        font-weight: 800;
+        margin-bottom: 10px;
+        position: relative;
+      }
+
+      .cta-banner p {
+        font-size: 15px;
+        color: rgba(255, 255, 255, .75);
+        max-width: 480px;
+        margin: 0 auto 28px;
+        position: relative;
+      }
+
+      .cta-banner .btns {
+        display: flex;
+        gap: 14px;
+        justify-content: center;
+        flex-wrap: wrap;
+        position: relative;
+      }
+
+      @media(max-width:768px) {
+
+        .hero-cards,
+        .stats-inner {
+          display: none;
+        }
+
+        .hero-inner {
+          flex-direction: column;
+        }
+      }
+    </style>
+
+    <!-- ── HERO ────────────────────────────────────────────────── -->
+    <section class="hero">
+      <div class="hero-inner">
+        <div style="flex:1;">
+          <div class="hero-badge anim-1">
+            <span class="dot"></span> We're Hiring —
+            <span th:text="${openCount}">0</span> open positions
+          </div>
+          <!-- Hero title: ưu tiên từ DB, fallback sang mặc định -->
+          <h1 class="anim-2" th:utext="${homeConfig['hero_title'] != null and !#strings.isEmpty(homeConfig['hero_title'])
+            ? homeConfig['hero_title']
+            : 'Find Your Dream&lt;br/&gt;&lt;span&gt;Career With Us&lt;/span&gt;'}">
+            Find Your Dream<br /><span>Career With Us</span>
+          </h1>
+          <p class="anim-3"
+            th:text="${homeConfig['hero_subtitle'] != null and !#strings.isEmpty(homeConfig['hero_subtitle'])
+           ? homeConfig['hero_subtitle']
+           : 'Join a team of passionate professionals. Explore open positions across all departments and take the next step in your career journey.'}">
+            Join a team of passionate professionals.
+          </p>
+          <div class="hero-actions anim-4">
+            <a th:href="@{/home/jobs}" class="btn-hero-primary">
+              <span class="material-symbols-outlined">work</span> Browse Open Jobs
+            </a>
+            <a th:href="@{/home/about}" class="btn-hero-secondary">
+              <span class="material-symbols-outlined">info</span> Learn About Us
+            </a>
+          </div>
         </div>
-        <div class="news-card-body">
-          <span class="news-tag" th:text="${info.infoKey}">Tag</span>
-          <h3 th:text="${info.title}">Article Title</h3>
-          <p th:text="${#strings.abbreviate(info.content, 120)}">Content preview...</p>
-          <div class="news-date">
-            <span class="material-symbols-outlined" style="font-size:14px">calendar_month</span>
-            <span th:text="${#temporals.format(info.updatedAt,'MMM yyyy')}">Jan 2025</span>
+        <div class="hero-cards anim-5">
+          <div class="hero-card">
+            <div class="hero-card-label">Open Positions</div>
+            <div class="hero-card-val" th:text="${openCount}">—</div>
+            <div class="hero-card-sub">Across all departments</div>
+          </div>
+          <div class="hero-card">
+            <div class="hero-card-label">Departments</div>
+            <div class="hero-card-val" th:text="${deptCount}">—</div>
+            <div class="hero-card-sub">Teams to join</div>
+          </div>
+          <div class="hero-card">
+            <div class="hero-card-label">Applications</div>
+            <div class="hero-card-val">Fast</div>
+            <div class="hero-card-sub">5-minute process</div>
           </div>
         </div>
       </div>
-      <!-- fallback if empty -->
-      <div th:if="${#lists.isEmpty(companyNews)}" style="grid-column:1/-1;text-align:center;padding:48px;color:var(--text-muted);">
-        <span class="material-symbols-outlined" style="font-size:48px;display:block;margin-bottom:12px">newspaper</span>
-        No public announcements at this time.
-      </div>
-    </div>
-  </div>
-</section>
+    </section>
 
-<!-- ── FEATURED JOBS ─────────────────────────────────────── -->
-<section class="jobs-preview">
-  <div class="section">
-    <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:36px;flex-wrap:wrap;gap:12px;">
-      <div>
-        <p class="section-eyebrow">Opportunities</p>
-        <h2 class="section-title" style="margin-bottom:0;">Featured Open Positions</h2>
+    <!-- ── STATS BAR (dữ liệu từ DB hoặc fallback) ──────────── -->
+    <div class="stats-bar">
+      <div class="stats-inner">
+        <div>
+          <div class="stat-num" th:text="${homeConfig['stats_employees'] != null and !#strings.isEmpty(homeConfig['stats_employees'])
+             ? homeConfig['stats_employees'] : '500+'}">500+</div>
+          <div class="stat-label">Employees Worldwide</div>
+        </div>
+        <div>
+          <div class="stat-num" th:text="${homeConfig['stats_offices'] != null and !#strings.isEmpty(homeConfig['stats_offices'])
+             ? homeConfig['stats_offices'] : '12'}">12</div>
+          <div class="stat-label">Offices Globally</div>
+        </div>
+        <div>
+          <div class="stat-num" th:text="${openCount}">—</div>
+          <div class="stat-label">Open Positions</div>
+        </div>
+        <div>
+          <div class="stat-num" th:text="${homeConfig['stats_rating'] != null and !#strings.isEmpty(homeConfig['stats_rating'])
+             ? homeConfig['stats_rating'] : '4.8★'}">4.8★</div>
+          <div class="stat-label">Employee Rating</div>
+        </div>
       </div>
-      <a th:href="@{/home/jobs}" style="font-size:14px;font-weight:600;color:var(--primary);text-decoration:none;display:flex;align-items:center;gap:5px;">
-        View all jobs <span class="material-symbols-outlined" style="font-size:16px">arrow_forward</span>
-      </a>
     </div>
-    <div class="jobs-grid">
-      <div th:each="job : ${featuredJobs}" class="job-card">
-        <div class="job-title" th:text="${job.title}">Job Title</div>
-        <div class="job-dept">
-          <span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;">business</span>
-          <span th:text="${job.department != null ? job.department.name : 'Department'}">Department</span>
-        </div>
-        <div class="job-tags">
-          <span class="job-tag open">● OPEN</span>
-          <span class="job-tag" th:text="${job.position != null ? job.position.name : 'Full-Time'}">Position</span>
-        </div>
-        <div style="display:flex;align-items:center;justify-content:space-between;">
-          <div class="job-salary">
-            <span th:if="${job.salaryMin != null}"
-                  th:text="'$' + ${#numbers.formatDecimal(job.salaryMin,0,'COMMA',0,'POINT')} + ' – $' + ${#numbers.formatDecimal(job.salaryMax,0,'COMMA',0,'POINT')}">$2,000 – $4,000</span>
-            <span th:if="${job.salaryMin == null}">Negotiable</span>
+
+    <!-- ── WHY JOIN US ─────────────────────────────────────────── -->
+    <section>
+      <div class="section">
+        <p class="section-eyebrow">Why EMS Pro</p>
+        <h2 class="section-title">A Place Where Careers Thrive</h2>
+        <p class="section-sub">More than a job — a place to grow, connect, and make an impact</p>
+        <div class="why-grid">
+          <div class="why-card anim-1">
+            <div class="why-icon"><span class="material-symbols-outlined fill-icon"
+                style="font-size:24px">health_and_safety</span></div>
+            <h3>Health &amp; Wellness</h3>
+            <p>Comprehensive health insurance, mental health support, and annual wellness allowance for every employee.
+            </p>
           </div>
-          <a th:href="@{/home/jobs/__${job.id}__}"
-             style="font-size:12px;font-weight:600;color:var(--primary);text-decoration:none;display:flex;align-items:center;gap:4px;">
-            View <span class="material-symbols-outlined" style="font-size:14px">arrow_forward</span>
+          <div class="why-card anim-2">
+            <div class="why-icon"><span class="material-symbols-outlined fill-icon" style="font-size:24px">school</span>
+            </div>
+            <h3>Learning Budget</h3>
+            <p>$1,500/year for courses, conferences, and certifications. We invest in your growth every step of the way.
+            </p>
+          </div>
+          <div class="why-card anim-3">
+            <div class="why-icon"><span class="material-symbols-outlined fill-icon"
+                style="font-size:24px">home_work</span></div>
+            <h3>Flexible Work</h3>
+            <p>Remote-friendly culture with flexible hours. Work where you're most productive — we trust you.</p>
+          </div>
+          <div class="why-card anim-4">
+            <div class="why-icon"><span class="material-symbols-outlined fill-icon"
+                style="font-size:24px">trending_up</span></div>
+            <h3>Fast Growth</h3>
+            <p>Clear career paths, bi-annual performance reviews, and promotion cycles that reward your contributions.
+            </p>
+          </div>
+          <div class="why-card" style="animation:fadeUp .6s ease both .45s">
+            <div class="why-icon"><span class="material-symbols-outlined fill-icon"
+                style="font-size:24px">diversity_3</span></div>
+            <h3>Inclusive Culture</h3>
+            <p>A diverse team of 30+ nationalities. We celebrate differences and ensure every voice is heard.</p>
+          </div>
+          <div class="why-card" style="animation:fadeUp .6s ease both .55s">
+            <div class="why-icon"><span class="material-symbols-outlined fill-icon"
+                style="font-size:24px">volunteer_activism</span></div>
+            <h3>Great Benefits</h3>
+            <p>Competitive salary, 20 days PTO, team retreats, and a supportive community that has your back.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- ── EMPLOYEE SPOTLIGHTS ───────────────────────────────── -->
+    <section class="testimonials-bg">
+      <div class="section">
+        <p class="section-eyebrow">Recognition</p>
+        <h2 class="section-title">Employee Spotlights</h2>
+        <p class="section-sub">Outstanding individuals recognized for their contributions</p>
+
+        <div class="testimonials-grid">
+          <div th:each="reward : ${topRewards}" class="testimonial-card">
+            <div class="testimonial-stars">🏆 Recognition Award</div>
+            <p th:text="${reward.awardTitle}">Award Title</p>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;">
+              <div class="testimonial-author">
+                <div class="testimonial-avatar" th:text="${reward.initials}">EE</div>
+                <div>
+                  <div class="testimonial-name" th:text="${reward.employeeName}">Employee</div>
+                  <div class="testimonial-role" th:text="${reward.departmentName}">Department</div>
+                </div>
+              </div>
+            </div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:8px;
+                    display:flex;align-items:center;gap:4px;">
+              <span class="material-symbols-outlined" style="font-size:12px">calendar_month</span>
+              <span th:text="${#temporals.format(reward.decisionDate, 'MMMM yyyy')}">Feb 2026</span>
+            </div>
+          </div>
+
+          <div th:if="${#lists.isEmpty(topRewards)}"
+            style="grid-column:1/-1;text-align:center;padding:32px;color:var(--text-muted);">
+            No recognitions yet.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── COMPANY NEWS ──────────────────────────────────────── -->
+    <section th:if="${!#lists.isEmpty(companyNews)}">
+      <div class="section">
+        <p class="section-eyebrow">Company Updates</p>
+        <h2 class="section-title">Latest News &amp; Announcements</h2>
+        <p class="section-sub">Stay up to date with what's happening at EMS Pro</p>
+        <div class="news-grid">
+          <div th:each="info,idx : ${companyNews}" class="news-card">
+            <div class="news-card-img"
+              th:classappend="${idx.index % 3 == 0 ? 'bg1' : (idx.index % 3 == 1 ? 'bg2' : 'bg3')}">
+              <span class="material-symbols-outlined fill-icon"
+                style="font-size:52px;opacity:.3;color:var(--primary)">newspaper</span>
+            </div>
+            <div class="news-card-body">
+              <span class="news-tag" th:text="${info.infoKey}">Tag</span>
+              <h3 th:text="${info.title}">Article Title</h3>
+              <p th:text="${#strings.abbreviate(info.content, 120)}">Content preview...</p>
+              <div class="news-date">
+                <span class="material-symbols-outlined" style="font-size:14px">calendar_month</span>
+                <span th:text="${#temporals.format(info.updatedAt,'MMM yyyy')}">Jan 2025</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── FEATURED JOBS ─────────────────────────────────────── -->
+    <section class="jobs-preview">
+      <div class="section">
+        <div
+          style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:36px;flex-wrap:wrap;gap:12px;">
+          <div>
+            <p class="section-eyebrow">Opportunities</p>
+            <h2 class="section-title" style="margin-bottom:0;">Featured Open Positions</h2>
+          </div>
+          <a th:href="@{/home/jobs}"
+            style="font-size:14px;font-weight:600;color:var(--primary);text-decoration:none;display:flex;align-items:center;gap:5px;">
+            View all jobs <span class="material-symbols-outlined" style="font-size:16px">arrow_forward</span>
+          </a>
+        </div>
+        <div class="jobs-grid">
+          <div th:each="job : ${featuredJobs}" class="job-card">
+            <div class="job-title" th:text="${job.title}">Job Title</div>
+            <div class="job-dept">
+              <span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;">business</span>
+              <span th:text="${job.department != null ? job.department.name : 'Department'}">Department</span>
+            </div>
+            <div class="job-tags">
+              <span class="job-tag open">● OPEN</span>
+              <span class="job-tag" th:text="${job.position != null ? job.position.name : 'Full-Time'}">Position</span>
+              <!-- Location tag nếu có -->
+              <span class="job-tag" style="background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe;">
+                <span class="material-symbols-outlined" style="font-size:11px;vertical-align:middle">location_on</span>
+                On-site
+              </span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+              <div class="job-salary">
+                <span th:if="${job.salaryMin != null}"
+                  th:text="'$' + ${#numbers.formatDecimal(job.salaryMin,0,'COMMA',0,'POINT')} + ' – $' + ${#numbers.formatDecimal(job.salaryMax,0,'COMMA',0,'POINT')}">
+                  $2,000 – $4,000</span>
+                <span th:if="${job.salaryMin == null}">Negotiable</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <!-- Deadline -->
+                <span th:if="${job.closeDate != null}" class="job-deadline">
+                  <span class="material-symbols-outlined" style="font-size:12px">schedule</span>
+                  <span th:text="${#temporals.format(job.closeDate,'dd/MM/yyyy')}">—</span>
+                </span>
+                <a th:href="@{/home/jobs/__${job.id}__}"
+                  style="font-size:12px;font-weight:600;color:var(--primary);text-decoration:none;display:flex;align-items:center;gap:4px;">
+                  View <span class="material-symbols-outlined" style="font-size:14px">arrow_forward</span>
+                </a>
+              </div>
+            </div>
+          </div>
+          <div th:if="${#lists.isEmpty(featuredJobs)}"
+            style="grid-column:1/-1;text-align:center;padding:48px;color:var(--text-muted);">
+            <span class="material-symbols-outlined"
+              style="font-size:48px;display:block;margin-bottom:12px">work_off</span>
+            No open positions at the moment. Check back soon!
+          </div>
+        </div>
+        <div style="text-align:center;" th:if="${!#lists.isEmpty(featuredJobs)}">
+          <a th:href="@{/home/jobs}" class="btn-view-all">
+            <span class="material-symbols-outlined">work</span> See All Open Positions
           </a>
         </div>
       </div>
-      <div th:if="${#lists.isEmpty(featuredJobs)}" style="grid-column:1/-1;text-align:center;padding:48px;color:var(--text-muted);">
-        <span class="material-symbols-outlined" style="font-size:48px;display:block;margin-bottom:12px">work_off</span>
-        No open positions at the moment. Check back soon!
+    </section>
+
+    <!-- ── CTA BANNER ────────────────────────────────────────── -->
+    <div class="section">
+      <div class="cta-banner">
+        <h2 th:text="${homeConfig['cta_title'] != null and !#strings.isEmpty(homeConfig['cta_title'])
+        ? homeConfig['cta_title'] : 'Ready to Start Your Journey?'}">
+          Ready to Start Your Journey?
+        </h2>
+        <p
+          th:text="${homeConfig['cta_subtitle'] != null and !#strings.isEmpty(homeConfig['cta_subtitle'])
+        ? homeConfig['cta_subtitle'] : 'Browse our open roles and apply in minutes. Your next opportunity is just a few clicks away.'}">
+          Browse our open roles and apply in minutes.
+        </p>
+        <div class="btns">
+          <a th:href="@{/home/jobs}" class="btn-hero-primary">
+            <span class="material-symbols-outlined">work</span> Browse Jobs
+          </a>
+          <a th:href="@{/home/contact}" class="btn-hero-secondary">
+            <span class="material-symbols-outlined">mail</span> Contact Us
+          </a>
+        </div>
       </div>
     </div>
-    <div style="text-align:center;" th:if="${!#lists.isEmpty(featuredJobs)}">
-      <a th:href="@{/home/jobs}" class="btn-view-all">
-        <span class="material-symbols-outlined">work</span> See All Open Positions
-      </a>
-    </div>
-  </div>
-</section>
-
-<!-- ── CTA BANNER ────────────────────────────────────────── -->
-<div class="section">
-  <div class="cta-banner">
-    <h2>Ready to Start Your Journey?</h2>
-    <p>Browse our open roles and apply in minutes. Your next opportunity is just a few clicks away.</p>
-    <div class="btns">
-      <a th:href="@{/home/jobs}" class="btn-hero-primary">
-        <span class="material-symbols-outlined">work</span> Browse Jobs
-      </a>
-      <a th:href="@{/home/contact}" class="btn-hero-secondary">
-        <span class="material-symbols-outlined">mail</span> Contact Us
-      </a>
-    </div>
-  </div>
-</div>
-</th:block>
+  </th:block>
 </body>
+
 </html>
