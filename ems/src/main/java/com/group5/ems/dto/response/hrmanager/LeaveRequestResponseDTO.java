@@ -17,6 +17,7 @@ import java.time.temporal.ChronoUnit;
 public class LeaveRequestResponseDTO {
     // Basic request info
     private Long id;
+    private Long employeeId;
     private String leaveType;
     private LocalDate leaveFrom;
     private LocalDate leaveTo;
@@ -24,6 +25,11 @@ public class LeaveRequestResponseDTO {
     private String status;
     private String rejectedReason;
     private java.time.LocalDateTime createdAt;
+    private java.time.LocalDateTime approvedAt;
+
+    // Priority info
+    private String priority;           // CRITICAL, URGENT, HIGH, NORMAL
+    private Integer priorityScore;     // 0-100
 
     // Employee info (for HR Manager view)
     private String employeeName;
@@ -42,6 +48,12 @@ public class LeaveRequestResponseDTO {
     private Integer usedThisYear;
     private Integer annualQuota;
     private Integer balanceAfterApproval;
+    
+    // Leave balance percentage (for progress bar)
+    private Integer leaveBalanceTotal;
+    private Integer leaveBalanceUsed;
+    private Integer leaveBalanceRemaining;
+    private Integer leaveBalancePercentage;  // 0-100
     
     // Team overlap info
     private Boolean hasOverlap;

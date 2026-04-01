@@ -32,7 +32,8 @@ public class RecentActivityDTO {
     // Status & priority
     private String status;              // PENDING, APPROVED, REJECTED, COMPLETED
     private String statusLabel;         // "Chờ duyệt", "Đã duyệt", etc.
-    private String priority;            // URGENT, NORMAL, LOW
+    private String priority;            // CRITICAL, URGENT, HIGH, NORMAL
+    private Integer priorityScore;      // 0-100 calculated score
     
     // UI styling
     private String icon;                // calendar_today, payments, person, description
