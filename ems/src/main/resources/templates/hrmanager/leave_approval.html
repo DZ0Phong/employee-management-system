@@ -347,53 +347,56 @@
                 <div class="max-w-7xl mx-auto space-y-6">
 
                     <!-- ── Stats Row ──────────────────────────────────── -->
-                    <div class="grid grid-cols-4 gap-4 anim anim-1">
-                        <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
-                            <div class="flex justify-between items-start mb-3">
-                                <p class="text-xs text-slate-500 font-medium">Approved Today</p>
-                                <span
-                                    class="p-1.5 bg-emerald-100 text-emerald-600 rounded-lg material-symbols-outlined text-[18px]">check_circle</span>
+                    <div class="grid grid-cols-4 gap-6 anim anim-1">
+                        <div class="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
+                            <div class="flex justify-between items-start mb-4">
+                                <div class="size-10 bg-emerald-100 rounded-lg flex items-center justify-center text-emerald-600">
+                                    <span class="material-symbols-outlined">check_circle</span>
+                                </div>
+                                <span class="text-xs font-bold px-2 py-1 rounded bg-emerald-50 text-emerald-500"
+                                    th:text="${stats?.completionRate != null ? stats.completionRate + '%' : '100%'}">100%</span>
                             </div>
-                            <p class="text-3xl font-black"
-                                th:text="${stats?.approvedTodayCount != null ? stats.approvedTodayCount : 0}">0</p>
-                            <p class="text-xs text-emerald-600 font-medium mt-1"
-                                th:text="${stats?.completionRate != null ? 'Completion rate: ' + stats.completionRate + '%' : 'Completion rate: 0%'}">
-                                Completion rate: 0%</p>
+                            <p class="text-slate-500 text-sm font-medium">Approved Today</p>
+                            <h3 class="text-3xl font-bold mt-1"
+                                th:text="${stats?.approvedTodayCount != null ? stats.approvedTodayCount : 0}">0</h3>
                         </div>
-                        <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
-                            <div class="flex justify-between items-start mb-3">
-                                <p class="text-xs text-slate-500 font-medium">On Leave Now</p>
-                                <span
-                                    class="p-1.5 bg-primary/10 text-primary rounded-lg material-symbols-outlined text-[18px]">flight_takeoff</span>
+                        
+                        <div class="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
+                            <div class="flex justify-between items-start mb-4">
+                                <div class="size-10 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">
+                                    <span class="material-symbols-outlined">flight_takeoff</span>
+                                </div>
+                                <span class="text-xs font-bold px-2 py-1 rounded bg-blue-50 text-blue-500"
+                                    th:text="${stats?.onLeaveNowCount != null ? stats.onLeaveNowCount : 0}">0</span>
                             </div>
-                            <p class="text-3xl font-black"
-                                th:text="${stats?.onLeaveNowCount != null ? stats.onLeaveNowCount : 0}">0</p>
-                            <p class="text-xs text-primary font-medium mt-1"
-                                th:text="${stats?.nextReturnInfo != null ? stats.nextReturnInfo : 'Next return: —'}">
-                                Next return: —</p>
+                            <p class="text-slate-500 text-sm font-medium">On Leave Now</p>
+                            <h3 class="text-3xl font-bold mt-1"
+                                th:text="${stats?.nextReturnInfo != null ? stats.nextReturnInfo : 'Next return: —'}">Next return: —</h3>
                         </div>
-                        <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
-                            <div class="flex justify-between items-start mb-3">
-                                <p class="text-xs text-slate-500 font-medium">Pending Review</p>
-                                <span
-                                    class="p-1.5 bg-amber-100 text-amber-600 rounded-lg material-symbols-outlined text-[18px]">pending_actions</span>
+                        
+                        <div class="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
+                            <div class="flex justify-between items-start mb-4">
+                                <div class="size-10 bg-amber-100 rounded-lg flex items-center justify-center text-amber-600">
+                                    <span class="material-symbols-outlined">pending_actions</span>
+                                </div>
+                                <span class="text-xs font-bold px-2 py-1 rounded bg-amber-50 text-amber-600"
+                                    th:text="${stats?.pendingCount != null ? stats.pendingCount : 0}">0</span>
                             </div>
-                            <p class="text-3xl font-black text-amber-600"
-                                th:text="${stats?.pendingCount != null ? stats.pendingCount : 0}"
-                                id="pending-count-badge">39</p>
-                            <p class="text-xs text-slate-400 font-medium mt-1">Awaiting your action</p>
+                            <p class="text-slate-500 text-sm font-medium">Pending Review</p>
+                            <h3 class="text-3xl font-bold mt-1 text-amber-600" id="pending-count-badge">Awaiting action</h3>
                         </div>
-                        <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
-                            <div class="flex justify-between items-start mb-3">
-                                <p class="text-xs text-slate-500 font-medium">This Month</p>
-                                <span
-                                    class="p-1.5 bg-purple-100 text-purple-600 rounded-lg material-symbols-outlined text-[18px]">calendar_month</span>
+                        
+                        <div class="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
+                            <div class="flex justify-between items-start mb-4">
+                                <div class="size-10 bg-purple-100 rounded-lg flex items-center justify-center text-purple-600">
+                                    <span class="material-symbols-outlined">calendar_month</span>
+                                </div>
+                                <span class="text-xs font-bold px-2 py-1 rounded bg-purple-50 text-purple-500"
+                                    th:text="${stats?.thisMonthCount != null ? stats.thisMonthCount : 0}">0</span>
                             </div>
-                            <p class="text-3xl font-black"
-                                th:text="${stats?.thisMonthCount != null ? stats.thisMonthCount : 0}">0</p>
-                            <p class="text-xs text-slate-400 font-medium mt-1"
-                                th:text="${stats?.thisMonthChange != null ? stats.thisMonthChange : 'vs last month'}">vs
-                                last month</p>
+                            <p class="text-slate-500 text-sm font-medium">This Month</p>
+                            <h3 class="text-3xl font-bold mt-1"
+                                th:text="${stats?.thisMonthChange != null ? stats.thisMonthChange : 'vs last month'}">vs last month</h3>
                         </div>
                     </div>
 
@@ -1472,22 +1475,22 @@
                                                     <th:block th:switch="${req.priority}">
                                                         <span th:case="'CRITICAL'"
                                                             class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold priority-critical">
-                                                            <span class="material-symbols-outlined text-[14px]">error</span>
+                                                            <span class="material-symbols-outlined text-[16px]">error</span>
                                                             CRITICAL
                                                         </span>
                                                         <span th:case="'URGENT'"
                                                             class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold priority-urgent">
-                                                            <span class="material-symbols-outlined text-[14px]">warning</span>
+                                                            <span class="material-symbols-outlined text-[16px]">warning</span>
                                                             URGENT
                                                         </span>
                                                         <span th:case="'HIGH'"
                                                             class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold priority-high">
-                                                            <span class="material-symbols-outlined text-[14px]">flag</span>
+                                                            <span class="material-symbols-outlined text-[16px]">flag</span>
                                                             HIGH
                                                         </span>
                                                         <span th:case="*"
                                                             class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold priority-normal">
-                                                            <span class="material-symbols-outlined text-[14px]">outlined_flag</span>
+                                                            <span class="material-symbols-outlined text-[16px]">outlined_flag</span>
                                                             NORMAL
                                                         </span>
                                                     </th:block>

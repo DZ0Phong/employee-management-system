@@ -312,7 +312,7 @@ public class HrManagerController {
         model.addAttribute("activeTab",     tab);
         model.addAttribute("activeCategory", category);
         model.addAttribute("activePage",    "leave");
-        return "request_approval";
+        return "hrmanager/leave_approval";
     }
 
     // ── Payroll Approval ──────────────────────────────────────────────────────
