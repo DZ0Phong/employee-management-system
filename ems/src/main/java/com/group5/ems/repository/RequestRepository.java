@@ -49,14 +49,28 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
     @Query("SELECT r FROM Request r JOIN FETCH r.employee e JOIN FETCH e.user u " +
             "LEFT JOIN FETCH e.department d JOIN FETCH r.requestType rt " +
             "WHERE r.status = 'PENDING' AND r.step = 'WAITING_HR' AND rt.category = 'ATTENDANCE' " +
+            "AND (:departmentId IS NULL OR d.id = :departmentId) " +
+            "AND (:leaveType IS NULL OR rt.code = :leaveType) " +
+            "AND (:search IS NULL OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :search, '%')) " +
+            "     OR LOWER(e.employeeCode) LIKE LOWER(CONCAT('%', :search, '%'))) " +
             "ORDER BY r.createdAt DESC")
-    List<Request> findPendingLeaveRequests();
+    List<Request> findPendingLeaveRequests(
+            @Param("departmentId") Long departmentId,
+            @Param("leaveType") String leaveType,
+            @Param("search") String search);
 
     @Query("SELECT r FROM Request r JOIN FETCH r.employee e JOIN FETCH e.user u " +
             "LEFT JOIN FETCH e.department d JOIN FETCH r.requestType rt " +
             "WHERE r.status = 'PENDING' AND r.step = 'WAITING_HRM' AND rt.category = 'ATTENDANCE' " +
+            "AND (:departmentId IS NULL OR d.id = :departmentId) " +
+            "AND (:leaveType IS NULL OR rt.code = :leaveType) " +
+            "AND (:search IS NULL OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :search, '%')) " +
+            "     OR LOWER(e.employeeCode) LIKE LOWER(CONCAT('%', :search, '%'))) " +
             "ORDER BY r.createdAt DESC")
-    List<Request> findHrmPendingLeaveRequests();
+    List<Request> findHrmPendingLeaveRequests(
+            @Param("departmentId") Long departmentId,
+            @Param("leaveType") String leaveType,
+            @Param("search") String search);
 
     @Query(value = "SELECT r FROM Request r JOIN r.employee e JOIN e.user u " +
             "LEFT JOIN e.department d JOIN r.requestType rt " +
@@ -325,19 +339,26 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
             "WHERE rt.category = 'ATTENDANCE' " +
             "AND r.status IN ('APPROVED', 'PENDING') " +
             "AND r.leaveFrom IS NOT NULL AND r.leaveTo IS NOT NULL " +
-            "AND r.leaveFrom <= :endDate AND r.leaveTo >= :startDate")
+            "AND r.leaveFrom <= :endDate AND r.leaveTo >= :startDate " +
+            "AND (:departmentId IS NULL OR d.id = :departmentId) " +
+            "AND (:leaveType IS NULL OR rt.code = :leaveType) " +
+            "AND (:search IS NULL OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(e.employeeCode) LIKE LOWER(CONCAT('%', :search, '%')))")
     List<Request> findCalendarEvents(
             @Param("startDate") java.time.LocalDate startDate,
-            @Param("endDate") java.time.LocalDate endDate);
+            @Param("endDate") java.time.LocalDate endDate,
+            @Param("departmentId") Long departmentId,
+            @Param("leaveType") String leaveType,
+            @Param("search") String search);
 
     // ── Leave Statistics ──
 
     @Query("SELECT COUNT(r) FROM Request r JOIN r.requestType rt " +
             "WHERE rt.category = 'ATTENDANCE' AND r.status = :status " +
-            "AND r.updatedAt >= :since")
-    long countLeaveByStatusSince(
+            "AND r.updatedAt >= :since AND r.updatedAt <= :until")
+    long countLeaveByStatusBetween(
             @Param("status") String status,
-            @Param("since") LocalDateTime since);
+            @Param("since") LocalDateTime since,
+            @Param("until") LocalDateTime until);
 
     @Query(value = "SELECT rt.code, COUNT(r) as cnt FROM Request r JOIN r.requestType rt " +
             "WHERE rt.category = 'ATTENDANCE' AND r.status <> 'PENDING' " +
@@ -347,8 +368,8 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
     @Query(value = "SELECT AVG(TIMESTAMPDIFF(HOUR, r.created_at, r.updated_at)) FROM requests r " +
             "JOIN request_types rt ON r.request_type_id = rt.id " +
             "WHERE rt.category = 'ATTENDANCE' AND r.status IN ('APPROVED', 'REJECTED') " +
-            "AND r.updated_at >= :since", nativeQuery = true)
-    Double avgProcessingHoursSince(@Param("since") LocalDateTime since);
+            "AND r.updated_at >= :since AND r.updated_at <= :until", nativeQuery = true)
+    Double avgProcessingHoursBetween(@Param("since") LocalDateTime since, @Param("until") LocalDateTime until);
 
     // ── Bulk operations ──
 
@@ -364,10 +385,14 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
             "WHERE r.status <> 'PENDING' AND rt.category = 'ATTENDANCE' " +
             "AND (:status IS NULL OR r.status = :status) " +
             "AND (:departmentId IS NULL OR d.id = :departmentId) " +
+            "AND (cast(:startDate as timestamp) IS NULL OR r.updatedAt >= :startDate) " +
+            "AND (cast(:endDate as timestamp) IS NULL OR r.updatedAt <= :endDate) " +
             "ORDER BY r.updatedAt DESC")
     List<Request> findLeaveHistoryForExport(
             @Param("status") String status,
-            @Param("departmentId") Long departmentId);
+            @Param("departmentId") Long departmentId,
+            @Param("startDate") java.time.LocalDateTime startDate,
+            @Param("endDate") java.time.LocalDateTime endDate);
 
     // ══════════════════════════════════════════════════════════════════
     // HR Workflow Requests — Pending (non-ATTENDANCE handled here)

@@ -175,47 +175,118 @@ public class HrController {
     }
 
     @GetMapping("/leave")
-    public String leave(Model model,
+    public String leave(Model model, jakarta.servlet.http.HttpSession session,
+            @RequestParam(required = false) String tab,
+            @RequestParam(required = false) String clear,
             @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "0") int balancePage,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) Long departmentId,
             @RequestParam(required = false) String leaveType,
             @RequestParam(required = false) String search,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo) {
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo,
+            @RequestParam(required = false) String statsMonth) {
 
-        // Pending requests (current tab)
-        model.addAttribute("pendingLeaves", leaveService.getPendingLeaves());
+        if (tab == null) {
+            tab = (String) session.getAttribute("leave_activeTab");
+            if (tab == null) tab = "current";
+        } else {
+            session.setAttribute("leave_activeTab", tab);
+        }
 
-        // HRM Pending (New tab - read only)
-        model.addAttribute("hrmPendingLeaves", leaveService.getHrmPendingLeaves());
+        boolean hasFilterParams = (status != null || departmentId != null || leaveType != null || search != null || dateFrom != null || dateTo != null || statsMonth != null);
 
-        // Filtered history (server-side — improvement #2)
+        if ("true".equals(clear)) {
+            session.removeAttribute("leave_" + tab + "_status");
+            session.removeAttribute("leave_" + tab + "_departmentId");
+            session.removeAttribute("leave_" + tab + "_leaveType");
+            session.removeAttribute("leave_" + tab + "_search");
+            session.removeAttribute("leave_" + tab + "_dateFrom");
+            session.removeAttribute("leave_" + tab + "_dateTo");
+            // DO NOT clear statsMonth here so stats filter persists across search clears
+        } else if (hasFilterParams) {
+            session.setAttribute("leave_" + tab + "_status", status);
+            session.setAttribute("leave_" + tab + "_departmentId", departmentId);
+            session.setAttribute("leave_" + tab + "_leaveType", leaveType);
+            session.setAttribute("leave_" + tab + "_search", search);
+            session.setAttribute("leave_" + tab + "_dateFrom", dateFrom);
+            session.setAttribute("leave_" + tab + "_dateTo", dateTo);
+            session.setAttribute("leave_" + tab + "_statsMonth", statsMonth);
+        }
+
+        // Current tab
+        String curSearch = (String) session.getAttribute("leave_current_search");
+        Long curDept = (Long) session.getAttribute("leave_current_departmentId");
+        String curType = (String) session.getAttribute("leave_current_leaveType");
+        model.addAttribute("pendingLeaves", leaveService.getPendingLeaves(curSearch, curDept, curType));
+        model.addAttribute("currentSearch", curSearch);
+        model.addAttribute("currentDepartmentId", curDept);
+        model.addAttribute("currentLeaveType", curType);
+
+        // HRM tab
+        String hrmSearch = (String) session.getAttribute("leave_hrm_search");
+        Long hrmDept = (Long) session.getAttribute("leave_hrm_departmentId");
+        String hrmType = (String) session.getAttribute("leave_hrm_leaveType");
+        model.addAttribute("hrmPendingLeaves", leaveService.getHrmPendingLeaves(hrmSearch, hrmDept, hrmType));
+        model.addAttribute("hrmSearch", hrmSearch);
+        model.addAttribute("hrmDepartmentId", hrmDept);
+        model.addAttribute("hrmLeaveType", hrmType);
+
+        // History tab
+        String histStatus = (String) session.getAttribute("leave_history_status");
+        String histSearch = (String) session.getAttribute("leave_history_search");
+        Long histDept = (Long) session.getAttribute("leave_history_departmentId");
+        String histType = (String) session.getAttribute("leave_history_leaveType");
+        LocalDate histFrom = (LocalDate) session.getAttribute("leave_history_dateFrom");
+        LocalDate histTo = (LocalDate) session.getAttribute("leave_history_dateTo");
+        
         Pageable pageable = PageRequest.of(page, EMPLOYEE_PAGE_SIZE);
-        Page<HrLeaveRequestDTO> historyPage = leaveService.getLeaveHistoryFiltered(
-                status, departmentId, leaveType, search, dateFrom, dateTo, pageable);
+        Page<HrLeaveRequestDTO> historyPage = leaveService.getLeaveHistoryFiltered(histStatus, histDept, histType, histSearch, histFrom, histTo, pageable);
         model.addAttribute("leaveHistory", historyPage.getContent());
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", historyPage.getTotalPages());
         model.addAttribute("totalItems", historyPage.getTotalElements());
+        model.addAttribute("histSearch", histSearch);
+        model.addAttribute("histDepartmentId", histDept);
+        model.addAttribute("histLeaveType", histType);
+        model.addAttribute("histStatus", histStatus);
+        model.addAttribute("histDateFrom", histFrom);
+        model.addAttribute("histDateTo", histTo);
 
-        // Statistics (improvement #6)
-        model.addAttribute("leaveStats", leaveService.getLeaveStats());
+        // Stats tab
+        String sMonth = (String) session.getAttribute("leave_stats_statsMonth");
+        String statsSearch = (String) session.getAttribute("leave_stats_search");
+        Long statsDept = (Long) session.getAttribute("leave_stats_departmentId");
+        model.addAttribute("leaveStats", leaveService.getLeaveStats(sMonth));
+        model.addAttribute("statsSearch", statsSearch);
+        model.addAttribute("statsDepartmentId", statsDept);
+        model.addAttribute("statsMonth", sMonth);
+        
+        boolean isCurrentMonth = true;
+        if (sMonth != null && !sMonth.trim().isEmpty()) {
+            try {
+                java.time.YearMonth requestedMonth = java.time.YearMonth.parse(sMonth);
+                isCurrentMonth = requestedMonth.equals(java.time.YearMonth.now());
+                model.addAttribute("statsMonthStart", requestedMonth.atDay(1));
+                model.addAttribute("statsMonthEnd", requestedMonth.atEndOfMonth());
+            } catch (Exception e) {}
+        }
+        model.addAttribute("isCurrentMonth", isCurrentMonth);
 
-        // Leave balance summary (improvement #1)
+        // Balance Table
+        Pageable balancePageable = PageRequest.of(balancePage, EMPLOYEE_PAGE_SIZE);
+        Page<com.group5.ems.dto.response.HrEmployeeLeaveBalanceDTO> balances = leaveService.getLeaveBalancesFiltered(statsDept, statsSearch, balancePageable);
+        model.addAttribute("leaveBalances", balances.getContent());
+        model.addAttribute("balanceCurrentPage", balancePage);
+        model.addAttribute("balanceTotalPages", balances.getTotalPages());
+        model.addAttribute("balanceTotalItems", balances.getTotalElements());
+
+        // Calendar Tab (filters are handled client-side but we preserve them here if needed, or pass normal variables if they render immediately)
         model.addAttribute("balanceSummary", leaveService.getLeaveBalanceSummary());
-
-        // Rejection categories for the modal dropdown (improvement #4)
         model.addAttribute("rejectionCategories", leaveService.getRejectionCategories());
-
-        // Filter state preservation
-        model.addAttribute("filterStatus", status);
-        model.addAttribute("filterDepartmentId", departmentId);
-        model.addAttribute("filterLeaveType", leaveType);
-        model.addAttribute("filterSearch", search);
-        model.addAttribute("filterDateFrom", dateFrom);
-        model.addAttribute("filterDateTo", dateTo);
         model.addAttribute("departments", departmentRepository.findAll());
+        model.addAttribute("activeTab", tab);
 
         return "hr/leave";
     }
@@ -279,8 +350,11 @@ public class HrController {
     @ResponseBody
     public ResponseEntity<List<com.group5.ems.dto.response.HrLeaveCalendarEventDTO>> leaveCalendarEvents(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
-        return ResponseEntity.ok(leaveService.getCalendarEvents(start, end));
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
+            @RequestParam(required = false) Long departmentId,
+            @RequestParam(required = false) String leaveType,
+            @RequestParam(required = false) String search) {
+        return ResponseEntity.ok(leaveService.getCalendarEvents(start, end, departmentId, leaveType, search));
     }
 
     // ── CSV export (improvement #7) ──
@@ -289,11 +363,26 @@ public class HrController {
     public void exportLeaveCsv(
             @RequestParam(required = false) String status,
             @RequestParam(required = false) Long departmentId,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) LocalDate endDate,
             jakarta.servlet.http.HttpServletResponse response) throws java.io.IOException {
         response.setContentType("text/csv");
-        response.setHeader("Content-Disposition",
-                "attachment; filename=\"leave-history-" + LocalDate.now() + ".csv\"");
-        leaveService.exportLeaveHistoryToCsv(status, departmentId, response.getWriter());
+        
+        String filename = "leave-history";
+        if (departmentId != null) {
+            Department d = departmentRepository.findById(departmentId).orElse(null);
+            if (d != null) {
+                filename += "-dept-" + d.getName().replaceAll("[^a-zA-Z0-9-]", "_");
+            } else {
+                filename += "-dept-" + departmentId;
+            }
+        }
+        if (startDate != null) filename += "-from-" + startDate;
+        if (endDate != null) filename += "-to-" + endDate;
+        filename += ".csv";
+        
+        response.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
+        leaveService.exportLeaveHistoryToCsv(status, departmentId, startDate, endDate, response.getWriter());
     }
 
 

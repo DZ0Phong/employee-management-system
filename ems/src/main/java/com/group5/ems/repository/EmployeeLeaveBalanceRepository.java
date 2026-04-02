@@ -31,4 +31,12 @@ public interface EmployeeLeaveBalanceRepository extends JpaRepository<EmployeeLe
 
     @Query("SELECT COUNT(elb) FROM EmployeeLeaveBalance elb WHERE elb.year = :year")
     long countByYear(@Param("year") int year);
+
+    @Query("SELECT COUNT(elb), COALESCE(SUM(elb.totalDays), 0), COALESCE(SUM(elb.usedDays), 0), COALESCE(SUM(elb.pendingDays), 0), COALESCE(SUM(elb.remainingDays), 0) FROM EmployeeLeaveBalance elb WHERE elb.year = :year")
+    List<Object[]> getAggregatedBalancesByYear(@Param("year") int year);
+
+    @Query("SELECT elb FROM EmployeeLeaveBalance elb JOIN FETCH elb.employee e LEFT JOIN FETCH e.user u LEFT JOIN FETCH e.department d WHERE elb.year = :year " +
+           "AND (:departmentId IS NULL OR e.department.id = :departmentId) " +
+           "AND (:search IS NULL OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(e.employeeCode) LIKE LOWER(CONCAT('%', :search, '%')))")
+    org.springframework.data.domain.Page<EmployeeLeaveBalance> findBalancesFiltered(@Param("year") int year, @Param("departmentId") Long departmentId, @Param("search") String search, org.springframework.data.domain.Pageable pageable);
 }
