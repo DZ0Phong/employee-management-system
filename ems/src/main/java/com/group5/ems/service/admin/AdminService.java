@@ -300,9 +300,10 @@ public class AdminService {
     }
 
     private String mapStatus(String uiStatus) {
-        if ("Active".equalsIgnoreCase(uiStatus)) return "ACTIVE";
-        if ("Inactive".equalsIgnoreCase(uiStatus)) return "INACTIVE";
-        if ("Suspended".equalsIgnoreCase(uiStatus)) return "LOCKED";
+        if ("Active".equalsIgnoreCase(uiStatus))       return "ACTIVE";
+        if ("Inactive".equalsIgnoreCase(uiStatus))     return "INACTIVE";
+        if ("Locked".equalsIgnoreCase(uiStatus))       return "LOCKED";   // admin lock
+        if ("Lock5".equalsIgnoreCase(uiStatus))        return "LOCK5";    // brute-force
         throw new IllegalArgumentException("Invalid status: " + uiStatus);
     }
 
@@ -366,12 +367,11 @@ public class AdminService {
                                         String sortFilter,
                                         String sortDir,
                                         int page,
-                                        int pageSize) {
-        // page = chỉ số trang (0-based), pageSize = số dòng mỗi trang
+                                        int pageSize,
+                                        String departmentFilter) {
         if (pageSize < 1) pageSize = 10;
         if (page < 0) page = 0;
 
-        // Chỉ chấp nhận fullName hoặc lastLogin; mặc định fullName
         if (sortFilter == null || sortFilter.isEmpty()
                 || (!"fullName".equals(sortFilter) && !"role".equals(sortFilter) && !"lastLogin".equals(sortFilter))) {
             sortFilter = "fullName";
@@ -381,15 +381,27 @@ public class AdminService {
             sortDir = "asc";
         }
 
-        String entitySortField = "lastLogin".equals(sortFilter) ? "lastLoginAt" : "fullName".equals(sortFilter) ? "fullName" : "fullName";
+        String entitySortField = "lastLogin".equals(sortFilter) ? "lastLoginAt" : "fullName";
         Sort.Direction sortDirection = Sort.Direction.fromString(sortDir);
         Sort sort = Sort.by(sortDirection, entitySortField);
 
         Pageable pageable = PageRequest.of(page, pageSize, sort);
-        Specification<User> spec = UserSpecification.withFilters(keyword, statusFilter, roleFilter);
+        Specification<User> spec = UserSpecification.withFilters(keyword, statusFilter, roleFilter, departmentFilter);
         Page<User> userPage = userRepository.findAll(spec, pageable);
 
         return userPage.map(this::toUserDTO);
+    }
+
+    /** Overload giữ backward-compat với code cũ */
+    @Transactional(readOnly = true)
+    public Page<UserDTO> getUsersFilter(String keyword,
+                                        String roleFilter,
+                                        String statusFilter,
+                                        String sortFilter,
+                                        String sortDir,
+                                        int page,
+                                        int pageSize) {
+        return getUsersFilter(keyword, roleFilter, statusFilter, sortFilter, sortDir, page, pageSize, null);
     }
 
      public long getStatusTotal(){
@@ -401,9 +413,20 @@ public class AdminService {
     public long getStatusInactive(){
         return userRepository.countByStatus("INACTIVE");
      }
-    public long getStatusSuspended(){
+    /** Đếm tất cả tài khoản đang bị khoá (cả LOCK5 brute-force lẫn LOCKED admin). */
+    public long getStatusLocked() {
+        return userRepository.countByStatus("LOCKED") + userRepository.countByStatus("LOCK5");
+    }
+
+    /** Đếm riêng brute-force lock (LOCK5). */
+    public long getStatusLock5() {
+        return userRepository.countByStatus("LOCK5");
+    }
+
+    /** Đếm riêng admin lock (LOCKED). */
+    public long getStatusAdminLocked() {
         return userRepository.countByStatus("LOCKED");
-     }
+    }
 
      public List<String> getDepartmentName(){
         return departmentRepository.findAll().stream().map(Department::getName).toList();
@@ -438,9 +461,10 @@ public class AdminService {
 
         String status = user.getStatus();
         String statusDB = status != null ? status : "";
-        if ("ACTIVE".equalsIgnoreCase(status)) statusDB = "Active";
+        if ("ACTIVE".equalsIgnoreCase(status))        statusDB = "Active";
         else if ("INACTIVE".equalsIgnoreCase(status)) statusDB = "Inactive";
-        else if ("LOCKED".equalsIgnoreCase(status)) statusDB = "Suspended";
+        else if ("LOCKED".equalsIgnoreCase(status))   statusDB = "Locked";   // admin lock
+        else if ("LOCK5".equalsIgnoreCase(status))    statusDB = "Lock5";    // brute-force
 
         Role role = userRoleRepository.getRoleByUserId(user.getId());
         String roleCode = (role != null && role.getName() != null) ? role.getName() : "";
@@ -463,6 +487,7 @@ public class AdminService {
                 .updatedAt(user.getUpdatedAt())
                 .role(roleCode)
                 .departmentName(deptName)
+                .failedLoginCount(user.getFailedLoginCount())
                 .build();
     }
 }

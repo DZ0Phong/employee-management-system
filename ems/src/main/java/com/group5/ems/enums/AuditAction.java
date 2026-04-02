@@ -5,7 +5,13 @@ public enum AuditAction {
     UPDATE,
     DELETE,
     LOGIN,
+    LOGIN_FAILED,
     LOGOUT,
     PASSWORD_CHANGE,
-    ACCESS
+    ACCESS,
+    LOCK,
+    UNLOCK,
+    ACTIVATE,
+    DEACTIVATE,
+    RESET_PASSWORD
 }

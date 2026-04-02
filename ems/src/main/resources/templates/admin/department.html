@@ -31,8 +31,9 @@
 
     <style>
         * { font-family: 'Inter', sans-serif; }
-        .material-symbols-outlined { font-variation-settings: 'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24; }
-        .fill-icon               { font-variation-settings: 'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24; }
+        .material-symbols-outlined { font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24; visibility:hidden; }
+        .fill-icon                 { font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24; }
+        .icons-ready .material-symbols-outlined { visibility:visible; }
 
         /* ── Animations ── */
         @keyframes fadeSlideUp { from { opacity:0; transform:translateY(14px) } to { opacity:1; transform:translateY(0) } }
@@ -746,21 +747,14 @@
 
     // ── Toast ─────────────────────────────────────────────────────
     function showToast(msg, type) {
-        var cfg = {
-            success: { bg:'bg-emerald-600', icon:'check_circle' },
-            error:   { bg:'bg-rose-600',    icon:'error' },
-            info:    { bg:'bg-primary',     icon:'info' }
-        };
-        var c = cfg[type || 'success'];
+        var accent = { success:'#10b981', error:'#ef4444', info:'#1414b8', warning:'#f59e0b' };
+        var a = accent[type] || accent.info;
         var el = document.createElement('div');
-        el.className = 'toast pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-2xl shadow-xl text-sm font-semibold text-white ' + c.bg;
-        el.innerHTML = '<span class="material-symbols-outlined fill-icon text-[20px]">' + c.icon + '</span>' + msg;
+        el.className = 'toast';
+        el.style.cssText = 'pointer-events:auto;display:flex;align-items:center;gap:10px;padding:11px 16px;background:#fff;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.13);border-left:4px solid '+a+';min-width:220px;max-width:360px;font-family:Inter,sans-serif;';
+        el.innerHTML = '<span style="width:8px;height:8px;border-radius:50%;background:'+a+';flex-shrink:0"></span><span style="font-size:13px;font-weight:600;color:#1e293b;line-height:1.4">'+msg+'</span>';
         document.getElementById('toast-container').appendChild(el);
-        if (window.hydrateAppIcons) window.hydrateAppIcons(el);
-        setTimeout(function () {
-            el.classList.add('out');
-            setTimeout(function () { el.remove(); }, 300);
-        }, 3000);
+        setTimeout(function(){el.classList.add('out');setTimeout(function(){el.remove();},280);},3500);
     }
 
     // ── Flash message from controller ─────────────────────────────
@@ -770,6 +764,8 @@
         if (success) showToast(success, 'success');
         if (error)   showToast(error, 'error');
     })();
+
+    document.fonts.ready.then(function(){ document.body.classList.add('icons-ready'); });
 
     // ── Tab switch ────────────────────────────────────────────────
     function switchTab(tab) {

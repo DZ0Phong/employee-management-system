@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 public class SecurityConfig {
 
     private final CustomeLoginSuccessHandler customeLoginSuccessHandler;
+    private final LoginFailureHandler        loginFailureHandler;
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -27,6 +28,7 @@ public class SecurityConfig {
         .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/home", "/home/**", "/login", "/error", "/guest", "/guest/**", "/access-denied",
                         "/forgot-password", "/forgot-password/**", "/reset-password",
+                        "/activate", "/activate/**",
                         "/css/**", "/js/**", "/icons/**", "/images/**").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/employee/**").hasAnyRole("EMPLOYEE", "DEPT_MANAGER", "HR", "HR_MANAGER")
@@ -35,7 +37,9 @@ public class SecurityConfig {
                 .requestMatchers("/hr/**").hasRole("HR")
                 .anyRequest().authenticated()).formLogin(form -> form
                         .loginPage("/login")
-                        .successHandler(customeLoginSuccessHandler).permitAll())
+                        .successHandler(customeLoginSuccessHandler)
+                        .failureHandler(loginFailureHandler)
+                        .permitAll())
                 .exceptionHandling(exception -> exception
                         .accessDeniedPage("/access-denied")
                 )

@@ -1,5 +1,7 @@
 package com.group5.ems.repository.spec;
 
+import com.group5.ems.entity.Department;
+import com.group5.ems.entity.Employee;
 import com.group5.ems.entity.Role;
 import com.group5.ems.entity.User;
 import com.group5.ems.entity.UserRole;
@@ -25,21 +27,29 @@ public class UserSpecification {
     }
 
     public static Specification<User> hasStatus(String statusFilter) {
-        return (root, query, cb) -> {
-            if (statusFilter == null || statusFilter.isBlank()) {
-                return cb.conjunction();
-            }
-            String dbStatus;
-            switch (statusFilter.trim().toLowerCase()) {
-                case "active" -> dbStatus = "ACTIVE";
-                case "inactive" -> dbStatus = "INACTIVE";
-                case "suspended" -> dbStatus = "LOCKED";
-                default -> {
-                    return cb.conjunction();
-                }
-            }
-            return cb.equal(root.get("status"), dbStatus);
+        if (statusFilter == null || statusFilter.isBlank()) {
+            return (r, q, cb) -> cb.conjunction();
+        }
+        String normalized = statusFilter.trim().toLowerCase();
+
+        // AllLocked = OR query cho cả LOCKED và LOCK5
+        if ("alllocked".equals(normalized)) {
+            return (r, q, cb) -> r.get("status").in("LOCKED", "LOCK5");
+        }
+
+        String dbStatus = switch (normalized) {
+            case "active"   -> "ACTIVE";
+            case "inactive" -> "INACTIVE";
+            case "locked"   -> "LOCKED";
+            case "lock5"    -> "LOCK5";
+            default         -> null;
         };
+
+        if (dbStatus == null) {
+            return (r, q, cb) -> cb.conjunction();
+        }
+        final String finalStatus = dbStatus;
+        return (r, q, cb) -> cb.equal(r.get("status"), finalStatus);
     }
 
     public static Specification<User> hasRoleCode(String roleCode){
@@ -54,8 +64,28 @@ public class UserSpecification {
         };
     }
 
-    public static Specification<User> withFilters(String keyword, String statusFilter, String roleCode){
-        return Specification.where(hasKeyword(keyword)).and(hasStatus(statusFilter)).and(hasRoleCode(roleCode));
+    public static Specification<User> hasDepartment(String departmentName) {
+        if (departmentName == null || departmentName.isBlank()) {
+            return (root, query, cb) -> cb.conjunction();
+        }
+        return (root, query, cb) -> {
+            query.distinct(true);
+            Join<User, Employee> empJoin = root.join("employee", JoinType.INNER);
+            Join<Employee, Department> deptJoin = empJoin.join("department", JoinType.INNER);
+            return cb.equal(deptJoin.get("name"), departmentName.trim());
+        };
+    }
+
+    public static Specification<User> withFilters(String keyword, String statusFilter,
+                                                   String roleCode, String departmentName) {
+        return Specification.where(hasKeyword(keyword))
+                .and(hasStatus(statusFilter))
+                .and(hasRoleCode(roleCode))
+                .and(hasDepartment(departmentName));
+    }
+
+    public static Specification<User> withFilters(String keyword, String statusFilter, String roleCode) {
+        return withFilters(keyword, statusFilter, roleCode, null);
     }
 
 }

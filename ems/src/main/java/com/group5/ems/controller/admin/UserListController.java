@@ -29,42 +29,37 @@ public class UserListController {
             @RequestParam(defaultValue = "") String keyword,
             @RequestParam(defaultValue = "") String role,
             @RequestParam(defaultValue = "") String status,
+            @RequestParam(defaultValue = "") String department,
             @RequestParam(defaultValue = "fullName") String sort,
             @RequestParam(defaultValue = "asc") String dir,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int pageSize,
             Model model) {
-        //get current user
+
         adminService.getUserDTO().ifPresent(u -> model.addAttribute("currentUser", u));
-        //search
-        model.addAttribute("keyword",       keyword);
-        model.addAttribute("roleFilter",    role);
-        model.addAttribute("statusFilter",  status);
-        model.addAttribute("sortField",     sort);
-        model.addAttribute("sortDir",       dir);
 
-        //get all role
-        List<Role> roles = adminService.findAllRoles();
-        model.addAttribute("roles", roles);
+        model.addAttribute("keyword",          keyword);
+        model.addAttribute("roleFilter",       role);
+        model.addAttribute("statusFilter",     status);
+        model.addAttribute("departmentFilter", department);
+        model.addAttribute("sortField",        sort);
+        model.addAttribute("sortDir",          dir);
 
-        //get dept
-        model.addAttribute("departments",adminService.getDepartmentName());
-
+        model.addAttribute("roles",           adminService.findAllRoles());
+        model.addAttribute("departments",     adminService.getDepartmentName());
         model.addAttribute("departmentCount", adminService.getAllDepartmentsCount());
-        model.addAttribute("statTotal", adminService.getStatusTotal());
-        model.addAttribute("statActive", adminService.getStatusActive());
-        model.addAttribute("statInactive", adminService.getStatusInactive());
-        model.addAttribute("statSuspended", adminService.getStatusSuspended());
+        model.addAttribute("statTotal",       adminService.getStatusTotal());
+        model.addAttribute("statActive",      adminService.getStatusActive());
+        model.addAttribute("statInactive",    adminService.getStatusInactive());
+        model.addAttribute("statLock5",       adminService.getStatusLock5());       // LOCK5: brute-force
+        model.addAttribute("statAdminLocked", adminService.getStatusAdminLocked()); // LOCKED: admin
 
-
-        //paging
-        Page<UserDTO> users = adminService.getUsersFilter(keyword, role, status, sort, dir, page, pageSize);
-        model.addAttribute("users", users);
-        model.addAttribute("currentPage", users.getNumber());
-        model.addAttribute("pageSize", users.getSize());
-        model.addAttribute("totalPages", users.getTotalPages());
+        Page<UserDTO> users = adminService.getUsersFilter(keyword, role, status, sort, dir, page, pageSize, department);
+        model.addAttribute("users",         users);
+        model.addAttribute("currentPage",   users.getNumber());
+        model.addAttribute("pageSize",      users.getSize());
+        model.addAttribute("totalPages",    users.getTotalPages());
         model.addAttribute("totalElements", users.getTotalElements());
-
 
         return "admin/user-list";
     }

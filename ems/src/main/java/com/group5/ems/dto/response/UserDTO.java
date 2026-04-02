@@ -29,6 +29,7 @@ public class UserDTO {
     // ── Các field không có trong DB, join từ bảng khác ──
     private String role;            // từ bảng roles
     private String departmentName;  // từ bảng departments
+    private int    failedLoginCount;
 
     // ── Computed, không map DB ───────────────────────────
     public String getLastLoginDisplay() {

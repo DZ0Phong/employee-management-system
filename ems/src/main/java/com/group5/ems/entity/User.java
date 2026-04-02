@@ -56,6 +56,20 @@ public class User {
     @Column(name = "reset_otp_expires_at")
     private LocalDateTime resetOtpExpiresAt;
 
+    // Brute-force protection
+    @Column(name = "failed_login_count")
+    private int failedLoginCount = 0;
+
+    @Column(name = "locked_until")
+    private LocalDateTime lockedUntil;
+
+    // Account activation via email OTP
+    @Column(name = "activation_otp", length = 6)
+    private String activationOtp;
+
+    @Column(name = "activation_otp_expires_at")
+    private LocalDateTime activationOtpExpiresAt;
+
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Employee employee;
 
@@ -105,5 +119,13 @@ public class User {
     public void setEmployee(Employee employee) { this.employee = employee; }
     public Set<UserRole> getUserRoles() { return userRoles; }
     public void setUserRoles(Set<UserRole> userRoles) { this.userRoles = userRoles; }
+    public int getFailedLoginCount() { return failedLoginCount; }
+    public void setFailedLoginCount(int failedLoginCount) { this.failedLoginCount = failedLoginCount; }
+    public LocalDateTime getLockedUntil() { return lockedUntil; }
+    public void setLockedUntil(LocalDateTime lockedUntil) { this.lockedUntil = lockedUntil; }
+    public String getActivationOtp() { return activationOtp; }
+    public void setActivationOtp(String activationOtp) { this.activationOtp = activationOtp; }
+    public LocalDateTime getActivationOtpExpiresAt() { return activationOtpExpiresAt; }
+    public void setActivationOtpExpiresAt(LocalDateTime activationOtpExpiresAt) { this.activationOtpExpiresAt = activationOtpExpiresAt; }
 }
 

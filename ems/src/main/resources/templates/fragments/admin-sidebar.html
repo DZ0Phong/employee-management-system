@@ -52,15 +52,6 @@
                   th:text="${statTotal ?: 0}">0</span>
         </a>
 
-        <a th:href="@{/admin/roles}"
-           th:classappend="${activePage == 'roles'} ? 'nav-active bg-primary-light text-primary' : 'text-slate-500 hover:bg-slate-50'"
-           class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group">
-            <span th:classappend="${activePage == 'roles'} ? 'fill-icon text-primary' : 'text-slate-400 group-hover:text-primary'"
-                  class="material-symbols-outlined text-[20px] transition-colors">admin_panel_settings</span>
-            <span th:classappend="${activePage == 'roles'} ? 'font-semibold' : 'font-medium'"
-                  class="text-sm">Roles &amp; Permissions</span>
-        </a>
-
         <a th:href="@{/admin/users}"
            th:classappend="${activePage == 'users'} ? 'nav-active bg-primary-light text-primary' : 'text-slate-500 hover:bg-slate-50'"
            class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group">
@@ -83,14 +74,6 @@
         </a>
 
 
-        <a th:href="@{/admin/settings}"
-           th:classappend="${activePage == 'settings'} ? 'nav-active bg-primary-light text-primary' : 'text-slate-500 hover:bg-slate-50'"
-           class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group">
-            <span th:classappend="${activePage == 'settings'} ? 'fill-icon text-primary' : 'text-slate-400 group-hover:text-primary'"
-                  class="material-symbols-outlined text-[20px] transition-colors">settings</span>
-            <span th:classappend="${activePage == 'settings'} ? 'font-semibold' : 'font-medium'"
-                  class="text-sm">Settings</span>
-        </a>
     </nav>
 
     <!-- User profile -->

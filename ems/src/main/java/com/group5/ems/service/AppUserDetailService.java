@@ -6,36 +6,72 @@ import com.group5.ems.entity.UserRole;
 import com.group5.ems.repository.UserRepository;
 import com.group5.ems.repository.UserRoleRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class AppUserDetailService implements UserDetailsService {
 
-    private final UserRepository userRepository;
+    private final UserRepository     userRepository;
     private final UserRoleRepository userRoleRepository;
 
     @Override
+    @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-       User existingUser = userRepository.findByUsername(username)
+        User existingUser = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Username not found: " + username));
-       List<Role> userRoles =  userRoleRepository.getRolesByUserId(existingUser.getId());
 
-       List<GrantedAuthority> grantedAuthorities = userRoles.stream()
-               .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getCode())).collect(Collectors.toList());
+        String status = existingUser.getStatus();
+
+        // ── LOCK5: brute-force tạm thời (30 phút) ──────────────────────────
+        if ("LOCK5".equalsIgnoreCase(status)) {
+            if (existingUser.getLockedUntil() != null
+                    && existingUser.getLockedUntil().isBefore(LocalDateTime.now())) {
+                // Hết 30 phút → tự động mở khoá
+                existingUser.setStatus("ACTIVE");
+                existingUser.setFailedLoginCount(0);
+                existingUser.setLockedUntil(null);
+                userRepository.save(existingUser);
+                // tiếp tục load user bình thường bên dưới
+            } else {
+                long minutesLeft = java.time.Duration
+                        .between(LocalDateTime.now(), existingUser.getLockedUntil())
+                        .toMinutes() + 1;
+                throw new LockedException("temp:" + minutesLeft);
+            }
+        }
+
+        // ── LOCKED: admin khoá vô thời hạn ─────────────────────────────────
+        if ("LOCKED".equalsIgnoreCase(status)) {
+            throw new LockedException("admin");
+        }
+
+        // ── INACTIVE: chưa kích hoạt qua email ─────────────────────────────
+        if ("INACTIVE".equalsIgnoreCase(status)) {
+            throw new DisabledException("Account is disabled");
+        }
+
+        List<Role> userRoles = userRoleRepository.getRolesByUserId(existingUser.getId());
+        List<GrantedAuthority> grantedAuthorities = userRoles.stream()
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getCode()))
+                .collect(Collectors.toList());
 
         return org.springframework.security.core.userdetails.User.builder()
                 .username(existingUser.getUsername())
                 .password(existingUser.getPasswordHash())
-                .authorities(grantedAuthorities).build();
+                .authorities(grantedAuthorities)
+                .build();
     }
 }
