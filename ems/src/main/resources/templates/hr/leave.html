@@ -509,7 +509,7 @@
                         </div>
 
                         <!-- Filter for Calendar -->
-                        <form id="calendarFilterForm" th:action="@{/hr/leave}" method="get" class="flex flex-wrap items-end gap-3 mb-6 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                        <form id="calendarFilterForm" onsubmit="event.preventDefault(); window.leaveFullCalendar.refetchEvents();" class="flex flex-wrap items-end gap-3 mb-6 bg-slate-50 p-3 rounded-xl border border-slate-100">
                             <input type="hidden" name="tab" value="calendar" />
                             <div class="flex-1 min-w-[180px]">
                                 <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Search Employee</label>
@@ -538,9 +538,9 @@
                             <button type="submit" class="h-8 px-4 text-xs font-semibold text-white bg-primary hover:bg-primary/90 rounded-lg transition-colors shadow-sm">
                                 <span class="material-symbols-outlined text-[14px] align-middle mr-1">filter_list</span>Filter
                             </button>
-                            <a th:href="@{/hr/leave(tab='calendar', clear='true')}" class="h-8 px-3 text-xs font-medium text-slate-500 bg-white border border-slate-200 hover:bg-slate-100 rounded-lg transition-colors flex items-center">
+                            <button type="button" onclick="clearCalendarFilters()" class="h-8 px-3 text-xs font-medium text-slate-500 bg-white border border-slate-200 hover:bg-slate-100 rounded-lg transition-colors flex items-center">
                                 <span class="material-symbols-outlined text-[14px] align-middle mr-1">clear_all</span>Clear
-                            </a>
+                            </button>
                         </form>
                         <div id="leaveCalendar" style="min-height: 500px;"></div>
                     </div>
@@ -626,6 +626,7 @@
                     <!-- Filter for Analytics Employee Table -->
                     <form th:action="@{/hr/leave}" method="get" class="flex flex-wrap items-end gap-3 my-6 anim anim-2 bg-white p-3 rounded-xl border border-slate-100">
                         <input type="hidden" name="tab" value="stats" />
+                        <input type="hidden" name="statsMonth" th:value="${statsMonth}" />
                         <div class="flex-1 min-w-[150px]">
                             <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Search Employee</label>
                             <div class="flex items-center gap-2 bg-slate-50 border border-slate-100 rounded-lg px-3 py-1.5">
@@ -1125,6 +1126,15 @@
             }
         } else {
             window.leaveFullCalendar.gotoDate(dateStr + '-01');
+        }
+    }
+
+    function clearCalendarFilters() {
+        document.getElementById('calFilterSearch').value = '';
+        document.getElementById('calFilterDept').value = '';
+        document.getElementById('calFilterType').value = '';
+        if (window.leaveFullCalendar) {
+            window.leaveFullCalendar.refetchEvents();
         }
     }
 </script>
