@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html class="light" lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>EMS Pro — Activate Account</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="/css/app-icons.css" th:href="@{/css/app-icons.css}"/>
+<script defer src="/js/app-icons.js" th:src="@{/js/app-icons.js}"></script>
+<script>
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "primary": "#1414b8",
+        "background-light": "#f6f6f8",
+        "background-dark": "#111121",
+      },
+      fontFamily: { "display": ["Inter"] },
+      borderRadius: {
+        "DEFAULT": "0.25rem",
+        "lg": "0.5rem",
+        "xl": "0.75rem",
+        "full": "9999px"
+      },
+    },
+  },
+};
+</script>
+<style>
+  .otp-input:focus {
+    border-color: #1414b8;
+    box-shadow: 0 0 0 3px rgba(20,20,184,0.15);
+    outline: none;
+  }
+  .otp-input { caret-color: #1414b8; }
+
+  .step-enter { animation: stepIn 0.35s cubic-bezier(0.4,0,0.2,1) both; }
+  @keyframes stepIn {
+    from { opacity: 0; transform: translateX(20px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  .success-ring { animation: pulse-ring 1.8s ease-out infinite; }
+  @keyframes pulse-ring {
+    0%   { box-shadow: 0 0 0 0 rgba(16,185,129,0.25); }
+    70%  { box-shadow: 0 0 0 14px rgba(16,185,129,0); }
+    100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); }
+  }
+
+  input[type="password"]::-ms-reveal,
+  input[type="password"]::-ms-clear { display: none; }
+
+  /* FOUI fix */
+  .material-symbols-outlined { visibility: hidden; }
+  .icons-ready .material-symbols-outlined { visibility: visible; }
+</style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased"
+      th:data-email="${email}"
+      th:data-remaining="${remainingSeconds}">
+
+<div class="relative flex min-h-screen w-full flex-col items-center justify-center p-4">
+  <div class="w-full max-w-[440px] flex flex-col gap-6">
+
+    <!-- Branding -->
+    <div class="flex flex-col items-center text-center gap-2">
+      <div class="flex items-center justify-center w-12 h-12 rounded-xl bg-primary mb-2">
+        <span class="material-symbols-outlined text-white text-3xl">corporate_fare</span>
+      </div>
+      <h1 class="text-slate-900 dark:text-slate-100 text-3xl font-bold tracking-tight">EMS Pro</h1>
+    </div>
+
+    <!-- Card -->
+    <div class="bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-primary/10 overflow-hidden">
+      <div class="p-8">
+
+        <!-- ── STEP 1: OTP Entry ── -->
+        <div id="step-otp" class="step-enter">
+          <div class="mb-6">
+            <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
+              <span class="material-symbols-outlined text-primary text-2xl">mark_email_unread</span>
+            </div>
+            <h2 class="text-slate-900 dark:text-slate-100 text-xl font-bold leading-tight mb-1">
+              Activate Your Account
+            </h2>
+            <p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
+              We sent a 6-digit activation code to
+              <span id="emailDisplay" class="font-semibold text-slate-700 dark:text-slate-200"></span>.
+              Enter it below to activate your account.
+            </p>
+          </div>
+
+          <!-- OTP inputs -->
+          <div class="flex gap-2.5 justify-between mb-2">
+            <input data-otp maxlength="1" type="text" inputmode="numeric"
+              class="otp-input w-full h-14 text-center text-xl font-bold rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-all"/>
+            <input data-otp maxlength="1" type="text" inputmode="numeric"
+              class="otp-input w-full h-14 text-center text-xl font-bold rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-all"/>
+            <input data-otp maxlength="1" type="text" inputmode="numeric"
+              class="otp-input w-full h-14 text-center text-xl font-bold rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-all"/>
+            <input data-otp maxlength="1" type="text" inputmode="numeric"
+              class="otp-input w-full h-14 text-center text-xl font-bold rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-all"/>
+            <input data-otp maxlength="1" type="text" inputmode="numeric"
+              class="otp-input w-full h-14 text-center text-xl font-bold rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-all"/>
+            <input data-otp maxlength="1" type="text" inputmode="numeric"
+              class="otp-input w-full h-14 text-center text-xl font-bold rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-all"/>
+          </div>
+
+          <!-- OTP error -->
+          <p id="otpErr" class="text-red-500 text-xs hidden mb-3">
+            <span id="otpErrText">Invalid code. Please check and try again.</span>
+          </p>
+
+          <!-- Timer + resend -->
+          <div class="flex items-center justify-between mb-5 text-sm">
+            <span class="text-slate-500 dark:text-slate-400">
+              Expires in <span id="timer" class="font-bold text-primary">10:00</span>
+            </span>
+            <button id="resendBtn" onclick="resendCode()" disabled
+              class="text-slate-400 font-semibold cursor-not-allowed transition-all text-xs">
+              Resend Code
+            </button>
+          </div>
+
+          <!-- Submit -->
+          <button onclick="verifyOtp()"
+            class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3.5 rounded-lg shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2">
+            Activate Account
+            <span class="material-symbols-outlined text-xl">verified_user</span>
+          </button>
+
+          <a href="/login"
+            class="w-full mt-3 flex items-center justify-center gap-1.5 text-slate-500 dark:text-slate-400 text-sm hover:text-primary transition-colors font-medium">
+            <span class="material-symbols-outlined text-base">arrow_back</span>
+            Back to Login
+          </a>
+        </div>
+
+        <!-- ── STEP 2: Success ── -->
+        <div id="step-success" class="hidden text-center">
+          <div class="flex flex-col items-center gap-4 py-4">
+            <div class="success-ring flex items-center justify-center w-20 h-20 rounded-full bg-emerald-50">
+              <span class="material-symbols-outlined text-emerald-500 text-5xl" style="font-variation-settings:'FILL' 1">check_circle</span>
+            </div>
+            <div>
+              <h2 class="text-slate-900 dark:text-slate-100 text-xl font-bold">Account Activated!</h2>
+              <p class="text-slate-500 dark:text-slate-400 text-sm mt-1.5 leading-relaxed">
+                Your account is now active.<br/>You can log in with your credentials.
+              </p>
+            </div>
+            <a href="/login?activated"
+              class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3.5 rounded-lg shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2 mt-2">
+              Go to Login
+              <span class="material-symbols-outlined text-xl">login</span>
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer -->
+      <div class="bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 p-4 text-center">
+        <p class="text-slate-500 dark:text-slate-400 text-xs">
+          Didn't receive an email? Check your spam folder or
+          <a class="text-primary font-bold hover:underline" href="#">Contact Admin</a>
+        </p>
+      </div>
+    </div>
+
+    <div class="flex justify-center gap-6 text-slate-400 dark:text-slate-500 text-xs font-medium">
+      <a class="hover:text-primary transition-colors" href="#">Privacy Policy</a>
+      <a class="hover:text-primary transition-colors" href="#">Terms of Service</a>
+      <a class="hover:text-primary transition-colors" href="#">Help Center</a>
+    </div>
+
+  </div>
+</div>
+
+<script>
+document.fonts.ready.then(function(){ document.body.classList.add('icons-ready'); });
+
+let timerInterval = null;
+let currentEmail  = null;
+
+// ── Init ──────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  var body      = document.body;
+  currentEmail  = body.dataset.email || '';
+  var remaining = parseInt(body.dataset.remaining || '0', 10);
+
+  document.getElementById('emailDisplay').textContent = currentEmail;
+  startTimer(remaining > 0 ? remaining : 600);
+});
+
+// ── Timer ─────────────────────────────────────────────────────────────
+function startTimer(seconds) {
+  var resendBtn = document.getElementById('resendBtn');
+  resendBtn.disabled = true;
+  resendBtn.className = 'text-slate-400 font-semibold cursor-not-allowed transition-all text-xs';
+  clearInterval(timerInterval);
+
+  timerInterval = setInterval(function() {
+    var m = Math.floor(seconds / 60).toString().padStart(2, '0');
+    var s = (seconds % 60).toString().padStart(2, '0');
+    document.getElementById('timer').textContent = m + ':' + s;
+    seconds--;
+    if (seconds < 0) {
+      clearInterval(timerInterval);
+      document.getElementById('timer').textContent = '00:00';
+      resendBtn.disabled = false;
+      resendBtn.className = 'text-primary font-semibold hover:underline transition-all text-xs cursor-pointer';
+    }
+  }, 1000);
+}
+
+// ── Resend OTP ────────────────────────────────────────────────────────
+function resendCode() {
+  var errEl = document.getElementById('otpErr');
+  var errText = document.getElementById('otpErrText');
+
+  fetch('/activate/send-otp', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'email=' + encodeURIComponent(currentEmail)
+  }).then(function(res) {
+    if (res.ok) {
+      document.querySelectorAll('[data-otp]').forEach(function(i) {
+        i.value = '';
+        i.classList.remove('border-red-300');
+      });
+      errEl.classList.add('hidden');
+      startTimer(600);
+    } else if (res.status === 429) {
+      errEl.classList.remove('hidden');
+      errText.textContent = 'Please wait a moment before requesting a new code.';
+    } else {
+      errEl.classList.remove('hidden');
+      errText.textContent = 'Could not resend the code. Please try again.';
+    }
+  }).catch(function() {
+    errEl.classList.remove('hidden');
+    errText.textContent = 'Connection error. Please try again.';
+  });
+}
+
+// ── Verify OTP ────────────────────────────────────────────────────────
+function verifyOtp() {
+  var inputs  = document.querySelectorAll('[data-otp]');
+  var code    = Array.from(inputs).map(function(i){ return i.value; }).join('');
+  var errEl   = document.getElementById('otpErr');
+  var errText = document.getElementById('otpErrText');
+
+  if (code.length < 6) {
+    errEl.classList.remove('hidden');
+    errText.textContent = 'Please enter the complete 6-digit code.';
+    inputs.forEach(function(i){ i.classList.add('border-red-300'); });
+    return;
+  }
+
+  fetch('/activate/verify', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'email=' + encodeURIComponent(currentEmail) + '&code=' + encodeURIComponent(code)
+  }).then(function(res) {
+    return res.text().then(function(body) { return { ok: res.ok, status: res.status, body: body }; });
+  }).then(function(r) {
+    if (r.ok && (r.body === 'OK' || r.body === 'ALREADY_ACTIVE')) {
+      clearInterval(timerInterval);
+      document.getElementById('step-otp').classList.add('hidden');
+      var success = document.getElementById('step-success');
+      success.classList.remove('hidden');
+      success.classList.add('step-enter');
+      return;
+    }
+    inputs.forEach(function(i){ i.classList.add('border-red-300'); });
+    errEl.classList.remove('hidden');
+    if (r.status === 410 || r.body === 'EXPIRED') {
+      errText.textContent = 'This code has expired. Please request a new one.';
+    } else {
+      errText.textContent = 'Invalid code. Please check and try again.';
+    }
+  }).catch(function() {
+    errEl.classList.remove('hidden');
+    errText.textContent = 'Could not verify. Please try again.';
+  });
+}
+
+// ── OTP auto-advance + paste ──────────────────────────────────────────
+document.querySelectorAll('[data-otp]').forEach(function(input, idx, all) {
+  input.addEventListener('input', function(e) {
+    var val = e.target.value.replace(/\D/g, '');
+    e.target.value = val ? val[0] : '';
+    e.target.classList.remove('border-red-300');
+    document.getElementById('otpErr').classList.add('hidden');
+    if (val && idx < all.length - 1) all[idx + 1].focus();
+  });
+  input.addEventListener('keydown', function(e) {
+    if (e.key === 'Backspace' && !input.value && idx > 0) all[idx - 1].focus();
+  });
+  input.addEventListener('paste', function(e) {
+    e.preventDefault();
+    var data = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+    Array.from(data).forEach(function(ch, i) { if (all[i]) all[i].value = ch; });
+    all[Math.min(data.length, all.length - 1)].focus();
+  });
+});
+</script>
+</body>
+</html>
