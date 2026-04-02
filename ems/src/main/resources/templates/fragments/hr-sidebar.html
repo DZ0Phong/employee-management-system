@@ -71,7 +71,7 @@
         <a th:href="@{/hr/requests}"
            th:class="${activeMenu == 'requests'} ? 'nav-active flex items-center gap-3 px-3 py-2.5 bg-primary-light text-primary rounded-xl' : 'flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:bg-slate-50 rounded-xl transition-all group'">
             <span class="material-symbols-outlined text-[20px]" th:classappend="${activeMenu == 'requests'} ? 'fill-icon' : 'text-slate-400 group-hover:text-primary transition-colors'">inventory</span>
-            <span class="text-sm" th:classappend="${activeMenu == 'requests'} ? 'font-semibold' : 'font-medium'">Workflow Requests</span>
+            <span class="text-sm" th:classappend="${activeMenu == 'requests'} ? 'font-semibold' : 'font-medium'">All Requests</span>
             <span class="ml-auto text-[10px] font-bold bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-md" th:text="${pendingRequests ?: 14}">14</span>
         </a>
     </nav>

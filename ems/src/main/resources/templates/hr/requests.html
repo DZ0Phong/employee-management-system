@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>EMS Pro - Workflow Requests</title>
+    <title>EMS Pro - All Requests</title>
     <meta name="description" content="HR Workflow Requests management — approve, reject, create, and analyze all non-leave requests." />
     <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
@@ -38,7 +38,7 @@
     <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
         <header class="h-16 bg-white border-b border-slate-100 flex items-center justify-between px-8 shrink-0">
             <div>
-                <h1 class="text-base font-black text-slate-900 leading-tight">Workflow Requests</h1>
+                <h1 class="text-base font-black text-slate-900 leading-tight">All Requests</h1>
                 <p class="text-xs text-slate-400">Manage and process operational requests</p>
             </div>
         </header>
@@ -403,7 +403,7 @@
                                 <select name="requestTypeId" required id="create-type-select"
                                         class="w-full text-xs border-slate-200 rounded-lg focus:ring-primary focus:border-primary px-3 py-2.5 bg-slate-50 text-slate-700 font-medium">
                                     <option value="">Select a request type…</option>
-                                    <optgroup th:each="cat : ${ {'ADMIN', 'HR', 'PAYROLL', 'ATTENDANCE'} }"
+                                    <optgroup th:each="cat : ${ {'ADMIN', 'HR', 'PAYROLL'} }"
                                               th:label="${cat}">
                                         <th:block th:each="rt : ${requestTypes}">
                                             <option th:if="${rt.category == cat}" th:value="${rt.id}" th:text="${rt.name}">Type</option>
