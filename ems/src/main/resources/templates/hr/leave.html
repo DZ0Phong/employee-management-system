@@ -100,10 +100,12 @@
                 Current Requests
                 <span class="text-[10px] font-bold bg-amber-100 text-amber-600 px-1.5 py-0.5 rounded-md" th:text="${pendingLeave ?: 0}">0</span>
             </button>
-            <button onclick="switchLeaveTab('hrmPending')" class="leave-tab py-3 text-sm font-bold flex items-center gap-2" id="ltab-hrmPending">
-                <span class="material-symbols-outlined text-[18px]">visibility</span>
+            <!-- NEW HRM Pending Accept Tab -->
+            <button onclick="switchLeaveTab('hrm')" class="leave-tab py-3 text-sm font-bold flex items-center gap-2" id="ltab-hrm">
+                <span class="material-symbols-outlined text-[18px]">admin_panel_settings</span>
                 HRM Pending Accept
-                <span class="text-[10px] font-bold bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-md" th:text="${#lists.size(hrmPendingLeaves) ?: 0}">0</span>
+                <span th:if="${hrmPendingLeaves != null}" class="text-[10px] font-bold bg-violet-100 text-violet-600 px-1.5 py-0.5 rounded-md" th:text="${#lists.size(hrmPendingLeaves)}">0</span>
+                <span th:unless="${hrmPendingLeaves != null}" class="text-[10px] font-bold bg-violet-100 text-violet-600 px-1.5 py-0.5 rounded-md">0</span>
             </button>
             <button onclick="switchLeaveTab('history')" class="leave-tab py-3 text-sm font-bold flex items-center gap-2" id="ltab-history">
                 <span class="material-symbols-outlined text-[18px]">history</span>
@@ -197,8 +199,11 @@
                             </div>
                             <div class="flex items-center justify-end gap-2">
                                 <!-- Reject — opens modal with rejection reason (improvement #4) -->
-                                <button type="button" class="deny-btn px-4 py-2 text-xs font-semibold text-slate-600 bg-white border border-slate-200 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 rounded-xl transition-colors"
-                                        th:data-id="${leave.id}" th:data-name="${leave.employeeName}">
+                                <button type="button" 
+                                        th:data-id="${leave.id}" 
+                                        th:data-name="${leave.employeeName}"
+                                        onclick="openRejectModal(this.getAttribute('data-id'), this.getAttribute('data-name'))"
+                                        class="px-4 py-2 text-xs font-semibold text-slate-600 bg-white border border-slate-200 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 rounded-xl transition-colors">
                                     Deny
                                 </button>
                                 <!-- Approve Form -->
@@ -221,25 +226,23 @@
                 </div>
 
                 <!-- ═══════════════════════════════════════════════════ -->
-                <!-- NEW TAB: HRM Pending (Read Only)                   -->
+                <!-- TAB 1.5: HRM Pending Accept (read-only)            -->
                 <!-- ═══════════════════════════════════════════════════ -->
-                <div id="lpanel-hrmPending" class="leave-panel">
-                    <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 flex items-start gap-4 mb-4 anim anim-1">
-                        <div class="p-2 bg-blue-100 rounded-lg">
-                            <span class="material-symbols-outlined text-blue-600">info</span>
-                        </div>
-                        <div>
-                            <h4 class="text-xs font-bold text-blue-900">HRM Review Phase</h4>
-                            <p class="text-[11px] text-blue-700 leading-relaxed mt-0.5">
-                                These leave requests have been approved by HR and are currently waiting for the <strong>HR Manager (HRM)</strong> to finalize. 
-                                These items are <strong>read-only</strong> for tracking purposes.
-                            </p>
-                        </div>
+                <div id="lpanel-hrm" class="leave-panel">
+                    <div class="flex items-center justify-between mb-4 anim anim-1">
+                        <h3 class="text-sm font-black text-slate-800 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-violet-500 text-[20px]">admin_panel_settings</span>
+                            Awaiting HR Manager Approval
+                            <span th:if="${hrmPendingLeaves != null}" class="bg-violet-100 text-violet-600 text-[10px] font-bold px-2 py-0.5 rounded-full" th:text="${#lists.size(hrmPendingLeaves)}">0</span>
+                            <span th:unless="${hrmPendingLeaves != null}" class="bg-violet-100 text-violet-600 text-[10px] font-bold px-2 py-0.5 rounded-full">0</span>
+                        </h3>
                     </div>
 
-                    <div th:if="${not #lists.isEmpty(hrmPendingLeaves)}" class="grid grid-cols-1 lg:grid-cols-2 gap-4 anim anim-1">
-                        <div th:each="leave : ${hrmPendingLeaves}" 
-                             class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden opacity-90 hover:opacity-100 transition-all">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 anim anim-1">
+                        <!-- Leave Request Card (HRM Pending) -->
+                        <div th:each="leave : ${hrmPendingLeaves}" class="bg-white p-5 rounded-2xl border border-violet-200 shadow-sm relative overflow-hidden group hover:border-violet-300 transition-all">
+                            <div class="absolute top-0 right-0 w-1 rounded-bl-lg bg-violet-400 h-[60px]"></div>
+
                             <div class="flex justify-between items-start mb-4">
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 rounded-full bg-slate-100 text-slate-500 font-bold text-sm flex items-center justify-center">
@@ -250,10 +253,7 @@
                                         <p class="text-[11px] text-slate-400"><span th:text="${leave.department}">Sales Dept</span> • <span th:text="${leave.employeeCode}">EMP-0042</span></p>
                                     </div>
                                 </div>
-                                <div class="flex flex-col items-end gap-1">
-                                    <span class="text-[10px] font-bold text-slate-500 bg-slate-50 px-2 py-1 rounded-md border border-slate-100">Tracking Phase</span>
-                                    <span class="text-[9px] font-black px-2 py-0.5 rounded bg-blue-50 text-blue-600 border border-blue-100 uppercase tracking-tight">Awaiting HRM</span>
-                                </div>
+                                <span class="text-[10px] font-bold text-violet-600 bg-violet-50 px-2 py-1 rounded-md border border-violet-100">Escalated to HRM</span>
                             </div>
                             <div class="bg-slate-50 p-3 rounded-xl mb-4 text-sm border border-slate-100">
                                 <div class="flex items-center gap-4 mb-2">
@@ -272,21 +272,20 @@
                                 </div>
                                 <p class="text-xs text-slate-500 mt-2"><span class="font-semibold">Reason:</span> <span th:text="${leave.reason}">Feeling unwell.</span></p>
                             </div>
-                            <div class="flex items-center justify-between pt-3 border-t border-dashed border-slate-100">
-                                <span class="text-[10px] text-slate-400">
-                                    <span class="material-symbols-outlined text-[12px] align-middle mr-0.5">schedule</span>
-                                    Submitted <span th:text="${leave.submittedAt ?: 'N/A'}">Mar 31, 2026</span>
-                                </span>
-                                <span class="text-[10px] font-bold text-slate-400 italic">Read-Only Tracking</span>
+                            <div class="flex items-center justify-end">
+                                <p class="text-[10px] text-slate-400 italic flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[12px]">lock</span>
+                                    Read-only: Final approval pending from HR Manager.
+                                </p>
                             </div>
                         </div>
                     </div>
 
                     <!-- Empty State -->
                     <div th:if="${#lists.isEmpty(hrmPendingLeaves)}" class="text-center py-16 anim anim-1">
-                        <span class="material-symbols-outlined text-5xl text-slate-200 mb-3">cloud_done</span>
-                        <p class="text-sm font-bold text-slate-500">No leave requests currently with HRM</p>
-                        <p class="text-xs text-slate-400 mt-1">All escalated leave applications have been handled.</p>
+                        <span class="material-symbols-outlined text-5xl text-violet-200 mb-3">task_alt</span>
+                        <p class="text-lg font-bold text-slate-500">No requests awaiting HRM approval</p>
+                        <p class="text-sm text-slate-400 mt-1">Leave requests in this phase have been fully processed</p>
                     </div>
                 </div>
 
@@ -658,13 +657,6 @@
         const first = document.getElementById('lpanel-current');
         first.style.display = 'block';
         first.classList.add('active');
-
-        // Deny button delegation (uses data-* attributes for Thymeleaf 3.1+ XSS safety)
-        document.querySelectorAll('.deny-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                openRejectModal(this.dataset.id, this.dataset.name);
-            });
-        });
     });
 
     // ── Reject Modal ──

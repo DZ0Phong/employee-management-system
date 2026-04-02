@@ -1,10 +1,15 @@
 package com.group5.ems.service.hr;
 
+import com.group5.ems.dto.response.HrAttendanceDetailDTO;
+import com.group5.ems.dto.response.HrAttendanceStatsDTO;
 import com.group5.ems.repository.AttendanceRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
 
 @Service
 @RequiredArgsConstructor
@@ -13,7 +18,7 @@ public class HrAttendanceService {
 
     private final AttendanceRepository attendanceRepository;
 
-    public org.springframework.data.domain.Page<com.group5.ems.dto.response.HrAttendanceDetailDTO> getAttendanceRecords(java.time.LocalDate workDate, String search, String department, String status, org.springframework.data.domain.Pageable pageable) {
+    public Page<HrAttendanceDetailDTO> getAttendanceRecords(LocalDate workDate, String search, String department, String status, Pageable pageable) {
         if (search != null) search = search.trim();
         if (department != null) {
             department = department.trim();
@@ -32,11 +37,11 @@ public class HrAttendanceService {
         return attendanceRepository.findAttendanceDetails(workDate, department, status, search, pageable);
     }
 
-    public com.group5.ems.dto.response.HrAttendanceStatsDTO getAttendanceStats(java.time.LocalDate workDate) {
+    public HrAttendanceStatsDTO getAttendanceStats(LocalDate workDate) {
         long presentCount = attendanceRepository.countByWorkDateAndStatus(workDate, "PRESENT");
         long lateCount = attendanceRepository.countByWorkDateAndStatus(workDate, "LATE");
         long leaveCount = attendanceRepository.countByWorkDateAndStatus(workDate, "LEAVE");
         long absentCount = attendanceRepository.countByWorkDateAndStatus(workDate, "ABSENT");
-        return new com.group5.ems.dto.response.HrAttendanceStatsDTO(presentCount, lateCount, leaveCount, absentCount);
+        return new HrAttendanceStatsDTO(presentCount, lateCount, leaveCount, absentCount);
     }
 }

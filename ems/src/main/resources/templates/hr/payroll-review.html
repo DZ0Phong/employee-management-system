@@ -207,11 +207,6 @@
                             <span class="material-symbols-outlined text-[20px]">file_download</span>
                             Download Draft Excel
                         </a>
-                        <button type="button" onclick="openModal()"
-                                class="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white rounded-xl px-10 py-3.5 shadow-xl shadow-green-100 hover:shadow-2xl hover:-translate-y-1 transition-all text-sm font-bold active:scale-95">
-                            <span class="material-symbols-outlined text-[20px]">verified_user</span>
-                            Approve Payroll Run
-                        </button>
                     </div>
                     <div th:if="${summary.isFullyApproved}" class="flex flex-col sm:flex-row items-center gap-4">
                         <div class="bg-slate-50 border border-slate-200 rounded-xl px-6 py-3.5 flex items-center gap-3">
@@ -231,77 +226,5 @@
     </main>
 </div>
 
-<!-- Approval Modal -->
-<div id="approvalModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
-    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeModal()"></div>
-    <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-        <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg border border-slate-100">
-            <div class="bg-white px-4 pb-4 pt-5 sm:p-10 sm:pb-4">
-                <div class="sm:flex sm:items-start">
-                    <div class="mx-auto flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-2xl bg-emerald-50 sm:mx-0 sm:h-14 sm:w-14">
-                        <span class="material-symbols-outlined text-emerald-600 text-[32px]">shield_check</span>
-                    </div>
-                    <div class="mt-3 text-center sm:ml-6 sm:mt-0 sm:text-left">
-                        <h3 class="text-2xl font-black text-slate-800 leading-none">Approve Payroll Run?</h3>
-                        <div class="mt-4">
-                            <p class="text-sm text-slate-500 leading-relaxed">
-                                Are you sure you want to approve this payroll run? This action will <span class="font-bold text-slate-700 uppercase">finalize</span> the payslips and lock all financial data for this period.
-                            </p>
-                            <div class="mt-4 p-4 bg-rose-50 rounded-2xl border border-rose-100 flex gap-3">
-                                <span class="material-symbols-outlined text-rose-500 shrink-0">warning</span>
-                                <p class="text-[11px] text-rose-800 font-bold leading-normal uppercase">
-                                    THIS ACTION CANNOT BE UNDONE. EMPLOYEES WILL IMMEDIATELY BE NOTIFIED (IF CONFIGURED) AND DATA WILL BE READ-ONLY.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="bg-slate-50/50 px-4 py-8 sm:flex sm:flex-row-reverse sm:px-10 gap-3">
-                <form id="approveForm" th:action="@{/hr/payroll-review/{id}/approve(id=${summary.periodId})}" method="POST">
-                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                    <button type="submit" id="submitBtn"
-                            class="inline-flex w-full justify-center items-center gap-2 rounded-xl bg-emerald-600 px-8 py-3.5 text-sm font-bold text-white shadow-lg shadow-emerald-200 hover:bg-emerald-700 transition-all active:scale-95">
-                        <span id="btnText">Confirm Approval</span>
-                        <svg id="loadingSpinner" class="hidden animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                    </button>
-                </form>
-                <button type="button" onclick="closeModal()"
-                        class="mt-3 inline-flex w-full justify-center rounded-xl bg-white px-8 py-3.5 text-sm font-bold text-slate-700 shadow-sm ring-1 ring-inset ring-slate-200 hover:bg-slate-50 sm:mt-0 sm:w-auto transition-all">
-                    Cancel
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-    function openModal() {
-        const modal = document.getElementById('approvalModal');
-        modal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
-    }
-
-    function closeModal() {
-        const modal = document.getElementById('approvalModal');
-        modal.classList.add('hidden');
-        document.body.style.overflow = '';
-    }
-
-    // Double-Submit Prevention
-    document.getElementById('approveForm')?.addEventListener('submit', function (e) {
-        const submitBtn = document.getElementById('submitBtn');
-        const btnText = document.getElementById('btnText');
-        const spinner = document.getElementById('loadingSpinner');
-
-        submitBtn.disabled = true;
-        submitBtn.classList.add('cursor-not-allowed', 'opacity-80');
-        btnText.classList.add('hidden');
-        spinner.classList.remove('hidden');
-    });
-</script>
 </body>
 </html>

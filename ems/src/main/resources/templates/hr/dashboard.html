@@ -363,166 +363,165 @@
 
             </div><!-- /max-w -->
         </div><!-- /scrollable -->
-    </main>
-</div>
 
-<script th:inline="javascript">
-    // ─── Recruitment Pipeline Chart (Doughnut) ───
-    const pApplied = /*[[${dashMetrics?.pipelineApplied() ?: 0}]]*/ 0;
-    const pReviewing = /*[[${dashMetrics?.pipelineReviewing() ?: 0}]]*/ 0;
-    const pInterviewing = /*[[${dashMetrics?.pipelineInterviewing() ?: 0}]]*/ 0;
-    const pOfferSent = /*[[${dashMetrics?.pipelineOfferSent() ?: 0}]]*/ 0;
+        <script th:inline="javascript">
+            // ─── Recruitment Pipeline Chart (Doughnut) ───
+            const pApplied = /*[[${dashMetrics?.pipelineApplied() ?: 0}]]*/ 0;
+            const pReviewing = /*[[${dashMetrics?.pipelineReviewing() ?: 0}]]*/ 0;
+            const pInterviewing = /*[[${dashMetrics?.pipelineInterviewing() ?: 0}]]*/ 0;
+            const pOfferSent = /*[[${dashMetrics?.pipelineOfferSent() ?: 0}]]*/ 0;
 
-    const pipelineCtx = document.getElementById('pipelineChart').getContext('2d');
-    new Chart(pipelineCtx, {
-        type: 'doughnut',
-        data: {
-            labels: ['Applied', 'Reviewing', 'Interviewing', 'Offer Sent'],
-            datasets: [{
-                data: [pApplied, pReviewing, pInterviewing, pOfferSent],
-                backgroundColor: ['#cbd5e1', '#38bdf8', '#a78bfa', '#34d399'],
-                borderWidth: 0,
-                hoverOffset: 4,
-            }],
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            cutout: '75%',
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    backgroundColor: '#0f172a',
-                    titleColor: '#94a3b8',
-                    bodyColor: '#f1f5f9',
-                    padding: 8,
-                    cornerRadius: 8,
+            const pipelineCtx = document.getElementById('pipelineChart').getContext('2d');
+            new Chart(pipelineCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Applied', 'Reviewing', 'Interviewing', 'Offer Sent'],
+                    datasets: [{
+                        data: [pApplied, pReviewing, pInterviewing, pOfferSent],
+                        backgroundColor: ['#cbd5e1', '#38bdf8', '#a78bfa', '#34d399'],
+                        borderWidth: 0,
+                        hoverOffset: 4,
+                    }],
                 },
-            },
-        },
-    });
-
-    // ─── Attendance Overview (Stacked Bar) ───
-    const attCtx = document.getElementById('attendanceChart').getContext('2d');
-    const attLabels = /*[[${dashMetrics?.attendanceLabels()}]]*/ [];
-    const attPresent = /*[[${dashMetrics?.attendancePresent()}]]*/ [];
-    const attLeave = /*[[${dashMetrics?.attendanceLeave()}]]*/ [];
-    const attAbsent = /*[[${dashMetrics?.attendanceAbsent()}]]*/ [];
-
-    new Chart(attCtx, {
-        type: 'bar',
-        data: {
-            labels: attLabels,
-            datasets: [
-                {
-                    label: 'Present',
-                    data: attPresent,
-                    backgroundColor: '#34d399',
-                    borderRadius: 4,
-                },
-                {
-                    label: 'LATE',
-                    data: attLeave,
-                    backgroundColor: '#fbbf24',
-                    borderRadius: 4,
-                },
-                {
-                    label: 'Absent',
-                    data: attAbsent,
-                    backgroundColor: '#fb7185',
-                    borderRadius: 4,
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                x: {
-                    stacked: true,
-                    grid: { display: false },
-                    border: { display: false },
-                    ticks: { color: '#94a3b8', font: { size: 10, weight: '600' } },
-                },
-                y: {
-                    stacked: true,
-                    grid: { color: '#f1f5f9', drawBorder: false },
-                    border: { display: false },
-                    ticks: {
-                        color: '#94a3b8',
-                        font: { size: 10 },
-                        maxTicksLimit: 5,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '75%',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#0f172a',
+                            titleColor: '#94a3b8',
+                            bodyColor: '#f1f5f9',
+                            padding: 8,
+                            cornerRadius: 8,
+                        },
                     },
+                },
+            });
+
+            // ─── Attendance Overview (Stacked Bar) ───
+            const attCtx = document.getElementById('attendanceChart').getContext('2d');
+            const attLabels = /*[[${dashMetrics?.attendanceLabels()}]]*/ [];
+            const attPresent = /*[[${dashMetrics?.attendancePresent()}]]*/ [];
+            const attLeave = /*[[${dashMetrics?.attendanceLeave()}]]*/ [];
+            const attAbsent = /*[[${dashMetrics?.attendanceAbsent()}]]*/ [];
+
+            new Chart(attCtx, {
+                type: 'bar',
+                data: {
+                    labels: attLabels,
+                    datasets: [
+                        {
+                            label: 'Present',
+                            data: attPresent,
+                            backgroundColor: '#34d399',
+                            borderRadius: 4,
+                        },
+                        {
+                            label: 'LATE',
+                            data: attLeave,
+                            backgroundColor: '#fbbf24',
+                            borderRadius: 4,
+                        },
+                        {
+                            label: 'Absent',
+                            data: attAbsent,
+                            backgroundColor: '#fb7185',
+                            borderRadius: 4,
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            stacked: true,
+                            grid: { display: false },
+                            border: { display: false },
+                            ticks: { color: '#94a3b8', font: { size: 10, weight: '600' } },
+                        },
+                        y: {
+                            stacked: true,
+                            grid: { color: '#f1f5f9', drawBorder: false },
+                            border: { display: false },
+                            ticks: {
+                                color: '#94a3b8',
+                                font: { size: 10 },
+                                maxTicksLimit: 5,
+                            },
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: '#0f172a',
+                            padding: 10,
+                            cornerRadius: 10,
+                        }
+                    }
                 }
-            },
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    mode: 'index',
-                    intersect: false,
-                    backgroundColor: '#0f172a',
-                    padding: 10,
-                    cornerRadius: 10,
+            });
+
+            // Search logic
+            const searchInput = document.getElementById('dashboardSearchInput');
+            const searchDropdown = document.getElementById('searchDropdown');
+            let searchTimeout;
+
+            document.addEventListener('keydown', function(e) {
+                if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+                    e.preventDefault();
+                    if(searchInput) searchInput.focus();
                 }
-            }
-        }
-    });
+            });
 
-</script>
-    <script th:inline="javascript">
-        const searchInput = document.getElementById('dashboardSearchInput');
-        const searchDropdown = document.getElementById('searchDropdown');
-        let searchTimeout;
+            if (searchInput && searchDropdown) {
+                searchInput.addEventListener('input', function(e) {
+                    clearTimeout(searchTimeout);
+                    const query = e.target.value.trim();
+                    
+                    if (query.length < 2) {
+                        searchDropdown.classList.add('hidden');
+                        return;
+                    }
 
-        document.addEventListener('keydown', function(e) {
-            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
-                e.preventDefault();
-                if(searchInput) searchInput.focus();
-            }
-        });
-
-        if (searchInput && searchDropdown) {
-            searchInput.addEventListener('input', function(e) {
-                clearTimeout(searchTimeout);
-                const query = e.target.value.trim();
-                
-                if (query.length < 2) {
-                    searchDropdown.classList.add('hidden');
-                    return;
-                }
-
-                searchTimeout = setTimeout(() => {
-                    fetch('/hr/api/employees/search?q=' + encodeURIComponent(query))
-                        .then(res => res.json())
-                        .then(data => {
-                            if (data.length === 0) {
-                                searchDropdown.innerHTML = '<li class="px-4 py-3 text-xs text-slate-400 text-center">No results found</li>';
-                            } else {
-                                searchDropdown.innerHTML = data.map(emp => `
-                                    <li>
-                                        <a href="/hr/employees?viewId=${emp.id}" class="block px-4 py-3 hover:bg-slate-50 transition-colors cursor-pointer group">
-                                            <div class="flex justify-between items-center">
-                                                <div>
-                                                    <p class="text-sm font-bold text-slate-800 group-hover:text-primary transition-colors">${emp.fullName}</p>
-                                                    <p class="text-xs text-slate-400 mt-0.5">${emp.position || 'Employee'} • ${emp.code}</p>
+                    searchTimeout = setTimeout(() => {
+                        fetch('/hr/api/employees/search?q=' + encodeURIComponent(query))
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data.length === 0) {
+                                    searchDropdown.innerHTML = '<li class="px-4 py-3 text-xs text-slate-400 text-center">No results found</li>';
+                                } else {
+                                    searchDropdown.innerHTML = data.map(emp => `
+                                        <li>
+                                            <a href="/hr/employees?viewId=${emp.id}" class="block px-4 py-3 hover:bg-slate-50 transition-colors cursor-pointer group">
+                                                <div class="flex justify-between items-center">
+                                                    <div>
+                                                        <p class="text-sm font-bold text-slate-800 group-hover:text-primary transition-colors">${emp.fullName}</p>
+                                                        <p class="text-xs text-slate-400 mt-0.5">${emp.position || 'Employee'} • ${emp.code}</p>
+                                                    </div>
+                                                    <span class="material-symbols-outlined text-[18px] text-slate-300 group-hover:text-primary transition-colors">chevron_right</span>
                                                 </div>
-                                                <span class="material-symbols-outlined text-[18px] text-slate-300 group-hover:text-primary transition-colors">chevron_right</span>
-                                            </div>
-                                        </a>
-                                    </li>
-                                `).join('');
-                            }
-                            searchDropdown.classList.remove('hidden');
-                        });
-                }, 300);
-            });
+                                            </a>
+                                        </li>
+                                    `).join('');
+                                }
+                                searchDropdown.classList.remove('hidden');
+                            });
+                    }, 300);
+                });
 
-            document.addEventListener('click', (e) => {
-                if (!searchInput.contains(e.target) && !searchDropdown.contains(e.target)) {
-                    searchDropdown.classList.add('hidden');
-                }
-            });
-        }
-    </script>
+                document.addEventListener('click', (e) => {
+                    if (!searchInput.contains(e.target) && !searchDropdown.contains(e.target)) {
+                        searchDropdown.classList.add('hidden');
+                    }
+                });
+            }
+        </script>
+    </div>
 </body>
+
 </html>

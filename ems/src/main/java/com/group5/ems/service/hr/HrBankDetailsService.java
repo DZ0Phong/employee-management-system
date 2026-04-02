@@ -2,6 +2,7 @@ package com.group5.ems.service.hr;
 
 import com.group5.ems.dto.request.BankDetailsFormDTO;
 import com.group5.ems.dto.response.BankDetailsResponseDTO;
+import com.group5.ems.dto.vietqr.VietQrBankDTO;
 import com.group5.ems.entity.Employee;
 import com.group5.ems.entity.EmployeeBankDetail;
 import com.group5.ems.enums.AuditAction;
@@ -42,7 +43,7 @@ public class HrBankDetailsService {
         // Find bank shortName from cached list
         String bankShortName = vietQrApiClient.getSupportedBanks().stream()
                 .filter(b -> b.bin().equals(dto.getBankCode()))
-                .map(com.group5.ems.dto.vietqr.VietQrBankDTO::shortName)
+                .map(VietQrBankDTO::shortName)
                 .findFirst()
                 .orElse(dto.getBankCode());
 

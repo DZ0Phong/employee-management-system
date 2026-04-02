@@ -16,6 +16,7 @@ import com.group5.ems.enums.AuditEntityType;
 import com.group5.ems.service.common.LogService;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -75,7 +76,7 @@ public class HrEmployeeService {
         BigDecimal baseSalary = BigDecimal.ZERO;
         BigDecimal allowance = BigDecimal.ZERO;
         String salaryType = "N/A";
-        java.time.LocalDate salaryEffectiveFrom = null;
+        LocalDate salaryEffectiveFrom = null;
 
         List<Salary> salaries = employee.getSalaries();
         if (salaries != null && !salaries.isEmpty()) {
@@ -92,8 +93,8 @@ public class HrEmployeeService {
 
         // Get latest contract
         String contractType = "N/A";
-        java.time.LocalDate contractStart = null;
-        java.time.LocalDate contractEnd = null;
+        LocalDate contractStart = null;
+        LocalDate contractEnd = null;
         String contractStatus = "N/A";
 
         List<Contract> contracts = employee.getContracts();
