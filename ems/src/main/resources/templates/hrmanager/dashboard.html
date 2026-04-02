@@ -867,6 +867,7 @@
             loadMoreBtn.innerHTML = `View all ${typeLabels[type] || 'Activities'} (${data.totalCount}) →`;
             loadMoreBtn.onclick = () => window.location.href = getViewAllUrl(type, filter);
             loadMoreBtn.style.display = 'inline-block';
+            window.hydrateAppIcons?.(loadMoreBtn);
         } else {
             loadMoreBtn.style.display = 'none';
         }

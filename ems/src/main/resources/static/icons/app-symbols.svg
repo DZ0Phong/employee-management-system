@@ -458,6 +458,99 @@
         <path d="M9 3h6"/>
         <path d="M12 6V3"/>
     </symbol>
+    <symbol id="track_changes" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="7"/>
+        <circle cx="12" cy="12" r="2.5"/>
+        <path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21"/>
+    </symbol>
+    <symbol id="health_and_safety" viewBox="0 0 24 24">
+        <path d="M12 3l7 3v5c0 4.4-2.8 8.4-7 9.8-4.2-1.4-7-5.4-7-9.8V6z"/>
+        <path d="M12 8v6M9 11h6"/>
+    </symbol>
+    <symbol id="school" viewBox="0 0 24 24">
+        <path d="M3 9l9-4 9 4-9 4z"/>
+        <path d="M7 11.5v3.5c0 1.7 2.2 3 5 3s5-1.3 5-3v-3.5"/>
+        <path d="M21 10v5"/>
+    </symbol>
+    <symbol id="home_work" viewBox="0 0 24 24">
+        <path d="M3 20h18"/>
+        <path d="M5 20v-7l4-3 4 3v7"/>
+        <path d="M14 20V8l4-2 2 1v13"/>
+        <path d="M8 16h2M16 10h1.5M16 13h1.5"/>
+    </symbol>
+    <symbol id="volunteer_activism" viewBox="0 0 24 24">
+        <path d="M12 11s-3-2-3-4.5A2.5 2.5 0 0 1 12 4a2.5 2.5 0 0 1 3 2.5C15 9 12 11 12 11z"/>
+        <path d="M4 15.5l3-2.5 3 1 2 2 2-1 3 1 3-1.5"/>
+        <path d="M4 17.5l4 2h5l5-3 2 .5"/>
+    </symbol>
+    <symbol id="diversity_3" viewBox="0 0 24 24">
+        <circle cx="7" cy="9" r="2"/>
+        <circle cx="17" cy="9" r="2"/>
+        <circle cx="12" cy="7" r="2.2"/>
+        <path d="M3.5 18a3.5 3.5 0 0 1 7 0M13.5 18a3.5 3.5 0 0 1 7 0M8 18a4 4 0 0 1 8 0"/>
+    </symbol>
+    <symbol id="lightbulb" viewBox="0 0 24 24">
+        <path d="M9 18h6"/>
+        <path d="M10 21h4"/>
+        <path d="M8.5 14.5c-1.3-1-2.5-2.8-2.5-5a6 6 0 1 1 12 0c0 2.2-1.2 4-2.5 5-.8.7-1.5 1.4-1.5 2.5h-4c0-1.1-.7-1.8-1.5-2.5z"/>
+    </symbol>
+    <symbol id="handshake" viewBox="0 0 24 24">
+        <path d="M4 12l3-3 3 2 3-2 3 2 3-2 1 1"/>
+        <path d="M7 15l2 2M10 14l2 2M13 13l2 2"/>
+        <path d="M3 13l3 3M21 11l-3 3"/>
+    </symbol>
+    <symbol id="star" viewBox="0 0 24 24">
+        <path d="M12 4.5l2.3 4.7 5.2.8-3.8 3.7.9 5.3-4.6-2.4-4.6 2.4.9-5.3-3.8-3.7 5.2-.8z"/>
+    </symbol>
+    <symbol id="folder_open" viewBox="0 0 24 24">
+        <path d="M3 19l2.3-8h15.2A1.5 1.5 0 0 1 22 12.8L20.5 19z"/>
+        <path d="M3 19V7.5A1.5 1.5 0 0 1 4.5 6H9l2 2h6.5A1.5 1.5 0 0 1 19 9.5V11"/>
+    </symbol>
+    <symbol id="business" viewBox="0 0 24 24">
+        <path d="M3 20h18"/>
+        <path d="M6 20V5h12v15"/>
+        <path d="M9 8h2M9 11h2M9 14h2M13 8h2M13 11h2M13 14h2"/>
+    </symbol>
+    <symbol id="token" viewBox="0 0 24 24">
+        <path d="M12 3l6 3.5v7L12 17l-6-3.5v-7z"/>
+        <path d="M12 7.5v5M9.5 10h5"/>
+    </symbol>
+    <symbol id="content_copy" viewBox="0 0 24 24">
+        <rect x="9" y="9" width="10" height="11" rx="2"/>
+        <rect x="5" y="4" width="10" height="11" rx="2"/>
+    </symbol>
+    <symbol id="location_on" viewBox="0 0 24 24">
+        <path d="M12 21s6-5.4 6-11a6 6 0 1 0-12 0c0 5.6 6 11 6 11z"/>
+        <circle cx="12" cy="10" r="2.2"/>
+    </symbol>
+    <symbol id="refresh" viewBox="0 0 24 24">
+        <path d="M20 5v5h-5"/>
+        <path d="M4 19v-5h5"/>
+        <path d="M19 10a7 7 0 0 0-12-2M5 14a7 7 0 0 0 12 2"/>
+    </symbol>
+    <symbol id="event" viewBox="0 0 24 24">
+        <path d="M7 4v3M17 4v3M4 9h16"/>
+        <rect x="4" y="5.5" width="16" height="14.5" rx="2"/>
+        <rect x="8" y="12" width="4" height="4" rx="1"/>
+    </symbol>
+    <symbol id="checklist" viewBox="0 0 24 24">
+        <path d="M9 7h8M9 12h8M9 17h8"/>
+        <path d="M4.5 7l1.5 1.5L8 6.5M4.5 12l1.5 1.5L8 11.5M4.5 17l1.5 1.5L8 16.5"/>
+    </symbol>
+    <symbol id="card_giftcard" viewBox="0 0 24 24">
+        <rect x="3" y="8" width="18" height="12" rx="2"/>
+        <path d="M12 8v12M3 12h18"/>
+        <path d="M12 8h-2.5a2 2 0 1 1 0-4c1.8 0 2.5 2 2.5 4z"/>
+        <path d="M12 8h2.5a2 2 0 1 0 0-4c-1.8 0-2.5 2-2.5 4z"/>
+    </symbol>
+    <symbol id="public" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9"/>
+        <path d="M3.5 12h17M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>
+    </symbol>
+    <symbol id="alternate_email" viewBox="0 0 24 24">
+        <path d="M16.5 17.5A7.5 7.5 0 1 1 18 8v5a2 2 0 0 1-4 0v-1"/>
+        <circle cx="12" cy="12" r="3"/>
+    </symbol>
     <symbol id="work" viewBox="0 0 24 24">
         <rect x="4" y="7" width="16" height="11" rx="2"/>
         <path d="M9 7V5h6v2"/>

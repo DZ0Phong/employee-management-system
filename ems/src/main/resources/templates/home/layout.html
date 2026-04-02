@@ -8,8 +8,8 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap"
     rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
-    rel="stylesheet" />
+  <link rel="stylesheet" href="/css/app-icons.css" th:href="@{/css/app-icons.css}" />
+  <script defer src="/js/app-icons.js" th:src="@{/js/app-icons.js}"></script>
   <style>
     :root {
       --primary: #1414b8;
@@ -638,7 +638,7 @@
         <div class="footer-col">
           <h4>For Employees</h4>
           <a th:href="@{/login}">Employee Login</a>
-          <a th:href="@{/dashboard}">Dashboard</a>
+          <a th:href="@{/forgot-password}">Reset Password</a>
         </div>
       </div>
       <div class="footer-bottom">
@@ -738,6 +738,7 @@
         <div class="spinner" style="border-color:#1414b840;border-top-color:var(--primary);width:24px;height:24px;border-width:3px;margin:0 auto 10px;"></div>
         Searching...
       </div>`;
+      window.hydrateAppIcons?.(wrap);
 
       document.getElementById('btn-cancel-app').classList.add('hidden');
       _trackedToken = null;
@@ -754,6 +755,7 @@
               <span class="material-symbols-outlined fill-icon" style="font-size:18px">error</span>
               No application found with this token. Please check and try again.
             </div>`;
+            window.hydrateAppIcons?.(wrap);
             return;
           }
 
@@ -799,6 +801,7 @@
                 Applied: ${appliedAt}
               </div>
             </div>`;
+          window.hydrateAppIcons?.(wrap);
 
           // Hiện nút Cancel nếu trạng thái cho phép huỷ
           const cancellable = ['APPLIED', 'SCREENING'];
@@ -812,6 +815,7 @@
             <span class="material-symbols-outlined fill-icon" style="font-size:18px">error</span>
             Could not connect. Please try again.
           </div>`;
+          window.hydrateAppIcons?.(wrap);
         });
     }
 
@@ -844,6 +848,7 @@
         .finally(() => {
           btn.disabled = false;
           btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:16px">delete</span> Yes, Cancel';
+          window.hydrateAppIcons?.(btn);
         });
     }
 
@@ -858,6 +863,7 @@
       el.className = 'toast ' + type;
       el.innerHTML = `<span class="material-symbols-outlined fill-icon" style="font-size:18px">${icons[type] || 'info'}</span>${msg}`;
       document.getElementById('toast-container').appendChild(el);
+      window.hydrateAppIcons?.(el);
       setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 350); }, 3500);
     }
   </script>
