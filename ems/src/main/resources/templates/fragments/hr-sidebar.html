@@ -77,7 +77,16 @@
     </nav>
 
     <!-- User card -->
-    <div class="p-4 border-t border-slate-100 mt-auto">
+    <div class="p-4 border-t border-slate-100 mt-auto shrink-0">
+        <a th:href="@{/employee/dashboard}"
+           class="mb-3 flex items-center justify-between rounded-2xl border border-primary/15 bg-primary/5 px-4 py-3 text-primary transition-colors hover:bg-primary/10">
+            <div>
+                <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-primary/60">Portal Switch</p>
+                <p class="text-sm font-semibold">Employee View</p>
+            </div>
+            <span class="material-symbols-outlined text-[18px]">badge</span>
+        </a>
+
         <div class="bg-slate-50 rounded-2xl p-3 flex items-center gap-3 border border-slate-100">
             <div class="w-9 h-9 rounded-full overflow-hidden bg-primary/10 flex items-center justify-center text-primary font-bold text-sm shrink-0">
                 <img th:if="${currentUser?.avatarUrl != null}" th:src="${currentUser.avatarUrl}"
