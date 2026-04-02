@@ -58,8 +58,8 @@
         <div class="flex-1 overflow-y-auto p-8 dot-grid">
             <div class="max-w-5xl mx-auto space-y-6">
 
-                <!-- ═══ Flash Messages ═══ -->
-                <div th:if="${successMessage}" class="bg-emerald-50 border border-emerald-200 rounded-xl px-5 py-3 flex items-center gap-3 anim anim-1">
+                <!-- Flash Messages -->
+                <div th:if="${successMessage}" class="bg-emerald-50 border border-emerald-200 rounded-xl px-5 py-3 flex items-center gap-3 anim anim-1 toast-msg">
                     <span class="material-symbols-outlined text-emerald-600 text-[20px]">check_circle</span>
                     <p class="text-sm font-medium text-emerald-700" th:text="${successMessage}">Success</p>
                     <button onclick="this.parentElement.remove()" class="ml-auto text-emerald-400 hover:text-emerald-600 transition-colors">
@@ -67,7 +67,7 @@
                     </button>
                 </div>
 
-                <div th:if="${errorMessage}" class="bg-rose-50 border border-rose-200 rounded-xl px-5 py-3 flex items-center gap-3 anim anim-1">
+                <div th:if="${errorMessage}" class="bg-rose-50 border border-rose-200 rounded-xl px-5 py-3 flex items-center gap-3 anim anim-1 toast-msg">
                     <span class="material-symbols-outlined text-rose-600 text-[20px]">error</span>
                     <p class="text-sm font-medium text-rose-700" th:text="${errorMessage}">Error</p>
                     <button onclick="this.parentElement.remove()" class="ml-auto text-rose-400 hover:text-rose-600 transition-colors">
@@ -75,7 +75,7 @@
                     </button>
                 </div>
 
-                <!-- ═══ Summary Card ═══ -->
+                <!-- Summary Card -->
                 <div class="bg-gradient-to-r from-primary to-indigo-600 rounded-2xl p-6 text-white shadow-lg shadow-primary/20 anim anim-1 relative overflow-hidden">
                     <div class="absolute inset-0 opacity-10" style="background: url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22><circle cx=%2230%22 cy=%2230%22 r=%2220%22 fill=%22none%22 stroke=%22white%22 stroke-width=%221%22/></svg>')"></div>
                     <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -99,7 +99,7 @@
                     </div>
                 </div>
 
-                <!-- ═══ Create Period Form (Inline, toggled) ═══ -->
+                <!-- Create Period Form -->
                 <div id="createFormPanel"
                      th:classappend="${showCreateForm} ? '' : 'hidden'"
                      class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden anim anim-2">
@@ -116,14 +116,12 @@
                     <form th:action="@{/hr/payroll-periods/create}" th:object="${periodCreateReq}" method="post" class="p-5">
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
-                        <!-- Global @ValidDateRange error -->
                         <div th:if="${#fields.hasGlobalErrors()}" class="mb-4 bg-rose-50 border border-rose-200 rounded-xl px-4 py-3 flex items-center gap-2">
                             <span class="material-symbols-outlined text-rose-500 text-[18px]">warning</span>
                             <p class="text-sm text-rose-700" th:each="err : ${#fields.globalErrors()}" th:text="${err}">Validation error</p>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <!-- Period Name -->
                             <div>
                                 <label for="periodName" class="block text-xs font-semibold text-slate-600 mb-1.5">Period Name</label>
                                 <input type="text" id="periodName" th:field="*{periodName}"
@@ -132,8 +130,6 @@
                                        class="w-full text-sm rounded-xl px-3 py-2 bg-white shadow-sm" />
                                 <p th:if="${#fields.hasErrors('periodName')}" th:errors="*{periodName}" class="mt-1 text-xs text-rose-500 font-medium">Error</p>
                             </div>
-
-                            <!-- Start Date -->
                             <div>
                                 <label for="startDate" class="block text-xs font-semibold text-slate-600 mb-1.5">Start Date</label>
                                 <input type="date" id="startDate" th:field="*{startDate}"
@@ -141,8 +137,6 @@
                                        class="w-full text-sm rounded-xl px-3 py-2 bg-white shadow-sm" />
                                 <p th:if="${#fields.hasErrors('startDate')}" th:errors="*{startDate}" class="mt-1 text-xs text-rose-500 font-medium">Error</p>
                             </div>
-
-                            <!-- End Date -->
                             <div>
                                 <label for="endDate" class="block text-xs font-semibold text-slate-600 mb-1.5">End Date</label>
                                 <input type="date" id="endDate" th:field="*{endDate}"
@@ -166,7 +160,7 @@
                     </form>
                 </div>
 
-                <!-- ═══ Data Table ═══ -->
+                <!-- Data Table -->
                 <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden anim anim-2 flex flex-col">
                     <div class="p-5 border-b border-slate-50 flex items-center justify-between">
                         <h3 class="text-sm font-black text-slate-800">All Periods</h3>
@@ -184,7 +178,6 @@
                             </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-50">
-                            <!-- Empty state -->
                             <tr th:if="${periods.content.isEmpty()}">
                                 <td colspan="5" class="px-5 py-12 text-center">
                                     <span class="material-symbols-outlined text-slate-300 text-[40px] mb-2">calendar_month</span>
@@ -192,7 +185,6 @@
                                     <p class="text-xs text-slate-300 mt-1">Click "Create New Period" to get started</p>
                                 </td>
                             </tr>
-
                             <tr th:each="period : ${periods.content}" class="hover:bg-primary/[2%] transition-colors">
                                 <td class="px-5 py-4">
                                     <p class="text-xs font-semibold text-slate-800" th:text="${period.periodName ?: 'Unnamed'}">March 2026</p>
@@ -206,13 +198,11 @@
                                           th:text="${#temporals.format(period.endDate, 'dd/MM/yyyy')}">31/03/2026</span>
                                 </td>
                                 <td class="px-5 py-4 text-center">
-                                    <!-- Open badge -->
                                     <span th:if="${!period.isLocked}"
                                           class="text-[10px] font-bold bg-green-100 text-green-800 px-2.5 py-1 rounded-full inline-flex items-center gap-1">
                                         <span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span>
                                         Open
                                     </span>
-                                    <!-- Locked badge -->
                                     <span th:if="${period.isLocked}"
                                           class="text-[10px] font-bold bg-gray-100 text-gray-800 px-2.5 py-1 rounded-full inline-flex items-center gap-1">
                                         <span class="material-symbols-outlined text-[12px]">lock</span>
@@ -221,14 +211,11 @@
                                 </td>
                                 <td class="px-5 py-4 text-center">
                                     <div class="inline-flex items-center gap-2">
-                                        <!-- Preview -->
                                         <a th:href="@{/hr/payroll-preview/{id}(id=${period.id})}"
                                            class="w-8 h-8 rounded-lg bg-primary/5 hover:bg-primary/10 flex items-center justify-center text-primary transition-colors"
                                            title="Preview aggregated data">
                                             <span class="material-symbols-outlined text-[16px]">visibility</span>
                                         </a>
-
-                                        <!-- Lock (unlocked) -->
                                         <form th:if="${!period.isLocked}"
                                               th:action="@{/hr/payroll-periods/{id}/lock(id=${period.id})}" method="post"
                                               onsubmit="return confirm('Are you sure you want to lock this period? This action cannot be undone!');">
@@ -239,13 +226,11 @@
                                                 <span class="material-symbols-outlined text-[16px]">lock_open</span>
                                             </button>
                                         </form>
-                                        <!-- Locked (non-interactive) -->
                                         <span th:if="${period.isLocked}"
                                               class="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-300"
                                               th:title="'Locked at ' + ${period.lockedAt != null ? #temporals.format(period.lockedAt, 'dd/MM/yyyy HH:mm') : 'N/A'}">
                                             <span class="material-symbols-outlined text-[16px]">lock</span>
                                         </span>
-                                        <!-- Review & Approve (for locked periods) -->
                                         <a th:if="${period.isLocked}"
                                            th:href="@{/hr/payroll-review/{id}(id=${period.id})}"
                                            class="w-8 h-8 rounded-lg bg-emerald-50 hover:bg-emerald-100 flex items-center justify-center text-emerald-600 transition-colors"
@@ -260,36 +245,33 @@
                     </div>
                 </div>
 
-                <!-- ═══ Pagination ═══ -->
+                <!-- Pagination -->
                 <div th:replace="~{fragments/pagination :: pagination(pageData=${periods}, baseUrl='/hr/payroll-periods')}"></div>
 
             </div>
         </div>
-    </main>
-</div>
 
-<script>
-    function toggleCreateForm() {
-        const panel = document.getElementById('createFormPanel');
-        panel.classList.toggle('hidden');
-        if (!panel.classList.contains('hidden')) {
-            document.getElementById('periodName').focus();
-        }
-    }
+        <script th:inline="javascript">
+            function toggleCreateForm() {
+                const panel = document.getElementById('createFormPanel');
+                panel.classList.toggle('hidden');
+                if (!panel.classList.contains('hidden')) {
+                    document.getElementById('periodName').focus();
+                }
+            }
 
-    // Auto-dismiss flash messages after 5 seconds
-    document.addEventListener('DOMContentLoaded', function () {
-        const flashes = document.querySelectorAll('div.bg-emerald-50.border-emerald-200, div.bg-rose-50.border-rose-200');
-        flashes.forEach(flash => {
-            setTimeout(() => {
-                flash.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-                flash.style.opacity = '0';
-                flash.style.transform = 'translateY(-8px)';
-                setTimeout(() => flash.remove(), 300);
-            }, 5000);
-        });
-    });
-</script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const flashes = document.querySelectorAll('.toast-msg');
+                flashes.forEach(flash => {
+                    setTimeout(() => {
+                        flash.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                        flash.style.opacity = '0';
+                        flash.style.transform = 'translateY(-8px)';
+                        setTimeout(() => flash.remove(), 300);
+                    }, 5000);
+                });
+            });
+        </script>
+    </div>
 </body>
 </html>
-

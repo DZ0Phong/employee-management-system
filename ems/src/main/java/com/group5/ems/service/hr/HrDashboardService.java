@@ -1,6 +1,7 @@
 package com.group5.ems.service.hr;
 
 import com.group5.ems.dto.response.HrDashboardMetricsDTO;
+import com.group5.ems.entity.Employee;
 import com.group5.ems.repository.ApplicationRepository;
 import com.group5.ems.repository.AttendanceRepository;
 import com.group5.ems.repository.EmployeeRepository;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -31,7 +33,7 @@ public class HrDashboardService {
         int openJobPosts = jobPostRepository.countByStatus("OPEN");
         long pendingLeaveRequestsLong = requestRepository.countByStatusAndStepWaitingHRAndRequestTypeCodeIn(
                 "PENDING", 
-                java.util.Arrays.asList("LV_ANNUAL", "LV_SICK", "LEAVE_ANNUAL", "LEAVE_SICK", "LEAVE_UNPAID")
+                Arrays.asList("LV_ANNUAL", "LV_SICK", "LEAVE_ANNUAL", "LEAVE_SICK", "LEAVE_UNPAID")
         );
         int pendingLeaveRequests = (int) pendingLeaveRequestsLong;
         int pendingWorkflowRequests = (int) requestRepository.countByStatusAndStepWaitingHRAndRequestTypeCategory("PENDING", "HR_STATUS");
@@ -85,7 +87,7 @@ public class HrDashboardService {
 
     public Long findEmployeeIdByCode(String code) {
         return employeeRepository.findByEmployeeCode(code)
-                .map(com.group5.ems.entity.Employee::getId)
+                .map(Employee::getId)
                 .orElse(null);
     }
 }
