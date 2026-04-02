@@ -119,10 +119,13 @@ tailwind.config = {
             <span class="text-slate-500 dark:text-slate-400">
               Expires in <span id="timer" class="font-bold text-primary">10:00</span>
             </span>
-            <button id="resendBtn" onclick="resendCode()" disabled
-              class="text-slate-400 font-semibold cursor-not-allowed transition-all text-xs">
-              Resend Code
-            </button>
+            <div class="flex items-center gap-2">
+              <button id="resendBtn" onclick="resendCode()" disabled
+                class="text-slate-400 font-semibold cursor-not-allowed transition-all text-xs">
+                Resend Code
+              </button>
+              <span id="resendCooldownText" class="text-xs font-semibold text-slate-400">02:00</span>
+            </div>
           </div>
 
           <!-- Submit -->
@@ -179,11 +182,18 @@ tailwind.config = {
   </div>
 </div>
 
-<script>
+<script th:inline="javascript">
 document.fonts.ready.then(function(){ document.body.classList.add('icons-ready'); });
 
 let timerInterval = null;
 let currentEmail  = null;
+const RESEND_COOLDOWN_SECONDS = 120; // 2 phút/lần
+let resendCooldownTimeout = null;
+let resendCooldownInterval = null;
+let resendCooldownLeft = 0;
+
+// Dùng URL theo context-path để fetch không bị sai khi app không chạy ở "/".
+const ACTIVATE_BASE = /*[[@{/activate}]]*/ '/activate';
 
 // ── Init ──────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function() {
@@ -193,13 +203,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
   document.getElementById('emailDisplay').textContent = currentEmail;
   startTimer(remaining > 0 ? remaining : 600);
+  startResendCooldown(RESEND_COOLDOWN_SECONDS);
 });
 
 // ── Timer ─────────────────────────────────────────────────────────────
 function startTimer(seconds) {
-  var resendBtn = document.getElementById('resendBtn');
-  resendBtn.disabled = true;
-  resendBtn.className = 'text-slate-400 font-semibold cursor-not-allowed transition-all text-xs';
   clearInterval(timerInterval);
 
   timerInterval = setInterval(function() {
@@ -210,9 +218,42 @@ function startTimer(seconds) {
     if (seconds < 0) {
       clearInterval(timerInterval);
       document.getElementById('timer').textContent = '00:00';
+    }
+  }, 1000);
+}
+
+function startResendCooldown(seconds) {
+  var resendBtn = document.getElementById('resendBtn');
+  if (!resendBtn) return;
+  var resendText = document.getElementById('resendCooldownText');
+  resendBtn.disabled = true;
+  resendBtn.className = 'text-slate-400 font-semibold cursor-not-allowed transition-all text-xs';
+  clearTimeout(resendCooldownTimeout);
+  clearInterval(resendCooldownInterval);
+
+  var s = (typeof seconds === 'number' ? seconds : RESEND_COOLDOWN_SECONDS);
+  resendCooldownLeft = s;
+
+  function render() {
+    if (!resendText) return;
+    var m = Math.floor(resendCooldownLeft / 60).toString().padStart(2, '0');
+    var sec = (resendCooldownLeft % 60).toString().padStart(2, '0');
+    resendText.textContent = m + ':' + sec;
+  }
+
+  render();
+
+  resendCooldownInterval = setInterval(function () {
+    resendCooldownLeft--;
+    if (resendCooldownLeft < 0) {
+      clearInterval(resendCooldownInterval);
+      resendCooldownInterval = null;
+      if (resendText) resendText.textContent = '00:00';
       resendBtn.disabled = false;
       resendBtn.className = 'text-primary font-semibold hover:underline transition-all text-xs cursor-pointer';
+      return;
     }
+    render();
   }, 1000);
 }
 
@@ -221,7 +262,8 @@ function resendCode() {
   var errEl = document.getElementById('otpErr');
   var errText = document.getElementById('otpErrText');
 
-  fetch('/activate/send-otp', {
+  startResendCooldown(RESEND_COOLDOWN_SECONDS);
+  fetch(ACTIVATE_BASE + '/send-otp', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: 'email=' + encodeURIComponent(currentEmail)
@@ -260,7 +302,7 @@ function verifyOtp() {
     return;
   }
 
-  fetch('/activate/verify', {
+  fetch(ACTIVATE_BASE + '/verify', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: 'email=' + encodeURIComponent(currentEmail) + '&code=' + encodeURIComponent(code)
@@ -279,8 +321,10 @@ function verifyOtp() {
     errEl.classList.remove('hidden');
     if (r.status === 410 || r.body === 'EXPIRED') {
       errText.textContent = 'This code has expired. Please request a new one.';
+    } else if (r.body === 'NOT_FOUND') {
+      errText.textContent = 'Activation email not found. Please open activate page again.';
     } else {
-      errText.textContent = 'Invalid code. Please check and try again.';
+      errText.textContent = 'Invalid code. Please verify you are using the latest code sent to your email (use "Resend Code" if needed).';
     }
   }).catch(function() {
     errEl.classList.remove('hidden');
@@ -298,6 +342,12 @@ document.querySelectorAll('[data-otp]').forEach(function(input, idx, all) {
     if (val && idx < all.length - 1) all[idx + 1].focus();
   });
   input.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      // Delay 1 tick để đảm bảo value của ô input cuối cùng đã được cập nhật
+      setTimeout(verifyOtp, 0);
+      return;
+    }
     if (e.key === 'Backspace' && !input.value && idx > 0) all[idx - 1].focus();
   });
   input.addEventListener('paste', function(e) {

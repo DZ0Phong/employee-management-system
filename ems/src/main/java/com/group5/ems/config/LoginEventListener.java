@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.security.authentication.event.AbstractAuthenticationFailureEvent;
 import org.springframework.security.authentication.event.InteractiveAuthenticationSuccessEvent;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,14 +47,21 @@ public class LoginEventListener {
         user.setLockedUntil(null);
         userRepository.save(user);
 
-        logService.log(AuditAction.LOGIN, AuditEntityType.AUTH, user.getId(), user.getId());
+        try {
+            logService.log(AuditAction.LOGIN, AuditEntityType.AUTH, user.getId(), user.getId());
+        } catch (Exception e) {
+            System.err.println("[LoginEvent] LOGIN audit: " + e.getMessage());
+        }
     }
 
     @EventListener
     @Transactional
     public void onLoginFailure(AbstractAuthenticationFailureEvent event) {
-        String username = (String) event.getAuthentication().getPrincipal();
-        Optional<User> opt = userRepository.findByUsername(username);
+        String username = extractUsername(event.getAuthentication());
+        if (username == null || username.isBlank()) {
+            return;
+        }
+        Optional<User> opt = userRepository.findByUsername(username.trim());
         if (opt.isEmpty()) return;
 
         User user = opt.get();
@@ -60,10 +69,17 @@ public class LoginEventListener {
         // Nếu đã bị khoá (LOCK5/LOCKED) hoặc INACTIVE: không increment counter.
         // LOCK5 = brute-force đang khoá, LOCKED = admin khoá, INACTIVE = chưa kích hoạt.
         String status = user.getStatus();
+        if (status != null) {
+            status = status.trim();
+        }
         if ("LOCK5".equalsIgnoreCase(status)
                 || "LOCKED".equalsIgnoreCase(status)
                 || "INACTIVE".equalsIgnoreCase(status)) {
-            logService.log(AuditAction.LOGIN_FAILED, AuditEntityType.AUTH, user.getId(), user.getId());
+            try {
+                logService.log(AuditAction.LOGIN_FAILED, AuditEntityType.AUTH, user.getId(), user.getId());
+            } catch (Exception e) {
+                System.err.println("[LoginEvent] LOGIN_FAILED audit: " + e.getMessage());
+            }
             return;
         }
 
@@ -77,6 +93,24 @@ public class LoginEventListener {
         }
         userRepository.save(user);
 
-        logService.log(AuditAction.LOGIN_FAILED, AuditEntityType.AUTH, user.getId(), user.getId());
+        try {
+            logService.log(AuditAction.LOGIN_FAILED, AuditEntityType.AUTH, user.getId(), user.getId());
+        } catch (Exception e) {
+            System.err.println("[LoginEvent] LOGIN_FAILED audit: " + e.getMessage());
+        }
+    }
+
+    private static String extractUsername(Authentication auth) {
+        if (auth == null || auth.getPrincipal() == null) {
+            return null;
+        }
+        Object p = auth.getPrincipal();
+        if (p instanceof String s) {
+            return s;
+        }
+        if (p instanceof UserDetails ud) {
+            return ud.getUsername();
+        }
+        return null;
     }
 }

@@ -34,6 +34,9 @@ public class AppUserDetailService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("Username not found: " + username));
 
         String status = existingUser.getStatus();
+        if (status != null) {
+            status = status.trim();
+        }
 
         // ── LOCK5: brute-force tạm thời (30 phút) ──────────────────────────
         if ("LOCK5".equalsIgnoreCase(status)) {
@@ -59,9 +62,8 @@ public class AppUserDetailService implements UserDetailsService {
         }
 
         // ── INACTIVE: chưa kích hoạt qua email ─────────────────────────────
-        if ("INACTIVE".equalsIgnoreCase(status)) {
-            throw new DisabledException("Account is disabled");
-        }
+        // Cho phép đăng nhập với đúng username/password,
+        // sau đó redirect sang trang /activate ở CustomeLoginSuccessHandler.
 
         List<Role> userRoles = userRoleRepository.getRolesByUserId(existingUser.getId());
         List<GrantedAuthority> grantedAuthorities = userRoles.stream()

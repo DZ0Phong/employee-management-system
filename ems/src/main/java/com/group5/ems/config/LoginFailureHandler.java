@@ -75,6 +75,9 @@ public class LoginFailureHandler extends SimpleUrlAuthenticationFailureHandler {
 
         User user = opt.get();
         String status = user.getStatus();
+        if (status != null) {
+            status = status.trim();
+        }
 
         // LOCK5: vừa bị brute-force lock ngay attempt này
         if ("LOCK5".equalsIgnoreCase(status) && user.getLockedUntil() != null) {
@@ -105,7 +108,13 @@ public class LoginFailureHandler extends SimpleUrlAuthenticationFailureHandler {
             return "/login?disabled";
         }
         return userRepository.findByUsername(username.trim())
-                .filter(u -> "INACTIVE".equalsIgnoreCase(u.getStatus()))
+                .filter(u -> {
+                    String st = u.getStatus();
+                    if (st != null) {
+                        st = st.trim();
+                    }
+                    return "INACTIVE".equalsIgnoreCase(st);
+                })
                 .map(u -> "/activate?email=" + UriUtils.encode(u.getEmail(), StandardCharsets.UTF_8))
                 .orElse("/login?disabled");
     }

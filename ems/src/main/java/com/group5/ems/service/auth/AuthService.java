@@ -29,7 +29,7 @@ public class AuthService {
     private String resetPasswordUrl;
 
     private static final long OTP_TTL_SECONDS = 600;      // 10 minutes
-    private static final long RESEND_COOLDOWN_SECONDS = 60; // 1 minute
+    private static final long RESEND_COOLDOWN_SECONDS = 120; // 2 minutes
 
     public enum OtpStatus {
         VALID,
@@ -174,12 +174,20 @@ public class AuthService {
             return OtpStatus.INVALID;
         }
 
-        if (!otp.equals(user.getResetOtp())) {
+        if (!otp.trim().equals(user.getResetOtp())) {
             return OtpStatus.INVALID;
         }
 
         if (user.getResetOtpExpiresAt().isBefore(LocalDateTime.now())) {
             return OtpStatus.EXPIRED;
+        }
+
+        // Thêm thời gian để nhập mật khẩu mới (timer step 2 có thể sát 0)
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime minValidUntil = now.plusMinutes(10);
+        if (user.getResetOtpExpiresAt().isBefore(minValidUntil)) {
+            user.setResetOtpExpiresAt(minValidUntil);
+            userRepository.save(user);
         }
 
         return OtpStatus.VALID;
@@ -206,8 +214,15 @@ public class AuthService {
         return PasswordStatus.OK;
     }
 
-    public boolean resetPassword(String email, String newPassword) {
+    /**
+     * Đặt lại mật khẩu sau forgot-password. Bắt buộc gửi lại đúng mã OTP đã verify ở bước trước
+     * (trước đây chỉ kiểm tra hết hạn → dễ fail im lặng hoặc bỏ qua bước OTP).
+     */
+    public boolean resetPassword(String email, String newPassword, String otpCode) {
         if (email == null || email.isBlank()) {
+            return false;
+        }
+        if (otpCode == null || otpCode.isBlank()) {
             return false;
         }
         User user = userRepository.findByEmail(email.trim()).orElse(null);
@@ -215,13 +230,14 @@ public class AuthService {
             return false;
         }
 
-        // Ensure there is a valid OTP session before allowing password reset
+        if (user.getResetOtp() == null || !otpCode.trim().equals(user.getResetOtp())) {
+            return false;
+        }
         if (user.getResetOtpExpiresAt() == null || user.getResetOtpExpiresAt().isBefore(LocalDateTime.now())) {
             return false;
         }
 
         user.setPasswordHash(passwordEncoder.encode(newPassword.trim()));
-        // Invalidate OTP after successful reset
         user.setResetOtp(null);
         user.setResetOtpExpiresAt(null);
         userRepository.save(user);

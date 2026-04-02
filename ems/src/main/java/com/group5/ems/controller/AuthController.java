@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.util.UriUtils;
+
+import java.nio.charset.StandardCharsets;
 
 @Controller
 @RequiredArgsConstructor
@@ -68,7 +71,7 @@ public class AuthController {
                         "We have sent a verification code to your email. Please check your inbox."
                 );
                 // Only redirect with email param when a code has actually been generated
-                return "redirect:/forgot-password?email=" + email;
+                return "redirect:/forgot-password?email=" + UriUtils.encodeQueryParam(email.trim(), StandardCharsets.UTF_8);
             } else {
                 redirectAttributes.addFlashAttribute(
                         "errorMessage",
@@ -122,7 +125,8 @@ public class AuthController {
     @ResponseBody
     public ResponseEntity<String> resetPassword(
             @RequestParam("email") String email,
-            @RequestParam("password") String password
+            @RequestParam("password") String password,
+            @RequestParam("code") String code
     ) {
         AuthService.PasswordStatus status = authService.validatePassword(password);
         if (status != AuthService.PasswordStatus.OK) {
@@ -136,7 +140,7 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(message);
         }
 
-        boolean updated = authService.resetPassword(email, password);
+        boolean updated = authService.resetPassword(email, password, code);
         if (!updated) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("Unable to reset password. Please make sure your verification code is still valid and try again.");

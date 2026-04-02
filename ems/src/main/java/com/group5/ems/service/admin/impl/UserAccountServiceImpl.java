@@ -79,6 +79,12 @@ public class UserAccountServiceImpl implements UserAccountService {
     @Transactional
     public void adminResetPassword(Long userId) {
         User user = findOrThrow(userId);
+        // Reset password cho admin thường phải cho phép user đăng nhập ngay với mật khẩu tạm.
+        // Nếu user đang bị LOCK5/LOCKED mà không đổi status về ACTIVE thì có thể bị chặn hoặc lỗi runtime.
+        String status = user.getStatus();
+        if ("LOCK5".equalsIgnoreCase(status) || "LOCKED".equalsIgnoreCase(status)) {
+            user.setStatus("ACTIVE");
+        }
         String tempPassword = generateTempPassword();
         user.setPasswordHash(passwordEncoder.encode(tempPassword));
         user.setFailedLoginCount(0);
@@ -129,6 +135,9 @@ public class UserAccountServiceImpl implements UserAccountService {
         helper.setTo(toEmail);
         helper.setSubject("EMS Pro — Your Temporary Password");
 
+        // Escape để tránh tình huống copy mật khẩu sai nếu password có ký tự HTML đặc biệt.
+        String safePassword = escapeHtml(tempPassword);
+
         String html = "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"UTF-8\"/></head>" +
                 "<body style=\"font-family:Arial,sans-serif;background:#f6f6f8;margin:0;padding:24px;\">" +
                 "<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\" width=\"100%\" style=\"max-width:560px;margin:0 auto;background:#fff;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,.08);\">" +
@@ -142,7 +151,7 @@ public class UserAccountServiceImpl implements UserAccountService {
                 "</td></tr>" +
                 "<tr><td style=\"padding:8px 32px;text-align:center;\">" +
                 "<div style=\"display:inline-block;padding:14px 32px;background:#1414b8;color:#fff;font-size:20px;font-weight:700;letter-spacing:.15em;border-radius:9999px;\">" +
-                tempPassword + "</div>" +
+                safePassword + "</div>" +
                 "</td></tr>" +
                 "<tr><td style=\"padding:12px 32px 28px;\">" +
                 "<p style=\"font-size:13px;color:#6b7280;\">Please log in and <strong>change your password immediately</strong> after receiving this email.</p>" +
@@ -152,5 +161,15 @@ public class UserAccountServiceImpl implements UserAccountService {
 
         helper.setText(html, true);
         mailSender.send(message);
+    }
+
+    private String escapeHtml(String input) {
+        if (input == null) return null;
+        return input
+                .replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&#39;");
     }
 }

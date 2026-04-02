@@ -60,24 +60,28 @@ public class UserListController {
         model.addAttribute("pageSize",      users.getSize());
         model.addAttribute("totalPages",    users.getTotalPages());
         model.addAttribute("totalElements", users.getTotalElements());
+        model.addAttribute("saveUserRequest", new SaveUserRequest());
 
         return "admin/user-list";
     }
 
+    /**
+     * Form fields must use the prefix {@code saveUserRequest.*} so Spring binds into the DTO
+     * (see {@code ServletRequestDataBinder} + object name). Plain {@code name="password"} would not bind.
+     */
     @PostMapping("/users/save")
-    public String saveUser(@Valid @ModelAttribute SaveUserRequest req,
+    public String saveUser(@Valid @ModelAttribute("saveUserRequest") SaveUserRequest saveUserRequest,
                            BindingResult bindingResult,
                            RedirectAttributes redirectAttributes) {
-        if(bindingResult.hasErrors()) {
+        if (bindingResult.hasErrors()) {
             String error = bindingResult.getAllErrors().get(0).getDefaultMessage();
             redirectAttributes.addFlashAttribute("message", error);
             return "redirect:/admin/users";
         }
-        try{
-            adminService.saveUser(req);
+        try {
+            adminService.saveUser(saveUserRequest);
             redirectAttributes.addFlashAttribute("message", "User has been saved successfully");
-        }
-        catch(IllegalArgumentException e){
+        } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("message", e.getMessage());
         }
         return "redirect:/admin/users";

@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>HRM Pro - User Accounts</title>
+    <title>EMS Pro - User Accounts</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
     <link rel="stylesheet" href="/css/app-icons.css" th:href="@{/css/app-icons.css}"/>
@@ -391,7 +391,7 @@
                                               th:action="@{'/admin/users/' + ${user.id} + '/deactivate'}" method="post" class="inline">
                                             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                                             <button type="submit" title="Deactivate this account"
-                                                    class="px-2.5 h-7 rounded-lg text-[11px] font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 transition-colors">
+                                                    class="px-2.5 h-7 rounded-lg text-[11px] font-semibold text-slate-500 bg-slate-100  hover:bg-amber-100 transition-colors">
                                                 Deactivate
                                             </button>
                                         </form>
@@ -407,10 +407,7 @@
                                         </button>
 
                                         <!-- Fail count badge -->
-                                        <span th:if="${user.failedLoginCount > 0}"
-                                              th:title="${user.failedLoginCount + ' failed login attempt(s)'}"
-                                              class="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-rose-100 text-rose-600 text-[9px] font-black border border-rose-200"
-                                              th:text="${user.failedLoginCount}">0</span>
+
                                     </div>
                                 </td>
                             </tr>
@@ -528,35 +525,35 @@
                 ✕
             </button>
         </div>
-        <form th:action="@{/admin/users/save}" method="post" id="user-form">
+        <form th:action="@{/admin/users/save}" th:object="${saveUserRequest}" method="post" id="user-form">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-            <input type="hidden" name="id" id="field-id" value=""/>
+            <input type="hidden" th:field="*{id}" th:id="'field-id'"/>
             <div class="p-6 space-y-4">
                 <div>
                     <label class="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Username <span class="text-rose-400">*</span></label>
-                    <input id="field-username" name="username" type="text" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-primary focus:border-transparent transition-all placeholder:text-slate-300" placeholder="johndoe"/>
+                    <input th:field="*{username}" th:id="'field-username'" type="text" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-primary focus:border-transparent transition-all placeholder:text-slate-300" placeholder="johndoe"/>
                 </div>
                 <div>
                     <label class="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Email <span class="text-rose-400">*</span></label>
-                    <input id="field-email" name="email" type="email" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-primary focus:border-transparent transition-all placeholder:text-slate-300" placeholder="john.doe@company.com"/>
+                    <input th:field="*{email}" th:id="'field-email'" type="email" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-primary focus:border-transparent transition-all placeholder:text-slate-300" placeholder="john.doe@company.com"/>
                 </div>
                 <div>
                     <label class="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Password <span id="pwd-required" class="text-rose-400">*</span></label>
-                    <input id="field-password" name="password" type="password" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-primary focus:border-transparent transition-all placeholder:text-slate-300" placeholder="••••••••"/>
+                    <input th:field="*{password}" th:id="'field-password'" type="password" autocomplete="new-password" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-primary focus:border-transparent transition-all placeholder:text-slate-300" placeholder="••••••••"/>
                     <p id="pwd-hint" class="text-[11px] text-slate-400 mt-1 hidden">Leave blank to keep current password</p>
                 </div>
                 <div>
                     <label class="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Full Name <span class="text-rose-400">*</span></label>
-                    <input id="field-fullName" name="fullName" type="text" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-primary focus:border-transparent transition-all placeholder:text-slate-300" placeholder="John Doe"/>
+                    <input th:field="*{fullName}" th:id="'field-fullName'" type="text" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-primary focus:border-transparent transition-all placeholder:text-slate-300" placeholder="John Doe"/>
                 </div>
                 <div>
                     <label class="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Phone</label>
-                    <input id="field-phone" name="phone" type="text" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-primary focus:border-transparent transition-all placeholder:text-slate-300" placeholder="+84 123 456 789"/>
+                    <input th:field="*{phone}" th:id="'field-phone'" type="text" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-primary focus:border-transparent transition-all placeholder:text-slate-300" placeholder="+84 123 456 789"/>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Status</label>
-                        <select id="field-status" name="status"
+                        <select th:field="*{status}" th:id="'field-status'"
                                 onchange="updateStatusHint(this.value)"
                                 class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-primary">
                             <option value="Active">Active</option>
@@ -567,7 +564,7 @@
                     </div>
                     <div>
                         <label class="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Role</label>
-                        <select id="field-role" name="role" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-primary">
+                        <select th:field="*{role}" th:id="'field-role'" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-primary">
                             <option value="">Select role</option>
                             <option th:each="r : ${roles}" th:value="${r.code}" th:text="${r.name}">Role</option>
                         </select>
@@ -625,7 +622,10 @@
 <!-- TOAST -->
 <div id="toast-container" class="fixed bottom-6 right-6 z-[60] flex flex-col gap-2 pointer-events-none"></div>
 
-<script>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    var ADMIN_USERS_BASE = /*[[@{/admin/users}]]*/ '/admin/users';
+    /*]]>*/
     let _row = null; // currently viewed row in detail panel
 
     // ── Toast (react-hot-toast style, no icons) ──────────────────
@@ -695,7 +695,7 @@
     // ── Delete modal ──────────────────────────────────────────────
     function openDeleteModal(id, name) {
         document.getElementById('delete-name').textContent = name;
-        document.getElementById('delete-form').action = '/admin/users/delete/' + id;
+        document.getElementById('delete-form').action = ADMIN_USERS_BASE + '/delete/' + id;
         document.getElementById('delete-modal').classList.remove('hidden');
     }
 
@@ -720,7 +720,7 @@
         var id   = btn.dataset.id;
         var name = btn.dataset.name;
         document.getElementById('reset-user-name').textContent = name || 'this user';
-        document.getElementById('reset-pwd-form').action = '/admin/users/' + id + '/reset-password';
+        document.getElementById('reset-pwd-form').action = ADMIN_USERS_BASE + '/' + id + '/reset-password';
         document.getElementById('reset-pwd-modal').classList.remove('hidden');
     }
     function openPanelResetPwd() {
@@ -738,7 +738,7 @@
         if (!_row) return;
         var id = _row.dataset.id;
         var form = document.getElementById('panel-action-form');
-        form.action = '/admin/users/' + id + '/' + action;
+        form.action = ADMIN_USERS_BASE + '/' + id + '/' + action;
         closeDetailPanel();
         form.submit();
     }
@@ -793,16 +793,15 @@
         var lockBtn   = document.getElementById('dp-lock-btn');
         var lockLabel = document.getElementById('dp-lock-label');
         var isLocked  = (status === 'Locked' || status === 'Lock5');
+        lockBtn.className = 'flex-1 min-w-[80px] py-2.5 text-xs font-bold rounded-xl text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors';
         if (isLocked) {
             lockLabel.textContent = 'Unlock';
             lockBtn.title = status === 'Lock5' ? 'Unlock brute-force lock' : 'Unlock admin lock';
             lockBtn.onclick = function(){ submitPanelAction('unlock'); };
-            lockBtn.className = 'flex-1 min-w-[80px] py-2.5 text-xs font-bold rounded-xl border border-slate-200 text-emerald-600 hover:bg-emerald-50 hover:border-emerald-200 transition-colors';
         } else {
             lockLabel.textContent = 'Lock';
             lockBtn.title = 'Admin lock — indefinite';
             lockBtn.onclick = function(){ submitPanelAction('lock'); };
-            lockBtn.className = 'flex-1 min-w-[80px] py-2.5 text-xs font-bold rounded-xl border border-slate-200 text-slate-500 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-200 transition-colors';
         }
 
         // fail count warning

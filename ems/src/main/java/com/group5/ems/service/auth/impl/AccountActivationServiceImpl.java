@@ -21,7 +21,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class AccountActivationServiceImpl implements AccountActivationService {
 
     private static final long OTP_TTL_SECONDS     = 600; // 10 phút
-    private static final long RESEND_COOLDOWN_SEC  = 60;  // 1 phút
+    private static final long RESEND_COOLDOWN_SEC  = 120; // 2 phút
 
     private final UserRepository userRepository;
     private final JavaMailSender  mailSender;
@@ -66,7 +66,11 @@ public class AccountActivationServiceImpl implements AccountActivationService {
         if (user == null) return VerifyResult.NOT_FOUND;
         if ("ACTIVE".equalsIgnoreCase(user.getStatus())) return VerifyResult.ALREADY_ACTIVE;
         if (user.getActivationOtp() == null) return VerifyResult.INVALID;
-        if (!otp.trim().equals(user.getActivationOtp())) return VerifyResult.INVALID;
+        String storedOtp = user.getActivationOtp();
+        if (storedOtp != null) {
+            storedOtp = storedOtp.trim();
+        }
+        if (!otp.trim().equals(storedOtp)) return VerifyResult.INVALID;
         if (user.getActivationOtpExpiresAt() == null
                 || user.getActivationOtpExpiresAt().isBefore(LocalDateTime.now())) {
             return VerifyResult.EXPIRED;

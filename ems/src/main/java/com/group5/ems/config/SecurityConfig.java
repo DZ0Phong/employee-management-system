@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 
 import lombok.RequiredArgsConstructor;
@@ -13,8 +14,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final CustomeLoginSuccessHandler customeLoginSuccessHandler;
-    private final LoginFailureHandler        loginFailureHandler;
+    private final CustomeLoginSuccessHandler   customeLoginSuccessHandler;
+    private final LoginFailureHandler          loginFailureHandler;
+    private final LogoutAuditSuccessHandler    logoutAuditSuccessHandler;
+    private final InactiveAccountDashboardRedirectFilter inactiveAccountDashboardRedirectFilter;
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -22,7 +25,7 @@ public class SecurityConfig {
         http
 
         .csrf(csrf -> csrf
-                .ignoringRequestMatchers("/guest/**", "/forgot-password/**")
+                .ignoringRequestMatchers("/guest/**", "/forgot-password/**", "/activate/**")
             )
 
         .authorizeHttpRequests(auth -> auth
@@ -45,9 +48,12 @@ public class SecurityConfig {
                 )
          .logout(logout -> logout
          .logoutUrl("/logout")
-         .logoutSuccessUrl("/login?logout")
+         .logoutSuccessHandler(logoutAuditSuccessHandler)
          .permitAll()
          );
+
+        // Nếu user đã đăng nhập nhưng status = INACTIVE thì chặn khỏi các trang dashboard theo role.
+        http.addFilterAfter(inactiveAccountDashboardRedirectFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
