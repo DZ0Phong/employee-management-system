@@ -143,16 +143,6 @@
                 </p>
             </div>
             <div class="flex items-center gap-2">
-                <a th:href="@{/dashboard/export(format='pdf')}"
-                   class="flex items-center gap-1.5 px-3.5 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 text-xs font-semibold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm">
-                    <span class="material-symbols-outlined text-[17px]">download</span>
-                    Export PDF
-                </a>
-                <a th:href="@{/requests/new}"
-                   class="flex items-center gap-1.5 px-3.5 py-2 bg-primary text-white text-xs font-semibold rounded-xl hover:bg-primary/90 transition-colors shadow-sm">
-                    <span class="material-symbols-outlined text-[17px]">add</span>
-                    New Request
-                </a>
                 <div class="w-8 h-8 rounded-full bg-primary/10 text-primary font-bold text-xs flex items-center justify-center ml-1"
                      th:text="${currentUser?.initials ?: 'AH'}">AH</div>
             </div>

@@ -151,9 +151,68 @@
         }
 
         .filter-pill.active {
+            background: white !important;
+            color: #1414b8 !important;
+            border-color: transparent !important;
+        }
+        
+        /* Status pills - toggle style */
+        .status-pill {
+            transition: all 0.15s;
+        }
+        
+        .status-pill.active {
             background: #1414b8 !important;
             color: white !important;
             border-color: #1414b8 !important;
+        }
+        
+        /* Segmented control for status filter */
+        #status-filter .filter-pill.active {
+            background: white !important;
+            color: #1414b8 !important;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        #status-filter .filter-pill:not(.active) {
+            background: transparent !important;
+            color: #64748b !important;
+        }
+        
+        /* Dropdown filters with active state */
+        select.active-filter {
+            background: #1414b8 !important;
+            color: white !important;
+            border-color: #1414b8 !important;
+        }
+        
+        /* Default state for dropdowns */
+        #type-filter:not(.active-filter),
+        #priority-filter:not(.active-filter),
+        #dept-filter:not(.active-filter) {
+            background: #f8fafc !important;
+            color: #475569 !important;
+            border-color: #e2e8f0 !important;
+        }
+        
+        /* Auto-width for dropdowns */
+        #type-filter,
+        #priority-filter,
+        #dept-filter {
+            width: auto;
+            min-width: fit-content;
+        }
+        
+        /* Dropdown options always white background */
+        select option {
+            background: white !important;
+            color: #1e293b !important;
+        }
+        
+        /* Selected option in dropdown list */
+        select option:checked {
+            background: #e2e8f0 !important;
+            color: #1e293b !important;
         }
 
         /* Team calendar mini */
@@ -371,7 +430,9 @@
                             </div>
                             <p class="text-slate-500 text-sm font-medium">On Leave Now</p>
                             <h3 class="text-3xl font-bold mt-1"
-                                th:text="${stats?.nextReturnInfo != null ? stats.nextReturnInfo : 'Next return: —'}">Next return: —</h3>
+                                th:text="${stats?.onLeaveNowCount != null ? stats.onLeaveNowCount : 0}">0</h3>
+                            <p class="text-xs text-slate-400 mt-1"
+                                th:text="${stats?.nextReturnInfo != null ? stats.nextReturnInfo : 'Next return: 3 days'}">Next return: 3 days</p>
                         </div>
                         
                         <div class="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
@@ -383,7 +444,9 @@
                                     th:text="${stats?.pendingCount != null ? stats.pendingCount : 0}">0</span>
                             </div>
                             <p class="text-slate-500 text-sm font-medium">Pending Review</p>
-                            <h3 class="text-3xl font-bold mt-1 text-amber-600" id="pending-count-badge">Awaiting action</h3>
+                            <h3 class="text-3xl font-bold mt-1"
+                                th:text="${stats?.pendingCount != null ? stats.pendingCount : 0}">0</h3>
+                            <p class="text-xs text-slate-400 mt-1">Awaiting action</p>
                         </div>
                         
                         <div class="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
@@ -392,11 +455,11 @@
                                     <span class="material-symbols-outlined">calendar_month</span>
                                 </div>
                                 <span class="text-xs font-bold px-2 py-1 rounded bg-purple-50 text-purple-500"
-                                    th:text="${stats?.thisMonthCount != null ? stats.thisMonthCount : 0}">0</span>
+                                    th:text="${stats?.thisMonthChange != null ? stats.thisMonthChange : '+12%'}">+12%</span>
                             </div>
                             <p class="text-slate-500 text-sm font-medium">This Month</p>
                             <h3 class="text-3xl font-bold mt-1"
-                                th:text="${stats?.thisMonthChange != null ? stats.thisMonthChange : 'vs last month'}">vs last month</h3>
+                                th:text="${stats?.thisMonthCount != null ? stats.thisMonthCount : 0}">0</h3>
                         </div>
                     </div>
 
@@ -423,101 +486,59 @@
                             </button>
                             
                             <!-- Search -->
-                            <div class="relative ml-auto mr-6 my-2">
-                                <span
-                                    class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">search</span>
+                            <div class="flex items-center gap-2 ml-auto mr-6 my-2 px-3 py-2 border border-slate-200 rounded-xl bg-slate-50 w-52 transition-all">
+                                <span class="material-symbols-outlined text-slate-400 text-[18px] shrink-0">search</span>
                                 <input id="search-input" type="text" placeholder="Search employee..."
                                     oninput="filterTable()"
-                                    class="pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 w-52 transition-all" />
+                                    class="flex-1 bg-transparent border-none outline-none text-sm p-0 focus:ring-0" />
                             </div>
                         </div>
 
-                        <!-- ── Filter Bar - Phase 3 Updated ──────────────────────────────── -->
-                        <div class="px-6 py-3 border-b border-slate-100 flex items-center gap-3 flex-wrap">
-                            <span class="text-xs text-slate-400 font-medium shrink-0">Filters:</span>
-
-                            <!-- Priority filter (always visible) -->
-                            <div class="flex items-center gap-1.5" id="priority-filter">
-                                <button onclick="toggleFilter(this,'priority','all')" data-priority="all"
-                                    class="filter-pill active text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:border-primary/40 transition-all">
-                                    All Priority
-                                </button>
-                                <button onclick="toggleFilter(this,'priority','critical')" data-priority="critical"
-                                    class="filter-pill text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:border-primary/40 transition-all">
-                                    Critical
-                                </button>
-                                <button onclick="toggleFilter(this,'priority','urgent')" data-priority="urgent"
-                                    class="filter-pill text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:border-primary/40 transition-all">
-                                    Urgent
-                                </button>
-                                <button onclick="toggleFilter(this,'priority','high')" data-priority="high"
-                                    class="filter-pill text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:border-primary/40 transition-all">
-                                    High
-                                </button>
-                                <button onclick="toggleFilter(this,'priority','normal')" data-priority="normal"
-                                    class="filter-pill text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:border-primary/40 transition-all">
-                                    Normal
-                                </button>
-                            </div>
-
-                            <div class="w-px h-4 bg-slate-200 shrink-0"></div>
-
-                            <!-- Status filter (always visible) -->
-                            <div class="flex items-center gap-1.5" id="status-filter">
-                                <button onclick="toggleFilter(this,'status','all')" data-status="all"
-                                    class="filter-pill active text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:border-primary/40 transition-all">
-                                    All Status
-                                </button>
-                                <button onclick="toggleFilter(this,'status','pending')" data-status="pending"
-                                    class="filter-pill text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:border-primary/40 transition-all">
+                        <!-- ── Filter Bar - Single Row ──────────────────────────────── -->
+                        <div class="px-6 py-3 border-b border-slate-100 flex items-center gap-3">
+                            <!-- Status pills (toggle buttons) -->
+                            <div class="flex items-center gap-2" id="status-filter">
+                                <button onclick="toggleStatusFilter(this,'pending')" data-status="pending"
+                                    class="status-pill text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:border-primary/40 transition-all">
                                     Pending
                                 </button>
-                                <button onclick="toggleFilter(this,'status','approved')" data-status="approved"
-                                    class="filter-pill text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:border-primary/40 transition-all">
+                                <button onclick="toggleStatusFilter(this,'approved')" data-status="approved"
+                                    class="status-pill text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:border-primary/40 transition-all">
                                     Approved
                                 </button>
-                                <button onclick="toggleFilter(this,'status','rejected')" data-status="rejected"
-                                    class="filter-pill text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:border-primary/40 transition-all">
+                                <button onclick="toggleStatusFilter(this,'rejected')" data-status="rejected"
+                                    class="status-pill text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:border-primary/40 transition-all">
                                     Rejected
                                 </button>
                             </div>
 
                             <div class="w-px h-4 bg-slate-200 shrink-0"></div>
 
-                            <!-- Leave type filter (visible only for Leave category) -->
-                            <div class="flex items-center gap-1.5" id="leave-type-filter">
-                                <button onclick="toggleFilter(this,'type','all')" data-type="all"
-                                    class="filter-pill active text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:border-primary/40 transition-all">
-                                    All Types
-                                </button>
-                                <button onclick="toggleFilter(this,'type','annual')" data-type="annual"
-                                    class="filter-pill text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:border-primary/40 transition-all">
-                                    Annual
-                                </button>
-                                <button onclick="toggleFilter(this,'type','sick')" data-type="sick"
-                                    class="filter-pill text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:border-primary/40 transition-all">
-                                    Sick
-                                </button>
-                                <button onclick="toggleFilter(this,'type','emergency')" data-type="emergency"
-                                    class="filter-pill text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:border-primary/40 transition-all">
-                                    Emergency
-                                </button>
-                                <button onclick="toggleFilter(this,'type','maternity')" data-type="maternity"
-                                    class="filter-pill text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:border-primary/40 transition-all">
-                                    Maternity
-                                </button>
-                                <button onclick="toggleFilter(this,'type','personal')" data-type="personal"
-                                    class="filter-pill text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:border-primary/40 transition-all">
-                                    Personal
-                                </button>
-                            </div>
+                            <!-- Type dropdown -->
+                            <select id="type-filter" onchange="filterTable()"
+                                class="text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all cursor-pointer">
+                                <option value="">Type ▾</option>
+                                <option value="annual">Annual</option>
+                                <option value="sick">Sick</option>
+                                <option value="emergency">Emergency</option>
+                                <option value="maternity">Maternity</option>
+                                <option value="personal">Personal</option>
+                            </select>
 
-                            <div class="w-px h-4 bg-slate-200 shrink-0"></div>
+                            <!-- Priority dropdown -->
+                            <select id="priority-filter" onchange="filterTable()"
+                                class="text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all cursor-pointer">
+                                <option value="">Priority ▾</option>
+                                <option value="critical">Critical</option>
+                                <option value="urgent">Urgent</option>
+                                <option value="high">High</option>
+                                <option value="normal">Normal</option>
+                            </select>
 
-                            <!-- Department -->
+                            <!-- Department dropdown -->
                             <select id="dept-filter" onchange="filterTable()"
-                                class="text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50">
-                                <option value="">All departments</option>
+                                class="text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all cursor-pointer">
+                                <option value="">Dept ▾</option>
                                 <option value="engineering">Engineering</option>
                                 <option value="marketing">Marketing</option>
                                 <option value="operations">Operations</option>
@@ -529,20 +550,21 @@
                             <div class="flex items-center gap-2">
                                 <input type="date" id="date-from" onchange="filterTable()"
                                     class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30" />
-                                <span class="text-xs text-slate-400">to</span>
+                                <span class="text-xs text-slate-400">→</span>
                                 <input type="date" id="date-to" onchange="filterTable()"
                                     class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30" />
                             </div>
 
-                            <!-- Clear filters -->
-                            <button onclick="clearFilters()"
-                                class="text-xs text-slate-400 hover:text-primary transition-colors ml-auto flex items-center gap-1">
-                                <span class="material-symbols-outlined text-[14px]">filter_alt_off</span>
-                                Clear All
-                            </button>
+                            <div class="w-px h-4 bg-slate-200 shrink-0"></div>
 
                             <!-- Result count -->
-                            <span id="filter-count" class="text-xs text-slate-400 font-medium">Showing all</span>
+                            <span id="filter-count" class="text-xs text-slate-400 font-medium whitespace-nowrap shrink-0">5 of 5</span>
+
+                            <!-- Clear filters (only show when active) -->
+                            <button onclick="clearFilters()" id="clear-filters-btn" style="display: none;"
+                                class="text-xs text-primary hover:text-primary/80 transition-colors flex items-center gap-1 font-semibold whitespace-nowrap shrink-0">
+                                Clear
+                            </button>
                         </div>
 
                         <!-- ── Bulk Action Bar (hidden until selection) ─── -->
@@ -1854,14 +1876,6 @@
             });
             document.querySelector('[data-category="' + category + '"]').classList.add('active');
             
-            // Show/hide leave type filter based on category
-            var leaveTypeFilter = document.getElementById('leave-type-filter');
-            if (category === 'leave') {
-                leaveTypeFilter.classList.remove('hidden');
-            } else {
-                leaveTypeFilter.classList.add('hidden');
-            }
-            
             // Filter table based on category
             filterTable();
         }
@@ -1928,6 +1942,27 @@
         }
 
         // ── Filter bar ────────────────────────────────────────────────
+        // Toggle status filter (can be turned on/off)
+        function toggleStatusFilter(el, value) {
+            var isActive = el.classList.contains('active');
+            
+            if (isActive) {
+                // Turn off - back to "all"
+                el.classList.remove('active');
+                activeFilters.status = 'all';
+            } else {
+                // Turn off other status pills
+                document.querySelectorAll('.status-pill').forEach(function (p) {
+                    p.classList.remove('active');
+                });
+                // Turn on this one
+                el.classList.add('active');
+                activeFilters.status = value;
+            }
+            
+            filterTable();
+        }
+        
         function toggleFilter(el, group, value) {
             document.querySelectorAll('.filter-pill[data-' + group + ']').forEach(function (p) {
                 p.classList.remove('active');
@@ -1940,14 +1975,38 @@
         function filterTable() {
             var search = (document.getElementById('search-input').value || '').toLowerCase();
             var dept = (document.getElementById('dept-filter').value || '').toLowerCase();
+            var type = (document.getElementById('type-filter').value || '').toLowerCase();
+            var priority = (document.getElementById('priority-filter').value || '').toLowerCase();
             var dateFrom = document.getElementById('date-from').value;
             var dateTo = document.getElementById('date-to').value;
-            var type = activeFilters.type || 'all';
-            var priority = activeFilters.priority || 'all';
             var status = activeFilters.status || 'all';
+
+            // Update dropdown styles when active
+            var typeSelect = document.getElementById('type-filter');
+            var prioritySelect = document.getElementById('priority-filter');
+            var deptSelect = document.getElementById('dept-filter');
+            
+            if (type) {
+                typeSelect.classList.add('active-filter');
+            } else {
+                typeSelect.classList.remove('active-filter');
+            }
+            
+            if (priority) {
+                prioritySelect.classList.add('active-filter');
+            } else {
+                prioritySelect.classList.remove('active-filter');
+            }
+            
+            if (dept) {
+                deptSelect.classList.add('active-filter');
+            } else {
+                deptSelect.classList.remove('active-filter');
+            }
 
             var rows = document.querySelectorAll('.data-row');
             var visible = 0;
+            var total = rows.length;
 
             rows.forEach(function (row) {
                 var name = (row.dataset.name || '').toLowerCase();
@@ -1955,21 +2014,27 @@
                 var rowDept = (row.dataset.dept || '').toLowerCase();
                 var rowPriority = (row.dataset.priority || '').toLowerCase();
                 var rowStatus = (row.dataset.status || '').toLowerCase();
+                var rowCategory = (row.dataset.category || '').toLowerCase();
 
                 var matchSearch = !search || name.includes(search);
-                var matchType = type === 'all' || rowType.includes(type);
+                var matchType = !type || rowType.includes(type);
                 var matchDept = !dept || rowDept.includes(dept);
-                var matchPriority = priority === 'all' || rowPriority === priority.toLowerCase();
+                var matchPriority = !priority || rowPriority === priority;
                 var matchStatus = status === 'all' || rowStatus === status.toLowerCase();
                 
-                // Category filter
+                // Category filter - improved logic
                 var matchCategory = true;
-                if (currentCategory === 'leave') {
-                    matchCategory = rowType !== '';
+                if (currentCategory === 'all') {
+                    matchCategory = true; // Show all
+                } else if (currentCategory === 'leave') {
+                    // Show rows that have leave types (annual, sick, personal, etc.)
+                    matchCategory = rowType !== '' && !rowCategory;
                 } else if (currentCategory === 'hr') {
-                    matchCategory = row.dataset.category === 'hr';
+                    // Show rows marked as HR documents
+                    matchCategory = rowCategory === 'hr';
                 } else if (currentCategory === 'status') {
-                    matchCategory = row.dataset.category === 'status';
+                    // Show rows marked as status changes
+                    matchCategory = rowCategory === 'status';
                 }
 
                 var show = matchSearch && matchType && matchDept && matchPriority && matchStatus && matchCategory;
@@ -1984,7 +2049,14 @@
             });
 
             var countEl = document.getElementById('filter-count');
-            if (countEl) countEl.textContent = visible + ' result' + (visible !== 1 ? 's' : '');
+            if (countEl) countEl.textContent = visible + ' of ' + total;
+
+            // Show/hide clear button
+            var hasActiveFilters = search || dept || type || priority || dateFrom || dateTo || status !== 'all';
+            var clearBtn = document.getElementById('clear-filters-btn');
+            if (clearBtn) {
+                clearBtn.style.display = hasActiveFilters ? 'flex' : 'none';
+            }
 
             var empty = document.getElementById('empty-state');
             if (empty) empty.classList.toggle('hidden', visible > 0);
@@ -1993,13 +2065,17 @@
         function clearFilters() {
             document.getElementById('search-input').value = '';
             document.getElementById('dept-filter').value = '';
+            document.getElementById('type-filter').value = '';
+            document.getElementById('priority-filter').value = '';
             document.getElementById('date-from').value = '';
             document.getElementById('date-to').value = '';
-            activeFilters = { type: 'all', priority: 'all', status: 'all' };
-            document.querySelectorAll('.filter-pill').forEach(function (p) { p.classList.remove('active'); });
-            document.querySelectorAll('.filter-pill[data-type="all"]').forEach(function(btn) { btn.classList.add('active'); });
-            document.querySelectorAll('.filter-pill[data-priority="all"]').forEach(function(btn) { btn.classList.add('active'); });
-            document.querySelectorAll('.filter-pill[data-status="all"]').forEach(function(btn) { btn.classList.add('active'); });
+            activeFilters = { status: 'all' };
+            
+            // Reset status pills - remove all active states
+            document.querySelectorAll('.status-pill').forEach(function (p) { 
+                p.classList.remove('active'); 
+            });
+            
             filterTable();
         }
 
