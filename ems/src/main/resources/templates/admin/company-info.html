@@ -3,10 +3,11 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Company Info — EMS Pro Admin</title>
+    <title>EMS Pro - Company Info</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="/css/app-icons.css" th:href="@{/css/app-icons.css}"/>
+    <script defer src="/js/app-icons.js" th:src="@{/js/app-icons.js}"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -498,6 +499,7 @@
         el.className = 'toast pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-2xl shadow-xl text-sm font-semibold text-white ' + c.bg;
         el.innerHTML = '<span class="material-symbols-outlined fill-icon text-[18px]">' + c.icon + '</span>' + msg;
         document.getElementById('toast-container').appendChild(el);
+        if (window.hydrateAppIcons) window.hydrateAppIcons(el);
         setTimeout(function () {
             el.style.transition = 'opacity .3s';
             el.style.opacity = '0';
@@ -558,7 +560,11 @@
     // ── Create Modal ────────────────────────────────────────────────────
     function openCreateModal() {
         document.getElementById('modal-title').textContent  = 'Add New Entry';
-        document.getElementById('modal-icon').textContent   = 'add';
+        if (window.setAppIcon) {
+            window.setAppIcon(document.getElementById('modal-icon'), 'add');
+        } else {
+            document.getElementById('modal-icon').textContent = 'add';
+        }
         document.getElementById('submit-label').textContent = 'Create';
         document.getElementById('modal-form').action        = '/admin/company-info/create';
         document.getElementById('field-id').value           = '';
@@ -578,7 +584,11 @@
     // ── Edit Modal ──────────────────────────────────────────────────────
     function openEditModal(id, key, title, content, isPublic) {
         document.getElementById('modal-title').textContent  = 'Edit Entry';
-        document.getElementById('modal-icon').textContent   = 'edit';
+        if (window.setAppIcon) {
+            window.setAppIcon(document.getElementById('modal-icon'), 'edit');
+        } else {
+            document.getElementById('modal-icon').textContent = 'edit';
+        }
         document.getElementById('submit-label').textContent = 'Save Changes';
         document.getElementById('modal-form').action        = '/admin/company-info/update';
         document.getElementById('field-id').value           = id;

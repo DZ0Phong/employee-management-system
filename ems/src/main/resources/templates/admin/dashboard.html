@@ -141,7 +141,8 @@
                 <button class="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-50 text-slate-500 transition-colors">
                     <span class="material-symbols-outlined text-[20px]">help_outline</span>
                 </button>
-                <div class="w-8 h-8 rounded-full bg-primary/10 text-primary font-bold text-xs flex items-center justify-center ml-1">AR</div>
+                <div class="w-8 h-8 rounded-full bg-primary/10 text-primary font-bold text-xs flex items-center justify-center ml-1"
+                     th:text="${currentUser != null ? currentUser.getInitials() : 'AD'}">AD</div>
             </div>
         </header>
 
