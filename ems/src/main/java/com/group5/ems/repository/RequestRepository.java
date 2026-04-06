@@ -471,4 +471,22 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
             "LEFT JOIN FETCH e.department d JOIN FETCH r.requestType rt " +
             "WHERE r.id IN :ids AND r.status = 'PENDING' AND r.step = 'WAITING_HR' AND rt.category <> 'ATTENDANCE'")
     List<Request> findPendingWorkflowRequestsByIds(@Param("ids") List<Long> ids);
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // CRITICAL REQUESTS - For Email Notification
+    // ══════════════════════════════════════════════════════════════════════════
+    
+    /**
+     * Find all requests by status and priority
+     * Used for finding CRITICAL pending requests for email notifications
+     */
+    @Query("SELECT r FROM Request r " +
+           "JOIN FETCH r.employee e " +
+           "JOIN FETCH e.user u " +
+           "LEFT JOIN FETCH e.position p " +
+           "WHERE r.status = :status AND r.priority = :priority " +
+           "ORDER BY r.createdAt DESC")
+    List<Request> findByStatusAndPriorityOrderByCreatedAtDesc(
+            @Param("status") String status, 
+            @Param("priority") String priority);
 }

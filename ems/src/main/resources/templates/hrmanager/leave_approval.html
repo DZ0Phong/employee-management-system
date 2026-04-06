@@ -391,8 +391,8 @@
                     <button
                         class="relative w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-50 text-slate-500 transition-colors">
                         <span class="material-symbols-outlined text-[20px]">notifications</span>
-                        <span
-                            class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 border-2 border-white"></span>
+                        <span class="notification-bell-badge hidden absolute top-1.5 right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center border-2 border-white">0</span>
+                    </button>
                     </button>
                     <button
                         class="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-50 text-slate-500 transition-colors">
@@ -606,7 +606,7 @@
                                         <th class="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">
                                             Employee</th>
                                         <th class="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">
-                                            Leave Type</th>
+                                            Title</th>
                                         <th class="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">
                                             Duration</th>
                                         <th class="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">
@@ -1450,23 +1450,8 @@
                                                     </div>
                                                 </td>
                                                 <td class="px-4 py-4">
-                                                    <th:block th:switch="${req.leaveType}">
-                                                        <span th:case="'Annual Leave'"
-                                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-700"
-                                                            th:text="${req.leaveType}">Annual Leave</span>
-                                                        <span th:case="'Sick Leave'"
-                                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-700"
-                                                            th:text="${req.leaveType}">Sick Leave</span>
-                                                        <span th:case="'Personal Leave'"
-                                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700"
-                                                            th:text="${req.leaveType}">Personal Leave</span>
-                                                        <span th:case="'Maternity Leave'"
-                                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-pink-100 text-pink-700"
-                                                            th:text="${req.leaveType}">Maternity Leave</span>
-                                                        <span th:case="*"
-                                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700"
-                                                            th:text="${req.leaveType}">Other</span>
-                                                    </th:block>
+                                                    <p class="text-sm font-medium text-slate-700 truncate max-w-[200px]" 
+                                                       th:text="${req.title != null and !req.title.isEmpty() ? req.title : 'No title'}">Request Title</p>
                                                 </td>
                                                 <td class="px-4 py-4 text-sm font-semibold"
                                                     th:text="${req.durationLabel}">5 Days</td>
@@ -1657,8 +1642,32 @@
                                                                             class="ml-auto px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 text-[10px] font-bold">No
                                                                             conflict</span>
                                                                     </h4>
+                                                                    
+                                                                    <!-- Request Type Badge -->
+                                                                    <div class="bg-white rounded-xl p-3 border border-slate-200">
+                                                                        <p class="text-xs text-slate-400 mb-2">Request Type</p>
+                                                                        <th:block th:switch="${req.leaveType}">
+                                                                            <span th:case="'Annual Leave'"
+                                                                                class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700"
+                                                                                th:text="${req.leaveType}">Annual Leave</span>
+                                                                            <span th:case="'Sick Leave'"
+                                                                                class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-700"
+                                                                                th:text="${req.leaveType}">Sick Leave</span>
+                                                                            <span th:case="'Personal Leave'"
+                                                                                class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700"
+                                                                                th:text="${req.leaveType}">Personal Leave</span>
+                                                                            <span th:case="'Maternity Leave'"
+                                                                                class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-pink-100 text-pink-700"
+                                                                                th:text="${req.leaveType}">Maternity Leave</span>
+                                                                            <span th:case="*"
+                                                                                class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700"
+                                                                                th:text="${req.leaveType != null ? req.leaveType : 'Other'}">Other</span>
+                                                                        </th:block>
+                                                                    </div>
+                                                                    
+                                                                    <!-- Overlap Info -->
                                                                     <div
-                                                                        class="bg-white rounded-xl p-3 border border-slate-200 text-xs text-slate-500 min-h-[80px] flex items-center justify-center">
+                                                                        class="bg-white rounded-xl p-3 border border-slate-200 text-xs text-slate-500 min-h-[60px] flex items-center justify-center">
                                                                         <span th:if="${req.overlapEmployees != null}"
                                                                             th:text="${req.overlapEmployees}">—</span>
                                                                         <span
@@ -2380,6 +2389,23 @@
             if (csrfToken) appendHidden(form, '_csrf', csrfToken);
         }
 
+        /*]]>*/
+    </script>
+    
+    <!-- ══ ENHANCEMENTS SCRIPT ═══════════════════════════════════════════════ -->
+    <script src="/js/leave-approval-enhancements.js" th:src="@{/js/leave-approval-enhancements.js}"></script>
+    
+    <!-- Pass requestId to JavaScript for auto-expand -->
+    <script th:if="${requestId != null}" th:inline="javascript">
+        /*<![CDATA[*/
+        // Auto-expand is handled by leave-approval-enhancements.js
+        // This just ensures the requestId is in the URL
+        var requestIdFromServer = /*[[${requestId}]]*/ null;
+        if (requestIdFromServer && !window.location.search.includes('requestId=')) {
+            var url = new URL(window.location.href);
+            url.searchParams.set('requestId', requestIdFromServer);
+            window.history.replaceState({}, '', url);
+        }
         /*]]>*/
     </script>
 </body>

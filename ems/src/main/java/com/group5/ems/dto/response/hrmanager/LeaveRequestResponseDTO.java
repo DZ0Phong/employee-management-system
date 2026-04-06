@@ -18,6 +18,7 @@ public class LeaveRequestResponseDTO {
     // Basic request info
     private Long id;
     private Long employeeId;
+    private String title;              // Request title
     private String leaveType;
     private LocalDate leaveFrom;
     private LocalDate leaveTo;
@@ -63,6 +64,7 @@ public class LeaveRequestResponseDTO {
     // Constructor from Request entity
     public LeaveRequestResponseDTO(Request request) {
         this.id = request.getId();
+        this.title = request.getTitle();
         this.status = request.getStatus();
         this.leaveType = request.getLeaveType();
         this.leaveFrom = request.getLeaveFrom();

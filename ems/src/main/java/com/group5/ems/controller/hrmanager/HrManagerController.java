@@ -32,6 +32,7 @@ public class HrManagerController {
     private final LeaveApprovalService leaveApprovalService;
     private final PayrollApprovalService payrollApprovalService;
     private final CalendarService calendarService;
+    private final com.group5.ems.service.common.EmailNotificationService emailNotificationService;
 
     // ── Dashboard ─────────────────────────────────────────────────────────────
     @GetMapping({"", "/", "/dashboard"})
@@ -305,14 +306,36 @@ public class HrManagerController {
     public String requestManagement(Model model,
                                 @RequestParam(defaultValue = "pending") String tab,
                                 @RequestParam(defaultValue = "all") String category,
-                                @RequestParam(defaultValue = "1") int page) {
+                                @RequestParam(defaultValue = "1") int page,
+                                @RequestParam(required = false) Long requestId) {
         model.addAttribute("stats",         leaveApprovalService.getStats());
         model.addAttribute("leaveRequests", leaveApprovalService.getLeaveRequests(tab, page));
         model.addAttribute("pagination",    leaveApprovalService.getPagination(tab, page));
         model.addAttribute("activeTab",     tab);
         model.addAttribute("activeCategory", category);
         model.addAttribute("activePage",    "leave");
+        model.addAttribute("requestId",     requestId); // For auto-expand
         return "hrmanager/leave_approval";
+    }
+    
+    // ── Notify Critical Items (Email Notification) ───────────────────────────
+    @PostMapping({"/leave-approval/notify-critical", "/request-management/notify-critical"})
+    @ResponseBody
+    public Map<String, Object> notifyCriticalItems(@org.springframework.web.bind.annotation.RequestBody Map<String, Object> payload) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            Integer count = (Integer) payload.get("count");
+            
+            // Send email notification to current HR Manager
+            emailNotificationService.sendCriticalRequestsNotification(getCurrentUserId(), count);
+            
+            response.put("success", true);
+            response.put("message", "Notification sent");
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Failed to send notification: " + e.getMessage());
+        }
+        return response;
     }
 
     // ── Payroll Approval ──────────────────────────────────────────────────────

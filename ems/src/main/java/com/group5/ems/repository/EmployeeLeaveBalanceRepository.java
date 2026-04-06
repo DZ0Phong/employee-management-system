@@ -39,4 +39,8 @@ public interface EmployeeLeaveBalanceRepository extends JpaRepository<EmployeeLe
            "AND (:departmentId IS NULL OR e.department.id = :departmentId) " +
            "AND (:search IS NULL OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(e.employeeCode) LIKE LOWER(CONCAT('%', :search, '%')))")
     org.springframework.data.domain.Page<EmployeeLeaveBalance> findBalancesFiltered(@Param("year") int year, @Param("departmentId") Long departmentId, @Param("search") String search, org.springframework.data.domain.Pageable pageable);
+    
+    // For RequestManagementService - find by employee and leave type (using year as proxy for leave type)
+    @Query("SELECT elb FROM EmployeeLeaveBalance elb WHERE elb.employee.id = :employeeId AND elb.year = YEAR(CURRENT_DATE)")
+    Optional<EmployeeLeaveBalance> findByEmployeeIdAndLeaveType(@Param("employeeId") Long employeeId, @Param("leaveType") String leaveType);
 }
