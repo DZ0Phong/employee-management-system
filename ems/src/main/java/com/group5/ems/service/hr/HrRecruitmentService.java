@@ -22,10 +22,12 @@ import com.group5.ems.dto.response.CandidateCvDTO;
 import com.group5.ems.dto.response.HrApplicantDTO;
 import com.group5.ems.dto.response.HrJobRequestDTO;
 import com.group5.ems.dto.response.HrRecruitmentDTO;
+import com.group5.ems.dto.response.InterviewDTO;
 import com.group5.ems.dto.response.InterviewerDTO;
 import com.group5.ems.entity.Application;
 import com.group5.ems.entity.ApplicationStage;
 import com.group5.ems.entity.CandidateCv;
+import com.group5.ems.entity.Interview;
 import com.group5.ems.entity.InterviewAssignment;
 import com.group5.ems.entity.JobPost;
 import com.group5.ems.entity.Request;
@@ -36,6 +38,7 @@ import com.group5.ems.repository.ApplicationStageRepository;
 import com.group5.ems.repository.CandidateCvRepository;
 import com.group5.ems.repository.EmployeeRepository;
 import com.group5.ems.repository.InterviewAssignmentRepository;
+import com.group5.ems.repository.InterviewRepository;
 import com.group5.ems.repository.JobPostRepository;
 import com.group5.ems.repository.RequestApprovalHistoryRepository;
 import com.group5.ems.repository.RequestRepository;
@@ -58,6 +61,7 @@ public class HrRecruitmentService {
     private final EmployeeRepository employeeRepository;
     private final RequestRepository requestRepository;
     private final RequestApprovalHistoryRepository requestApprovalHistoryRepository;
+    private final InterviewRepository interviewRepository;
 
     // ══════════════════════════════════════════════════════════════════════════
     // 1. JOB POSTS
@@ -375,7 +379,184 @@ public class HrRecruitmentService {
     }
 
     // ══════════════════════════════════════════════════════════════════════════
-    // 7. BUSINESS RULE VALIDATION
+    // 7. INTERVIEW SCHEDULING
+    // ══════════════════════════════════════════════════════════════════════════
+
+    @Transactional
+    public void scheduleInterview(Long applicationId,
+            Long interviewerId,
+            LocalDateTime scheduledAt,
+            String location) {
+        applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new IllegalArgumentException("Application not found: " + applicationId));
+
+        Interview iv = interviewRepository
+                .findByApplicationIdAndInterviewerId(applicationId, interviewerId)
+                .orElse(new Interview());
+
+        iv.setApplicationId(applicationId);
+        iv.setInterviewerId(interviewerId);
+        iv.setScheduledAt(scheduledAt);
+        iv.setLocation(location);
+        iv.setStatus("SCHEDULED");
+        interviewRepository.save(iv);
+    }
+
+    /**
+     * Lấy danh sách interviews cho trang "My Interviews".
+     */
+    public List<InterviewDTO> getMyInterviews(Long interviewerUserId) {
+        // Bước 1: lấy tất cả assignment của user hiện tại từ bảng interview_assign
+        List<InterviewAssignment> assignments =
+                interviewAssignmentRepository.findByInterviewerId(interviewerUserId);
+
+        // Bước 2 & 3: với mỗi assignment, tìm interview tương ứng (nếu có)
+        return assignments.stream()
+                .map(ia -> {
+                    // Tìm Interview trong bảng interview theo applicationId
+                    // (interview có thể chưa được schedule nên dùng Optional)
+                    return interviewRepository
+                            .findByApplicationIdOrderByScheduledAtDesc(ia.getApplicationId())
+                            .stream()
+                            .findFirst()
+                            .map(this::mapToInterviewDTO)
+                            // Nếu chưa có interview nào được schedule, tạo DTO placeholder
+                            .orElseGet(() -> mapAssignmentToInterviewDTO(ia));
+                })
+                .sorted((a, b) -> {
+                    // So sánh dựa trên scheduledRaw (ISO string), empty = chưa có lịch → xuống cuối
+                    boolean aHas = a.getScheduledAtRaw() != null && !a.getScheduledAtRaw().isBlank();
+                    boolean bHas = b.getScheduledAtRaw() != null && !b.getScheduledAtRaw().isBlank();
+                    if (aHas && bHas) return b.getScheduledAtRaw().compareTo(a.getScheduledAtRaw()); // mới nhất lên trước
+                    if (aHas) return 1;
+                    if (bHas) return -1;
+                    return 0;
+                })
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Tạo InterviewDTO placeholder từ InterviewAssignment khi chưa có Interview được schedule.
+     */
+    private InterviewDTO mapAssignmentToInterviewDTO(InterviewAssignment ia) {
+        String candidateName = "Unknown", candidateEmail = "", initials = "?";
+        String jobTitle = "—", department = "";
+
+        applicationRepository.findById(ia.getApplicationId()).ifPresent(app -> {
+        });
+
+        // Lấy thông tin application để điền candidate & job
+        var appOpt = applicationRepository.findById(ia.getApplicationId());
+        if (appOpt.isPresent()) {
+            var app = appOpt.get();
+            if (app.getCandidate() != null) {
+                candidateName = app.getCandidate().getFullName() != null
+                        ? app.getCandidate().getFullName() : "Unknown";
+                candidateEmail = app.getCandidate().getEmail() != null
+                        ? app.getCandidate().getEmail() : "";
+                initials = buildInitials(candidateName);
+            }
+            if (app.getJobPost() != null) {
+                jobTitle = app.getJobPost().getTitle() != null ? app.getJobPost().getTitle() : "—";
+                department = app.getJobPost().getDepartment() != null
+                        ? app.getJobPost().getDepartment().getName() : "";
+            }
+        }
+
+        return new InterviewDTO(
+                null,                    // id — chưa có interview
+                ia.getApplicationId(),
+                candidateName, initials, candidateEmail,
+                jobTitle, department,
+                "",                      // scheduledFmt — chưa có lịch
+                "",                      // scheduledRaw
+                "",                      // location
+                "NOT_SCHEDULED",         // status placeholder
+                null,                    // feedback
+                null                     // assignedByName
+        );
+    }
+
+    /**
+     * Lấy danh sách interviews của 1 application cụ thể.
+     */
+    public List<InterviewDTO> getInterviewsByApplication(Long applicationId) {
+        return interviewRepository.findByApplicationIdOrderByScheduledAtDesc(applicationId)
+                .stream()
+                .map(this::mapToInterviewDTO)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Interviewer cập nhật feedback + kết quả sau buổi phỏng vấn.
+     */
+    @Transactional
+    public void submitFeedback(Long interviewId, String feedback, String status) {
+        Interview iv = interviewRepository.findById(interviewId)
+                .orElseThrow(() -> new IllegalArgumentException("Interview not found: " + interviewId));
+        iv.setFeedback(feedback);
+        iv.setStatus(status); // COMPLETED | CANCELLED
+        interviewRepository.save(iv);
+    }
+
+    /**
+     * HR huỷ một buổi phỏng vấn.
+     */
+    @Transactional
+    public void cancelInterview(Long interviewId) {
+        Interview iv = interviewRepository.findById(interviewId)
+                .orElseThrow(() -> new IllegalArgumentException("Interview not found: " + interviewId));
+        iv.setStatus("CANCELLED");
+        interviewRepository.save(iv);
+    }
+
+    // ── Mapper helper ─────────────────────────────────────────────────────────
+
+    private InterviewDTO mapToInterviewDTO(Interview iv) {
+        String candidateName = "Unknown", candidateEmail = "", initials = "?";
+        String jobTitle = "—", department = "";
+
+        if (iv.getApplication() != null) {
+            var app = iv.getApplication();
+            if (app.getCandidate() != null) {
+                candidateName = app.getCandidate().getFullName() != null
+                        ? app.getCandidate().getFullName()
+                        : "Unknown";
+                candidateEmail = app.getCandidate().getEmail() != null
+                        ? app.getCandidate().getEmail()
+                        : "";
+                initials = buildInitials(candidateName);
+            }
+            if (app.getJobPost() != null) {
+                jobTitle = app.getJobPost().getTitle() != null ? app.getJobPost().getTitle() : "—";
+                department = app.getJobPost().getDepartment() != null
+                        ? app.getJobPost().getDepartment().getName()
+                        : "";
+            }
+        }
+
+        String scheduledFmt = iv.getScheduledAt() != null
+                ? iv.getScheduledAt().format(DATETIME_FMT)
+                : "";
+        String scheduledRaw = iv.getScheduledAt() != null
+                ? iv.getScheduledAt().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"))
+                : "";
+
+        return new InterviewDTO(
+                iv.getId(),
+                iv.getApplicationId(),
+                candidateName, initials, candidateEmail,
+                jobTitle, department,
+                scheduledFmt, scheduledRaw,
+                iv.getLocation(),
+                iv.getStatus(),
+                iv.getFeedback(),
+                null
+        );
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // 8. BUSINESS RULE VALIDATION
     // ══════════════════════════════════════════════════════════════════════════
 
     public void validateCreateJobPost(LocalDate openDate, LocalDate closeDate, String action) {

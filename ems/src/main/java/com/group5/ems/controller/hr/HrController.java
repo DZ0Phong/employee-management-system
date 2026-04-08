@@ -147,30 +147,31 @@ public class HrController {
 
     @GetMapping("/attendance")
     public String attendance(Model model,
-                             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-                             @RequestParam(required = false) String search,
-                             @RequestParam(required = false) String department,
-                             @RequestParam(required = false) String status,
-                             @RequestParam(defaultValue = "0") int page) {
-        
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String department,
+            @RequestParam(required = false) String status,
+            @RequestParam(defaultValue = "0") int page) {
+
         LocalDate queryDate = (date != null) ? date : LocalDate.now();
-        
+
         model.addAttribute("stats", attendanceService.getAttendanceStats(queryDate));
-        
+
         Pageable pageable = PageRequest.of(page, EMPLOYEE_PAGE_SIZE);
-        org.springframework.data.domain.Page<com.group5.ems.dto.response.HrAttendanceDetailDTO> attendancePage = attendanceService.getAttendanceRecords(queryDate, search, department, status, pageable);
-        
+        org.springframework.data.domain.Page<com.group5.ems.dto.response.HrAttendanceDetailDTO> attendancePage = attendanceService
+                .getAttendanceRecords(queryDate, search, department, status, pageable);
+
         model.addAttribute("attendances", attendancePage.getContent());
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", attendancePage.getTotalPages());
         model.addAttribute("totalItems", attendancePage.getTotalElements());
-        
+
         model.addAttribute("date", queryDate);
         model.addAttribute("search", search);
         model.addAttribute("department", department);
         model.addAttribute("status", status);
         model.addAttribute("departments", departmentRepository.findAll());
-        
+
         return "hr/attendance";
     }
 
@@ -385,7 +386,6 @@ public class HrController {
         leaveService.exportLeaveHistoryToCsv(status, departmentId, startDate, endDate, response.getWriter());
     }
 
-
     @GetMapping("/performance")
     public String performance(Model model,
             @RequestParam(defaultValue = "0") int page,
@@ -573,7 +573,8 @@ public class HrController {
     }
 
     @GetMapping("/recruitment")
-    public String recruitment(Model model) {
+    public String recruitment(Model model,
+            @AuthenticationPrincipal UserDetails principal) {
         model.addAttribute("activeJobs", recruitmentService.getActiveJobPosts());
         model.addAttribute("totalOpenJobs", recruitmentService.countOpenJobs());
         model.addAttribute("recentApplicants", recruitmentService.getRecentApplications());
@@ -583,6 +584,16 @@ public class HrController {
         model.addAttribute("positions", positionRepository.findAll());
         model.addAttribute("jobPostRequests", recruitmentService.getJobPostRequests());
         model.addAttribute("pendingJobRequests", recruitmentService.countPendingJobRequests());
+
+        // My Interviews tab — lấy theo user đang đăng nhập
+        Long currentUserId = resolveCurrentUserId(principal);
+        model.addAttribute("currentUserId", currentUserId);
+        java.util.List<com.group5.ems.dto.response.InterviewDTO> myInterviews = recruitmentService
+                .getMyInterviews(currentUserId);
+        model.addAttribute("myInterviews", myInterviews);
+        model.addAttribute("myInterviewScheduled",
+                myInterviews.stream().filter(i -> "SCHEDULED".equals(i.getStatus())).count());
+
         return "hr/recruitment";
     }
 
@@ -794,6 +805,94 @@ public class HrController {
         return "redirect:/hr/recruitment/jobs";
     }
 
+    // ── GET: My Interviews page ────────────────────────────────────────────
+
+    @GetMapping("/recruitment/my-interviews")
+    public String myInterviews(Model model,
+            @AuthenticationPrincipal UserDetails principal) {
+        Long currentUserId = resolveCurrentUserId(principal);
+        model.addAttribute("myInterviews", recruitmentService.getMyInterviews(currentUserId));
+        return "hr/my-interviews";
+    }
+
+    // ── GET: Interviews của 1 application ───────
+
+    @GetMapping("/recruitment/applications/{id}/interviews")
+    @ResponseBody
+    public ResponseEntity<List<com.group5.ems.dto.response.InterviewDTO>> getApplicationInterviews(
+            @PathVariable Long id) {
+        return ResponseEntity.ok(recruitmentService.getInterviewsByApplication(id));
+    }
+
+    // ── POST: Schedule interview ────────────────────────────────────────────
+
+    @PostMapping("/recruitment/interviews/schedule")
+    public String scheduleInterview(
+            @RequestParam Long applicationId,
+            @RequestParam Long interviewerId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) java.time.LocalDateTime scheduledAt,
+            @RequestParam(required = false) String location,
+            @RequestParam(required = false, defaultValue = "/hr/recruitment") String returnUrl,
+            RedirectAttributes ra) {
+        try {
+            recruitmentService.scheduleInterview(applicationId, interviewerId, scheduledAt, location);
+            ra.addFlashAttribute("successMessage", "Interview scheduled successfully.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:" + returnUrl;
+    }
+
+    // ── POST: Submit feedback ───────────────────────────────────────────────
+
+    @PostMapping("/recruitment/interviews/{id}/feedback")
+    public String submitFeedback(
+            @PathVariable Long id,
+            @RequestParam String feedback,
+            @RequestParam String status,
+            @AuthenticationPrincipal UserDetails principal,
+            RedirectAttributes ra) {
+        try {
+            recruitmentService.submitFeedback(id, feedback, status);
+            ra.addFlashAttribute("successMessage", "Feedback submitted successfully.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/hr/recruitment/my-interviews";
+    }
+
+    // Overload: redirect về recruitment nếu HR submit từ candidate modal
+    @PostMapping("/recruitment/interviews/{id}/feedback-hr")
+    public String submitFeedbackFromHr(
+            @PathVariable Long id,
+            @RequestParam String feedback,
+            @RequestParam String status,
+            RedirectAttributes ra) {
+        try {
+            recruitmentService.submitFeedback(id, feedback, status);
+            ra.addFlashAttribute("successMessage", "Feedback updated.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/hr/recruitment";
+    }
+
+    // ── POST: Cancel interview ──────────────────────────────────────────────
+
+    @PostMapping("/recruitment/interviews/{id}/cancel")
+    public String cancelInterview(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "/hr/recruitment") String returnUrl,
+            RedirectAttributes ra) {
+        try {
+            recruitmentService.cancelInterview(id);
+            ra.addFlashAttribute("successMessage", "Interview cancelled.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:" + returnUrl;
+    }
+
     private Long resolveCurrentUserId(UserDetails principal) {
         if (principal == null)
             return null;
@@ -833,7 +932,6 @@ public class HrController {
         if (!model.containsAttribute("bankDetailsForm")) {
             model.addAttribute("bankDetailsForm", new BankDetailsFormDTO());
         }
-        
 
         model.addAttribute("currentUser", adminService.getUserDTO().orElse(null));
         return "hr/bank-details";
