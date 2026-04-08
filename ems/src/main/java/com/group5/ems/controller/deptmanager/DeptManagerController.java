@@ -44,10 +44,10 @@ public class DeptManagerController {
     public String dashboard(Model model, Authentication authentication) {
         User user = getUser(authentication);
         Employee employee = employeeRepository.findByUserId(user.getId()).orElse(null);
-        if (employee == null || employee.getDepartmentId() == null) {
-            model.addAttribute("message", "You have not been assigned to any department yet.");
-            return "common/no-department";
-        }
+//        if (employee == null || employee.getDepartmentId() == null) {
+//            model.addAttribute("message", "You have not been assigned to any department yet.");
+//            return "common/no-department";
+//        }
         model.addAttribute("data", deptManagerService.getDashboardData());
         return "deptmanager/dashboard";
     }

@@ -224,10 +224,10 @@ public class EmployeeController {
         User user = getUser(authentication);
         Employee employee = getEmployee(user);
 
-        if (requiresDepartmentAssignment(user) && hasNoDepartment(employee)) {
-            model.addAttribute("message", "You have not been assigned to any department yet.");
-            return "common/no-department";
-        }
+//        if (requiresDepartmentAssignment(user) && hasNoDepartment(employee)) {
+//            model.addAttribute("message", "You have not been assigned to any department yet.");
+//            return "common/no-department";
+//        }
 
         employee = resolveEmployeeForAttendance(user);
 
