@@ -16,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -26,8 +25,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -65,8 +62,10 @@ public class PerformanceService {
         List<PerformanceReview> departmentReviews = reviewRepository.findByEmployee_DepartmentIdOrderByUpdatedAtDesc(department.getId());
 
         Map<Long, PerformanceReview> latestReviewByEmployee = new LinkedHashMap<>();
+        Map<Long, List<PerformanceReview>> reviewsByEmployee = new HashMap<>();
         for (PerformanceReview review : departmentReviews) {
             latestReviewByEmployee.putIfAbsent(review.getEmployeeId(), review);
+            reviewsByEmployee.computeIfAbsent(review.getEmployeeId(), key -> new ArrayList<>()).add(review);
         }
 
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MMM dd, yyyy");
@@ -142,7 +141,7 @@ public class PerformanceService {
         data.put("scheduledCount", scheduledCount);
         data.put("completedCount", completedCount);
         data.put("completionRate", completionRate + "%");
-        data.put("averageGrowth", calculateAverageGrowth(departmentReviews));
+        data.put("averageGrowth", calculateAverageGrowth(reviewsByEmployee));
 
         return data;
     }
@@ -288,14 +287,11 @@ public class PerformanceService {
         };
     }
 
-    private String calculateAverageGrowth(List<PerformanceReview> departmentReviews) {
-        Map<Long, List<PerformanceReview>> byEmployee = departmentReviews.stream()
-                .filter(review -> review.getPerformanceScore() != null)
-                .collect(Collectors.groupingBy(PerformanceReview::getEmployeeId));
-
+    private String calculateAverageGrowth(Map<Long, List<PerformanceReview>> byEmployee) {
         List<BigDecimal> deltas = new ArrayList<>();
         for (List<PerformanceReview> reviews : byEmployee.values()) {
             List<PerformanceReview> sorted = reviews.stream()
+                    .filter(review -> review.getPerformanceScore() != null)
                     .sorted(Comparator.comparing((PerformanceReview review) ->
                             review.getUpdatedAt() != null ? review.getUpdatedAt() : review.getCreatedAt()).reversed())
                     .toList();

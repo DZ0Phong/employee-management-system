@@ -72,6 +72,7 @@ public interface PerformanceReviewRepository extends JpaRepository<PerformanceRe
     List<String> findDistinctStatuses();
 
     // ── New methods for Dept Manager role ────────────────────────
+    @EntityGraph(attributePaths = {"employee", "employee.user", "employee.position", "reviewer", "reviewer.user"})
     List<PerformanceReview> findByEmployee_DepartmentIdOrderByUpdatedAtDesc(Long departmentId);
 
     @EntityGraph(attributePaths = {"employee", "employee.user", "employee.position", "reviewer", "reviewer.user"})
@@ -79,5 +80,6 @@ public interface PerformanceReviewRepository extends JpaRepository<PerformanceRe
 
     Optional<PerformanceReview> findByEmployeeIdAndReviewPeriod(Long employeeId, String reviewPeriod);
 
+    @EntityGraph(attributePaths = {"employee", "employee.user", "employee.position", "reviewer", "reviewer.user"})
     List<PerformanceReview> findByEmployeeIdInOrderByUpdatedAtDesc(List<Long> employeeIds);
 }

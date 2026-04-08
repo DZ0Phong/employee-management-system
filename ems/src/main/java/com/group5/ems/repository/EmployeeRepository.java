@@ -18,7 +18,11 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
     Optional<Employee> findByEmployeeCode(String employeeCode);
 
-    @Query("select e from Employee e join fetch e.user u where e.departmentId = :departmentId")
+    @Query("select distinct e from Employee e " +
+           "join fetch e.user u " +
+           "left join fetch e.position p " +
+           "left join fetch e.department d " +
+           "where e.departmentId = :departmentId")
     List<Employee> findByDepartmentIdWithUser(@Param("departmentId") Long departmentId);
 
     @Query("select e from Employee  e join e.user u where u.status = :status")
