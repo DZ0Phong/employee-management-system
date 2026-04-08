@@ -86,6 +86,13 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-cache</artifactId>
         </dependency>
+
+        <!-- PDF Export: Flying Saucer (HTML → PDF) -->
+        <dependency>
+            <groupId>org.xhtmlrenderer</groupId>
+            <artifactId>flying-saucer-pdf</artifactId>
+            <version>10.2.0</version>
+        </dependency>
     </dependencies>
 
     <build>

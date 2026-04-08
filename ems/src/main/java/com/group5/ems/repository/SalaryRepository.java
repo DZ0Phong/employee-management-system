@@ -54,5 +54,16 @@ public interface SalaryRepository extends JpaRepository<Salary, Long> {
     @Query("SELECT AVG(s.baseAmount) FROM Salary s " +
             "WHERE s.effectiveTo IS NULL OR s.effectiveTo >= CURRENT_DATE")
     Double getAverageSalary();
-}
 
+    // ── HR Reports: Aggregation Queries (read-only) ──────────────────────────
+
+    @Query("SELECT COALESCE(SUM(s.baseAmount), 0) FROM Salary s " +
+           "WHERE s.effectiveTo IS NULL OR s.effectiveTo >= CURRENT_DATE")
+    java.math.BigDecimal sumCurrentPayrollCost();
+
+    @Query("SELECT d.name, AVG(s.baseAmount) FROM Salary s " +
+           "JOIN s.employee e JOIN e.department d " +
+           "WHERE s.effectiveTo IS NULL OR s.effectiveTo >= CURRENT_DATE " +
+           "GROUP BY d.name ORDER BY AVG(s.baseAmount) DESC")
+    List<Object[]> avgSalaryByDepartment();
+}

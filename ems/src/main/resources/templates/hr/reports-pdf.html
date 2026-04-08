@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <style>
+        /* Flying Saucer requires inline CSS — no Tailwind */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Helvetica', 'Arial', sans-serif; font-size: 11px; color: #1e293b; line-height: 1.5; padding: 30px; }
+
+        .header { border-bottom: 2px solid #1414b8; padding-bottom: 12px; margin-bottom: 20px; }
+        .header h1 { font-size: 20px; color: #1414b8; margin-bottom: 2px; }
+        .header p { font-size: 10px; color: #64748b; }
+        .header .date { float: right; font-size: 10px; color: #94a3b8; margin-top: 6px; }
+
+        .section { margin-bottom: 22px; }
+        .section h2 { font-size: 14px; font-weight: 700; color: #1e293b; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; margin-bottom: 10px; }
+        .section h3 { font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px; }
+
+        .metric-row { margin-bottom: 12px; overflow: hidden; }
+        .metric-card { float: left; width: 24%; margin-right: 1%; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px; text-align: center; }
+        .metric-card:last-child { margin-right: 0; }
+        .metric-label { font-size: 9px; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.5px; font-weight: 700; }
+        .metric-value { font-size: 22px; font-weight: 800; color: #1414b8; margin-top: 2px; }
+        .metric-sub { font-size: 9px; color: #94a3b8; }
+
+        .metric-row-3 .metric-card { width: 32%; }
+        .metric-row-2 .metric-card { width: 49%; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+        th { background-color: #f8fafc; padding: 6px 10px; text-align: left; font-size: 9px; font-weight: 700; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.5px; border-bottom: 1px solid #e2e8f0; }
+        td { padding: 6px 10px; font-size: 11px; border-bottom: 1px solid #f1f5f9; }
+        tr:nth-child(even) td { background-color: #fafbfc; }
+
+        .footer { margin-top: 30px; padding-top: 12px; border-top: 1px solid #e2e8f0; font-size: 9px; color: #94a3b8; text-align: center; }
+        .text-emerald { color: #10b981; }
+        .text-rose { color: #f43f5e; }
+        .text-amber { color: #f59e0b; }
+        .clearfix::after { content: ''; display: table; clear: both; }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header clearfix">
+    <span class="date" th:text="'Exported: ' + ${exportDate}">Exported: 01/01/2026</span>
+    <h1>HR Reports &amp; Analytics</h1>
+    <p th:text="'Report: ' + ${activeTab.substring(0,1).toUpperCase() + activeTab.substring(1)} + ' | Year: ' + ${selectedYear}">Report</p>
+</div>
+
+<!-- ═══════════════════ OVERVIEW ═══════════════════ -->
+<div th:if="${activeTab == 'overview'}" class="section">
+    <h2>Workforce Overview</h2>
+
+    <div class="metric-row clearfix">
+        <div class="metric-card">
+            <div class="metric-label">Total Headcount</div>
+            <div class="metric-value" th:text="${report.totalHeadcount()}">0</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">New Hires (Month)</div>
+            <div class="metric-value text-emerald" th:text="${report.newHiresThisMonth()}">0</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Terminations (Month)</div>
+            <div class="metric-value text-rose" th:text="${report.terminationsThisMonth()}">0</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Turnover Rate</div>
+            <div class="metric-value text-amber" th:text="${report.turnoverRate() + '%'}">0%</div>
+        </div>
+    </div>
+
+    <h3>Department Breakdown</h3>
+    <table>
+        <thead><tr><th>Department</th><th>Active Employees</th></tr></thead>
+        <tbody>
+        <tr th:each="dept : ${report.departmentBreakdown()}">
+            <td th:text="${dept.name()}">Dept</td>
+            <td th:text="${dept.count()}">0</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <h3 style="margin-top:16px;">Monthly Hiring &amp; Termination Trend</h3>
+    <table>
+        <thead><tr><th>Month</th><th>New Hires</th><th>Terminations</th></tr></thead>
+        <tbody>
+        <tr th:each="i : ${#numbers.sequence(0, report.monthlyLabels().size() - 1)}">
+            <td th:text="${report.monthlyLabels()[i]}">Month</td>
+            <td th:text="${report.monthlyHires()[i]}">0</td>
+            <td th:text="${report.monthlyTerminations()[i]}">0</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- ═══════════════════ ATTENDANCE ═══════════════════ -->
+<div th:if="${activeTab == 'attendance'}" class="section">
+    <h2>Attendance Report</h2>
+    <p style="font-size:10px;color:#94a3b8;margin-bottom:12px;" th:text="'Period: ' + ${dateFrom} + ' to ' + ${dateTo}">Period</p>
+
+    <div class="metric-row metric-row-3 clearfix">
+        <div class="metric-card">
+            <div class="metric-label">Present Rate</div>
+            <div class="metric-value text-emerald" th:text="${report.presentRate() + '%'}">0%</div>
+            <div class="metric-sub" th:text="${report.presentCount() + ' records'}">0</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Late Rate</div>
+            <div class="metric-value text-amber" th:text="${report.lateRate() + '%'}">0%</div>
+            <div class="metric-sub" th:text="${report.lateCount() + ' records'}">0</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Absent Rate</div>
+            <div class="metric-value text-rose" th:text="${report.absentRate() + '%'}">0%</div>
+            <div class="metric-sub" th:text="${report.absentCount() + ' records'}">0</div>
+        </div>
+    </div>
+
+    <h3>Daily Breakdown</h3>
+    <table>
+        <thead><tr><th>Date</th><th>Present</th><th>Late</th><th>Absent</th></tr></thead>
+        <tbody>
+        <tr th:each="i : ${#numbers.sequence(0, report.dailyLabels().size() - 1)}">
+            <td th:text="${report.dailyLabels()[i]}">Date</td>
+            <td th:text="${report.dailyPresent()[i]}">0</td>
+            <td th:text="${report.dailyLate()[i]}">0</td>
+            <td th:text="${report.dailyAbsent()[i]}">0</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- ═══════════════════ LEAVE ═══════════════════ -->
+<div th:if="${activeTab == 'leave'}" class="section">
+    <h2>Leave Report</h2>
+
+    <div class="metric-row clearfix">
+        <div class="metric-card">
+            <div class="metric-label">Approved</div>
+            <div class="metric-value text-emerald" th:text="${report.totalApproved()}">0</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Rejected</div>
+            <div class="metric-value text-rose" th:text="${report.totalRejected()}">0</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Pending</div>
+            <div class="metric-value text-amber" th:text="${report.totalPending()}">0</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Avg Processing</div>
+            <div class="metric-value" th:text="${report.avgProcessingHours() != null ? report.avgProcessingHours() + 'h' : '—'}">—</div>
+        </div>
+    </div>
+
+    <h3>Monthly Trend</h3>
+    <table>
+        <thead><tr><th>Month</th><th>Approved</th><th>Rejected</th></tr></thead>
+        <tbody>
+        <tr th:each="i : ${#numbers.sequence(0, report.monthlyLabels().size() - 1)}">
+            <td th:text="${report.monthlyLabels()[i]}">Month</td>
+            <td th:text="${report.monthlyApproved()[i]}">0</td>
+            <td th:text="${report.monthlyRejected()[i]}">0</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- ═══════════════════ PAYROLL ═══════════════════ -->
+<div th:if="${activeTab == 'payroll'}" class="section">
+    <h2>Payroll Report</h2>
+
+    <div class="metric-row metric-row-2 clearfix">
+        <div class="metric-card">
+            <div class="metric-label">Total Payroll Cost</div>
+            <div class="metric-value" th:text="'$' + ${#numbers.formatDecimal(report.totalPayrollCost(), 1, 'COMMA', 0, 'POINT')}">$0</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Average Salary</div>
+            <div class="metric-value" th:text="'$' + ${#numbers.formatDecimal(report.avgSalary(), 1, 'COMMA', 0, 'POINT')}">$0</div>
+        </div>
+    </div>
+
+    <h3>Salary Band Distribution</h3>
+    <table>
+        <thead><tr><th>Band</th><th>Employees</th></tr></thead>
+        <tbody>
+        <tr th:each="i : ${#numbers.sequence(0, report.salaryBandLabels().size() - 1)}">
+            <td th:text="${report.salaryBandLabels()[i]}">Band</td>
+            <td th:text="${report.salaryBandCounts()[i]}">0</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <h3 style="margin-top:16px;">Department Average Salary</h3>
+    <table>
+        <thead><tr><th>Department</th><th>Average Salary</th></tr></thead>
+        <tbody>
+        <tr th:each="i : ${#numbers.sequence(0, report.deptAvgLabels().size() - 1)}">
+            <td th:text="${report.deptAvgLabels()[i]}">Dept</td>
+            <td th:text="'$' + ${#numbers.formatDecimal(report.deptAvgValues()[i], 1, 'COMMA', 0, 'POINT')}">$0</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- ═══════════════════ PERFORMANCE ═══════════════════ -->
+<div th:if="${activeTab == 'performance'}" class="section">
+    <h2>Performance Report</h2>
+
+    <div class="metric-row metric-row-3 clearfix">
+        <div class="metric-card">
+            <div class="metric-label">Avg Performance Score</div>
+            <div class="metric-value" th:text="${report.avgPerformanceScore() != null ? report.avgPerformanceScore() : '—'}">—</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Avg Potential Score</div>
+            <div class="metric-value" th:text="${report.avgPotentialScore() != null ? report.avgPotentialScore() : '—'}">—</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Total Reviews</div>
+            <div class="metric-value" th:text="${report.totalReviews()}">0</div>
+        </div>
+    </div>
+
+    <h3>Top Performers</h3>
+    <table>
+        <thead><tr><th>Rank</th><th>Employee</th><th>Department</th><th>Score</th></tr></thead>
+        <tbody>
+        <tr th:each="performer, iter : ${report.topPerformers()}">
+            <td th:text="${iter.index + 1}">1</td>
+            <td th:text="${performer.name()}">Name</td>
+            <td th:text="${performer.department()}">Dept</td>
+            <td th:text="${performer.score()}">0</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+    Employee Management System — HR Reports &amp; Analytics | Generated by EMS Pro
+</div>
+
+</body>
+</html>
