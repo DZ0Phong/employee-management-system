@@ -1293,6 +1293,8 @@
       </div>`).join('');
       }
 
+
+
       function submitApp() {
         const btn = document.getElementById('btn-next');
         const spin = document.getElementById('sub-spin');
@@ -1350,6 +1352,8 @@
       }
 
 
+
+
       // ── File drop ──────────────────────────────────────────────
       document.addEventListener('DOMContentLoaded', () => {
         const zone = document.getElementById('drop-zone');
@@ -1372,6 +1376,13 @@
       // ── Backdrop close ─────────────────────────────────────────
       ['detail-overlay', 'apply-overlay'].forEach(id => {
         document.getElementById(id).addEventListener('click', function (e) { if (e.target === this) this.classList.add('hidden'); });
+      });
+    </script>
+
+    <script th:if="${openJobId != null}">
+      document.addEventListener('DOMContentLoaded', () => {
+        const id = String([[${ openJobId }]]);
+        if (JOB_DATA[id]) openDetail(id);
       });
     </script>
   </th:block>

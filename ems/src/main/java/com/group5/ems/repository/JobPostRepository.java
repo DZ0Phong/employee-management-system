@@ -31,9 +31,9 @@ public interface JobPostRepository extends JpaRepository<JobPost, Long> {
     @Query("""
             SELECT COUNT(j)
             FROM JobPost j
-            WHERE j.departmentId = :deptId
+            WHERE j.departmentId = :deptId AND j.status = 'OPEN'
             """)
-    long countByDepartment(Long deptId);
+    long countOpenByDepartment(Long deptId);
 
     long countByDepartmentId(Long departmentId);
 

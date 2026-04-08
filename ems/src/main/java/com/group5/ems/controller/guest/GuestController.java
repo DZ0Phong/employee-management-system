@@ -103,9 +103,15 @@ public class GuestController {
 
         @GetMapping("/jobs/department/{id}")
         public String jobsByDepartment(@PathVariable Long id, Model model) {
+                List<Department> departments = departmentService.getAllDepartments();
+                Map<Long, Long> deptCounts = new HashMap<>();
+                for (Department d : departments) {
+                        deptCounts.put(d.getId(), jobPostService.countJobsByDepartment(d.getId()));
+                }
 
                 model.addAttribute("jobs", jobPostService.getJobsByDepartment(id));
-                model.addAttribute("departments", departmentService.getAllDepartments());
+                model.addAttribute("departments", departments);
+                model.addAttribute("deptCounts", deptCounts);
                 model.addAttribute("openCount", jobPostService.getOpenJobs().size());
 
                 return "home/jobs";
@@ -117,13 +123,19 @@ public class GuestController {
 
         @GetMapping("/jobs/{id}")
         public String jobDetail(@PathVariable Long id, Model model) {
-
                 JobPost job = jobPostService.getJobDetail(id);
                 if (job == null)
                         return "redirect:/home/jobs";
 
+                List<Department> departments = departmentService.getAllDepartments();
+                Map<Long, Long> deptCounts = new HashMap<>();
+                for (Department d : departments) {
+                        deptCounts.put(d.getId(), jobPostService.countJobsByDepartment(d.getId()));
+                }
+
                 model.addAttribute("jobs", jobPostService.getOpenJobs());
-                model.addAttribute("departments", departmentService.getAllDepartments());
+                model.addAttribute("departments", departments);
+                model.addAttribute("deptCounts", deptCounts);
                 model.addAttribute("openCount", jobPostService.getOpenJobs().size());
                 model.addAttribute("openJobId", id);
 

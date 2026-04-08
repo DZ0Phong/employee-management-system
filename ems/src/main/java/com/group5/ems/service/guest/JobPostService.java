@@ -28,7 +28,7 @@ public class JobPostService {
     }
 
     public long countJobsByDepartment(Long deptId) {
-        return jobPostRepository.countByDepartment(deptId);
+        return jobPostRepository.countOpenByDepartment(deptId);
     }
 
     public String getJobTitle(Long jobId) {
