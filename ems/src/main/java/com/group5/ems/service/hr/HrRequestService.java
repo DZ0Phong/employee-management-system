@@ -66,7 +66,7 @@ public class HrRequestService {
     private final LogService logService;
 
     private static final int MIN_REJECTION_REASON_LENGTH = 10;
-    private static final DateTimeFormatter DTF_FULL = DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm");
+    private static final DateTimeFormatter DTF_FULL = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
     private static final List<String> LEAVE_CATEGORIES = List.of("ATTENDANCE");
 
     // ── Rejection reason categories ──

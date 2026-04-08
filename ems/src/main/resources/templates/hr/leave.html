@@ -9,6 +9,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     <link rel="stylesheet" th:href="@{/css/hr/hr-common.css}">
+    <!-- Flatpickr -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script th:src="@{/js/hr/hr-common.js}"></script>
     <!-- FullCalendar (improvement #3) -->
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/main.min.css" rel="stylesheet" />
@@ -413,11 +416,11 @@
                                 </div>
                                 <div>
                                     <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">From</label>
-                                    <input type="date" name="dateFrom" th:value="${histDateFrom}" class="text-xs border-slate-200 rounded-lg focus:ring-primary focus:border-primary px-2 bg-slate-50 text-slate-600 h-8">
+                                    <input type="text" name="dateFrom" th:value="${histDateFrom}" class="hr-datepicker text-xs border-slate-200 rounded-lg focus:ring-primary focus:border-primary px-2 bg-slate-50 text-primary h-8">
                                 </div>
                                 <div>
                                     <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">To</label>
-                                    <input type="date" name="dateTo" th:value="${histDateTo}" class="text-xs border-slate-200 rounded-lg focus:ring-primary focus:border-primary px-2 bg-slate-50 text-slate-600 h-8">
+                                    <input type="text" name="dateTo" th:value="${histDateTo}" class="hr-datepicker text-xs border-slate-200 rounded-lg focus:ring-primary focus:border-primary px-2 bg-slate-50 text-primary h-8">
                                 </div>
                                 <button type="submit" class="h-8 px-4 text-xs font-semibold text-white bg-primary hover:bg-primary/90 rounded-lg transition-colors shadow-sm">
                                     <span class="material-symbols-outlined text-[14px] align-middle mr-1">filter_list</span>Filter
@@ -708,11 +711,11 @@
             <div class="flex gap-3">
                 <div class="flex-1">
                     <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Start Date</label>
-                    <input type="date" name="startDate" class="w-full text-xs border-slate-200 rounded-xl focus:ring-primary focus:border-primary px-3 py-2.5 bg-slate-50 text-slate-600 h-[42px]">
+                    <input type="text" name="startDate" class="hr-datepicker w-full text-xs border-slate-200 rounded-xl focus:ring-primary focus:border-primary px-3 py-2.5 bg-slate-50 text-primary h-[42px]">
                 </div>
                 <div class="flex-1">
                     <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">End Date</label>
-                    <input type="date" name="endDate" class="w-full text-xs border-slate-200 rounded-xl focus:ring-primary focus:border-primary px-3 py-2.5 bg-slate-50 text-slate-600 h-[42px]">
+                    <input type="text" name="endDate" class="hr-datepicker w-full text-xs border-slate-200 rounded-xl focus:ring-primary focus:border-primary px-3 py-2.5 bg-slate-50 text-primary h-[42px]">
                 </div>
             </div>
             <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 mt-5 pt-4">

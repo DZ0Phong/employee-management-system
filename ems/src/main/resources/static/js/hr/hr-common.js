@@ -4,7 +4,43 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     // Shared navigation or initialization logic if needed
+    initFlatpickr();
 });
+
+/**
+ * Initialize Flatpickr for all standardized date inputs
+ */
+function initFlatpickr() {
+    if (typeof flatpickr === 'undefined') return;
+
+    // Standard single date picker
+    flatpickr(".hr-datepicker", {
+        dateFormat: "Y-m-d", // Underlying value for backend
+        altInput: true,
+        altFormat: "d/m/Y",  // User-facing display (dd/MM/yyyy)
+        allowInput: true,
+        disableMobile: "true",
+        onReady: function(selectedDates, dateStr, instance) {
+            // Apply capsule styling to the generated alt input
+            if (instance.altInput) {
+                instance.altInput.classList.add('hr-datepicker-capsule');
+            }
+        }
+    });
+
+    // Range picker (if needed)
+    flatpickr(".hr-datepicker-range", {
+        mode: "range",
+        dateFormat: "Y-m-d",
+        altInput: true,
+        altFormat: "d/m/Y",
+        onReady: function(selectedDates, dateStr, instance) {
+            if (instance.altInput) {
+                instance.altInput.classList.add('hr-datepicker-capsule-range');
+            }
+        }
+    });
+}
 
 /**
  * Switch tabs in any panel/modal
