@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -440,25 +441,25 @@ public class AdminService {
      public long getStatusTotal(){
         return userRepository.count();
      }
-    public long getStatusActive(){
-        return userRepository.countByStatus("ACTIVE");
+     public long getStatusActive(){
+        return userRepository.countUsersWithEmployeeByStatus("ACTIVE");
      }
     public long getStatusInactive(){
-        return userRepository.countByStatus("INACTIVE");
+        return userRepository.countUsersWithEmployeeByStatus("INACTIVE");
      }
     /** Đếm tất cả tài khoản đang bị khoá (cả LOCK5 brute-force lẫn LOCKED admin). */
     public long getStatusLocked() {
-        return userRepository.countByStatus("LOCKED") + userRepository.countByStatus("LOCK5");
+        return userRepository.countUsersWithEmployeeByStatuses(List.of("LOCKED", "LOCK5"));
     }
 
     /** Đếm riêng brute-force lock (LOCK5). */
     public long getStatusLock5() {
-        return userRepository.countByStatus("LOCK5");
+        return userRepository.countUsersWithEmployeeByStatus("LOCK5");
     }
 
     /** Đếm riêng admin lock (LOCKED). */
     public long getStatusAdminLocked() {
-        return userRepository.countByStatus("LOCKED");
+        return userRepository.countUsersWithEmployeeByStatus("LOCKED");
     }
 
      public List<String> getDepartmentName(){
@@ -499,7 +500,14 @@ public class AdminService {
         else if ("LOCKED".equalsIgnoreCase(status))   statusDB = "Locked";   // admin lock
         else if ("LOCK5".equalsIgnoreCase(status))    statusDB = "Lock5";    // brute-force
 
-        Role role = userRoleRepository.getRoleByUserId(user.getId());
+        Role role = user.getUserRoles() != null
+                ? user.getUserRoles().stream()
+                .map(UserRole::getRole)
+                .filter(java.util.Objects::nonNull)
+                .sorted(Comparator.comparing(Role::getName, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)))
+                .findFirst()
+                .orElse(null)
+                : null;
         String roleCode = (role != null && role.getName() != null) ? role.getName() : "";
         String deptName = (user.getEmployee() != null && user.getEmployee().getDepartment() != null)
                 ? user.getEmployee().getDepartment().getName() : "";

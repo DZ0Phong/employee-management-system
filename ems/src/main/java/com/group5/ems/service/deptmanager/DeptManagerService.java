@@ -43,7 +43,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -96,6 +95,7 @@ public class DeptManagerService {
 
         List<Employee> employees = safeEmployees(department);
         Map<Long, PerformanceReview> latestReviewByEmployee = getLatestReviewByEmployee(employees);
+        Map<Long, LocalDateTime> latestTouchPointByEmployee = buildLatestTouchPointByEmployee(employees, latestReviewByEmployee);
         Map<Long, String> weeklyAttendanceByEmployee = getWeeklyAttendanceByEmployee(employees);
         List<PerformanceReview> departmentReviews = performanceReviewRepository
                 .findByEmployee_DepartmentIdOrderByUpdatedAtDesc(department.getId());
@@ -124,7 +124,7 @@ public class DeptManagerService {
         data.put("suspendedCount", suspendedCount);
         data.put("teamAttendance", calculateTeamAttendance(employees));
         data.put("nextReview", determineNextReviewLabel(employees, latestReviewByEmployee));
-        data.put("recentTeamActivities", buildRecentTeamActivities(employees, latestReviewByEmployee, weeklyAttendanceByEmployee));
+        data.put("recentTeamActivities", buildRecentTeamActivities(employees, latestReviewByEmployee, weeklyAttendanceByEmployee, latestTouchPointByEmployee));
         data.put("actionItems", buildDashboardActionItems(department, employees, latestReviewByEmployee));
         data.put("statusBreakdown", buildStatusBreakdown(activeCount, inactiveCount, suspendedCount));
         data.put("performanceTrend", buildPerformanceTrend(departmentReviews));
@@ -247,6 +247,9 @@ public class DeptManagerService {
 
         List<Employee> employees = safeEmployees(department);
         List<Position> departmentPositions = positionRepository.findByDepartmentId(department.getId());
+        Map<Long, Long> headcountByPositionId = employees.stream()
+                .filter(employee -> employee.getPositionId() != null)
+                .collect(Collectors.groupingBy(Employee::getPositionId, Collectors.counting()));
 
         departmentMap.put("name", department.getName() != null ? department.getName() : "Unnamed Department");
         departmentMap.put("code", department.getCode() != null ? department.getCode() : "N/A");
@@ -255,7 +258,7 @@ public class DeptManagerService {
                 : "Department operations run here.");
         departmentMap.put("manager", managerMap.get("name"));
         departmentMap.put("totalEmployees", String.valueOf(employees.size()));
-        departmentMap.put("openPositions", String.valueOf(countOpenPositions(departmentPositions)));
+        departmentMap.put("openPositions", String.valueOf(countOpenPositions(departmentPositions, headcountByPositionId)));
         departmentMap.put("currentPayroll", formatCurrency(calculateDepartmentPayroll(employees)));
 
         for (Department child : department.getChildren()) {
@@ -271,9 +274,7 @@ public class DeptManagerService {
         }
 
         for (Position position : departmentPositions) {
-            long headcount = employees.stream()
-                    .filter(employee -> position.getId().equals(employee.getPositionId()))
-                    .count();
+            long headcount = headcountByPositionId.getOrDefault(position.getId(), 0L);
 
             Map<String, String> positionMap = new HashMap<>();
             positionMap.put("title", position.getName());
@@ -370,6 +371,20 @@ public class DeptManagerService {
             latest.putIfAbsent(review.getEmployeeId(), review);
         }
         return latest;
+    }
+
+    private Map<Long, LocalDateTime> buildLatestTouchPointByEmployee(List<Employee> employees,
+                                                                     Map<Long, PerformanceReview> latestReviewByEmployee) {
+        Map<Long, LocalDateTime> latestTouchPoints = new HashMap<>();
+        for (Employee employee : employees) {
+            PerformanceReview review = latestReviewByEmployee.get(employee.getId());
+            LocalDateTime reviewTouchPoint = review != null
+                    ? (review.getUpdatedAt() != null ? review.getUpdatedAt() : review.getCreatedAt())
+                    : null;
+            LocalDateTime employeeTouchPoint = employee.getUpdatedAt() != null ? employee.getUpdatedAt() : employee.getCreatedAt();
+            latestTouchPoints.put(employee.getId(), reviewTouchPoint != null ? reviewTouchPoint : employeeTouchPoint);
+        }
+        return latestTouchPoints;
     }
 
     private Map<Long, String> getWeeklyAttendanceByEmployee(List<Employee> employees) {
@@ -471,9 +486,13 @@ public class DeptManagerService {
 
     private List<Map<String, String>> buildRecentTeamActivities(List<Employee> employees,
                                                                 Map<Long, PerformanceReview> latestReviewByEmployee,
-                                                                Map<Long, String> weeklyAttendanceByEmployee) {
+                                                                Map<Long, String> weeklyAttendanceByEmployee,
+                                                                Map<Long, LocalDateTime> latestTouchPointByEmployee) {
         return employees.stream()
-                .sorted(Comparator.comparing(this::latestTouchPoint).reversed())
+                .sorted(Comparator.comparing(
+                        (Employee employee) -> latestTouchPointByEmployee.get(employee.getId()),
+                        Comparator.nullsLast(Comparator.naturalOrder())
+                ).reversed())
                 .limit(5)
                 .map(employee -> {
                     User employeeUser = employee.getUser();
@@ -494,13 +513,6 @@ public class DeptManagerService {
                     return item;
                 })
                 .collect(Collectors.toList());
-    }
-
-    private LocalDateTime latestTouchPoint(Employee employee) {
-        Optional<PerformanceReview> review = performanceReviewRepository.findByEmployeeId(employee.getId()).stream()
-                .max(Comparator.comparing(item -> item.getUpdatedAt() != null ? item.getUpdatedAt() : item.getCreatedAt()));
-        return review.map(item -> item.getUpdatedAt() != null ? item.getUpdatedAt() : item.getCreatedAt())
-                .orElse(employee.getUpdatedAt() != null ? employee.getUpdatedAt() : employee.getCreatedAt());
     }
 
     private List<Map<String, String>> buildDashboardActionItems(Department department,
@@ -734,14 +746,26 @@ public class DeptManagerService {
         return "bg-rose-100 text-rose-700";
     }
 
-    private int countOpenPositions(List<Position> positions) {
-        return (int) positions.stream().filter(position -> position.getEmployees() == null || position.getEmployees().isEmpty()).count();
+    private int countOpenPositions(List<Position> positions, Map<Long, Long> headcountByPositionId) {
+        return (int) positions.stream()
+                .filter(position -> headcountByPositionId.getOrDefault(position.getId(), 0L) == 0L)
+                .count();
     }
 
     private BigDecimal calculateDepartmentPayroll(List<Employee> employees) {
+        List<Long> employeeIds = employees.stream().map(Employee::getId).toList();
+        if (employeeIds.isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+
+        Map<Long, Salary> latestSalaryByEmployeeId = new LinkedHashMap<>();
+        for (Salary salary : salaryRepository.findLatestByEmployeeIds(employeeIds)) {
+            latestSalaryByEmployeeId.putIfAbsent(salary.getEmployeeId(), salary);
+        }
+
         BigDecimal total = BigDecimal.ZERO;
-        for (Employee employee : employees) {
-            Salary salary = salaryRepository.findTopByEmployeeIdOrderByEffectiveFromDesc(employee.getId()).orElse(null);
+        for (Long employeeId : employeeIds) {
+            Salary salary = latestSalaryByEmployeeId.get(employeeId);
             if (salary != null) {
                 total = total.add(salary.getBaseAmount() != null ? salary.getBaseAmount() : BigDecimal.ZERO);
                 total = total.add(salary.getAllowanceAmount() != null ? salary.getAllowanceAmount() : BigDecimal.ZERO);

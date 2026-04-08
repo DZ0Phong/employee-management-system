@@ -3,6 +3,7 @@ package com.group5.ems.repository;
 import com.group5.ems.entity.Salary;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -20,6 +21,13 @@ public interface SalaryRepository extends JpaRepository<Salary, Long> {
 
     List<Salary> findByEmployeeIdOrderByEffectiveFromDesc(Long employeeId);
     Optional<Salary> findTopByEmployeeIdOrderByEffectiveFromDesc(Long employeeId);
+
+    @Query("SELECT s FROM Salary s " +
+           "WHERE s.employeeId IN :employeeIds " +
+           "AND s.effectiveFrom = (" +
+           "    SELECT MAX(s2.effectiveFrom) FROM Salary s2 WHERE s2.employeeId = s.employeeId" +
+           ")")
+    List<Salary> findLatestByEmployeeIds(@Param("employeeIds") List<Long> employeeIds);
     
     // ── Analytics Queries ──────────────────────────────────────────────────────
     

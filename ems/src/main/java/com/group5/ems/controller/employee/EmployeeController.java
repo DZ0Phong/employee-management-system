@@ -61,7 +61,7 @@ public class EmployeeController {
         List<Role> roles = userRoleRepository.getRolesByUserId(user.getId());
         return roles.stream()
                 .map(Role::getCode)
-                .anyMatch(code -> "EMPLOYEE".equals(code) || "DEPT_MANAGER".equals(code));
+                .anyMatch(code -> "EMPLOYEE".equals(code));
     }
 
     private boolean hasNoDepartment(Employee employee) {
