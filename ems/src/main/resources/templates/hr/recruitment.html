@@ -561,6 +561,87 @@
         }
 
         /* Assign modal layout */
+        /* ── My Interviews ─────────────────────────────────── */
+        .iv-scheduled {
+            background: #dbeafe;
+            color: #1d4ed8;
+            border-color: #93c5fd;
+        }
+
+        .iv-completed {
+            background: #d1fae5;
+            color: #065f46;
+            border-color: #6ee7b7;
+        }
+
+        .iv-cancelled {
+            background: #fee2e2;
+            color: #b91c1c;
+            border-color: #fca5a5;
+        }
+
+        .iv-not-scheduled {
+            background: #fef3c7;
+            color: #92400e;
+            border-color: #fcd34d;
+        }
+
+        .iv-tab {
+            padding: 6px 16px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            border: 1px solid #e2e8f0;
+            transition: all .15s;
+            background: white;
+            color: #64748b;
+        }
+
+        .iv-tab.active {
+            background: #1414b8;
+            color: white;
+            border-color: #1414b8;
+        }
+
+        .iv-tab:hover:not(.active) {
+            border-color: #1414b8;
+            color: #1414b8;
+        }
+
+        .iv-card {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid #e8e8f0;
+            box-shadow: 0 1px 4px #0000000a;
+            transition: all .2s;
+        }
+
+        .iv-card:hover {
+            box-shadow: 0 8px 24px -8px #1414b825;
+            transform: translateY(-1px);
+        }
+
+        .fb-modal-box {
+            background: white;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 560px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: modalIn .25s ease both;
+            box-shadow: 0 32px 80px -16px rgba(20, 20, 184, .2), 0 0 0 1px #1414b815;
+        }
+
+        .schedule-modal-box {
+            background: white;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 480px;
+            animation: modalIn .25s ease both;
+            box-shadow: 0 32px 80px -16px rgba(20, 20, 184, .2), 0 0 0 1px #1414b815;
+        }
+
         .assign-modal-box {
             background: white;
             border-radius: 20px;
@@ -660,6 +741,16 @@
                         <span th:if="${pendingJobRequests != null and pendingJobRequests > 0}"
                             class="bg-amber-400 text-white text-[9px] font-bold rounded-full px-1.5 py-0.5 leading-none"
                             th:text="${pendingJobRequests}">0</span>
+                    </span>
+                </button>
+                <button id="mainTab-my-interviews" onclick="switchMainTab('my-interviews')"
+                    class="main-tab px-4 py-3 text-sm">
+                    <span class="flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-[16px]">event_note</span>
+                        My Interviews
+                        <span th:if="${myInterviewScheduled != null and myInterviewScheduled > 0}"
+                            class="bg-blue-500 text-white text-[9px] font-bold rounded-full px-1.5 py-0.5 leading-none"
+                            th:text="${myInterviewScheduled}">0</span>
                     </span>
                 </button>
             </div>
@@ -1126,8 +1217,213 @@
                         </div>
                     </div><!-- /section-requests -->
 
-                </div><!-- /max-w -->
-            </div><!-- /scroll area -->
+                    <!-- ═══════════════════════════════════════════
+                         SECTION: My Interviews (server-rendered)
+                    ════════════════════════════════════════════ -->
+                    <div id="section-my-interviews" class="hidden">
+
+                        <!-- Filter bar + search -->
+                        <div class="flex items-center gap-2 mb-5 anim anim-1 flex-wrap">
+                            <button onclick="filterIv('ALL')" id="ivTab-ALL" class="iv-tab active">All</button>
+                            <button onclick="filterIv('SCHEDULED')" id="ivTab-SCHEDULED"
+                                class="iv-tab">Scheduled</button>
+                            <button onclick="filterIv('NOT_SCHEDULED')" id="ivTab-NOT_SCHEDULED" class="iv-tab">Awaiting
+                                Schedule</button>
+                            <button onclick="filterIv('COMPLETED')" id="ivTab-COMPLETED"
+                                class="iv-tab">Completed</button>
+                            <button onclick="filterIv('CANCELLED')" id="ivTab-CANCELLED"
+                                class="iv-tab">Cancelled</button>
+                            <div
+                                class="ml-auto flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 py-2">
+                                <span class="material-symbols-outlined text-slate-400 text-[16px]">search</span>
+                                <input type="text" id="ivSearch" placeholder="Search candidate or job..."
+                                    oninput="applyIvFilter()"
+                                    class="border-none bg-transparent text-xs w-48 focus:ring-0 p-0 placeholder-slate-400">
+                            </div>
+                            <!-- Stats pills -->
+                            <div th:with="scheduled=${myInterviews != null ? #lists.size(myInterviews.?[status == 'SCHEDULED']) : 0}"
+                                class="flex items-center gap-2 px-3 py-1.5 bg-blue-50 border border-blue-100 rounded-xl">
+                                <span class="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
+                                <span class="text-xs font-semibold text-blue-700">
+                                    <span th:text="${scheduled}">0</span> Upcoming
+                                </span>
+                            </div>
+                            <div th:with="pending=${myInterviews != null ? #lists.size(myInterviews.?[status == 'NOT_SCHEDULED']) : 0}"
+                                class="flex items-center gap-2 px-3 py-1.5 bg-amber-50 border border-amber-100 rounded-xl">
+                                <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                                <span class="text-xs font-semibold text-amber-700">
+                                    <span th:text="${pending}">0</span> Awaiting
+                                </span>
+                            </div>
+                            <div th:with="done=${myInterviews != null ? #lists.size(myInterviews.?[status == 'COMPLETED']) : 0}"
+                                class="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-100 rounded-xl">
+                                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                                <span class="text-xs font-semibold text-emerald-700">
+                                    <span th:text="${done}">0</span> Completed
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Empty state -->
+                        <div th:if="${myInterviews == null or myInterviews.isEmpty()}"
+                            class="anim anim-2 bg-white rounded-2xl border border-dashed border-slate-200 p-20 text-center">
+                            <span class="material-symbols-outlined text-5xl text-slate-300 mb-4 block">event_busy</span>
+                            <p class="text-sm font-black text-slate-400">No interviews assigned</p>
+                            <p class="text-xs text-slate-300 mt-2">When HR assigns you to interview a candidate, they'll
+                                appear here.</p>
+                        </div>
+
+                        <!-- Interview cards grid -->
+                        <div th:if="${myInterviews != null and !myInterviews.isEmpty()}" id="ivGrid"
+                            class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 anim anim-2">
+
+                            <div th:each="iv : ${myInterviews}" th:data-status="${iv.status}"
+                                th:data-name="${iv.candidateName?.toLowerCase()}"
+                                th:data-job="${iv.jobTitle?.toLowerCase()}" class="iv-card-item iv-card p-5">
+
+                                <!-- Top accent bar -->
+                                <div class="h-1 -mt-5 -mx-5 mb-5 rounded-t-2xl" th:style="${iv.status == 'COMPLETED' ? 'background:linear-gradient(90deg,#10b981,#34d399)' :
+                                                iv.status == 'CANCELLED'  ? 'background:linear-gradient(90deg,#ef4444,#f87171)' :
+                                                iv.status == 'NOT_SCHEDULED' ? 'background:linear-gradient(90deg,#f59e0b,#fbbf24)' :
+                                                'background:linear-gradient(90deg,#1414b8,#6366f1)'}">
+                                </div>
+
+                                <!-- Header -->
+                                <div class="flex items-start justify-between mb-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-full flex items-center justify-center text-xs font-black shrink-0"
+                                            th:classappend="${iv.status == 'NOT_SCHEDULED' ? 'bg-amber-100 text-amber-700' : 'bg-primary/10 text-primary'}"
+                                            th:text="${iv.candidateInitials ?: '?'}">?</div>
+                                        <div>
+                                            <p class="text-sm font-black text-slate-800" th:text="${iv.candidateName}">
+                                                Name</p>
+                                            <p class="text-[10px] text-slate-400" th:text="${iv.candidateEmail}">email
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <!-- Status badge -->
+                                    <span th:if="${iv.status == 'SCHEDULED'}"
+                                        class="text-[10px] font-bold px-2.5 py-1 rounded-full border shrink-0 iv-scheduled">SCHEDULED</span>
+                                    <span th:if="${iv.status == 'COMPLETED'}"
+                                        class="text-[10px] font-bold px-2.5 py-1 rounded-full border shrink-0 iv-completed">COMPLETED</span>
+                                    <span th:if="${iv.status == 'CANCELLED'}"
+                                        class="text-[10px] font-bold px-2.5 py-1 rounded-full border shrink-0 iv-cancelled">CANCELLED</span>
+                                    <span th:if="${iv.status == 'NOT_SCHEDULED'}"
+                                        class="text-[10px] font-bold px-2.5 py-1 rounded-full border shrink-0"
+                                        style="background:#fef3c7;color:#92400e;border-color:#fcd34d;">AWAITING
+                                        SCHEDULE</span>
+                                </div>
+
+                                <!-- Job info -->
+                                <div class="mb-4 rounded-xl p-3 border"
+                                    th:classappend="${iv.status == 'NOT_SCHEDULED' ? 'bg-amber-50 border-amber-100' : 'bg-slate-50 border-slate-100'}">
+                                    <p class="text-xs font-bold text-slate-700" th:text="${iv.jobTitle}">Job</p>
+                                    <p class="text-[10px] text-slate-400 mt-0.5 flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-[12px]">domain</span>
+                                        <span th:text="${iv.department ?: 'N/A'}">Dept</span>
+                                    </p>
+                                </div>
+
+                                <!-- Schedule details (khi đã có lịch) -->
+                                <div th:if="${iv.status != 'NOT_SCHEDULED'}" class="space-y-2 mb-4">
+                                    <div class="flex items-center gap-2 text-xs text-slate-600">
+                                        <span class="material-symbols-outlined text-primary text-[16px]">schedule</span>
+                                        <span
+                                            th:text="${iv.scheduledAt != null and !iv.scheduledAt.isEmpty() ? iv.scheduledAt : 'Not scheduled'}"
+                                            class="font-medium">—</span>
+                                    </div>
+                                    <div th:if="${iv.location != null and !iv.location.isEmpty()}"
+                                        class="flex items-center gap-2 text-xs text-slate-600">
+                                        <span
+                                            class="material-symbols-outlined text-primary text-[16px]">location_on</span>
+                                        <span th:text="${iv.location}" class="font-medium">—</span>
+                                    </div>
+                                </div>
+
+                                <!-- NOT_SCHEDULED: prompt banner -->
+                                <div th:if="${iv.status == 'NOT_SCHEDULED'}"
+                                    class="mb-4 bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-start gap-2">
+                                    <span
+                                        class="material-symbols-outlined text-amber-500 text-[16px] mt-0.5 shrink-0">info</span>
+                                    <p class="text-[11px] text-amber-700 leading-relaxed">
+                                        You have been assigned to interview this candidate, but no specific schedule has
+                                        been set yet. Please schedule it immediately so the candidate can prepare.
+                                    </p>
+                                </div>
+
+                                <!-- Feedback preview -->
+                                <div th:if="${iv.feedback != null and !iv.feedback.isEmpty()}"
+                                    class="mb-4 bg-indigo-50 rounded-xl p-3 border border-indigo-100">
+                                    <p class="text-[10px] font-bold text-indigo-400 uppercase tracking-wider mb-1">
+                                        Feedback</p>
+                                    <p class="text-xs text-indigo-700 line-clamp-2" th:text="${iv.feedback}">...</p>
+                                </div>
+
+                                <!-- Action buttons -->
+                                <div class="flex items-center gap-2 pt-3 border-t border-slate-100">
+
+                                    <!-- NOT_SCHEDULED: nút đặt lịch -->
+                                    <th:block th:if="${iv.status == 'NOT_SCHEDULED'}">
+                                        <button th:data-app-id="${iv.applicationId}"
+                                            th:data-interviewer-id="${currentUserId}"
+                                            th:data-candidate="${iv.candidateName}" th:data-job="${iv.jobTitle}"
+                                            onclick="openScheduleModal(this.dataset)"
+                                            class="flex-1 flex items-center justify-center gap-1.5 text-[11px] font-bold px-3 py-2 rounded-xl bg-amber-500 text-white hover:bg-amber-600 transition-all">
+                                            <span class="material-symbols-outlined text-[14px]">event_available</span>
+                                            Schedule interview
+                                        </button>
+                                    </th:block>
+
+                                    <!-- SCHEDULED: submit feedback + cancel -->
+                                    <th:block th:if="${iv.status == 'SCHEDULED'}">
+                                        <button th:data-iv-id="${iv.id}" th:data-iv-status="${iv.status}"
+                                            th:data-iv-feedback="${iv.feedback ?: ''}"
+                                            th:data-iv-candidate="${iv.candidateName}" th:data-iv-job="${iv.jobTitle}"
+                                            onclick="openFeedbackModal(this.dataset)"
+                                            class="flex-1 flex items-center justify-center gap-1.5 text-[11px] font-bold px-3 py-2 rounded-xl bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all">
+                                            <span class="material-symbols-outlined text-[14px]">rate_review</span>
+                                            Submit Feedback
+                                        </button>
+                                        <form th:action="@{'/hr/recruitment/interviews/' + ${iv.id} + '/cancel'}"
+                                            method="post" onsubmit="return confirm('Cancel this interview?')">
+                                            <input type="hidden" th:name="${_csrf.parameterName}"
+                                                th:value="${_csrf.token}" />
+                                            <input type="hidden" name="returnUrl"
+                                                value="/hr/recruitment?tab=my-interviews" />
+                                            <button type="submit"
+                                                class="flex items-center justify-center gap-1 text-[11px] font-bold px-3 py-2 rounded-xl bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white transition-all">
+                                                <span class="material-symbols-outlined text-[14px]">event_busy</span>
+                                                Cancel
+                                            </button>
+                                        </form>
+                                    </th:block>
+
+                                    <!-- COMPLETED: edit feedback -->
+                                    <th:block th:if="${iv.status == 'COMPLETED'}">
+                                        <button th:data-iv-id="${iv.id}" th:data-iv-status="${iv.status}"
+                                            th:data-iv-feedback="${iv.feedback ?: ''}"
+                                            th:data-iv-candidate="${iv.candidateName}" th:data-iv-job="${iv.jobTitle}"
+                                            onclick="openFeedbackModal(this.dataset)"
+                                            class="flex-1 flex items-center justify-center gap-1.5 text-[11px] font-bold px-3 py-2 rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white transition-all">
+                                            <span class="material-symbols-outlined text-[14px]">edit_note</span>
+                                            Edit Feedback
+                                        </button>
+                                    </th:block>
+
+                                    <!-- CANCELLED: label -->
+                                    <th:block th:if="${iv.status == 'CANCELLED'}">
+                                        <span
+                                            class="flex-1 flex items-center justify-center gap-1.5 text-[11px] font-semibold px-3 py-2 rounded-xl bg-slate-50 text-slate-400">
+                                            <span class="material-symbols-outlined text-[14px]">block</span>
+                                            Interview Cancelled
+                                        </span>
+                                    </th:block>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div><!-- /section-my-interviews -->
+                </div><!-- /scroll area -->
         </main>
     </div>
 
@@ -1847,9 +2143,9 @@
 
         // ═══════════ MAIN TABS ═══════════
         function switchMainTab(tab) {
-            ['pipeline', 'requests'].forEach(t => {
-                document.getElementById('section-' + t).classList.toggle('hidden', t !== tab);
-                document.getElementById('mainTab-' + t).classList.toggle('active', t === tab);
+            ['pipeline', 'requests', 'my-interviews'].forEach(t => {
+                document.getElementById('section-' + t)?.classList.toggle('hidden', t !== tab);
+                document.getElementById('mainTab-' + t)?.classList.toggle('active', t === tab);
             });
         }
 
@@ -2387,7 +2683,7 @@
 
             document.addEventListener('keydown', e => {
                 if (e.key === 'Escape') {
-                    ['candidateDetailModal', 'assignModal', 'reviewModal', 'jobDetailOverlay', 'newJobModal', 'rejectReqModal', 'editJobModal', 'deleteJobModal']
+                    ['candidateDetailModal', 'assignModal', 'reviewModal', 'jobDetailOverlay', 'newJobModal', 'rejectReqModal', 'editJobModal', 'deleteJobModal', 'feedbackModal', 'scheduleModal']
                         .forEach(id => document.getElementById(id)?.classList.add('hidden'));
                     document.body.style.overflow = '';
                 }
@@ -2395,11 +2691,271 @@
             const params = new URLSearchParams(window.location.search);
             if (params.get('action') === 'new-job') {
                 openNewJobModal();
-                // Clean up URL without reloading
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+            // Restore tab from URL param (e.g. after cancel/feedback redirect)
+            const tabParam = params.get('tab');
+            if (tabParam && ['pipeline', 'requests', 'my-interviews'].includes(tabParam)) {
+                switchMainTab(tabParam);
                 window.history.replaceState({}, document.title, window.location.pathname);
             }
         });
-</script>
+
+        // ═══════════ MY INTERVIEWS — Filter & Search ═══════════
+        let currentIvFilter = 'ALL';
+
+        function filterIv(status) {
+            currentIvFilter = status;
+            document.querySelectorAll('.iv-tab').forEach(t => t.classList.remove('active'));
+            const tab = document.getElementById('ivTab-' + status);
+            if (tab) tab.classList.add('active');
+            applyIvFilter();
+        }
+
+        function applyIvFilter() {
+            const q = (document.getElementById('ivSearch')?.value || '').toLowerCase();
+            document.querySelectorAll('.iv-card-item').forEach(card => {
+                const matchStatus = currentIvFilter === 'ALL' || card.dataset.status === currentIvFilter;
+                const matchSearch = !q ||
+                    (card.dataset.name || '').includes(q) ||
+                    (card.dataset.job || '').includes(q);
+                card.style.display = (matchStatus && matchSearch) ? '' : 'none';
+            });
+        }
+
+        // ═══════════ FEEDBACK MODAL ═══════════
+        function openFeedbackModal(ds) {
+            const ivId = ds.ivId;
+            const name = ds.ivCandidate;
+            const job = ds.ivJob;
+            const fb = ds.ivFeedback;
+            const status = ds.ivStatus;
+
+            document.getElementById('fbCandidateName').textContent = name || '—';
+            document.getElementById('fbJobTitle').textContent = job || '—';
+
+            const parts = (name || '').trim().split(/\s+/);
+            const initials = parts.slice(0, 2).map(p => p[0] || '').join('').toUpperCase() || '?';
+            document.getElementById('fbInitials').textContent = initials;
+
+            document.getElementById('fbSubtitle').textContent =
+                status === 'COMPLETED' ? 'Edit your evaluation' : 'Submit your evaluation after the interview';
+
+            document.getElementById('fbText').value = fb || '';
+
+            // POST to /feedback-hr (interviewer's own feedback endpoint)
+            document.getElementById('feedbackForm').action =
+                `/hr/recruitment/interviews/${ivId}/feedback-hr`;
+
+            document.querySelectorAll('input[name="status"]').forEach(r => {
+                r.checked = (r.value === status && status !== 'SCHEDULED');
+            });
+
+            document.getElementById('feedbackModal').classList.remove('hidden');
+        }
+
+        function closeFeedbackModal() {
+            document.getElementById('feedbackModal').classList.add('hidden');
+        }
+
+        // ═══════════ SCHEDULE MODAL (My Interviews — NOT_SCHEDULED) ═══════════
+        function openScheduleModal(ds) {
+            const appId = ds.appId;
+            const interviewerId = ds.interviewerId;
+            const candidate = ds.candidate || '—';
+            const job = ds.job || '—';
+
+            document.getElementById('smCandidateName').textContent = candidate;
+            document.getElementById('smJobTitle').textContent = job;
+
+            const parts = candidate.trim().split(/\s+/);
+            const initials = parts.slice(0, 2).map(p => p[0] || '').join('').toUpperCase() || '?';
+            document.getElementById('smInitials').textContent = initials;
+
+            document.getElementById('smAppId').value = appId;
+            document.getElementById('smInterviewerId').value = interviewerId;
+
+            // Mặc định scheduledAt = ngày mai 09:00
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            tomorrow.setHours(9, 0, 0, 0);
+            const iso = tomorrow.toISOString().slice(0, 16);
+            const dtInput = document.getElementById('smScheduledAt');
+            if (dtInput && !dtInput.value) dtInput.value = iso;
+
+            document.getElementById('scheduleModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeScheduleModal() {
+            document.getElementById('scheduleModal').classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+    </script>
+    <!-- ═══════════════════════════════════════════════════════════
+         MODAL: Interview Feedback (My Interviews tab)
+    ════════════════════════════════════════════════════════════ -->
+    <div id="feedbackModal" class="hidden fixed inset-0 z-[70] flex items-center justify-center p-4">
+        <div class="modal-backdrop absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeFeedbackModal()">
+        </div>
+        <div class="modal-panel fb-modal-box relative">
+            <div class="flex items-center justify-between p-6 border-b border-slate-100">
+                <div>
+                    <h3 class="text-base font-black text-slate-900">Interview Feedback</h3>
+                    <p id="fbSubtitle" class="text-xs text-slate-400 mt-0.5">Submit your evaluation</p>
+                </div>
+                <button onclick="closeFeedbackModal()"
+                    class="w-8 h-8 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
+                    <span class="material-symbols-outlined text-[18px]">close</span>
+                </button>
+            </div>
+            <form id="feedbackForm" method="post" class="p-6 space-y-5">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <!-- Candidate summary -->
+                <div class="bg-slate-50 rounded-xl p-4 border border-slate-100 flex items-center gap-3">
+                    <div
+                        class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-black">
+                        <span id="fbInitials">?</span>
+                    </div>
+                    <div>
+                        <p id="fbCandidateName" class="text-sm font-black text-slate-800">Candidate</p>
+                        <p id="fbJobTitle" class="text-[11px] text-slate-500">Position</p>
+                    </div>
+                </div>
+                <!-- Result -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-2">Interview Result <span
+                            class="text-rose-400">*</span></label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <label
+                            class="result-option flex items-center gap-3 p-3 rounded-xl border-2 border-slate-200 cursor-pointer hover:border-emerald-300 transition-colors has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50">
+                            <input type="radio" name="status" value="COMPLETED" class="hidden" required>
+                            <div
+                                class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+                                <span class="material-symbols-outlined text-[18px] fill-icon">thumb_up</span>
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold text-slate-700">Completed</p>
+                                <p class="text-[10px] text-slate-400">Interview done</p>
+                            </div>
+                        </label>
+                        <label
+                            class="result-option flex items-center gap-3 p-3 rounded-xl border-2 border-slate-200 cursor-pointer hover:border-rose-300 transition-colors has-[:checked]:border-rose-500 has-[:checked]:bg-rose-50">
+                            <input type="radio" name="status" value="CANCELLED" class="hidden">
+                            <div
+                                class="w-8 h-8 rounded-xl bg-rose-100 text-rose-500 flex items-center justify-center shrink-0">
+                                <span class="material-symbols-outlined text-[18px] fill-icon">event_busy</span>
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold text-slate-700">Cancelled</p>
+                                <p class="text-[10px] text-slate-400">Did not happen</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                <!-- Feedback text -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1.5">
+                        Feedback / Notes
+                        <span class="text-slate-400 font-normal ml-1">(technical skills, communication, overall
+                            impression...)</span>
+                    </label>
+                    <textarea id="fbText" name="feedback" rows="6"
+                        placeholder="Candidate demonstrated strong problem-solving skills..."
+                        class="w-full text-sm border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder-slate-300 leading-relaxed resize-y"></textarea>
+                    <p class="text-[10px] text-slate-400 mt-1">This feedback will be visible to the HR team.</p>
+                </div>
+                <div class="flex justify-end gap-3 pt-2">
+                    <button type="button" onclick="closeFeedbackModal()"
+                        class="px-5 py-2.5 rounded-xl text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                        class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-primary hover:bg-primary/90 transition-colors shadow-sm shadow-primary/20">
+                        <span class="material-symbols-outlined text-[16px]">send</span>
+                        Submit Feedback
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         MODAL: Schedule Interview (My Interviews — NOT_SCHEDULED)
+    ════════════════════════════════════════════════════════════ -->
+    <div id="scheduleModal" class="hidden fixed inset-0 z-[70] flex items-center justify-center p-4">
+        <div class="modal-backdrop absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeScheduleModal()">
+        </div>
+        <div class="schedule-modal-box relative">
+            <!-- Header -->
+            <div class="flex items-center justify-between p-6 border-b border-slate-100">
+                <div>
+                    <h3 class="text-base font-black text-slate-900">Interview Schedule</h3>
+                    <p class="text-xs text-slate-400 mt-0.5">Choose the time and location for the interview</p>
+                </div>
+                <button onclick="closeScheduleModal()"
+                    class="w-8 h-8 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
+                    <span class="material-symbols-outlined text-[18px]">close</span>
+                </button>
+            </div>
+
+            <form id="scheduleForm" method="post" th:action="@{/hr/recruitment/interviews/schedule}"
+                class="p-6 space-y-5">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <input type="hidden" id="smAppId" name="applicationId" />
+                <input type="hidden" id="smInterviewerId" name="interviewerId" />
+                <input type="hidden" name="returnUrl" value="/hr/recruitment?tab=my-interviews" />
+
+                <!-- Candidate summary -->
+                <div class="bg-amber-50 rounded-xl p-4 border border-amber-100 flex items-center gap-3">
+                    <div
+                        class="w-10 h-10 rounded-full bg-amber-200 text-amber-800 flex items-center justify-center text-xs font-black shrink-0">
+                        <span id="smInitials">?</span>
+                    </div>
+                    <div>
+                        <p id="smCandidateName" class="text-sm font-black text-slate-800">Candidate</p>
+                        <p id="smJobTitle" class="text-[11px] text-slate-500">Position</p>
+                    </div>
+                </div>
+
+                <!-- Date & time -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1.5">
+                        Interview time <span class="text-rose-400">*</span>
+                    </label>
+                    <input id="smScheduledAt" type="datetime-local" name="scheduledAt" required
+                        class="w-full text-sm border border-slate-200 rounded-xl px-4 py-2.5
+                                  focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" />
+                </div>
+
+                <!-- Location -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1.5">Location</label>
+                    <div class="relative">
+                        <span
+                            class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-[16px]">location_on</span>
+                        <input type="text" name="location" placeholder="Vd: Meeting Room 1, Tầng 3, Zoom..."
+                            class="w-full text-sm border border-slate-200 rounded-xl pl-9 pr-4 py-2.5
+                                      focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder-slate-300" />
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex justify-end gap-3 pt-2">
+                    <button type="button" onclick="closeScheduleModal()"
+                        class="px-5 py-2.5 rounded-xl text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors">
+                        Huỷ
+                    </button>
+                    <button type="submit"
+                        class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-amber-500 hover:bg-amber-600 transition-colors shadow-sm shadow-amber-200">
+                        <span class="material-symbols-outlined text-[16px]">event_available</span>
+                        Confirm schedule
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
 </body>
 
 </html>
