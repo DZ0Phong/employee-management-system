@@ -126,4 +126,22 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     @Query("SELECT COUNT(e) FROM Employee e WHERE e.updatedAt >= :since")
     long countByUpdatedAtAfter(@Param("since") java.time.LocalDateTime since);
 
+    // ── HR Reports: Aggregation Queries (read-only) ──────────────────────────
+
+    @Query("SELECT d.name, COUNT(e) FROM Employee e JOIN e.department d " +
+           "WHERE e.status = 'ACTIVE' GROUP BY d.name ORDER BY COUNT(e) DESC")
+    List<Object[]> countActiveByDepartment();
+
+    @Query("SELECT e.status, COUNT(e) FROM Employee e GROUP BY e.status")
+    List<Object[]> countByStatusGrouped();
+
+    @Query("SELECT COUNT(e) FROM Employee e WHERE e.status = 'ACTIVE' " +
+           "AND YEAR(e.hireDate) = :year AND MONTH(e.hireDate) = :month")
+    long countNewHiresInMonth(@Param("year") int year, @Param("month") int month);
+
+    @Query("SELECT COUNT(e) FROM Employee e WHERE e.status = 'TERMINATED' " +
+           "AND e.terminationDate IS NOT NULL " +
+           "AND YEAR(e.terminationDate) = :year AND MONTH(e.terminationDate) = :month")
+    long countTerminationsInMonth(@Param("year") int year, @Param("month") int month);
+
 }

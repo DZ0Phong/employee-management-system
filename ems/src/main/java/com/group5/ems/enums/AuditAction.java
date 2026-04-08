@@ -13,5 +13,6 @@ public enum AuditAction {
     UNLOCK,
     ACTIVATE,
     DEACTIVATE,
-    RESET_PASSWORD
+    RESET_PASSWORD,
+    EXPORT
 }

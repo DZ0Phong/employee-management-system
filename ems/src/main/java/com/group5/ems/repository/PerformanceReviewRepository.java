@@ -80,4 +80,21 @@ public interface PerformanceReviewRepository extends JpaRepository<PerformanceRe
     Optional<PerformanceReview> findByEmployeeIdAndReviewPeriod(Long employeeId, String reviewPeriod);
 
     List<PerformanceReview> findByEmployeeIdInOrderByUpdatedAtDesc(List<Long> employeeIds);
+
+    // ── HR Reports: Aggregation Queries (read-only) ──────────────────────────
+
+    @Query("SELECT AVG(pr.performanceScore), AVG(pr.potentialScore) FROM PerformanceReview pr " +
+           "WHERE pr.status = 'COMPLETED'")
+    List<Object[]> getAvgScores();
+
+    @Query("SELECT pr.talentMatrix, COUNT(pr) FROM PerformanceReview pr " +
+           "WHERE pr.status = 'COMPLETED' AND pr.talentMatrix IS NOT NULL " +
+           "GROUP BY pr.talentMatrix")
+    List<Object[]> countByTalentMatrixGrouped();
+
+    @Query("SELECT u.fullName, d.name, pr.performanceScore FROM PerformanceReview pr " +
+           "JOIN pr.employee e JOIN e.user u LEFT JOIN e.department d " +
+           "WHERE pr.status = 'COMPLETED' " +
+           "ORDER BY pr.performanceScore DESC")
+    List<Object[]> findTopPerformers(Pageable pageable);
 }
