@@ -732,10 +732,10 @@ public class HRManagerDashboardService {
     private String getStatusLabel(String status) {
         if (status == null) return "Unknown";
         switch (status.toUpperCase()) {
-            case "PENDING": return "Chờ duyệt";
-            case "APPROVED": return "Đã duyệt";
-            case "REJECTED": return "Từ chối";
-            case "COMPLETED": return "Hoàn thành";
+            case "PENDING": return "PENDING";
+            case "APPROVED": return "APPROVED";
+            case "REJECTED": return "REJECTED";
+            case "COMPLETED": return "COMPLETED";
             default: return status;
         }
     }

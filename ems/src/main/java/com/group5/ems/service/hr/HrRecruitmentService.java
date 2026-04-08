@@ -50,8 +50,8 @@ import lombok.RequiredArgsConstructor;
 @Transactional(readOnly = true)
 public class HrRecruitmentService {
 
-    private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("MMM dd, yyyy");
-    private static final DateTimeFormatter DATETIME_FMT = DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm");
+    private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static final DateTimeFormatter DATETIME_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     private final JobPostRepository jobPostRepository;
     private final ApplicationRepository applicationRepository;

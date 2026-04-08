@@ -125,10 +125,10 @@ public class HrReportService {
         List<Long> dailyPresent = new ArrayList<>();
         List<Long> dailyLate = new ArrayList<>();
         List<Long> dailyAbsent = new ArrayList<>();
-        DateTimeFormatter dayFmt = DateTimeFormatter.ofPattern("M/d");
+        DateTimeFormatter dayFmt = DateTimeFormatter.ofPattern("dd/MM");
 
         long daysBetween = ChronoUnit.DAYS.between(from, to) + 1;
-        for (long i = 0; i < daysBetween && i < 31; i++) {
+        for (long i = 0; i < daysBetween; i++) {
             LocalDate day = from.plusDays(i);
             dailyLabels.add(day.format(dayFmt));
             long dayTotal = attendanceRepository.countByWorkDateBetween(day, day);

@@ -10,6 +10,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <link rel="stylesheet" th:href="@{/css/hr/hr-common.css}">
+    <!-- Flatpickr -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script th:src="@{/js/hr/hr-common.js}"></script>
     <script>
         tailwind.config = {
@@ -96,9 +99,9 @@
             <div class="ml-auto flex items-center gap-2" th:if="${activeTab == 'attendance'}">
                 <form th:action="@{/hr/reports}" method="get" class="flex items-center gap-2">
                     <input type="hidden" name="tab" value="attendance" />
-                    <input type="date" name="dateFrom" th:value="${dateFrom}" class="text-xs border-slate-200 rounded-lg py-1.5 px-2 focus:ring-primary/20 focus:border-primary" />
+                    <input type="text" name="dateFrom" th:value="${dateFrom}" class="hr-datepicker text-xs border-slate-200 rounded-lg py-1.5 px-2 focus:ring-primary/20 focus:border-primary text-primary" />
                     <span class="text-xs text-slate-400">to</span>
-                    <input type="date" name="dateTo" th:value="${dateTo}" class="text-xs border-slate-200 rounded-lg py-1.5 px-2 focus:ring-primary/20 focus:border-primary" />
+                    <input type="text" name="dateTo" th:value="${dateTo}" class="hr-datepicker text-xs border-slate-200 rounded-lg py-1.5 px-2 focus:ring-primary/20 focus:border-primary text-primary" />
                     <button type="submit" class="text-xs bg-primary text-white px-3 py-1.5 rounded-lg font-bold hover:bg-primary/90 transition-colors">Apply</button>
                 </form>
             </div>
@@ -242,7 +245,9 @@
                     <div class="anim anim-4 bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
                         <h3 class="text-sm font-black text-slate-800 mb-1">Daily Attendance Trend</h3>
                         <p class="text-xs text-slate-400 mb-4">Present / Late / Absent breakdown</p>
-                        <div id="attendanceTrendChart" class="h-72"></div>
+                        <div class="overflow-x-auto overflow-y-hidden pb-4 custom-scrollbar">
+                            <div id="attendanceTrendChart" class="h-72" style="min-width: 100%;"></div>
+                        </div>
                     </div>
                 </div>
 
@@ -517,6 +522,14 @@
         const aPresent = /*[[${report.dailyPresent()}]]*/ [];
         const aLate = /*[[${report.dailyLate()}]]*/ [];
         const aAbsent = /*[[${report.dailyAbsent()}]]*/ [];
+
+        // Set dynamic width for scrollability: ~40px per data point, minimum 100%
+        const chartEl = document.querySelector('#attendanceTrendChart');
+        if (aLabels.length > 20) {
+            chartEl.style.width = (aLabels.length * 40) + 'px';
+        } else {
+            chartEl.style.width = '100%';
+        }
 
         new ApexCharts(document.querySelector('#attendanceTrendChart'), {
             ...defaultOptions,

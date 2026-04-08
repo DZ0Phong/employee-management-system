@@ -769,7 +769,7 @@ public class HrController {
                 saved.getFileType(),
                 saved.getUploadedAt() != null
                         ? saved.getUploadedAt()
-                                .format(DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm"))
+                                .format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
                         : ""));
     }
 
