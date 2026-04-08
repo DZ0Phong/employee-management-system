@@ -1,10 +1,15 @@
 package com.group5.ems.controller.deptmanager;
 
+import com.group5.ems.entity.Employee;
+import com.group5.ems.entity.User;
+import com.group5.ems.repository.EmployeeRepository;
+import com.group5.ems.repository.UserRepository;
 import com.group5.ems.service.deptmanager.DeptManagerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,9 +32,22 @@ public class DeptManagerController {
     private final LeaveService leaveService;
     private final AttendanceService attendanceService;
     private final PerformanceService performanceService;
+    private final UserRepository userRepository;
+    private final EmployeeRepository employeeRepository;
+
+    private User getUser(Authentication authentication) {
+        return userRepository.findByUsername(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
 
     @GetMapping({ "", "/", "/dashboard" })
-    public String dashboard(Model model) {
+    public String dashboard(Model model, Authentication authentication) {
+        User user = getUser(authentication);
+        Employee employee = employeeRepository.findByUserId(user.getId()).orElse(null);
+        if (employee == null || employee.getDepartmentId() == null) {
+            model.addAttribute("message", "You have not been assigned to any department yet.");
+            return "common/no-department";
+        }
         model.addAttribute("data", deptManagerService.getDashboardData());
         return "deptmanager/dashboard";
     }

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>No Department Assigned</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+<div class="w-full max-w-md bg-white border border-slate-200 rounded-2xl shadow-sm p-8 text-center">
+    <h1 class="text-xl font-bold text-slate-800 mb-3">No Department Assigned</h1>
+    <p class="text-sm text-slate-600 mb-6"
+       th:text="${message != null ? message : 'You have not been assigned to any department yet.'}">
+        You have not been assigned to any department yet.
+    </p>
+
+    <form th:action="@{/logout}" method="post">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <button type="submit"
+                class="w-full h-11 rounded-xl text-white font-semibold transition-colors"
+                style="background-color:#1414b8;">
+            Logout
+        </button>
+    </form>
+</div>
+</body>
+</html>

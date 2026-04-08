@@ -57,6 +57,17 @@ public class EmployeeController {
         return employeeRepository.findByUserId(user.getId()).orElse(null);
     }
 
+    private boolean requiresDepartmentAssignment(User user) {
+        List<Role> roles = userRoleRepository.getRolesByUserId(user.getId());
+        return roles.stream()
+                .map(Role::getCode)
+                .anyMatch(code -> "EMPLOYEE".equals(code) || "DEPT_MANAGER".equals(code));
+    }
+
+    private boolean hasNoDepartment(Employee employee) {
+        return employee == null || employee.getDepartmentId() == null;
+    }
+
     private Employee resolveEmployeeForAttendance(User user) {
         Employee employee = getEmployee(user);
         if (employee != null) {
@@ -211,7 +222,14 @@ public class EmployeeController {
     @GetMapping("/dashboard")
     public String dashboard(Model model, Authentication authentication) {
         User user = getUser(authentication);
-        Employee employee = resolveEmployeeForAttendance(user);
+        Employee employee = getEmployee(user);
+
+        if (requiresDepartmentAssignment(user) && hasNoDepartment(employee)) {
+            model.addAttribute("message", "You have not been assigned to any department yet.");
+            return "common/no-department";
+        }
+
+        employee = resolveEmployeeForAttendance(user);
 
         if (employee != null) {
             model.addAttribute("employee", dashboardService.getEmployeeInfo(employee.getId(), user.getId()));
