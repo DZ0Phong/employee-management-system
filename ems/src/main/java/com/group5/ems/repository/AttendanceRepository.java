@@ -40,4 +40,20 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
             @org.springframework.data.repository.query.Param("status") String status,
             @org.springframework.data.repository.query.Param("search") String search,
             org.springframework.data.domain.Pageable pageable);
+
+    // ── HR Reports: Aggregation Queries (read-only) ──────────────────────────
+
+    @org.springframework.data.jpa.repository.Query(
+            "SELECT COUNT(a) FROM Attendance a WHERE a.status = :status " +
+            "AND a.workDate >= :from AND a.workDate <= :to")
+    long countByStatusAndWorkDateBetween(
+            @org.springframework.data.repository.query.Param("status") String status,
+            @org.springframework.data.repository.query.Param("from") LocalDate from,
+            @org.springframework.data.repository.query.Param("to") LocalDate to);
+
+    @org.springframework.data.jpa.repository.Query(
+            "SELECT COUNT(a) FROM Attendance a WHERE a.workDate >= :from AND a.workDate <= :to")
+    long countByWorkDateBetween(
+            @org.springframework.data.repository.query.Param("from") LocalDate from,
+            @org.springframework.data.repository.query.Param("to") LocalDate to);
 }

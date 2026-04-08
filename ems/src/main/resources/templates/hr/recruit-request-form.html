@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>EMS Pro - Onboard New Employee</title>
+    <meta name="description" content="Submit a new employee onboarding request to Admin for account provisioning." />
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" th:href="@{/css/hr/hr-common.css}">
+    <script th:src="@{/js/hr/hr-common.js}"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#1414b8",
+                        "primary-light": "#e8e8fb",
+                        "bg-light": "#f6f6f8",
+                    },
+                    fontFamily: { display: ["Inter"] },
+                },
+            },
+        };
+    </script>
+</head>
+
+<body class="bg-bg-light font-display text-slate-900 min-h-screen">
+<div class="flex h-screen overflow-hidden">
+
+    <!-- ══════ SIDEBAR ══════ -->
+    <div th:replace="~{fragments/hr-sidebar :: sidebar('employees')}"></div>
+
+    <!-- ─── Main ─────────────────────────────────────────────── -->
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <header class="h-16 bg-white border-b border-slate-100 flex items-center justify-between px-8 shrink-0">
+            <div class="flex items-center gap-3">
+                <a th:href="@{/hr/employees}"
+                   class="w-8 h-8 rounded-lg border border-slate-200 flex items-center justify-center text-slate-400 hover:bg-primary/5 hover:text-primary hover:border-primary/30 transition-all">
+                    <span class="material-symbols-outlined text-lg">arrow_back</span>
+                </a>
+                <div>
+                    <h1 class="text-base font-black text-slate-900 leading-tight">Onboard New Employee</h1>
+                    <p class="text-xs text-slate-400">Submit a recruitment ticket to Admin</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <div class="w-px h-6 bg-slate-200 mx-1"></div>
+                <div class="w-8 h-8 rounded-full bg-primary/10 text-primary border border-primary/20 font-bold text-xs flex items-center justify-center">
+                    HR</div>
+            </div>
+        </header>
+
+        <!-- ── Toast Messages ── -->
+        <div th:if="${errorMessage}" id="toast-error"
+             class="fixed top-4 right-4 z-50 bg-rose-600 text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-2 animate-slide-in">
+            <span class="material-symbols-outlined text-lg">error</span>
+            <span class="text-sm font-semibold" th:text="${errorMessage}"></span>
+            <button onclick="this.parentElement.remove()" class="ml-2 hover:bg-white/20 rounded-full p-0.5 transition">
+                <span class="material-symbols-outlined text-sm">close</span>
+            </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-8 dot-grid">
+            <div class="max-w-4xl mx-auto">
+
+                <!-- ─── Form Card ─── -->
+                <form th:action="@{/hr/employee/new}" th:object="${ticket}" method="post"
+                      class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden anim anim-1">
+
+                    <!-- Form Header -->
+                    <div class="bg-gradient-to-r from-primary to-indigo-600 px-8 py-6 text-white relative overflow-hidden">
+                        <div class="absolute inset-0 opacity-10"
+                             style="background: url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22><circle cx=%2230%22 cy=%2230%22 r=%2220%22 fill=%22none%22 stroke=%22white%22 stroke-width=%221%22/></svg>')">
+                        </div>
+                        <div class="relative flex items-center gap-4">
+                            <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                                <span class="material-symbols-outlined text-2xl">person_add</span>
+                            </div>
+                            <div>
+                                <h2 class="text-lg font-black">New Employee Onboarding</h2>
+                                <p class="text-white/70 text-xs font-medium mt-0.5">Fill in the details below. This creates a ticket for Admin to provision the account.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-8 space-y-8">
+
+                        <!-- ═══ SECTION 1: Personal Details ═══ -->
+                        <div>
+                            <div class="flex items-center gap-2 mb-5">
+                                <div class="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
+                                    <span class="material-symbols-outlined text-primary text-sm">badge</span>
+                                </div>
+                                <h3 class="text-sm font-black text-slate-800 uppercase tracking-wider">Personal Details</h3>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <!-- First Name -->
+                                <div>
+                                    <label for="firstName" class="block text-xs font-bold text-slate-700 mb-1.5">First Name <span class="text-rose-500">*</span></label>
+                                    <input type="text" id="firstName" th:field="*{firstName}" placeholder="e.g. John"
+                                           class="w-full text-sm border-slate-200 rounded-xl focus:ring-primary focus:border-primary px-4 py-2.5 bg-slate-50 text-slate-700 font-medium placeholder:text-slate-400 transition-colors hover:border-slate-300" />
+                                    <p th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}"
+                                       class="text-rose-500 text-[11px] font-medium mt-1 flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-[14px]">error</span>
+                                    </p>
+                                </div>
+                                <!-- Last Name -->
+                                <div>
+                                    <label for="lastName" class="block text-xs font-bold text-slate-700 mb-1.5">Last Name <span class="text-rose-500">*</span></label>
+                                    <input type="text" id="lastName" th:field="*{lastName}" placeholder="e.g. Doe"
+                                           class="w-full text-sm border-slate-200 rounded-xl focus:ring-primary focus:border-primary px-4 py-2.5 bg-slate-50 text-slate-700 font-medium placeholder:text-slate-400 transition-colors hover:border-slate-300" />
+                                    <p th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}"
+                                       class="text-rose-500 text-[11px] font-medium mt-1 flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-[14px]">error</span>
+                                    </p>
+                                </div>
+                                <!-- Email -->
+                                <div>
+                                    <label for="email" class="block text-xs font-bold text-slate-700 mb-1.5">Email Address <span class="text-rose-500">*</span></label>
+                                    <div class="relative">
+                                        <span class="material-symbols-outlined text-slate-400 text-base absolute left-3.5 top-1/2 -translate-y-1/2">mail</span>
+                                        <input type="email" id="email" th:field="*{email}" placeholder="john.doe@company.com"
+                                               class="w-full text-sm border-slate-200 rounded-xl focus:ring-primary focus:border-primary pl-10 pr-4 py-2.5 bg-slate-50 text-slate-700 font-medium placeholder:text-slate-400 transition-colors hover:border-slate-300" />
+                                    </div>
+                                    <p th:if="${#fields.hasErrors('email')}" th:errors="*{email}"
+                                       class="text-rose-500 text-[11px] font-medium mt-1 flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-[14px]">error</span>
+                                    </p>
+                                </div>
+                                <!-- Phone -->
+                                <div>
+                                    <label for="phone" class="block text-xs font-bold text-slate-700 mb-1.5">Phone Number <span class="text-rose-500">*</span></label>
+                                    <div class="relative">
+                                        <span class="material-symbols-outlined text-slate-400 text-base absolute left-3.5 top-1/2 -translate-y-1/2">call</span>
+                                        <input type="tel" id="phone" th:field="*{phone}" placeholder="+84 xxx xxx xxx"
+                                               class="w-full text-sm border-slate-200 rounded-xl focus:ring-primary focus:border-primary pl-10 pr-4 py-2.5 bg-slate-50 text-slate-700 font-medium placeholder:text-slate-400 transition-colors hover:border-slate-300" />
+                                    </div>
+                                    <p th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"
+                                       class="text-rose-500 text-[11px] font-medium mt-1 flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-[14px]">error</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="border-slate-100" />
+
+                        <!-- ═══ SECTION 2: Employment Info ═══ -->
+                        <div>
+                            <div class="flex items-center gap-2 mb-5">
+                                <div class="w-7 h-7 rounded-lg bg-sky-100 flex items-center justify-center">
+                                    <span class="material-symbols-outlined text-sky-600 text-sm">work</span>
+                                </div>
+                                <h3 class="text-sm font-black text-slate-800 uppercase tracking-wider">Employment Information</h3>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <!-- Department -->
+                                <div>
+                                    <label for="departmentId" class="block text-xs font-bold text-slate-700 mb-1.5">Department <span class="text-rose-500">*</span></label>
+                                    <select id="departmentId" th:field="*{departmentId}"
+                                            class="w-full text-sm border-slate-200 rounded-xl focus:ring-primary focus:border-primary px-4 py-2.5 bg-slate-50 text-slate-700 font-medium transition-colors hover:border-slate-300">
+                                        <option value="">Select Department…</option>
+                                        <option th:each="dept : ${departments}" th:value="${dept.id}" th:text="${dept.name}">Department</option>
+                                    </select>
+                                    <p th:if="${#fields.hasErrors('departmentId')}" th:errors="*{departmentId}"
+                                       class="text-rose-500 text-[11px] font-medium mt-1 flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-[14px]">error</span>
+                                    </p>
+                                </div>
+                                <!-- Position -->
+                                <div>
+                                    <label for="positionId" class="block text-xs font-bold text-slate-700 mb-1.5">Job Title <span class="text-rose-500">*</span></label>
+                                    <select id="positionId" th:field="*{positionId}"
+                                            class="w-full text-sm border-slate-200 rounded-xl focus:ring-primary focus:border-primary px-4 py-2.5 bg-slate-50 text-slate-700 font-medium transition-colors hover:border-slate-300">
+                                        <option value="">Select Position…</option>
+                                        <option th:each="pos : ${positions}" th:value="${pos.id}" th:text="${pos.name}">Position</option>
+                                    </select>
+                                    <p th:if="${#fields.hasErrors('positionId')}" th:errors="*{positionId}"
+                                       class="text-rose-500 text-[11px] font-medium mt-1 flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-[14px]">error</span>
+                                    </p>
+                                </div>
+                                <!-- Joining Date -->
+                                <div>
+                                    <label for="joiningDate" class="block text-xs font-bold text-slate-700 mb-1.5">Joining Date <span class="text-rose-500">*</span></label>
+                                    <input type="date" id="joiningDate" th:field="*{joiningDate}"
+                                           class="w-full text-sm border-slate-200 rounded-xl focus:ring-primary focus:border-primary px-4 py-2.5 bg-slate-50 text-slate-700 font-medium transition-colors hover:border-slate-300" />
+                                    <p th:if="${#fields.hasErrors('joiningDate')}" th:errors="*{joiningDate}"
+                                       class="text-rose-500 text-[11px] font-medium mt-1 flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-[14px]">error</span>
+                                    </p>
+                                </div>
+                                <!-- Reporting Manager -->
+                                <div>
+                                    <label for="reportingManagerId" class="block text-xs font-bold text-slate-700 mb-1.5">Reporting Manager</label>
+                                    <select id="reportingManagerId" th:field="*{reportingManagerId}"
+                                            class="w-full text-sm border-slate-200 rounded-xl focus:ring-primary focus:border-primary px-4 py-2.5 bg-slate-50 text-slate-700 font-medium transition-colors hover:border-slate-300">
+                                        <option value="">Select Manager (optional)…</option>
+                                        <option th:each="mgr : ${managers}" th:value="${mgr.id}"
+                                                th:text="${mgr.user != null ? mgr.user.fullName + ' — ' + mgr.employeeCode : mgr.employeeCode}">Manager</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="border-slate-100" />
+
+                        <!-- ═══ SECTION 3: Compensation ═══ -->
+                        <div>
+                            <div class="flex items-center gap-2 mb-5">
+                                <div class="w-7 h-7 rounded-lg bg-emerald-100 flex items-center justify-center">
+                                    <span class="material-symbols-outlined text-emerald-600 text-sm">payments</span>
+                                </div>
+                                <h3 class="text-sm font-black text-slate-800 uppercase tracking-wider">Compensation</h3>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <!-- Base Salary -->
+                                <div>
+                                    <label for="baseSalary" class="block text-xs font-bold text-slate-700 mb-1.5">Annual Base Salary <span class="text-rose-500">*</span></label>
+                                    <div class="relative">
+                                        <span class="text-slate-400 text-sm font-bold absolute left-3.5 top-1/2 -translate-y-1/2">$</span>
+                                        <input type="number" id="baseSalary" th:field="*{baseSalary}" step="0.01" min="0" placeholder="0.00"
+                                               class="w-full text-sm border-slate-200 rounded-xl focus:ring-primary focus:border-primary pl-8 pr-4 py-2.5 bg-slate-50 text-slate-700 font-medium font-mono placeholder:text-slate-400 transition-colors hover:border-slate-300" />
+                                    </div>
+                                    <p th:if="${#fields.hasErrors('baseSalary')}" th:errors="*{baseSalary}"
+                                       class="text-rose-500 text-[11px] font-medium mt-1 flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-[14px]">error</span>
+                                    </p>
+                                </div>
+                                <!-- Pay Frequency -->
+                                <div>
+                                    <label for="payFrequency" class="block text-xs font-bold text-slate-700 mb-1.5">Pay Frequency <span class="text-rose-500">*</span></label>
+                                    <select id="payFrequency" th:field="*{payFrequency}"
+                                            class="w-full text-sm border-slate-200 rounded-xl focus:ring-primary focus:border-primary px-4 py-2.5 bg-slate-50 text-slate-700 font-medium transition-colors hover:border-slate-300">
+                                        <option value="">Select Frequency…</option>
+                                        <option value="MONTHLY" th:selected="*{payFrequency == 'MONTHLY'}">Monthly</option>
+                                        <option value="BI_WEEKLY" th:selected="*{payFrequency == 'BI_WEEKLY'}">Bi-Weekly</option>
+                                        <option value="WEEKLY" th:selected="*{payFrequency == 'WEEKLY'}">Weekly</option>
+                                    </select>
+                                    <p th:if="${#fields.hasErrors('payFrequency')}" th:errors="*{payFrequency}"
+                                       class="text-rose-500 text-[11px] font-medium mt-1 flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-[14px]">error</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="border-slate-100" />
+
+                        <!-- ═══ SECTION 4: Benefits / Bonus ═══ -->
+                        <div>
+                            <div class="flex items-center gap-2 mb-5">
+                                <div class="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center">
+                                    <span class="material-symbols-outlined text-amber-600 text-sm">card_giftcard</span>
+                                </div>
+                                <h3 class="text-sm font-black text-slate-800 uppercase tracking-wider">Benefits &amp; Bonuses</h3>
+                            </div>
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                <div th:each="bt : ${benefitTypes}"
+                                     class="benefit-item group relative flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:border-primary/40 hover:bg-primary/[3%] transition-all cursor-pointer">
+                                    <input type="checkbox" th:id="${'bonus-' + bt.id}" th:value="${bt.id}" name="bonusIds"
+                                           class="rounded border-slate-300 text-primary focus:ring-primary w-4 h-4 cursor-pointer" />
+                                    <label th:for="${'bonus-' + bt.id}" class="cursor-pointer flex-1">
+                                        <p class="text-xs font-bold text-slate-700 group-hover:text-primary transition-colors" th:text="${bt.name}">Benefit</p>
+                                        <p th:if="${bt.description}" class="text-[10px] text-slate-400 leading-tight mt-0.5 line-clamp-1" th:text="${bt.description}">Description</p>
+                                    </label>
+                                </div>
+                            </div>
+                            <p th:if="${#lists.isEmpty(benefitTypes)}" class="text-xs text-slate-400 italic">No active benefit types configured.</p>
+                        </div>
+
+                        <hr class="border-slate-100" />
+
+                        <!-- ═══ SECTION 5: Additional Notes ═══ -->
+                        <div>
+                            <div class="flex items-center gap-2 mb-3">
+                                <div class="w-7 h-7 rounded-lg bg-violet-100 flex items-center justify-center">
+                                    <span class="material-symbols-outlined text-violet-600 text-sm">note_add</span>
+                                </div>
+                                <h3 class="text-sm font-black text-slate-800 uppercase tracking-wider">Additional Notes</h3>
+                            </div>
+                            <textarea id="additionalNotes" th:field="*{additionalNotes}" rows="4"
+                                      placeholder="Any additional context, special requirements, or onboarding instructions…"
+                                      class="w-full text-sm border-slate-200 rounded-xl focus:ring-primary focus:border-primary px-4 py-3 bg-slate-50 text-slate-700 font-medium placeholder:text-slate-400 resize-none transition-colors hover:border-slate-300"></textarea>
+                        </div>
+
+                        <!-- ═══ Form Footer ═══ -->
+                        <div class="flex items-center justify-between pt-4 border-t border-slate-100">
+                            <div class="flex items-center gap-2 text-slate-400">
+                                <span class="material-symbols-outlined text-base">shield</span>
+                                <span class="text-[10px] font-medium">Data is encrypted and transmitted securely.</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <a th:href="@{/hr/employees}"
+                                   class="text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl px-6 py-2.5 transition-colors">
+                                    Cancel
+                                </a>
+                                <button type="submit" id="submit-btn"
+                                        class="text-sm font-bold text-white bg-primary hover:bg-primary/90 rounded-xl px-8 py-2.5 shadow-sm shadow-primary/30 transition-all hover:shadow-md hover:shadow-primary/40 flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-lg">send</span>
+                                    Submit Onboarding Request
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- ─── Info Cards ─── -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 anim anim-2">
+                    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 flex items-start gap-4">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
+                            <span class="material-symbols-outlined text-emerald-500">bolt</span>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-black text-slate-800">Automated Onboarding</h4>
+                            <p class="text-[11px] text-slate-400 leading-relaxed mt-1">
+                                Once approved by Admin, the system will automatically provision the employee's account, assign roles, and send welcome credentials via email.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 flex items-start gap-4">
+                        <div class="w-10 h-10 rounded-xl bg-sky-50 flex items-center justify-center shrink-0">
+                            <span class="material-symbols-outlined text-sky-500">privacy_tip</span>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-black text-slate-800">Data Privacy</h4>
+                            <p class="text-[11px] text-slate-400 leading-relaxed mt-1">
+                                All personal data is handled in compliance with company policy and relevant data protection regulations. Information is only accessible by authorized personnel.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    // Auto-dismiss toasts after 5 seconds
+    document.querySelectorAll('[id^="toast-"]').forEach(toast => {
+        setTimeout(() => toast.remove(), 5000);
+    });
+
+    // Make benefit checkboxes toggle the card visually
+    document.querySelectorAll('.benefit-item input[type="checkbox"]').forEach(cb => {
+        cb.addEventListener('change', function() {
+            const card = this.closest('.benefit-item');
+            if (this.checked) {
+                card.classList.add('border-primary/50', 'bg-primary/5', 'ring-1', 'ring-primary/20');
+                card.classList.remove('border-slate-200');
+            } else {
+                card.classList.remove('border-primary/50', 'bg-primary/5', 'ring-1', 'ring-primary/20');
+                card.classList.add('border-slate-200');
+            }
+        });
+        // Initialize state on page load for re-rendered forms with errors
+        if (cb.checked) {
+            const card = cb.closest('.benefit-item');
+            card.classList.add('border-primary/50', 'bg-primary/5', 'ring-1', 'ring-primary/20');
+            card.classList.remove('border-slate-200');
+        }
+    });
+
+    // Click anywhere on benefitItem to toggle its checkbox
+    document.querySelectorAll('.benefit-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+            if (e.target.tagName === 'INPUT') return; // Don't double-toggle
+            const cb = this.querySelector('input[type="checkbox"]');
+            cb.checked = !cb.checked;
+            cb.dispatchEvent(new Event('change'));
+        });
+    });
+</script>
+</body>
+
+</html>
