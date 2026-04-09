@@ -342,7 +342,7 @@ public class HRAnalyticsService {
      * Sắp xếp theo priority: IN_REVIEW > DRAFTING > FINALIZED
      */
     public List<PolicyReviewDTO> getPolicyReviews() {
-        List<Event> policyEvents = eventRepository.findPolicyReviews();
+        List<Event> policyEvents = eventRepository.findPolicyReviews("training");
         
         if (policyEvents.isEmpty()) {
             return Collections.emptyList();
