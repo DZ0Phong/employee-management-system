@@ -25,6 +25,7 @@ public class LeaveRequestDTO {
     private String statusDisplay;
     private String stepDisplay;
     private LocalDateTime createdAt;
+    private boolean cancelable;
 
     public long getDaysCount() {
         if (leaveFrom == null || leaveTo == null) return 0;

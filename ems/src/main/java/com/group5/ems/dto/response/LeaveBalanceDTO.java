@@ -15,4 +15,5 @@ public class LeaveBalanceDTO {
     private double usedDays;
     private double remainingDays;
     private double usagePercentage; // để render progress bar
+    private boolean requestable;
 }

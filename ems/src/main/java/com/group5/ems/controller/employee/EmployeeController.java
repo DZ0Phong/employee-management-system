@@ -291,6 +291,22 @@ public class EmployeeController {
         return "redirect:/employee/leave";
     }
 
+    @PostMapping("/leave/{id}/cancel")
+    public String cancelLeaveRequest(@PathVariable Long id,
+                                     Authentication authentication,
+                                     RedirectAttributes redirectAttributes) {
+        try {
+            User user = getUser(authentication);
+            Employee employee = getEmployee(user);
+            if (employee == null) throw new RuntimeException("You are not assigned to any department yet.");
+            leaveService.cancelLeaveRequest(employee.getId(), id);
+            redirectAttributes.addFlashAttribute("success", "Leave request cancelled successfully");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Failed to cancel leave request: " + e.getMessage());
+        }
+        return "redirect:/employee/leave";
+    }
+
     // ── Profile ────────────────────────────────────────────
     @GetMapping("/profile")
     public String profile(Authentication authentication, Model model) {
