@@ -66,4 +66,12 @@ public interface SalaryRepository extends JpaRepository<Salary, Long> {
            "WHERE s.effectiveTo IS NULL OR s.effectiveTo >= CURRENT_DATE " +
            "GROUP BY d.name ORDER BY AVG(s.baseAmount) DESC")
     List<Object[]> avgSalaryByDepartment();
+
+    /**
+     * Get average salary at a specific date
+     */
+    @Query("SELECT AVG(s.baseAmount) FROM Salary s " +
+           "WHERE s.effectiveFrom <= :date " +
+           "AND (s.effectiveTo IS NULL OR s.effectiveTo >= :date)")
+    Double getAverageSalaryAtDate(@Param("date") LocalDate date);
 }

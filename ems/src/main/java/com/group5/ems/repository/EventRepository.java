@@ -45,4 +45,10 @@ public interface EventRepository extends JpaRepository<Event, Long> {
                                        @Param("startTime") java.time.LocalTime startTime,
                                        @Param("endDate") java.time.LocalDate endDate,
                                        @Param("endTime") java.time.LocalTime endTime);
+
+    // Lấy training events đang active (chưa kết thúc hoặc vừa kết thúc gần đây)
+    @Query("SELECT e FROM Event e WHERE e.type = 'TRAINING' " +
+           "AND (e.endDate IS NULL OR e.endDate >= :cutoffDate) " +
+           "ORDER BY e.startDate DESC")
+    List<Event> findActiveTrainingEvents(@Param("cutoffDate") LocalDate cutoffDate);
 }

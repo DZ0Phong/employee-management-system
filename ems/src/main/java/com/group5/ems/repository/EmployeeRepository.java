@@ -149,4 +149,27 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
            "AND YEAR(e.terminationDate) = :year AND MONTH(e.terminationDate) = :month")
     long countTerminationsInMonth(@Param("year") int year, @Param("month") int month);
 
+    // ── Analytics: Retention Rate Calculation ────────────────────────────────
+    
+    /**
+     * Count employees who were active at the start of the period
+     */
+    @Query("SELECT COUNT(e) FROM Employee e WHERE e.hireDate < :periodStart")
+    long countEmployeesAtPeriodStart(@Param("periodStart") LocalDate periodStart);
+    
+    /**
+     * Count employees who left during the period
+     */
+    @Query("SELECT COUNT(e) FROM Employee e WHERE e.status = 'TERMINATED' " +
+           "AND e.terminationDate >= :periodStart AND e.terminationDate < :periodEnd")
+    long countTerminationsBetween(@Param("periodStart") LocalDate periodStart, 
+                                   @Param("periodEnd") LocalDate periodEnd);
+
+    /**
+     * Count workforce changes (new hires) in a period
+     */
+    @Query("SELECT COUNT(e) FROM Employee e WHERE e.hireDate >= :periodStart AND e.hireDate < :periodEnd")
+    long countNewHiresBetween(@Param("periodStart") LocalDate periodStart, 
+                              @Param("periodEnd") LocalDate periodEnd);
+
 }
