@@ -8,6 +8,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.PageRequest;
@@ -32,6 +33,7 @@ import com.group5.ems.entity.InterviewAssignment;
 import com.group5.ems.entity.JobPost;
 import com.group5.ems.entity.Request;
 import com.group5.ems.entity.RequestApprovalHistory;
+import com.group5.ems.entity.User;
 import com.group5.ems.exception.JobPostException;
 import com.group5.ems.repository.ApplicationRepository;
 import com.group5.ems.repository.ApplicationStageRepository;
@@ -42,16 +44,25 @@ import com.group5.ems.repository.InterviewRepository;
 import com.group5.ems.repository.JobPostRepository;
 import com.group5.ems.repository.RequestApprovalHistoryRepository;
 import com.group5.ems.repository.RequestRepository;
+import com.group5.ems.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class HrRecruitmentService {
 
-    private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-    private static final DateTimeFormatter DATETIME_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+    private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("MMM dd, yyyy");
+    private static final DateTimeFormatter DATETIME_FMT = DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm");
+
+    // ── Template codes (phải khớp với cột `code` trong bảng email_templates) ──
+    private static final String TPL_INTERVIEW_ASSIGNED = "INTERVIEW_ASSIGNED";
+    private static final String TPL_APPLICATION_HIRED = "APPLICATION_HIRED";
+    private static final String TPL_APPLICATION_REJECT = "APPLICATION_REJECTED";
+    private static final String TPL_NEW_EMPLOYEE_REQ = "NEW_EMPLOYEE_REQUEST";
 
     private final JobPostRepository jobPostRepository;
     private final ApplicationRepository applicationRepository;
@@ -62,6 +73,8 @@ public class HrRecruitmentService {
     private final RequestRepository requestRepository;
     private final RequestApprovalHistoryRepository requestApprovalHistoryRepository;
     private final InterviewRepository interviewRepository;
+    private final UserRepository userRepository;
+    private final HrEmailService emailService;
 
     // ══════════════════════════════════════════════════════════════════════════
     // 1. JOB POSTS
@@ -93,6 +106,12 @@ public class HrRecruitmentService {
         return applicationRepository.count();
     }
 
+    /**
+     * Cập nhật stage của application.
+     * Khi stage = HIRED → gửi email chúc mừng cho candidate
+     * → gửi email yêu cầu tạo nhân viên cho tất cả Admin
+     * Khi stage = REJECTED → gửi email thông báo từ chối cho candidate
+     */
     @Transactional
     public void updateApplicationStage(Long applicationId, String newStage, String note) {
         Application app = applicationRepository.findById(applicationId)
@@ -108,6 +127,14 @@ public class HrRecruitmentService {
         app.getStages().add(entry);
 
         applicationRepository.save(app);
+
+        // ── Gửi email thông báo kết quả ──────────────────────────────────────
+        if ("HIRED".equalsIgnoreCase(newStage)) {
+            sendHiredNotification(app);
+            sendNewEmployeeRequestToAdmins(app);
+        } else if ("REJECTED".equalsIgnoreCase(newStage)) {
+            sendRejectedNotification(app);
+        }
     }
 
     // ══════════════════════════════════════════════════════════════════════════
@@ -234,9 +261,14 @@ public class HrRecruitmentService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Assign interviewer cho application.
+     * Sau khi lưu thành công → gửi email thông báo cho từng interviewer được
+     * assign.
+     */
     @Transactional
     public void assignInterviewers(Long applicationId, List<Long> interviewerIds, Long assignedBy) {
-        applicationRepository.findById(applicationId)
+        Application app = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> new IllegalArgumentException("Application not found: " + applicationId));
 
         interviewAssignmentRepository.deleteByApplicationId(applicationId);
@@ -256,6 +288,9 @@ public class HrRecruitmentService {
                 .collect(Collectors.toList());
 
         interviewAssignmentRepository.saveAll(toSave);
+
+        // ── Gửi email thông báo cho từng interviewer được assign ──────────────
+        sendInterviewAssignedEmails(app, interviewerIds);
     }
 
     // ══════════════════════════════════════════════════════════════════════════
@@ -402,122 +437,37 @@ public class HrRecruitmentService {
         interviewRepository.save(iv);
     }
 
-    /**
-     * Lấy danh sách interviews cho trang "My Interviews".
-     */
     public List<InterviewDTO> getMyInterviews(Long interviewerUserId) {
-        // Bước 1: lấy tất cả assignment của user hiện tại từ bảng interview_assign
-        List<InterviewAssignment> assignments =
-                interviewAssignmentRepository.findByInterviewerId(interviewerUserId);
+        List<InterviewAssignment> assignments = interviewAssignmentRepository.findByInterviewerId(interviewerUserId);
 
-        // Bước 2 & 3: với mỗi assignment, tìm interview tương ứng (nếu có)
         return assignments.stream()
-                .map(ia -> {
-                    // Tìm Interview trong bảng interview theo applicationId
-                    // (interview có thể chưa được schedule nên dùng Optional)
-                    return interviewRepository
-                            .findByApplicationIdOrderByScheduledAtDesc(ia.getApplicationId())
-                            .stream()
-                            .findFirst()
-                            .map(this::mapToInterviewDTO)
-                            // Nếu chưa có interview nào được schedule, tạo DTO placeholder
-                            .orElseGet(() -> mapAssignmentToInterviewDTO(ia));
-                })
+                .map(ia -> interviewRepository
+                        .findByApplicationIdOrderByScheduledAtDesc(ia.getApplicationId())
+                        .stream()
+                        .findFirst()
+                        .map(this::mapToInterviewDTO)
+                        .orElseGet(() -> mapAssignmentToInterviewDTO(ia)))
                 .sorted((a, b) -> {
-                    // So sánh dựa trên scheduledRaw (ISO string), empty = chưa có lịch → xuống cuối
                     boolean aHas = a.getScheduledAtRaw() != null && !a.getScheduledAtRaw().isBlank();
                     boolean bHas = b.getScheduledAtRaw() != null && !b.getScheduledAtRaw().isBlank();
-                    if (aHas && bHas) return b.getScheduledAtRaw().compareTo(a.getScheduledAtRaw()); // mới nhất lên trước
-                    if (aHas) return 1;
-                    if (bHas) return -1;
+                    if (aHas && bHas)
+                        return b.getScheduledAtRaw().compareTo(a.getScheduledAtRaw());
+                    if (aHas)
+                        return 1;
+                    if (bHas)
+                        return -1;
                     return 0;
                 })
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Tạo InterviewDTO placeholder từ InterviewAssignment khi chưa có Interview được schedule.
-     */
     private InterviewDTO mapAssignmentToInterviewDTO(InterviewAssignment ia) {
         String candidateName = "Unknown", candidateEmail = "", initials = "?";
         String jobTitle = "—", department = "";
 
-        applicationRepository.findById(ia.getApplicationId()).ifPresent(app -> {
-        });
-
-        // Lấy thông tin application để điền candidate & job
         var appOpt = applicationRepository.findById(ia.getApplicationId());
         if (appOpt.isPresent()) {
             var app = appOpt.get();
-            if (app.getCandidate() != null) {
-                candidateName = app.getCandidate().getFullName() != null
-                        ? app.getCandidate().getFullName() : "Unknown";
-                candidateEmail = app.getCandidate().getEmail() != null
-                        ? app.getCandidate().getEmail() : "";
-                initials = buildInitials(candidateName);
-            }
-            if (app.getJobPost() != null) {
-                jobTitle = app.getJobPost().getTitle() != null ? app.getJobPost().getTitle() : "—";
-                department = app.getJobPost().getDepartment() != null
-                        ? app.getJobPost().getDepartment().getName() : "";
-            }
-        }
-
-        return new InterviewDTO(
-                null,                    // id — chưa có interview
-                ia.getApplicationId(),
-                candidateName, initials, candidateEmail,
-                jobTitle, department,
-                "",                      // scheduledFmt — chưa có lịch
-                "",                      // scheduledRaw
-                "",                      // location
-                "NOT_SCHEDULED",         // status placeholder
-                null,                    // feedback
-                null                     // assignedByName
-        );
-    }
-
-    /**
-     * Lấy danh sách interviews của 1 application cụ thể.
-     */
-    public List<InterviewDTO> getInterviewsByApplication(Long applicationId) {
-        return interviewRepository.findByApplicationIdOrderByScheduledAtDesc(applicationId)
-                .stream()
-                .map(this::mapToInterviewDTO)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Interviewer cập nhật feedback + kết quả sau buổi phỏng vấn.
-     */
-    @Transactional
-    public void submitFeedback(Long interviewId, String feedback, String status) {
-        Interview iv = interviewRepository.findById(interviewId)
-                .orElseThrow(() -> new IllegalArgumentException("Interview not found: " + interviewId));
-        iv.setFeedback(feedback);
-        iv.setStatus(status); // COMPLETED | CANCELLED
-        interviewRepository.save(iv);
-    }
-
-    /**
-     * HR huỷ một buổi phỏng vấn.
-     */
-    @Transactional
-    public void cancelInterview(Long interviewId) {
-        Interview iv = interviewRepository.findById(interviewId)
-                .orElseThrow(() -> new IllegalArgumentException("Interview not found: " + interviewId));
-        iv.setStatus("CANCELLED");
-        interviewRepository.save(iv);
-    }
-
-    // ── Mapper helper ─────────────────────────────────────────────────────────
-
-    private InterviewDTO mapToInterviewDTO(Interview iv) {
-        String candidateName = "Unknown", candidateEmail = "", initials = "?";
-        String jobTitle = "—", department = "";
-
-        if (iv.getApplication() != null) {
-            var app = iv.getApplication();
             if (app.getCandidate() != null) {
                 candidateName = app.getCandidate().getFullName() != null
                         ? app.getCandidate().getFullName()
@@ -535,24 +485,37 @@ public class HrRecruitmentService {
             }
         }
 
-        String scheduledFmt = iv.getScheduledAt() != null
-                ? iv.getScheduledAt().format(DATETIME_FMT)
-                : "";
-        String scheduledRaw = iv.getScheduledAt() != null
-                ? iv.getScheduledAt().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"))
-                : "";
-
         return new InterviewDTO(
-                iv.getId(),
-                iv.getApplicationId(),
+                null, ia.getApplicationId(),
                 candidateName, initials, candidateEmail,
                 jobTitle, department,
-                scheduledFmt, scheduledRaw,
-                iv.getLocation(),
-                iv.getStatus(),
-                iv.getFeedback(),
-                null
-        );
+                "", "", "",
+                "NOT_SCHEDULED",
+                null, null);
+    }
+
+    public List<InterviewDTO> getInterviewsByApplication(Long applicationId) {
+        return interviewRepository.findByApplicationIdOrderByScheduledAtDesc(applicationId)
+                .stream()
+                .map(this::mapToInterviewDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void submitFeedback(Long interviewId, String feedback, String status) {
+        Interview iv = interviewRepository.findById(interviewId)
+                .orElseThrow(() -> new IllegalArgumentException("Interview not found: " + interviewId));
+        iv.setFeedback(feedback);
+        iv.setStatus(status);
+        interviewRepository.save(iv);
+    }
+
+    @Transactional
+    public void cancelInterview(Long interviewId) {
+        Interview iv = interviewRepository.findById(interviewId)
+                .orElseThrow(() -> new IllegalArgumentException("Interview not found: " + interviewId));
+        iv.setStatus("CANCELLED");
+        interviewRepository.save(iv);
     }
 
     // ══════════════════════════════════════════════════════════════════════════
@@ -590,8 +553,151 @@ public class HrRecruitmentService {
     }
 
     // ══════════════════════════════════════════════════════════════════════════
+    // EMAIL HELPERS (private)
+    // ══════════════════════════════════════════════════════════════════════════
+
+    /**
+     * Gửi email INTERVIEW_ASSIGNED đến email của từng interviewer được assign.
+     * Variables: {{interviewerName}}, {{candidateName}}, {{jobTitle}},
+     * {{applicationId}}
+     */
+    private void sendInterviewAssignedEmails(Application app, List<Long> interviewerIds) {
+        String candidateName = resolveCandidateName(app);
+        String jobTitle = resolveJobTitle(app);
+
+        for (Long userId : interviewerIds) {
+            userRepository.findById(userId).ifPresent(user -> {
+                if (user.getEmail() == null || user.getEmail().isBlank())
+                    return;
+
+                String interviewerName = user.getFullName() != null ? user.getFullName() : user.getUsername();
+                Map<String, String> vars = Map.of(
+                        "interviewerName", interviewerName,
+                        "candidateName", candidateName,
+                        "jobTitle", jobTitle,
+                        "applicationId", String.valueOf(app.getId()));
+                emailService.sendFromTemplate(user.getEmail(), TPL_INTERVIEW_ASSIGNED, vars);
+            });
+        }
+    }
+
+    /**
+     * Gửi email APPLICATION_HIRED đến email của candidate.
+     * Variables: {{candidateName}}, {{jobTitle}}, {{companyName}}
+     */
+    private void sendHiredNotification(Application app) {
+        if (app.getCandidate() == null)
+            return;
+        String email = app.getCandidate().getEmail();
+        if (email == null || email.isBlank())
+            return;
+
+        Map<String, String> vars = Map.of(
+                "candidateName", resolveCandidateName(app),
+                "jobTitle", resolveJobTitle(app),
+                "companyName", "ERM Pro");
+        emailService.sendFromTemplate(email, TPL_APPLICATION_HIRED, vars);
+    }
+
+    /**
+     * Gửi email APPLICATION_REJECTED đến email của candidate.
+     * Variables: {{candidateName}}, {{jobTitle}}, {{companyName}}
+     */
+    private void sendRejectedNotification(Application app) {
+        if (app.getCandidate() == null)
+            return;
+        String email = app.getCandidate().getEmail();
+        if (email == null || email.isBlank())
+            return;
+
+        Map<String, String> vars = Map.of(
+                "candidateName", resolveCandidateName(app),
+                "jobTitle", resolveJobTitle(app),
+                "companyName", "ERM Pro");
+        emailService.sendFromTemplate(email, TPL_APPLICATION_REJECT, vars);
+    }
+
+    /**
+     * Gửi email NEW_EMPLOYEE_REQUEST đến tất cả user có role ADMIN.
+     * Variables: {{adminName}}, {{candidateName}}, {{jobTitle}}, {{applicationId}}
+     */
+    private void sendNewEmployeeRequestToAdmins(Application app) {
+        String candidateName = resolveCandidateName(app);
+        String jobTitle = resolveJobTitle(app);
+
+        // Lấy tất cả user có role có code = "ADMIN"
+        List<User> admins = userRepository.findByRoleCode("ADMIN");
+        for (User admin : admins) {
+            if (admin.getEmail() == null || admin.getEmail().isBlank())
+                continue;
+
+            String adminName = admin.getFullName() != null ? admin.getFullName() : admin.getUsername();
+            Map<String, String> vars = Map.of(
+                    "adminName", adminName,
+                    "candidateName", candidateName,
+                    "jobTitle", jobTitle,
+                    "applicationId", String.valueOf(app.getId()));
+            emailService.sendFromTemplate(admin.getEmail(), TPL_NEW_EMPLOYEE_REQ, vars);
+        }
+    }
+
+    // ── small resolvers ───────────────────────────────────────────────────────
+
+    private String resolveCandidateName(Application app) {
+        if (app.getCandidate() != null && app.getCandidate().getFullName() != null)
+            return app.getCandidate().getFullName();
+        return "Candidate";
+    }
+
+    private String resolveJobTitle(Application app) {
+        if (app.getJobPost() != null && app.getJobPost().getTitle() != null)
+            return app.getJobPost().getTitle();
+        return "the position";
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
     // MAPPERS
     // ══════════════════════════════════════════════════════════════════════════
+
+    private InterviewDTO mapToInterviewDTO(Interview iv) {
+        String candidateName = "Unknown", candidateEmail = "", initials = "?";
+        String jobTitle = "—", department = "";
+
+        if (iv.getApplication() != null) {
+            var app = iv.getApplication();
+            if (app.getCandidate() != null) {
+                candidateName = app.getCandidate().getFullName() != null
+                        ? app.getCandidate().getFullName()
+                        : "Unknown";
+                candidateEmail = app.getCandidate().getEmail() != null
+                        ? app.getCandidate().getEmail()
+                        : "";
+                initials = buildInitials(candidateName);
+            }
+            if (app.getJobPost() != null) {
+                jobTitle = app.getJobPost().getTitle() != null ? app.getJobPost().getTitle() : "—";
+                department = app.getJobPost().getDepartment() != null
+                        ? app.getJobPost().getDepartment().getName()
+                        : "";
+            }
+        }
+
+        String scheduledFmt = iv.getScheduledAt() != null ? iv.getScheduledAt().format(DATETIME_FMT) : "";
+        String scheduledRaw = iv.getScheduledAt() != null
+                ? iv.getScheduledAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"))
+                : "";
+
+        return new InterviewDTO(
+                iv.getId(),
+                iv.getApplicationId(),
+                candidateName, initials, candidateEmail,
+                jobTitle, department,
+                scheduledFmt, scheduledRaw,
+                iv.getLocation(),
+                iv.getStatus(),
+                iv.getFeedback(),
+                null);
+    }
 
     private HrRecruitmentDTO mapToJobPostDTO(JobPost job) {
         String dept = job.getDepartment() != null ? job.getDepartment().getName() : "N/A";

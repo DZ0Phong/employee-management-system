@@ -1144,24 +1144,26 @@
       let activeDept = 'all', activeStatus = 'all', searchQ = '';
       let _generatedToken = '', _selectedJob = null, _uploadedFile = null, _currentStep = 1;
 
+      const normalize = str => str.normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase();
+
       function applyFilters() {
         const cards = document.querySelectorAll('.job-card-full');
         let visible = 0;
 
         cards.forEach(c => {
-
           const dept = c.dataset.deptid;
           const status = c.dataset.status;
-          const title = c.dataset.title?.toLowerCase() || '';
+          const title = normalize(c.dataset.title || '');
 
           const deptMatch = activeDept === 'all' || dept === activeDept;
           const statusMatch = activeStatus === 'all' || status === activeStatus;
-          const searchMatch = !searchQ || title.includes(searchQ);
+          const searchMatch = !searchQ || title.includes(normalize(searchQ));
 
           const show = deptMatch && statusMatch && searchMatch;
 
           c.style.display = show ? 'flex' : 'none';
-
           if (show) visible++;
         });
 

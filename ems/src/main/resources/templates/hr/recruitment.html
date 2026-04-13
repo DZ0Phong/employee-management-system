@@ -2478,12 +2478,17 @@
                 })
                 .catch(() => { currentEl.innerHTML = '<span class="text-xs text-rose-300 italic">Failed to load</span>'; });
         }
-
         function filterEmployees() {
-            const q = document.getElementById('assignSearch').value.toLowerCase();
+            const normalize = str => str.normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .toLowerCase();
+
+            const q = normalize(document.getElementById('assignSearch').value);
             let visible = 0;
             document.querySelectorAll('.employee-option').forEach(el => {
-                const match = (el.dataset.empName || '').toLowerCase().includes(q) || (el.dataset.empTitle || '').toLowerCase().includes(q) || (el.dataset.empDept || '').toLowerCase().includes(q);
+                const match = normalize(el.dataset.empName || '').includes(q) ||
+                    normalize(el.dataset.empTitle || '').includes(q) ||
+                    normalize(el.dataset.empDept || '').includes(q);
                 el.style.display = match ? '' : 'none';
                 if (match) visible++;
             });
@@ -2626,10 +2631,16 @@
         const PAGE_SIZE = 10;
         let allRows = [], filteredRows = [], currentPage = 1, activeFilter = 'all';
 
+        const normalize = str => str.normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase();
+
         function applyFilters() {
-            const q = (document.getElementById('searchInput').value || '').toLowerCase();
+            const q = normalize(document.getElementById('searchInput').value || '');
             filteredRows = allRows.filter(r => {
-                const n = r.dataset.name || '', j = r.dataset.job || '', s = r.dataset.stage || '';
+                const n = normalize(r.dataset.name || '');
+                const j = normalize(r.dataset.job || '');
+                const s = r.dataset.stage || '';
                 return (activeFilter === 'all' || s === activeFilter) && (n.includes(q) || j.includes(q));
             });
             currentPage = 1; renderPage();
@@ -2729,12 +2740,12 @@
         }
 
         function applyIvFilter() {
-            const q = (document.getElementById('ivSearch')?.value || '').toLowerCase();
+            const q = normalize(document.getElementById('ivSearch')?.value || '');
             document.querySelectorAll('.iv-card-item').forEach(card => {
                 const matchStatus = currentIvFilter === 'ALL' || card.dataset.status === currentIvFilter;
                 const matchSearch = !q ||
-                    (card.dataset.name || '').includes(q) ||
-                    (card.dataset.job || '').includes(q);
+                    normalize(card.dataset.name || '').includes(q) ||
+                    normalize(card.dataset.job || '').includes(q);
                 card.style.display = (matchStatus && matchSearch) ? '' : 'none';
             });
         }
