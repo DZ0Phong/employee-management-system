@@ -20,4 +20,5 @@ public class CreateLeaveRequestDTO {
     private LocalDate leaveTo;
 
     private String content;
+    private boolean urgent;
 }

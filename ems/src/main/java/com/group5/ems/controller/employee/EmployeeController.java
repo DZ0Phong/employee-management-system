@@ -266,10 +266,12 @@ public class EmployeeController {
             model.addAttribute("employee", dashboardService.getEmployeeInfo(employee.getId(), user.getId()));
             model.addAttribute("balances", leaveService.getLeaveBalances(employee.getId()));
             model.addAttribute("leaveHistory", leaveService.getLeaveHistory(employee.getId()));
+            model.addAttribute("leaveTypes", leaveService.getSupportedLeaveTypes());
         } else {
             model.addAttribute("employee", buildDefaultEmployeeInfo(user));
             model.addAttribute("balances", List.of());
             model.addAttribute("leaveHistory", List.of());
+            model.addAttribute("leaveTypes", List.of());
         }
 
         return "employee/leave";

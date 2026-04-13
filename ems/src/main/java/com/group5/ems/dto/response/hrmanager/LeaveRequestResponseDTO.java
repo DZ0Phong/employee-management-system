@@ -66,7 +66,7 @@ public class LeaveRequestResponseDTO {
         this.id = request.getId();
         this.title = request.getTitle();
         this.status = request.getStatus();
-        this.leaveType = request.getLeaveType();
+        this.leaveType = formatLeaveType(request.getLeaveType());
         this.leaveFrom = request.getLeaveFrom();
         this.leaveTo = request.getLeaveTo();
         this.content = request.getContent();
@@ -134,5 +134,22 @@ public class LeaveRequestResponseDTO {
         } else {
             return (parts[0].substring(0, 1) + parts[parts.length - 1].substring(0, 1)).toUpperCase();
         }
+    }
+
+    private String formatLeaveType(String leaveType) {
+        if (leaveType == null || leaveType.isBlank()) {
+            return "Leave";
+        }
+        String normalized = leaveType.trim().toUpperCase();
+        return switch (normalized) {
+            case "ANNUAL_LEAVE", "LEAVE_ANNUAL" -> "Annual Leave";
+            case "SICK_LEAVE", "LEAVE_SICK" -> "Sick Leave";
+            case "UNPAID_LEAVE", "PERSONAL_LEAVE", "LEAVE_UNPAID" -> "Unpaid Leave";
+            case "MATERNITY_LEAVE", "LEAVE_MATERNITY" -> "Maternity Leave";
+            case "PATERNITY_LEAVE", "LEAVE_PATERNITY" -> "Paternity Leave";
+            case "BEREAVEMENT_LEAVE", "LEAVE_BEREAVEMENT" -> "Bereavement Leave";
+            case "STUDY_LEAVE", "LEAVE_STUDY" -> "Study Leave";
+            default -> leaveType.replace("_", " ");
+        };
     }
 }

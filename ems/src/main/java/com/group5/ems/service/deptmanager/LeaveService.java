@@ -102,6 +102,22 @@ public class LeaveService {
                 reqMap.put("typeDisplay", "Unpaid Leave");
                 reqMap.put("typeColorClass", "bg-slate-100 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 border-slate-200");
                 reqMap.put("typeDotClass", "bg-slate-500");
+            } else if (typeStr.contains("maternity")) {
+                reqMap.put("typeDisplay", "Maternity Leave");
+                reqMap.put("typeColorClass", "bg-pink-50 dark:bg-pink-900/20 text-pink-600 dark:text-pink-300 border-pink-100");
+                reqMap.put("typeDotClass", "bg-pink-500");
+            } else if (typeStr.contains("paternity")) {
+                reqMap.put("typeDisplay", "Paternity Leave");
+                reqMap.put("typeColorClass", "bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-300 border-violet-100");
+                reqMap.put("typeDotClass", "bg-violet-500");
+            } else if (typeStr.contains("bereavement")) {
+                reqMap.put("typeDisplay", "Bereavement Leave");
+                reqMap.put("typeColorClass", "bg-slate-100 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 border-slate-200");
+                reqMap.put("typeDotClass", "bg-slate-500");
+            } else if (typeStr.contains("study")) {
+                reqMap.put("typeDisplay", "Study Leave");
+                reqMap.put("typeColorClass", "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-300 border-emerald-100");
+                reqMap.put("typeDotClass", "bg-emerald-500");
             } else {
                 reqMap.put("typeDisplay", req.getLeaveType());
                 reqMap.put("typeColorClass", "bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border-purple-100");
@@ -130,6 +146,7 @@ public class LeaveService {
             reqMap.put("reason", req.getContent() != null && !req.getContent().isBlank()
                     ? req.getContent().trim()
                     : "No reason provided.");
+            reqMap.put("urgent", req.isUrgent());
 
             reqMap.put("status", req.getStatus());
             reqMap.put("step", step);

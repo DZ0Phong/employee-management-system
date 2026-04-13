@@ -13,5 +13,7 @@ public interface RequestTypeRepository extends JpaRepository<RequestType, Long> 
     List<RequestType> findByCategoryIn(List<String> categories);
 
     List<RequestType> findByCategoryNotInOrderByCategoryAscNameAsc(List<String> excludedCategories);
+
+    List<RequestType> findByCategoryAndCodeStartingWithOrderByNameAsc(String category, String codePrefix);
 }
 

@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
@@ -30,6 +31,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class LeaveServiceImpl {
+    private static final String ATTENDANCE_CATEGORY = "ATTENDANCE";
 
     private final EmployeeRepository employeeRepository;
     private final RequestRepository requestRepository;
@@ -41,12 +43,9 @@ public class LeaveServiceImpl {
     public List<LeaveBalanceDTO> getLeaveBalances(Long employeeId) {
         List<Request> allLeaves = requestRepository.findByEmployeeIdAndLeaveTypeIsNotNull(employeeId);
 
-        List<LeaveBalanceDTO> balances = new ArrayList<>();
-        balances.add(buildBalance("ANNUAL_LEAVE", 12.0, allLeaves));
-        balances.add(buildBalance("SICK_LEAVE", 10.0, allLeaves));
-        balances.add(buildUnlimitedBalance("UNPAID_LEAVE", allLeaves));
-
-        return balances;
+        return getSupportedLeaveTypes().stream()
+                .map(requestType -> buildBalanceForRequestType(requestType, allLeaves))
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
@@ -114,11 +113,7 @@ public class LeaveServiceImpl {
         }
 
         // ── Map leaveType -> request_type code ────────────
-        String requestTypeCode = switch (normalizedLeaveType) {
-            case "SICK_LEAVE" -> "LEAVE_SICK";
-            case "UNPAID_LEAVE" -> "LEAVE_UNPAID";
-            default -> "LEAVE_ANNUAL";
-        };
+        String requestTypeCode = toRequestTypeCode(normalizedLeaveType);
 
         RequestType requestType = requestTypeRepository.findByCode(requestTypeCode)
                 .orElseThrow(() -> new RuntimeException("Request type not found: " + requestTypeCode));
@@ -131,7 +126,8 @@ public class LeaveServiceImpl {
         request.setLeaveFrom(dto.getLeaveFrom());
         request.setLeaveTo(dto.getLeaveTo());
         request.setContent(dto.getContent());
-        request.setTitle(dto.getLeaveType().replace("_", " ") + " Request");
+        request.setTitle(requestType.getName() + " Request");
+        request.setUrgent(dto.isUrgent());
         request.setStatus("PENDING");
         request.setStep(WorkflowConstants.STEP_WAITING_DM);
         request.setCreatedAt(LocalDateTime.now());
@@ -227,6 +223,14 @@ public class LeaveServiceImpl {
                 .build();
     }
 
+    private LeaveBalanceDTO buildBalanceForRequestType(RequestType requestType, List<Request> allLeaves) {
+        String leaveType = normalizeLeaveType(requestType.getCode());
+        if ("UNPAID_LEAVE".equals(leaveType)) {
+            return buildUnlimitedBalance(leaveType, allLeaves);
+        }
+        return buildBalance(leaveType, getDefaultQuota(leaveType), allLeaves);
+    }
+
     private LeaveRequestDTO mapToDTO(Request req) {
         return LeaveRequestDTO.builder()
                 .id(req.getId())
@@ -234,6 +238,7 @@ public class LeaveServiceImpl {
                 .leaveFrom(req.getLeaveFrom())
                 .leaveTo(req.getLeaveTo())
                 .content(req.getContent())
+                .urgent(req.isUrgent())
                 .status(req.getStatus())
                 .rejectedReason(req.getRejectedReason())
                 .step(req.getStep())
@@ -310,9 +315,60 @@ public class LeaveServiceImpl {
             return "";
         }
         return switch (leaveType.trim().toUpperCase(Locale.ROOT)) {
-            case "PERSONAL_LEAVE", "UNPAID_LEAVE" -> "UNPAID_LEAVE";
-            case "SICK_LEAVE" -> "SICK_LEAVE";
-            default -> "ANNUAL_LEAVE";
+            case "PERSONAL_LEAVE", "UNPAID_LEAVE", "LEAVE_UNPAID" -> "UNPAID_LEAVE";
+            case "LEAVE_SICK", "SICK_LEAVE" -> "SICK_LEAVE";
+            case "LEAVE_BEREAVEMENT", "BEREAVEMENT_LEAVE" -> "BEREAVEMENT_LEAVE";
+            case "LEAVE_STUDY", "STUDY_LEAVE" -> "STUDY_LEAVE";
+            case "LEAVE_MATERNITY", "MATERNITY_LEAVE" -> "MATERNITY_LEAVE";
+            case "LEAVE_PATERNITY", "PATERNITY_LEAVE" -> "PATERNITY_LEAVE";
+            case "LEAVE_ANNUAL", "ANNUAL_LEAVE" -> "ANNUAL_LEAVE";
+            default -> leaveType.trim().toUpperCase(Locale.ROOT);
+        };
+    }
+
+    public List<RequestType> getSupportedLeaveTypes() {
+        return requestTypeRepository.findByCategoryAndCodeStartingWithOrderByNameAsc(ATTENDANCE_CATEGORY, "LEAVE_")
+                .stream()
+                .filter(requestType -> requestType.getCode() != null)
+                .sorted(Comparator.comparingInt(requestType -> sortOrderForLeaveCode(requestType.getCode())))
+                .collect(Collectors.toList());
+    }
+
+    private String toRequestTypeCode(String normalizedLeaveType) {
+        return switch (normalizedLeaveType) {
+            case "ANNUAL_LEAVE" -> "LEAVE_ANNUAL";
+            case "SICK_LEAVE" -> "LEAVE_SICK";
+            case "UNPAID_LEAVE" -> "LEAVE_UNPAID";
+            case "MATERNITY_LEAVE" -> "LEAVE_MATERNITY";
+            case "PATERNITY_LEAVE" -> "LEAVE_PATERNITY";
+            case "BEREAVEMENT_LEAVE" -> "LEAVE_BEREAVEMENT";
+            case "STUDY_LEAVE" -> "LEAVE_STUDY";
+            default -> throw new RuntimeException("Unsupported leave type: " + normalizedLeaveType);
+        };
+    }
+
+    private double getDefaultQuota(String leaveType) {
+        return switch (leaveType) {
+            case "ANNUAL_LEAVE" -> 12.0;
+            case "SICK_LEAVE" -> 10.0;
+            case "MATERNITY_LEAVE" -> 180.0;
+            case "PATERNITY_LEAVE" -> 7.0;
+            case "BEREAVEMENT_LEAVE" -> 3.0;
+            case "STUDY_LEAVE" -> 10.0;
+            default -> 0.0;
+        };
+    }
+
+    private int sortOrderForLeaveCode(String code) {
+        return switch (normalizeLeaveType(code)) {
+            case "ANNUAL_LEAVE" -> 1;
+            case "SICK_LEAVE" -> 2;
+            case "UNPAID_LEAVE" -> 3;
+            case "MATERNITY_LEAVE" -> 4;
+            case "PATERNITY_LEAVE" -> 5;
+            case "BEREAVEMENT_LEAVE" -> 6;
+            case "STUDY_LEAVE" -> 7;
+            default -> 99;
         };
     }
 }
