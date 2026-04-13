@@ -8,6 +8,7 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -49,6 +50,7 @@ import com.group5.ems.repository.DepartmentRepository;
 import com.group5.ems.repository.EmployeeRepository;
 import com.group5.ems.repository.JobPostRepository;
 import com.group5.ems.repository.PositionRepository;
+import com.group5.ems.repository.SkillRepository;
 import com.group5.ems.repository.UserRepository;
 import com.group5.ems.service.admin.AdminService;
 import com.group5.ems.service.external.VietQrApiClient;
@@ -64,8 +66,6 @@ import com.group5.ems.service.hr.HrRecruitmentService;
 import com.group5.ems.service.hr.HrRequestService;
 import com.group5.ems.service.hr.HrReportService;
 import com.group5.ems.service.common.LogService;
-import com.group5.ems.enums.AuditAction;
-import com.group5.ems.enums.AuditEntityType;
 import com.group5.ems.exception.ReportExportException;
 
 import org.thymeleaf.TemplateEngine;
@@ -103,6 +103,7 @@ public class HrController {
     private final HrReportService reportService;
     private final LogService logService;
     private final TemplateEngine templateEngine;
+    private final SkillRepository skillRepository;
 
     @GetMapping({ "", "/", "/dashboard" })
     public String dashboard(Model model) {
@@ -131,13 +132,31 @@ public class HrController {
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String department,
             @RequestParam(required = false) String status,
+            @RequestParam(required = false) Long skillId,
+            @RequestParam(required = false) Integer minProficiency,
+            @RequestParam(defaultValue = "hireDate:desc") String sort,
             @RequestParam(required = false) String tab,
             @RequestParam(required = false) String obSearch,
             @RequestParam(required = false) Long obDepartmentId) {
 
         // ── Directory Tab ─────────────────────────────
-        Pageable pageable = PageRequest.of(page, EMPLOYEE_PAGE_SIZE);
-        Page<HrEmployeeDTO> employeePage = employeeService.searchEmployees(search, department, status, pageable);
+        String sortBy = "hireDate";
+        String direction = "desc";
+        if (sort != null && sort.contains(":")) {
+            String[] parts = sort.split(":");
+            sortBy = parts[0];
+            direction = parts[1];
+        }
+
+        String sortField = switch (sortBy) {
+            case "name" -> "user.fullName";
+            case "proficiency" -> "proficiency";
+            default -> "hireDate";
+        };
+        Sort.Direction sortDirection = "asc".equalsIgnoreCase(direction) ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(page, EMPLOYEE_PAGE_SIZE, Sort.by(sortDirection, sortField));
+        
+        Page<HrEmployeeDTO> employeePage = employeeService.searchEmployees(search, department, status, skillId, minProficiency, pageable);
 
         model.addAttribute("employees", employeePage.getContent());
         model.addAttribute("currentPage", page);
@@ -146,9 +165,12 @@ public class HrController {
         model.addAttribute("search", search);
         model.addAttribute("department", department);
         model.addAttribute("status", status);
+        model.addAttribute("skillId", skillId);
+        model.addAttribute("minProficiency", minProficiency);
+        model.addAttribute("sort", sort);
 
-        List<Department> departments = departmentRepository.findAll();
-        model.addAttribute("departments", departments);
+        model.addAttribute("skills", skillRepository.findAll());
+        model.addAttribute("departments", departmentRepository.findAll());
 
         // ── Onboarding Tracker Tab ────────────────────
         /*
@@ -177,7 +199,7 @@ public class HrController {
     @ResponseBody
     public ResponseEntity<List<HrEmployeeDTO>> searchEmployeesApi(@RequestParam String q) {
         Pageable pageable = PageRequest.of(0, 5);
-        Page<HrEmployeeDTO> page = employeeService.searchEmployees(q, null, null, pageable);
+        Page<HrEmployeeDTO> page = employeeService.searchEmployees(q, null, null, null, null, pageable);
         return ResponseEntity.ok(page.getContent());
     }
 
@@ -186,6 +208,20 @@ public class HrController {
     public ResponseEntity<HrEmployeeDetailDTO> employeeDetail(@PathVariable Long id) {
         HrEmployeeDetailDTO detail = employeeService.getEmployeeDetail(id);
         return ResponseEntity.ok(detail);
+    }
+
+    @PostMapping("/employees/{id}/update-job")
+    public String updateEmployeeJob(@PathVariable Long id,
+                                   @RequestParam Long departmentId,
+                                   @RequestParam Long positionId,
+                                   RedirectAttributes ra) {
+        try {
+            employeeService.updateJobInfo(id, departmentId, positionId);
+            ra.addFlashAttribute("successMessage", "Employee job information updated successfully.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMessage", "Failed to update job information: " + e.getMessage());
+        }
+        return "redirect:/hr/employees?viewId=" + id;
     }
 
     @GetMapping("/attendance")
