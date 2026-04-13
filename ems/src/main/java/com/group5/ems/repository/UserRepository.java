@@ -1,19 +1,20 @@
 package com.group5.ems.repository;
 
-import com.group5.ems.entity.User;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.repository.query.Param;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+import com.group5.ems.entity.User;
 
 public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
 
@@ -52,5 +53,15 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
     @Query("UPDATE User u SET u.status = 'ACTIVE', u.failedLoginCount = 0, u.lockedUntil = NULL " +
            "WHERE u.status = 'LOCK5' AND u.lockedUntil IS NOT NULL AND u.lockedUntil <= :now")
     int unlockExpiredLock5(@Param("now") LocalDateTime now);
+
+    @Query("""
+            SELECT DISTINCT u
+            FROM User u
+            JOIN u.userRoles ur
+            JOIN ur.role r
+            WHERE r.code = :roleCode
+              AND u.status = 'ACTIVE'
+            """)
+    List<User> findByRoleCode(@Param("roleCode") String roleCode);
 }
 

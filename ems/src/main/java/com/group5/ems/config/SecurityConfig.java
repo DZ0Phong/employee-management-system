@@ -5,8 +5,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import lombok.RequiredArgsConstructor;
 
@@ -14,9 +14,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final CustomeLoginSuccessHandler   customeLoginSuccessHandler;
-    private final LoginFailureHandler          loginFailureHandler;
-    private final LogoutAuditSuccessHandler    logoutAuditSuccessHandler;
+    private final CustomeLoginSuccessHandler customeLoginSuccessHandler;
+    private final LoginFailureHandler loginFailureHandler;
+    private final LogoutAuditSuccessHandler logoutAuditSuccessHandler;
     private final InactiveAccountDashboardRedirectFilter inactiveAccountDashboardRedirectFilter;
 
     @Bean
@@ -24,35 +24,40 @@ public class SecurityConfig {
 
         http
 
-        .csrf(csrf -> csrf
-                .ignoringRequestMatchers("/guest/**", "/forgot-password/**", "/activate/**")
-            )
+                .headers(headers -> headers
+                        .frameOptions(frame -> frame.sameOrigin()))
 
-        .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/home", "/home/**", "/login", "/error", "/guest", "/guest/**", "/access-denied",
-                        "/forgot-password", "/forgot-password/**", "/reset-password",
-                        "/activate", "/activate/**",
-                        "/css/**", "/js/**", "/icons/**", "/images/**").permitAll()
-                .requestMatchers("/admin/**").hasRole("ADMIN")
-                .requestMatchers("/employee/**").hasAnyRole("EMPLOYEE", "DEPT_MANAGER", "HR", "HR_MANAGER")
-                .requestMatchers("/dept-manager/**").hasRole("DEPT_MANAGER")
-                .requestMatchers("/hrmanager/**", "/hr-manager/**").hasRole("HR_MANAGER")
-                .requestMatchers("/hr/**").hasRole("HR")
-                .anyRequest().authenticated()).formLogin(form -> form
+                .csrf(csrf -> csrf
+                        .ignoringRequestMatchers("/guest/**", "/forgot-password/**", "/activate/**",
+                                "/home/apply-full", "/home/contact/send", "/home/application/delete/**"))
+
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/", "/home", "/home/**", "/login", "/error", "/guest", "/guest/**",
+                                "/access-denied",
+                                "/forgot-password", "/forgot-password/**", "/reset-password",
+                                "/activate", "/activate/**",
+                                "/css/**", "/js/**", "/icons/**", "/images/**")
+                        .permitAll()
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/employee/**").hasAnyRole("EMPLOYEE", "DEPT_MANAGER", "HR", "HR_MANAGER")
+                        .requestMatchers("/dept-manager/**").hasRole("DEPT_MANAGER")
+                        .requestMatchers("/hrmanager/**").hasRole("HR_MANAGER")
+                        .requestMatchers("/hr/**").hasRole("HR")
+                        .anyRequest().authenticated())
+                .formLogin(form -> form
                         .loginPage("/login")
                         .successHandler(customeLoginSuccessHandler)
                         .failureHandler(loginFailureHandler)
                         .permitAll())
                 .exceptionHandling(exception -> exception
-                        .accessDeniedPage("/access-denied")
-                )
-         .logout(logout -> logout
-         .logoutUrl("/logout")
-         .logoutSuccessHandler(logoutAuditSuccessHandler)
-         .permitAll()
-         );
+                        .accessDeniedPage("/access-denied"))
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessHandler(logoutAuditSuccessHandler)
+                        .permitAll());
 
-        // Nếu user đã đăng nhập nhưng status = INACTIVE thì chặn khỏi các trang dashboard theo role.
+        // Nếu user đã đăng nhập nhưng status = INACTIVE thì chặn khỏi các trang
+        // dashboard theo role.
         http.addFilterAfter(inactiveAccountDashboardRedirectFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
