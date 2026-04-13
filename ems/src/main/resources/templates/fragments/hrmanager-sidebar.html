@@ -1,105 +1,140 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
+
 <body>
 
-<aside th:fragment="sidebar(activePage, currentUser)" class="w-72 bg-white border-r border-slate-100 flex flex-col shrink-0 relative overflow-hidden">
-    <div class="absolute top-0 right-0 w-40 h-40 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
-
-    <div class="px-6 py-6 flex items-center gap-3 relative z-10">
-        <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white shadow-md shadow-primary/30">
-            <span class="material-symbols-outlined text-[22px]">corporate_fare</span>
+    <aside th:fragment="sidebar(activePage, currentUser)"
+        class="w-72 bg-white border-r border-slate-100 flex flex-col shrink-0 relative overflow-hidden">
+        <div
+            class="absolute top-0 right-0 w-40 h-40 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none">
         </div>
-        <div>
-            <h1 class="text-base font-black tracking-tight text-slate-900">EMS Pro</h1>
-            <p class="text-[11px] text-slate-400 font-medium">HR Manager Portal</p>
-        </div>
-    </div>
 
-    <nav class="flex-1 px-3 space-y-0.5 overflow-y-auto">
-        <p class="px-3 pb-1 pt-1 text-[10px] font-bold text-slate-300 uppercase tracking-widest">Main</p>
-
-        <a th:href="@{/hrmanager/dashboard}"
-           th:classappend="${activePage == 'dashboard' or activePage == null ? 'nav-active bg-primary-light text-primary' : 'text-slate-500 hover:bg-slate-50'}"
-           class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group">
-            <span class="material-symbols-outlined text-[20px]"
-                  th:classappend="${activePage == 'dashboard' or activePage == null ? 'fill-icon' : 'text-slate-400 group-hover:text-primary'}">dashboard</span>
-            <span class="text-sm font-medium" th:classappend="${activePage == 'dashboard' or activePage == null ? 'font-semibold' : ''}">Dashboard</span>
-        </a>
-
-        <a th:href="@{/hrmanager/leave-approval}"
-           th:classappend="${activePage == 'leave' ? 'nav-active bg-primary-light text-primary' : 'text-slate-500 hover:bg-slate-50'}"
-           class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group">
-            <span class="material-symbols-outlined text-[20px]"
-                  th:classappend="${activePage == 'leave' ? 'fill-icon' : 'text-slate-400 group-hover:text-primary'}">calendar_today</span>
-            <span class="text-sm font-medium" th:classappend="${activePage == 'leave' ? 'font-semibold' : ''}">Request Management</span>
-        </a>
-
-        <a th:href="@{/hrmanager/payroll-approval}"
-           th:classappend="${activePage == 'payroll' ? 'nav-active bg-primary-light text-primary' : 'text-slate-500 hover:bg-slate-50'}"
-           class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group">
-            <span class="material-symbols-outlined text-[20px]"
-                  th:classappend="${activePage == 'payroll' ? 'fill-icon' : 'text-slate-400 group-hover:text-primary'}">payments</span>
-            <span class="text-sm font-medium" th:classappend="${activePage == 'payroll' ? 'font-semibold' : ''}">Payroll Approval</span>
-        </a>
-
-        <a th:href="@{/hrmanager/payroll-periods}"
-           th:classappend="${activePage == 'payroll-periods' ? 'nav-active bg-primary-light text-primary' : 'text-slate-500 hover:bg-slate-50'}"
-           class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group">
-            <span class="material-symbols-outlined text-[20px]"
-                  th:classappend="${activePage == 'payroll-periods' ? 'fill-icon' : 'text-slate-400 group-hover:text-primary'}">schedule</span>
-            <span class="text-sm font-medium" th:classappend="${activePage == 'payroll-periods' ? 'font-semibold' : ''}">Payroll Periods</span>
-        </a>
-
-        <a th:href="@{/hrmanager/hr-analytics}"
-           th:classappend="${activePage == 'analytics' ? 'nav-active bg-primary-light text-primary' : 'text-slate-500 hover:bg-slate-50'}"
-           class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group">
-            <span class="material-symbols-outlined text-[20px]"
-                  th:classappend="${activePage == 'analytics' ? 'fill-icon' : 'text-slate-400 group-hover:text-primary'}">monitoring</span>
-            <span class="text-sm font-medium" th:classappend="${activePage == 'analytics' ? 'font-semibold' : ''}">HR Analytics</span>
-        </a>
-
-        <a th:href="@{/hrmanager/calendar}"
-           th:classappend="${activePage == 'calendar' ? 'nav-active bg-primary-light text-primary' : 'text-slate-500 hover:bg-slate-50'}"
-           class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group">
-            <span class="material-symbols-outlined text-[20px]"
-                  th:classappend="${activePage == 'calendar' ? 'fill-icon' : 'text-slate-400 group-hover:text-primary'}">calendar_month</span>
-            <span class="text-sm font-medium" th:classappend="${activePage == 'calendar' ? 'font-semibold' : ''}">Calendar</span>
-        </a>
-    </nav>
-
-    <div class="p-4">
-        <a th:href="@{/employee/dashboard}"
-           class="mb-3 flex items-center justify-between rounded-2xl border border-primary/15 bg-primary/5 px-4 py-3 text-primary transition-colors hover:bg-primary/10">
+        <div class="px-6 py-6 flex items-center gap-3 relative z-10">
+            <div
+                class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white shadow-md shadow-primary/30">
+                <span class="material-symbols-outlined text-[22px]">corporate_fare</span>
+            </div>
             <div>
-                <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-primary/60">Portal Switch</p>
-                <p class="text-sm font-semibold">Employee View</p>
+                <h1 class="text-base font-black tracking-tight text-slate-900">EMS Pro</h1>
+                <p class="text-[11px] text-slate-400 font-medium">HR Manager Portal</p>
             </div>
-            <span class="material-symbols-outlined text-[18px]">badge</span>
-        </a>
-
-        <div class="bg-slate-50 border border-slate-100 rounded-2xl p-3 flex items-center gap-3">
-            <div class="w-9 h-9 rounded-full overflow-hidden bg-primary/10 flex items-center justify-center text-primary font-bold text-sm shrink-0">
-                <th:block th:if="${currentUser?.avatarUrl != null}">
-                    <img th:src="${currentUser.avatarUrl}" th:alt="${currentUser.fullName}"
-                         class="w-full h-full object-cover" onerror="this.style.display='none'"/>
-                </th:block>
-                <span th:if="${currentUser?.avatarUrl == null}" th:text="${currentUser?.initials != null ? currentUser.initials : 'AH'}">AH</span>
-            </div>
-            <div class="flex-1 min-w-0">
-                <p class="text-xs font-bold text-slate-800 truncate"
-                   th:text="${currentUser?.fullName != null ? currentUser.fullName : 'Alex Henderson'}">Alex Henderson</p>
-                <p class="text-[11px] text-slate-400 truncate"
-                   th:text="${currentUser?.role != null ? currentUser.role : 'HR Manager'}">HR Manager</p>
-            </div>
-            <form th:action="@{/logout}" method="post" class="shrink-0">
-                <button type="submit"
-                        class="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors">
-                    <span class="material-symbols-outlined text-sm">logout</span>
-                </button>
-            </form>
         </div>
-    </div>
-</aside>
+
+        <nav class="flex-1 px-3 space-y-0.5 overflow-y-auto">
+            <p class="px-3 pb-1 pt-1 text-[10px] font-bold text-slate-300 uppercase tracking-widest">Main</p>
+
+            <a th:href="@{/hrmanager/dashboard}"
+                th:classappend="${activePage == 'dashboard' or activePage == null ? 'nav-active bg-primary-light text-primary' : 'text-slate-500 hover:bg-slate-50'}"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group">
+                <span class="material-symbols-outlined text-[20px]"
+                    th:classappend="${activePage == 'dashboard' or activePage == null ? 'fill-icon' : 'text-slate-400 group-hover:text-primary'}">dashboard</span>
+                <span class="text-sm font-medium"
+                    th:classappend="${activePage == 'dashboard' or activePage == null ? 'font-semibold' : ''}">Dashboard</span>
+            </a>
+
+            <a th:href="@{/hrmanager/leave-approval}"
+                th:classappend="${activePage == 'leave' ? 'nav-active bg-primary-light text-primary' : 'text-slate-500 hover:bg-slate-50'}"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group">
+                <span class="material-symbols-outlined text-[20px]"
+                    th:classappend="${activePage == 'leave' ? 'fill-icon' : 'text-slate-400 group-hover:text-primary'}">calendar_today</span>
+                <span class="text-sm font-medium"
+                    th:classappend="${activePage == 'leave' ? 'font-semibold' : ''}">Request Management</span>
+            </a>
+
+            <a th:href="@{/hrmanager/payroll-approval}"
+                th:classappend="${activePage == 'payroll' ? 'nav-active bg-primary-light text-primary' : 'text-slate-500 hover:bg-slate-50'}"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group">
+                <span class="material-symbols-outlined text-[20px]"
+                    th:classappend="${activePage == 'payroll' ? 'fill-icon' : 'text-slate-400 group-hover:text-primary'}">payments</span>
+                <span class="text-sm font-medium"
+                    th:classappend="${activePage == 'payroll' ? 'font-semibold' : ''}">Payroll Approval</span>
+            </a>
+
+            <a th:href="@{/hrmanager/payroll-periods}"
+                th:classappend="${activePage == 'payroll-periods' ? 'nav-active bg-primary-light text-primary' : 'text-slate-500 hover:bg-slate-50'}"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group">
+                <span class="material-symbols-outlined text-[20px]"
+                    th:classappend="${activePage == 'payroll-periods' ? 'fill-icon' : 'text-slate-400 group-hover:text-primary'}">schedule</span>
+                <span class="text-sm font-medium"
+                    th:classappend="${activePage == 'payroll-periods' ? 'font-semibold' : ''}">Payroll Periods</span>
+            </a>
+
+            <a th:href="@{/hrmanager/hr-analytics}"
+                th:classappend="${activePage == 'analytics' ? 'nav-active bg-primary-light text-primary' : 'text-slate-500 hover:bg-slate-50'}"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group">
+                <span class="material-symbols-outlined text-[20px]"
+                    th:classappend="${activePage == 'analytics' ? 'fill-icon' : 'text-slate-400 group-hover:text-primary'}">monitoring</span>
+                <span class="text-sm font-medium"
+                    th:classappend="${activePage == 'analytics' ? 'font-semibold' : ''}">HR Analytics</span>
+            </a>
+
+            <a th:href="@{/hrmanager/calendar}"
+                th:classappend="${activePage == 'calendar' ? 'nav-active bg-primary-light text-primary' : 'text-slate-500 hover:bg-slate-50'}"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group">
+                <span class="material-symbols-outlined text-[20px]"
+                    th:classappend="${activePage == 'calendar' ? 'fill-icon' : 'text-slate-400 group-hover:text-primary'}">calendar_month</span>
+                <span class="text-sm font-medium"
+                    th:classappend="${activePage == 'calendar' ? 'font-semibold' : ''}">Calendar</span>
+            </a>
+
+            <p class="px-3 pb-1 pt-3 text-[10px] font-bold text-slate-300 uppercase tracking-widest">Department
+                Management</p>
+
+            <a th:href="@{/hr-manager/departments}"
+                th:classappend="${activePage == 'departments' ? 'nav-active bg-primary-light text-primary' : 'text-slate-500 hover:bg-slate-50'}"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group">
+                <span class="material-symbols-outlined text-[20px]"
+                    th:classappend="${activePage == 'departments' ? 'fill-icon' : 'text-slate-400 group-hover:text-primary'}">corporate_fare</span>
+                <span class="text-sm font-medium"
+                    th:classappend="${activePage == 'departments' ? 'font-semibold' : ''}">Departments</span>
+            </a>
+
+            <a th:href="@{/hr-manager/staffing-requests}"
+                th:classappend="${activePage == 'staffing' ? 'nav-active bg-primary-light text-primary' : 'text-slate-500 hover:bg-slate-50'}"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group">
+                <span class="material-symbols-outlined text-[20px]"
+                    th:classappend="${activePage == 'staffing' ? 'fill-icon' : 'text-slate-400 group-hover:text-primary'}">group_add</span>
+                <span class="text-sm font-medium"
+                    th:classappend="${activePage == 'staffing' ? 'font-semibold' : ''}">Staffing Requests</span>
+            </a>
+        </nav>
+
+        <div class="p-4">
+            <a th:href="@{/employee/dashboard}"
+                class="mb-3 flex items-center justify-between rounded-2xl border border-primary/15 bg-primary/5 px-4 py-3 text-primary transition-colors hover:bg-primary/10">
+                <div>
+                    <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-primary/60">Portal Switch</p>
+                    <p class="text-sm font-semibold">Employee View</p>
+                </div>
+                <span class="material-symbols-outlined text-[18px]">badge</span>
+            </a>
+
+            <div class="bg-slate-50 border border-slate-100 rounded-2xl p-3 flex items-center gap-3">
+                <div
+                    class="w-9 h-9 rounded-full overflow-hidden bg-primary/10 flex items-center justify-center text-primary font-bold text-sm shrink-0">
+                    <th:block th:if="${currentUser?.avatarUrl != null}">
+                        <img th:src="${currentUser.avatarUrl}" th:alt="${currentUser.fullName}"
+                            class="w-full h-full object-cover" onerror="this.style.display='none'" />
+                    </th:block>
+                    <span th:if="${currentUser?.avatarUrl == null}"
+                        th:text="${currentUser?.initials != null ? currentUser.initials : 'AH'}">AH</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-xs font-bold text-slate-800 truncate"
+                        th:text="${currentUser?.fullName != null ? currentUser.fullName : 'Alex Henderson'}">Alex
+                        Henderson</p>
+                    <p class="text-[11px] text-slate-400 truncate">HR Manager</p>
+                </div>
+                <form th:action="@{/logout}" method="post" class="shrink-0">
+                    <button type="submit"
+                        class="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors">
+                        <span class="material-symbols-outlined text-sm">logout</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </aside>
 
 </body>
+
 </html>

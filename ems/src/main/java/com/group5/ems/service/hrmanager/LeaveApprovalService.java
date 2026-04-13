@@ -16,10 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -60,6 +57,40 @@ public class LeaveApprovalService {
             if (!workflowService.canApprove(request, WorkflowConstants.ROLE_HR_MANAGER)) {
                 throw new WorkflowException("Cannot approve: Request must be approved by Department Manager and HR first. Current step: " 
                         + workflowService.getStepDisplayName(request.getStep()));
+            }
+            
+            // STRICT VALIDATION: Check leave balance before approving
+            if (request.getLeaveFrom() != null && request.getLeaveTo() != null && request.getEmployee() != null) {
+                Long employeeId = request.getEmployeeId();
+                int currentYear = java.time.LocalDate.now().getYear();
+                
+                Optional<EmployeeLeaveBalance> balanceOpt = employeeLeaveBalanceRepository
+                        .findByEmployeeIdAndYear(employeeId, currentYear);
+                
+                if (balanceOpt.isPresent()) {
+                    EmployeeLeaveBalance balance = balanceOpt.get();
+                    
+                    // Calculate request days
+                    long requestDays = java.time.temporal.ChronoUnit.DAYS.between(
+                            request.getLeaveFrom(), request.getLeaveTo()) + 1;
+                    
+                    BigDecimal remainingDays = balance.getRemainingDays() != null 
+                            ? balance.getRemainingDays() 
+                            : balance.getTotalDays().subtract(balance.getUsedDays()).subtract(balance.getPendingDays());
+                    
+                    // STRICT: Reject if insufficient balance
+                    if (remainingDays.compareTo(BigDecimal.valueOf(requestDays)) < 0) {
+                        throw new RuntimeException(
+                            "Insufficient leave balance. Employee has " + remainingDays + 
+                            " days remaining but requested " + requestDays + " days"
+                        );
+                    }
+                } else {
+                    // No balance record found - reject
+                    throw new RuntimeException(
+                        "No leave balance record found for employee. Please contact HR to initialize leave balance."
+                    );
+                }
             }
             
             // Check for overlap before approving
@@ -270,6 +301,11 @@ public class LeaveApprovalService {
             dto.setUsedThisYear(0);
             dto.setAnnualQuota(20);
             dto.setBalanceAfterApproval(0);
+            // Set fields for progress bar
+            dto.setLeaveBalanceTotal(20);
+            dto.setLeaveBalanceUsed(0);
+            dto.setLeaveBalanceRemaining(0);
+            dto.setLeaveBalancePercentage(0);
             return;
         }
         
@@ -298,12 +334,26 @@ public class LeaveApprovalService {
             dto.setUsedThisYear(usedDays);
             dto.setAnnualQuota(totalDays);
             dto.setBalanceAfterApproval(Math.max(0, balanceAfter));
+            
+            // Set fields for progress bar (Phase 3 - Leave Balance %)
+            dto.setLeaveBalanceTotal(totalDays);
+            dto.setLeaveBalanceUsed(usedDays);
+            dto.setLeaveBalanceRemaining(remainingDays);
+            
+            // Calculate percentage (remaining / total * 100)
+            int percentage = totalDays > 0 ? (remainingDays * 100) / totalDays : 0;
+            dto.setLeaveBalancePercentage(Math.max(0, Math.min(100, percentage)));
         } else {
             // Fallback if no balance record exists
             dto.setCurrentBalance(0);
             dto.setUsedThisYear(0);
             dto.setAnnualQuota(20);
             dto.setBalanceAfterApproval(0);
+            // Set fields for progress bar
+            dto.setLeaveBalanceTotal(20);
+            dto.setLeaveBalanceUsed(0);
+            dto.setLeaveBalanceRemaining(0);
+            dto.setLeaveBalancePercentage(0);
         }
     }
 
@@ -453,6 +503,62 @@ public class LeaveApprovalService {
             
             employeeLeaveBalanceRepository.save(balance);
         }
+    }
+
+    /**
+     * Bulk approve multiple requests
+     */
+    @org.springframework.transaction.annotation.Transactional
+    public Map<String, Object> bulkApprove(List<Long> requestIds, Long approverId) {
+        int successCount = 0;
+        int failCount = 0;
+        List<String> errors = new ArrayList<>();
+        
+        for (Long requestId : requestIds) {
+            try {
+                approveLeaveRequest(requestId, approverId);
+                successCount++;
+            } catch (Exception e) {
+                failCount++;
+                errors.add("Request #" + requestId + ": " + e.getMessage());
+            }
+        }
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", successCount);
+        result.put("failed", failCount);
+        result.put("errors", errors);
+        result.put("total", requestIds.size());
+        
+        return result;
+    }
+    
+    /**
+     * Bulk reject multiple requests
+     */
+    @org.springframework.transaction.annotation.Transactional
+    public Map<String, Object> bulkReject(List<Long> requestIds, Long approverId, String reason) {
+        int successCount = 0;
+        int failCount = 0;
+        List<String> errors = new ArrayList<>();
+        
+        for (Long requestId : requestIds) {
+            try {
+                rejectLeaveRequest(requestId, approverId, reason);
+                successCount++;
+            } catch (Exception e) {
+                failCount++;
+                errors.add("Request #" + requestId + ": " + e.getMessage());
+            }
+        }
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", successCount);
+        result.put("failed", failCount);
+        result.put("errors", errors);
+        result.put("total", requestIds.size());
+        
+        return result;
     }
 
     /**

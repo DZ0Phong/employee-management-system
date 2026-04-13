@@ -29,12 +29,15 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.group5.ems.dto.request.BankDetailsFormDTO;
+// import com.group5.ems.dto.request.EmployeeOnboardingCreateDTO;
 import com.group5.ems.dto.response.ApplicationStageDTO;
 import com.group5.ems.dto.response.CandidateCvDTO;
 import com.group5.ems.dto.response.HrDashboardMetricsDTO;
 import com.group5.ems.dto.response.HrEmployeeDTO;
 import com.group5.ems.dto.response.HrEmployeeDetailDTO;
 import com.group5.ems.dto.response.HrLeaveRequestDTO;
+// import com.group5.ems.dto.response.HrOnboardingTaskDTO;
+// import com.group5.ems.dto.response.HrOnboardingTrackerDTO;
 import com.group5.ems.dto.response.HrPerformanceDTO;
 import com.group5.ems.dto.response.HrRecruitmentDTO;
 import com.group5.ems.dto.response.InterviewerDTO;
@@ -54,10 +57,20 @@ import com.group5.ems.service.hr.HrBankDetailsService;
 import com.group5.ems.service.hr.HrDashboardService;
 import com.group5.ems.service.hr.HrEmployeeService;
 import com.group5.ems.service.hr.HrLeaveService;
+// import com.group5.ems.service.hr.HrOnboardingService;
 import com.group5.ems.service.hr.HrPayrollService;
 import com.group5.ems.service.hr.HrPerformanceService;
 import com.group5.ems.service.hr.HrRecruitmentService;
 import com.group5.ems.service.hr.HrRequestService;
+import com.group5.ems.service.hr.HrReportService;
+import com.group5.ems.service.common.LogService;
+import com.group5.ems.enums.AuditAction;
+import com.group5.ems.enums.AuditEntityType;
+import com.group5.ems.exception.ReportExportException;
+
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
+import org.xhtmlrenderer.pdf.ITextRenderer;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -86,6 +99,10 @@ public class HrController {
     private final AdminService adminService;
     private final HrBankDetailsService bankDetailsService;
     private final VietQrApiClient vietQrApiClient;
+    // private final HrOnboardingService onboardingService;
+    private final HrReportService reportService;
+    private final LogService logService;
+    private final TemplateEngine templateEngine;
 
     @GetMapping({ "", "/", "/dashboard" })
     public String dashboard(Model model) {
@@ -110,9 +127,15 @@ public class HrController {
     @GetMapping("/employees")
     public String employees(Model model,
             @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "0") int onboardingPage,
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String department,
-            @RequestParam(required = false) String status) {
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String tab,
+            @RequestParam(required = false) String obSearch,
+            @RequestParam(required = false) Long obDepartmentId) {
+
+        // ── Directory Tab ─────────────────────────────
         Pageable pageable = PageRequest.of(page, EMPLOYEE_PAGE_SIZE);
         Page<HrEmployeeDTO> employeePage = employeeService.searchEmployees(search, department, status, pageable);
 
@@ -126,6 +149,26 @@ public class HrController {
 
         List<Department> departments = departmentRepository.findAll();
         model.addAttribute("departments", departments);
+
+        // ── Onboarding Tracker Tab ────────────────────
+        /*
+        Pageable obPageable = PageRequest.of(onboardingPage, EMPLOYEE_PAGE_SIZE);
+        Page<HrOnboardingTrackerDTO> onboardingTrackerPage = onboardingService.getOnboardingTracker(obSearch, obDepartmentId, obPageable);
+
+        model.addAttribute("onboardingList", onboardingTrackerPage.getContent());
+        model.addAttribute("obCurrentPage", onboardingPage);
+        model.addAttribute("obTotalPages", onboardingTrackerPage.getTotalPages());
+        model.addAttribute("obTotalItems", onboardingTrackerPage.getTotalElements());
+        model.addAttribute("obSearch", obSearch);
+        model.addAttribute("obDepartmentId", obDepartmentId);
+        */
+
+        // ── Wizard Form Data ──────────────────────────
+        model.addAttribute("positions", positionRepository.findAll());
+        model.addAttribute("managers", employeeRepository.findAllWithUser());
+        // model.addAttribute("onboardingTemplates", onboardingService.getActiveTemplates());
+
+        model.addAttribute("activeTab", tab != null ? tab : "directory");
 
         return "hr/employees";
     }
@@ -726,7 +769,7 @@ public class HrController {
                 saved.getFileType(),
                 saved.getUploadedAt() != null
                         ? saved.getUploadedAt()
-                                .format(DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm"))
+                                .format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
                         : ""));
     }
 
@@ -981,6 +1024,169 @@ public class HrController {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
         return "redirect:/hr/bank-details/" + employeeId;
+    }
+
+    // ── Onboarding Endpoints ──────────────────────────────────────────
+
+/*
+    @PostMapping("/employees/onboard")
+    public String createEmployeeOnboard(
+            @Valid @ModelAttribute EmployeeOnboardingCreateDTO form,
+            BindingResult result,
+            RedirectAttributes redirectAttributes,
+            Model model) {
+        if (result.hasErrors()) {
+            StringBuilder errors = new StringBuilder();
+            result.getAllErrors().forEach(e -> errors.append(e.getDefaultMessage()).append(". "));
+            redirectAttributes.addFlashAttribute("errorMessage", errors.toString());
+            return "redirect:/hr/employees?tab=directory";
+        }
+        try {
+            Long empId = onboardingService.createEmployeeAndStartOnboarding(form);
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "Employee created successfully (Code: EMP-" + String.format("%04d", empId) + "). " +
+                    "A preboarding email has been queued for " + form.getEmail() + ".");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/hr/employees?tab=onboarding";
+    }
+
+    @GetMapping("/onboarding/{onboardingId}/tasks")
+    @ResponseBody
+    public ResponseEntity<List<HrOnboardingTaskDTO>> getOnboardingTasks(@PathVariable Long onboardingId) {
+        return ResponseEntity.ok(onboardingService.getOnboardingTasks(onboardingId));
+    }
+
+    @PostMapping("/onboarding/tasks/{taskId}/complete")
+    public String completeOnboardingTask(@PathVariable Long taskId,
+            @AuthenticationPrincipal UserDetails principal,
+            RedirectAttributes redirectAttributes) {
+        try {
+            onboardingService.completeTask(taskId, resolveCurrentUserId(principal));
+            redirectAttributes.addFlashAttribute("successMessage", "Task status updated.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/hr/employees?tab=onboarding";
+    }
+
+    @PostMapping("/onboarding/tasks/{taskId}/skip")
+    public String skipOnboardingTask(@PathVariable Long taskId,
+            RedirectAttributes redirectAttributes) {
+        try {
+            onboardingService.skipTask(taskId);
+            redirectAttributes.addFlashAttribute("successMessage", "Task skipped.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/hr/employees?tab=onboarding";
+    }
+
+    @PostMapping("/onboarding/{onboardingId}/cancel")
+    public String cancelOnboarding(@PathVariable Long onboardingId,
+            RedirectAttributes redirectAttributes) {
+        try {
+            onboardingService.cancelOnboarding(onboardingId);
+            redirectAttributes.addFlashAttribute("successMessage", "Onboarding cancelled.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/hr/employees?tab=onboarding";
+    }
+
+    @GetMapping("/api/onboarding/templates")
+    @ResponseBody
+    public ResponseEntity<List<com.group5.ems.dto.response.HrOnboardingTemplateDTO>> getTemplatesForDepartment(
+            @RequestParam Long departmentId) {
+        return ResponseEntity.ok(onboardingService.getTemplatesForDepartment(departmentId));
+    }
+*/
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // REPORTS & ANALYTICS
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    @GetMapping("/reports")
+    public String reports(Model model,
+            @RequestParam(defaultValue = "overview") String tab,
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo,
+            @RequestParam(required = false) String reviewPeriod) {
+
+        int reportYear = year != null ? year : LocalDate.now().getYear();
+        model.addAttribute("selectedYear", reportYear);
+        model.addAttribute("activeTab", tab);
+        model.addAttribute("currentYear", LocalDate.now().getYear());
+
+        switch (tab) {
+            case "attendance" -> {
+                LocalDate from = dateFrom != null ? dateFrom : LocalDate.now().minusDays(29);
+                LocalDate to = dateTo != null ? dateTo : LocalDate.now();
+                model.addAttribute("dateFrom", from);
+                model.addAttribute("dateTo", to);
+                model.addAttribute("report", reportService.getAttendanceReport(from, to));
+            }
+            case "leave" -> model.addAttribute("report", reportService.getLeaveReport(reportYear));
+            case "payroll" -> model.addAttribute("report", reportService.getPayrollReport());
+            case "performance" -> model.addAttribute("report", reportService.getPerformanceReport(reviewPeriod));
+            default -> model.addAttribute("report", reportService.getOverviewReport(reportYear));
+        }
+
+        return "hr/reports";
+    }
+
+    @GetMapping("/reports/export")
+    public ResponseEntity<byte[]> exportReportPdf(
+            @RequestParam(defaultValue = "overview") String tab,
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo) {
+
+        int reportYear = year != null ? year : LocalDate.now().getYear();
+
+        // Build model data for PDF
+        Context ctx = new Context();
+        ctx.setVariable("selectedYear", reportYear);
+        ctx.setVariable("activeTab", tab);
+        ctx.setVariable("exportDate", LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+
+        switch (tab) {
+            case "attendance" -> {
+                LocalDate from = dateFrom != null ? dateFrom : LocalDate.now().minusDays(29);
+                LocalDate to = dateTo != null ? dateTo : LocalDate.now();
+                ctx.setVariable("dateFrom", from);
+                ctx.setVariable("dateTo", to);
+                ctx.setVariable("report", reportService.getAttendanceReport(from, to));
+            }
+            case "leave" -> ctx.setVariable("report", reportService.getLeaveReport(reportYear));
+            case "payroll" -> ctx.setVariable("report", reportService.getPayrollReport());
+            case "performance" -> ctx.setVariable("report", reportService.getPerformanceReport(null));
+            default -> ctx.setVariable("report", reportService.getOverviewReport(reportYear));
+        }
+
+        // Render Thymeleaf template to HTML
+        String html = templateEngine.process("hr/reports-pdf", ctx);
+
+        // Convert HTML to PDF via Flying Saucer
+        try (java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream()) {
+            ITextRenderer renderer = new ITextRenderer();
+            renderer.setDocumentFromString(html);
+            renderer.layout();
+            renderer.createPDF(baos);
+
+            String filename = "HR_Report_" + tab + "_" + reportYear + ".pdf";
+
+
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .body(baos.toByteArray());
+        } catch (Exception e) {
+            throw new ReportExportException("Failed to generate PDF report: " + e.getMessage());
+        }
     }
 
 }

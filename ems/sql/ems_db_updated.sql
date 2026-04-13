@@ -105,7 +105,7 @@ CREATE TABLE employees (
                            id BIGINT AUTO_INCREMENT PRIMARY KEY,
                            user_id BIGINT UNIQUE NULL,
                            employee_code VARCHAR(50) UNIQUE,
-                           department_id BIGINT NOT NULL,
+                           department_id BIGINT NULL,
                            position_id BIGINT NOT NULL,
                            line_manager_id BIGINT NULL,
                            hire_date DATE,

@@ -52,8 +52,8 @@
                     Good morning 👋
                 </h2>
                 <p class="text-xs text-slate-400"
-                   th:text="${#dates.format(#dates.createNow(), 'EEEE, d MMMM yyyy')}">
-                    Monday, 9 March 2026
+                   th:text="${#dates.format(#dates.createNow(), 'dd/MM/yyyy')}">
+                    15/04/2026
                 </p>
             </div>
             <div class="flex items-center gap-2">
@@ -311,7 +311,7 @@
                         <h3 class="text-sm font-black text-slate-800 mb-4">Quick Links</h3>
 
                         <div class="space-y-3 flex-1">
-                            <a th:href="@{/hr/employees/new}"
+                            <a th:href="@{/hr/employee/new}"
                                class="block group p-3 rounded-xl border border-slate-100 hover:border-primary/40 hover:bg-primary/5 transition-all">
                                 <div class="flex items-center gap-3">
                                     <div

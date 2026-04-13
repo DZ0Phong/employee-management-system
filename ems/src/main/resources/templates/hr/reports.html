@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>EMS Pro - Reports &amp; Analytics</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <link rel="stylesheet" th:href="@{/css/hr/hr-common.css}">
+    <!-- Flatpickr -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script th:src="@{/js/hr/hr-common.js}"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#1414b8",
+                        "primary-light": "#e8e8fb",
+                        "bg-light": "#f6f6f8",
+                    },
+                    fontFamily: { display: ["Inter"] },
+                },
+            },
+        };
+    </script>
+</head>
+
+<body class="bg-bg-light font-display text-slate-900 min-h-screen">
+<div class="flex h-screen overflow-hidden">
+
+    <!-- SIDEBAR -->
+    <div th:replace="~{fragments/hr-sidebar :: sidebar('reports')}"></div>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
+
+        <!-- Topbar -->
+        <header class="h-16 bg-white border-b border-slate-100 flex items-center justify-between px-8 shrink-0">
+            <div>
+                <h2 class="text-base font-black text-slate-900 leading-tight">Reports &amp; Analytics</h2>
+                <p class="text-xs text-slate-400">Data-driven workforce insights</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <!-- Export PDF Button -->
+                <a th:href="@{/hr/reports/export(tab=${activeTab}, year=${selectedYear}, dateFrom=${dateFrom}, dateTo=${dateTo})}"
+                   class="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-primary/90 transition-all shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5"
+                   id="exportPdfBtn">
+                    <span class="material-symbols-outlined text-sm">picture_as_pdf</span>
+                    Export PDF
+                </a>
+            </div>
+        </header>
+
+        <!-- Tab Navigation -->
+        <div class="bg-white border-b border-slate-100 px-8 flex items-center gap-1 shrink-0">
+            <a th:href="@{/hr/reports(tab='overview', year=${selectedYear})}"
+               th:class="${activeTab == 'overview'} ? 'leave-tab active px-4 py-3 text-xs font-bold' : 'leave-tab px-4 py-3 text-xs font-bold'"
+               id="tabOverview">
+                <span class="material-symbols-outlined text-sm align-middle mr-1">monitoring</span> Overview
+            </a>
+            <a th:href="@{/hr/reports(tab='attendance', dateFrom=${dateFrom}, dateTo=${dateTo})}"
+               th:class="${activeTab == 'attendance'} ? 'leave-tab active px-4 py-3 text-xs font-bold' : 'leave-tab px-4 py-3 text-xs font-bold'"
+               id="tabAttendance">
+                <span class="material-symbols-outlined text-sm align-middle mr-1">event_available</span> Attendance
+            </a>
+            <a th:href="@{/hr/reports(tab='leave', year=${selectedYear})}"
+               th:class="${activeTab == 'leave'} ? 'leave-tab active px-4 py-3 text-xs font-bold' : 'leave-tab px-4 py-3 text-xs font-bold'"
+               id="tabLeave">
+                <span class="material-symbols-outlined text-sm align-middle mr-1">free_cancellation</span> Leave
+            </a>
+            <a th:href="@{/hr/reports(tab='payroll')}"
+               th:class="${activeTab == 'payroll'} ? 'leave-tab active px-4 py-3 text-xs font-bold' : 'leave-tab px-4 py-3 text-xs font-bold'"
+               id="tabPayroll">
+                <span class="material-symbols-outlined text-sm align-middle mr-1">payments</span> Payroll
+            </a>
+            <a th:href="@{/hr/reports(tab='performance')}"
+               th:class="${activeTab == 'performance'} ? 'leave-tab active px-4 py-3 text-xs font-bold' : 'leave-tab px-4 py-3 text-xs font-bold'"
+               id="tabPerformance">
+                <span class="material-symbols-outlined text-sm align-middle mr-1">military_tech</span> Performance
+            </a>
+
+            <!-- Year Filter (for overview/leave tabs) -->
+            <div class="ml-auto flex items-center gap-2" th:if="${activeTab == 'overview' || activeTab == 'leave'}">
+                <form th:action="@{/hr/reports}" method="get" class="flex items-center gap-2">
+                    <input type="hidden" name="tab" th:value="${activeTab}" />
+                    <select name="year" class="text-xs border-slate-200 rounded-lg py-1.5 px-2 focus:ring-primary/20 focus:border-primary" onchange="this.form.submit()">
+                        <option th:each="y : ${#numbers.sequence(currentYear, currentYear - 4)}" th:value="${y}" th:text="${y}" th:selected="${y == selectedYear}"></option>
+                    </select>
+                </form>
+            </div>
+
+            <!-- Date Range Filter (for attendance tab) -->
+            <div class="ml-auto flex items-center gap-2" th:if="${activeTab == 'attendance'}">
+                <form th:action="@{/hr/reports}" method="get" class="flex items-center gap-2">
+                    <input type="hidden" name="tab" value="attendance" />
+                    <input type="text" name="dateFrom" th:value="${dateFrom}" class="hr-datepicker text-xs border-slate-200 rounded-lg py-1.5 px-2 focus:ring-primary/20 focus:border-primary text-primary" />
+                    <span class="text-xs text-slate-400">to</span>
+                    <input type="text" name="dateTo" th:value="${dateTo}" class="hr-datepicker text-xs border-slate-200 rounded-lg py-1.5 px-2 focus:ring-primary/20 focus:border-primary text-primary" />
+                    <button type="submit" class="text-xs bg-primary text-white px-3 py-1.5 rounded-lg font-bold hover:bg-primary/90 transition-colors">Apply</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Scrollable Content -->
+        <div class="flex-1 overflow-y-auto p-8 dot-grid">
+            <div class="max-w-7xl mx-auto space-y-6">
+
+                <!-- ═══════════════════════════════════════════════════ -->
+                <!-- TAB: OVERVIEW                                      -->
+                <!-- ═══════════════════════════════════════════════════ -->
+                <div th:if="${activeTab == 'overview'}">
+                    <!-- Hero Metric Cards -->
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                        <div class="anim anim-1 card-hover gradient-card rounded-2xl p-5 text-white relative overflow-hidden">
+                            <div class="relative">
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center">
+                                        <span class="material-symbols-outlined fill-icon text-[20px]">group</span>
+                                    </div>
+                                </div>
+                                <p class="text-white/70 text-xs font-semibold uppercase tracking-wider">Total Headcount</p>
+                                <p class="text-3xl font-black stat-num mt-0.5" th:text="${report.totalHeadcount()}">0</p>
+                                <p class="text-white/60 text-[11px] mt-1 font-medium" th:text="${report.activeCount() + ' active'}">0 active</p>
+                            </div>
+                        </div>
+
+                        <div class="anim anim-2 card-hover bg-white rounded-2xl p-5 border border-slate-100 shadow-sm relative overflow-hidden">
+                            <div class="absolute bottom-0 right-0 w-20 h-20 bg-emerald-50 rounded-tl-3xl pointer-events-none"></div>
+                            <div class="relative">
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="w-9 h-9 bg-emerald-50 rounded-xl flex items-center justify-center">
+                                        <span class="material-symbols-outlined fill-icon text-emerald-500 text-[20px]">person_add</span>
+                                    </div>
+                                </div>
+                                <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider">New Hires</p>
+                                <p class="text-3xl font-black stat-num mt-0.5 text-emerald-600" th:text="${report.newHiresThisMonth()}">0</p>
+                                <p class="text-slate-400 text-[11px] mt-1">This month</p>
+                            </div>
+                        </div>
+
+                        <div class="anim anim-3 card-hover bg-white rounded-2xl p-5 border border-slate-100 shadow-sm relative overflow-hidden">
+                            <div class="absolute bottom-0 right-0 w-20 h-20 bg-rose-50 rounded-tl-3xl pointer-events-none"></div>
+                            <div class="relative">
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="w-9 h-9 bg-rose-50 rounded-xl flex items-center justify-center">
+                                        <span class="material-symbols-outlined fill-icon text-rose-500 text-[20px]">person_remove</span>
+                                    </div>
+                                </div>
+                                <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Terminations</p>
+                                <p class="text-3xl font-black stat-num mt-0.5 text-rose-500" th:text="${report.terminationsThisMonth()}">0</p>
+                                <p class="text-slate-400 text-[11px] mt-1">This month</p>
+                            </div>
+                        </div>
+
+                        <div class="anim anim-4 card-hover bg-white rounded-2xl p-5 border border-slate-100 shadow-sm relative overflow-hidden">
+                            <div class="absolute bottom-0 right-0 w-20 h-20 bg-amber-50 rounded-tl-3xl pointer-events-none"></div>
+                            <div class="relative">
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="w-9 h-9 bg-amber-50 rounded-xl flex items-center justify-center">
+                                        <span class="material-symbols-outlined fill-icon text-amber-500 text-[20px]">trending_down</span>
+                                    </div>
+                                </div>
+                                <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Turnover Rate</p>
+                                <p class="text-3xl font-black stat-num mt-0.5 text-amber-600" th:text="${report.turnoverRate() + '%'}">0%</p>
+                                <p class="text-slate-400 text-[11px] mt-1" th:text="${selectedYear + ' annual'}">Annual</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Row -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Department Distribution -->
+                        <div class="anim anim-5 bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+                            <h3 class="text-sm font-black text-slate-800 mb-1">Department Distribution</h3>
+                            <p class="text-xs text-slate-400 mb-4">Active employees by department</p>
+                            <div id="deptPieChart" class="h-64"></div>
+                        </div>
+
+                        <!-- Monthly Hiring Trend -->
+                        <div class="anim anim-6 lg:col-span-2 bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+                            <h3 class="text-sm font-black text-slate-800 mb-1">Hiring &amp; Termination Trend</h3>
+                            <p class="text-xs text-slate-400 mb-4" th:text="${selectedYear + ' monthly overview'}">Monthly overview</p>
+                            <div id="hiringTrendChart" class="h-64"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══════════════════════════════════════════════════ -->
+                <!-- TAB: ATTENDANCE                                    -->
+                <!-- ═══════════════════════════════════════════════════ -->
+                <div th:if="${activeTab == 'attendance'}">
+                    <!-- Rate Cards -->
+                    <div class="grid grid-cols-3 gap-4 mb-6">
+                        <div class="anim anim-1 card-hover bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
+                            <div class="flex items-center gap-3 mb-2">
+                                <div class="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center">
+                                    <span class="material-symbols-outlined fill-icon text-emerald-500">check_circle</span>
+                                </div>
+                                <div>
+                                    <p class="text-slate-400 text-[10px] font-semibold uppercase tracking-wider">Present Rate</p>
+                                    <p class="text-2xl font-black stat-num text-emerald-600" th:text="${report.presentRate() + '%'}">0%</p>
+                                </div>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-1.5 mt-2">
+                                <div class="bg-emerald-500 h-1.5 rounded-full progress-bar" th:style="'width:' + ${report.presentRate()} + '%'"></div>
+                            </div>
+                        </div>
+                        <div class="anim anim-2 card-hover bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
+                            <div class="flex items-center gap-3 mb-2">
+                                <div class="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center">
+                                    <span class="material-symbols-outlined fill-icon text-amber-500">schedule</span>
+                                </div>
+                                <div>
+                                    <p class="text-slate-400 text-[10px] font-semibold uppercase tracking-wider">Late Rate</p>
+                                    <p class="text-2xl font-black stat-num text-amber-600" th:text="${report.lateRate() + '%'}">0%</p>
+                                </div>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-1.5 mt-2">
+                                <div class="bg-amber-500 h-1.5 rounded-full progress-bar" th:style="'width:' + ${report.lateRate()} + '%'"></div>
+                            </div>
+                        </div>
+                        <div class="anim anim-3 card-hover bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
+                            <div class="flex items-center gap-3 mb-2">
+                                <div class="w-10 h-10 bg-rose-50 rounded-xl flex items-center justify-center">
+                                    <span class="material-symbols-outlined fill-icon text-rose-500">cancel</span>
+                                </div>
+                                <div>
+                                    <p class="text-slate-400 text-[10px] font-semibold uppercase tracking-wider">Absent Rate</p>
+                                    <p class="text-2xl font-black stat-num text-rose-500" th:text="${report.absentRate() + '%'}">0%</p>
+                                </div>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-1.5 mt-2">
+                                <div class="bg-rose-500 h-1.5 rounded-full progress-bar" th:style="'width:' + ${report.absentRate()} + '%'"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Daily Trend Chart -->
+                    <div class="anim anim-4 bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+                        <h3 class="text-sm font-black text-slate-800 mb-1">Daily Attendance Trend</h3>
+                        <p class="text-xs text-slate-400 mb-4">Present / Late / Absent breakdown</p>
+                        <div class="overflow-x-auto overflow-y-hidden pb-4 custom-scrollbar">
+                            <div id="attendanceTrendChart" class="h-72" style="min-width: 100%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══════════════════════════════════════════════════ -->
+                <!-- TAB: LEAVE                                         -->
+                <!-- ═══════════════════════════════════════════════════ -->
+                <div th:if="${activeTab == 'leave'}">
+                    <!-- Volume Cards -->
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                        <div class="anim anim-1 card-hover bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center">
+                                    <span class="material-symbols-outlined fill-icon text-emerald-500">thumb_up</span>
+                                </div>
+                                <div>
+                                    <p class="text-slate-400 text-[10px] font-semibold uppercase tracking-wider">Approved</p>
+                                    <p class="text-2xl font-black stat-num text-emerald-600" th:text="${report.totalApproved()}">0</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="anim anim-2 card-hover bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-rose-50 rounded-xl flex items-center justify-center">
+                                    <span class="material-symbols-outlined fill-icon text-rose-500">thumb_down</span>
+                                </div>
+                                <div>
+                                    <p class="text-slate-400 text-[10px] font-semibold uppercase tracking-wider">Rejected</p>
+                                    <p class="text-2xl font-black stat-num text-rose-500" th:text="${report.totalRejected()}">0</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="anim anim-3 card-hover bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center">
+                                    <span class="material-symbols-outlined fill-icon text-amber-500">hourglass_top</span>
+                                </div>
+                                <div>
+                                    <p class="text-slate-400 text-[10px] font-semibold uppercase tracking-wider">Pending</p>
+                                    <p class="text-2xl font-black stat-num text-amber-600" th:text="${report.totalPending()}">0</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="anim anim-4 card-hover bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-sky-50 rounded-xl flex items-center justify-center">
+                                    <span class="material-symbols-outlined fill-icon text-sky-500">avg_pace</span>
+                                </div>
+                                <div>
+                                    <p class="text-slate-400 text-[10px] font-semibold uppercase tracking-wider">Avg Processing</p>
+                                    <p class="text-2xl font-black stat-num text-sky-600" th:text="${report.avgProcessingHours() != null ? report.avgProcessingHours() + 'h' : '—'}">—</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Row -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Leave Type Breakdown -->
+                        <div class="anim anim-5 bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+                            <h3 class="text-sm font-black text-slate-800 mb-1">Leave Type Breakdown</h3>
+                            <p class="text-xs text-slate-400 mb-4">All processed requests</p>
+                            <div id="leaveTypeChart" class="h-64"></div>
+                        </div>
+
+                        <!-- Monthly Leave Trend -->
+                        <div class="anim anim-6 lg:col-span-2 bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+                            <h3 class="text-sm font-black text-slate-800 mb-1">Monthly Leave Trend</h3>
+                            <p class="text-xs text-slate-400 mb-4" th:text="${selectedYear + ' approved vs rejected'}">Trend</p>
+                            <div id="leaveTrendChart" class="h-64"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══════════════════════════════════════════════════ -->
+                <!-- TAB: PAYROLL                                       -->
+                <!-- ═══════════════════════════════════════════════════ -->
+                <div th:if="${activeTab == 'payroll'}">
+                    <!-- Cost Cards -->
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div class="anim anim-1 card-hover gradient-card rounded-2xl p-6 text-white relative overflow-hidden">
+                            <div class="relative">
+                                <p class="text-white/70 text-xs font-semibold uppercase tracking-wider">Total Payroll Cost</p>
+                                <p class="text-3xl font-black stat-num mt-1" th:text="'$' + ${#numbers.formatDecimal(report.totalPayrollCost(), 1, 'COMMA', 0, 'POINT')}">$0</p>
+                                <p class="text-white/60 text-[11px] mt-1">Current active salaries</p>
+                            </div>
+                        </div>
+                        <div class="anim anim-2 card-hover bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
+                            <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Average Salary</p>
+                            <p class="text-3xl font-black stat-num mt-1 text-primary" th:text="'$' + ${#numbers.formatDecimal(report.avgSalary(), 1, 'COMMA', 0, 'POINT')}">$0</p>
+                            <p class="text-slate-400 text-[11px] mt-1">Per employee (active)</p>
+                        </div>
+                    </div>
+
+                    <!-- Charts Row -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- Salary Band Distribution -->
+                        <div class="anim anim-3 bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+                            <h3 class="text-sm font-black text-slate-800 mb-1">Salary Band Distribution</h3>
+                            <p class="text-xs text-slate-400 mb-4">Employee count per salary range</p>
+                            <div id="salaryBandChart" class="h-72"></div>
+                        </div>
+
+                        <!-- Department Average Salary -->
+                        <div class="anim anim-4 bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+                            <h3 class="text-sm font-black text-slate-800 mb-1">Dept Average Salary</h3>
+                            <p class="text-xs text-slate-400 mb-4">Average base salary by department</p>
+                            <div id="deptSalaryChart" class="h-72"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══════════════════════════════════════════════════ -->
+                <!-- TAB: PERFORMANCE                                   -->
+                <!-- ═══════════════════════════════════════════════════ -->
+                <div th:if="${activeTab == 'performance'}">
+                    <!-- Score Cards -->
+                    <div class="grid grid-cols-3 gap-4 mb-6">
+                        <div class="anim anim-1 card-hover bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
+                                    <span class="material-symbols-outlined fill-icon text-primary">star</span>
+                                </div>
+                                <div>
+                                    <p class="text-slate-400 text-[10px] font-semibold uppercase tracking-wider">Avg Performance</p>
+                                    <p class="text-2xl font-black stat-num text-primary" th:text="${report.avgPerformanceScore() != null ? report.avgPerformanceScore() : '—'}">—</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="anim anim-2 card-hover bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center">
+                                    <span class="material-symbols-outlined fill-icon text-purple-500">psychology</span>
+                                </div>
+                                <div>
+                                    <p class="text-slate-400 text-[10px] font-semibold uppercase tracking-wider">Avg Potential</p>
+                                    <p class="text-2xl font-black stat-num text-purple-600" th:text="${report.avgPotentialScore() != null ? report.avgPotentialScore() : '—'}">—</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="anim anim-3 card-hover bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-sky-50 rounded-xl flex items-center justify-center">
+                                    <span class="material-symbols-outlined fill-icon text-sky-500">grading</span>
+                                </div>
+                                <div>
+                                    <p class="text-slate-400 text-[10px] font-semibold uppercase tracking-wider">Total Reviews</p>
+                                    <p class="text-2xl font-black stat-num text-sky-600" th:text="${report.totalReviews()}">0</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Top Performers Table -->
+                    <div class="anim anim-4 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                        <div class="px-6 pt-5 pb-4 border-b border-slate-50">
+                            <h3 class="text-sm font-black text-slate-800">Top Performers</h3>
+                            <p class="text-xs text-slate-400 mt-0.5">Highest performance scores (completed reviews)</p>
+                        </div>
+                        <table class="w-full">
+                            <thead>
+                            <tr class="bg-slate-50/70">
+                                <th class="px-6 py-3 text-left text-[10px] font-bold text-slate-400 uppercase tracking-wider">Rank</th>
+                                <th class="px-4 py-3 text-left text-[10px] font-bold text-slate-400 uppercase tracking-wider">Employee</th>
+                                <th class="px-4 py-3 text-left text-[10px] font-bold text-slate-400 uppercase tracking-wider">Department</th>
+                                <th class="px-4 py-3 text-right text-[10px] font-bold text-slate-400 uppercase tracking-wider">Score</th>
+                            </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-50">
+                            <tr th:if="${report.topPerformers().isEmpty()}">
+                                <td colspan="4" class="px-6 py-8 text-center">
+                                    <div class="flex flex-col items-center text-slate-400">
+                                        <span class="material-symbols-outlined text-4xl mb-2 text-slate-200">emoji_events</span>
+                                        <p class="text-sm font-bold text-slate-500">No completed reviews found</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr th:each="performer, iter : ${report.topPerformers()}" class="hover:bg-slate-50/50 transition-colors">
+                                <td class="px-6 py-3">
+                                    <span th:if="${iter.index == 0}" class="text-lg">🥇</span>
+                                    <span th:if="${iter.index == 1}" class="text-lg">🥈</span>
+                                    <span th:if="${iter.index == 2}" class="text-lg">🥉</span>
+                                    <span th:if="${iter.index > 2}" class="text-xs font-bold text-slate-400" th:text="${iter.index + 1}">4</span>
+                                </td>
+                                <td class="px-4 py-3 text-sm font-bold text-slate-800" th:text="${performer.name()}">Name</td>
+                                <td class="px-4 py-3 text-xs text-slate-500" th:text="${performer.department()}">Dept</td>
+                                <td class="px-4 py-3 text-right">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-primary/10 text-primary" th:text="${performer.score()}">0</span>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div><!-- /max-w -->
+        </div><!-- /scrollable -->
+
+    </main>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- APEXCHARTS INITIALIZATION                                         -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- Common Chart Config -->
+    <script th:inline="javascript">
+        const activeTab = /*[[${activeTab}]]*/ 'overview';
+        const chartColors = {
+            primary: '#1414b8',
+            emerald: '#10b981',
+            amber: '#f59e0b',
+            rose: '#f43f5e',
+            sky: '#0ea5e9',
+            purple: '#8b5cf6',
+            slate: '#94a3b8'
+        };
+        const defaultOptions = {
+            chart: { fontFamily: 'Inter, sans-serif', toolbar: { show: false } },
+            grid: { borderColor: '#f1f5f9', strokeDashArray: 3 },
+            tooltip: {
+                theme: 'dark',
+                style: { fontSize: '11px' },
+                y: { formatter: (val) => val != null ? val.toLocaleString() : '0' }
+            }
+        };
+    </script>
+
+    <!-- Overview Chart Scripts -->
+    <script th:inline="javascript" th:if="${activeTab == 'overview'}">
+        // Department Pie
+        const deptNames = /*[[${report.departmentBreakdown() != null ? report.departmentBreakdown().![name()] : {}}]]*/ [];
+        const deptCounts = /*[[${report.departmentBreakdown() != null ? report.departmentBreakdown().![count()] : {}}]]*/ [];
+
+        if (deptNames.length > 0) {
+            new ApexCharts(document.querySelector('#deptPieChart'), {
+                ...defaultOptions,
+                chart: { ...defaultOptions.chart, type: 'donut', height: 256 },
+                series: deptCounts,
+                labels: deptNames,
+                colors: [chartColors.primary, chartColors.emerald, chartColors.amber, chartColors.sky, chartColors.purple, chartColors.rose, '#64748b', '#06b6d4'],
+                plotOptions: { pie: { donut: { size: '70%', labels: { show: true, total: { show: true, label: 'Total', fontSize: '12px', fontWeight: 800 } } } } },
+                legend: { position: 'bottom', fontSize: '11px', fontWeight: 600, markers: { radius: 3 } },
+                dataLabels: { enabled: false },
+                stroke: { width: 2, colors: ['#fff'] }
+            }).render();
+        }
+
+        // Hiring Trend
+        const mLabels = /*[[${report.monthlyLabels()}]]*/ [];
+        const mHires = /*[[${report.monthlyHires()}]]*/ [];
+        const mTerms = /*[[${report.monthlyTerminations()}]]*/ [];
+
+        new ApexCharts(document.querySelector('#hiringTrendChart'), {
+            ...defaultOptions,
+            chart: { ...defaultOptions.chart, type: 'area', height: 256, stacked: false },
+            series: [
+                { name: 'New Hires', data: mHires },
+                { name: 'Terminations', data: mTerms }
+            ],
+            xaxis: { categories: mLabels, labels: { style: { fontSize: '10px', fontWeight: 600 } } },
+            yaxis: { labels: { style: { fontSize: '10px' } } },
+            colors: [chartColors.emerald, chartColors.rose],
+            fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.05 } },
+            stroke: { curve: 'smooth', width: 2.5 },
+            dataLabels: { enabled: false },
+            legend: { position: 'top', fontSize: '11px', fontWeight: 600 }
+        }).render();
+    </script>
+
+    <!-- Attendance Chart Scripts -->
+    <script th:inline="javascript" th:if="${activeTab == 'attendance'}">
+        const aLabels = /*[[${report.dailyLabels()}]]*/ [];
+        const aPresent = /*[[${report.dailyPresent()}]]*/ [];
+        const aLate = /*[[${report.dailyLate()}]]*/ [];
+        const aAbsent = /*[[${report.dailyAbsent()}]]*/ [];
+
+        // Set dynamic width for scrollability: ~40px per data point, minimum 100%
+        const chartEl = document.querySelector('#attendanceTrendChart');
+        if (aLabels.length > 20) {
+            chartEl.style.width = (aLabels.length * 40) + 'px';
+        } else {
+            chartEl.style.width = '100%';
+        }
+
+        new ApexCharts(document.querySelector('#attendanceTrendChart'), {
+            ...defaultOptions,
+            chart: { ...defaultOptions.chart, type: 'bar', height: 288, stacked: true },
+            series: [
+                { name: 'Present', data: aPresent },
+                { name: 'Late', data: aLate },
+                { name: 'Absent', data: aAbsent }
+            ],
+            xaxis: { categories: aLabels, labels: { style: { fontSize: '10px', fontWeight: 600 }, rotate: -45, rotateAlways: aLabels.length > 15 } },
+            yaxis: { labels: { style: { fontSize: '10px' } } },
+            colors: [chartColors.emerald, chartColors.amber, chartColors.rose],
+            plotOptions: { bar: { borderRadius: 3, columnWidth: '60%' } },
+            dataLabels: { enabled: false },
+            legend: { position: 'top', fontSize: '11px', fontWeight: 600 }
+        }).render();
+    </script>
+
+    <!-- Leave Chart Scripts -->
+    <script th:inline="javascript" th:if="${activeTab == 'leave'}">
+        const ltLabels = /*[[${report.leaveTypeLabels()}]]*/ [];
+        const ltCounts = /*[[${report.leaveTypeCounts()}]]*/ [];
+
+        if (ltLabels.length > 0) {
+            new ApexCharts(document.querySelector('#leaveTypeChart'), {
+                ...defaultOptions,
+                chart: { ...defaultOptions.chart, type: 'bar', height: 256 },
+                series: [{ name: 'Requests', data: ltCounts }],
+                xaxis: { categories: ltLabels, labels: { style: { fontSize: '10px', fontWeight: 600 } } },
+                yaxis: { labels: { style: { fontSize: '10px' } } },
+                colors: [chartColors.primary],
+                plotOptions: { bar: { horizontal: true, borderRadius: 4, barHeight: '50%' } },
+                dataLabels: { enabled: true, style: { fontSize: '10px', fontWeight: 700 } }
+            }).render();
+        }
+
+        const lmLabels = /*[[${report.monthlyLabels()}]]*/ [];
+        const lmApproved = /*[[${report.monthlyApproved()}]]*/ [];
+        const lmRejected = /*[[${report.monthlyRejected()}]]*/ [];
+
+        new ApexCharts(document.querySelector('#leaveTrendChart'), {
+            ...defaultOptions,
+            chart: { ...defaultOptions.chart, type: 'bar', height: 256, stacked: true },
+            series: [
+                { name: 'Approved', data: lmApproved },
+                { name: 'Rejected', data: lmRejected }
+            ],
+            xaxis: { categories: lmLabels, labels: { style: { fontSize: '10px', fontWeight: 600 } } },
+            yaxis: { labels: { style: { fontSize: '10px' } } },
+            colors: [chartColors.emerald, chartColors.rose],
+            plotOptions: { bar: { borderRadius: 3, columnWidth: '55%' } },
+            dataLabels: { enabled: false },
+            legend: { position: 'top', fontSize: '11px', fontWeight: 600 }
+        }).render();
+    </script>
+
+    <!-- Payroll Chart Scripts -->
+    <script th:inline="javascript" th:if="${activeTab == 'payroll'}">
+        const sbLabels = /*[[${report.salaryBandLabels()}]]*/ [];
+        const sbCounts = /*[[${report.salaryBandCounts()}]]*/ [];
+
+        new ApexCharts(document.querySelector('#salaryBandChart'), {
+            ...defaultOptions,
+            chart: { ...defaultOptions.chart, type: 'bar', height: 288 },
+            series: [{ name: 'Employees', data: sbCounts }],
+            xaxis: { categories: sbLabels, labels: { style: { fontSize: '11px', fontWeight: 600 } } },
+            yaxis: { labels: { style: { fontSize: '10px' } } },
+            colors: [chartColors.primary],
+            plotOptions: { bar: { borderRadius: 6, columnWidth: '55%', distributed: true } },
+            dataLabels: { enabled: true, style: { fontSize: '11px', fontWeight: 800 }, offsetY: -20 },
+            legend: { show: false }
+        }).render();
+
+        const dsLabels = /*[[${report.deptAvgLabels()}]]*/ [];
+        const dsValues = /*[[${report.deptAvgValues()}]]*/ [];
+
+        new ApexCharts(document.querySelector('#deptSalaryChart'), {
+            ...defaultOptions,
+            chart: { ...defaultOptions.chart, type: 'bar', height: 288 },
+            series: [{ name: 'Avg Salary', data: dsValues }],
+            xaxis: { categories: dsLabels, labels: { style: { fontSize: '10px', fontWeight: 600 } } },
+            yaxis: { labels: { style: { fontSize: '10px' }, formatter: (v) => '$' + Math.round(v).toLocaleString() } },
+            colors: [chartColors.emerald],
+            plotOptions: { bar: { horizontal: true, borderRadius: 4, barHeight: '55%' } },
+            dataLabels: { enabled: true, style: { fontSize: '10px' }, formatter: (v) => '$' + Math.round(v).toLocaleString() },
+            tooltip: { y: { formatter: (v) => '$' + Math.round(v).toLocaleString() } }
+        }).render();
+    </script>
+
+</body>
+</html>

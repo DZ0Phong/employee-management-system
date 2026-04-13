@@ -20,6 +20,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -453,6 +454,52 @@ public class HrManagerController {
             redirectAttributes.addFlashAttribute("flashType", "error");
         }
         return "redirect:/hrmanager/leave-approval?tab=pending";
+    }
+    
+    // ── Bulk Actions ──────────────────────────────────────────────────────────
+    @PostMapping({"/leave-approval/bulk-approve", "/request-management/bulk-approve"})
+    @ResponseBody
+    public Map<String, Object> bulkApprove(@org.springframework.web.bind.annotation.RequestBody Map<String, Object> payload) {
+        try {
+            @SuppressWarnings("unchecked")
+            List<Integer> requestIdsInt = (List<Integer>) payload.get("requestIds");
+            List<Long> requestIds = requestIdsInt.stream()
+                    .map(Integer::longValue)
+                    .collect(java.util.stream.Collectors.toList());
+            Long approverId = getCurrentUserId();
+            
+            Map<String, Object> result = leaveApprovalService.bulkApprove(requestIds, approverId);
+            result.put("success", true);
+            return result;
+        } catch (Exception e) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
+            error.put("message", "Bulk approve failed: " + e.getMessage());
+            return error;
+        }
+    }
+    
+    @PostMapping({"/leave-approval/bulk-reject", "/request-management/bulk-reject"})
+    @ResponseBody
+    public Map<String, Object> bulkReject(@org.springframework.web.bind.annotation.RequestBody Map<String, Object> payload) {
+        try {
+            @SuppressWarnings("unchecked")
+            List<Integer> requestIdsInt = (List<Integer>) payload.get("requestIds");
+            List<Long> requestIds = requestIdsInt.stream()
+                    .map(Integer::longValue)
+                    .collect(java.util.stream.Collectors.toList());
+            Long approverId = getCurrentUserId();
+            String reason = (String) payload.getOrDefault("reason", "Bulk rejection");
+            
+            Map<String, Object> result = leaveApprovalService.bulkReject(requestIds, approverId, reason);
+            result.put("success", true);
+            return result;
+        } catch (Exception e) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
+            error.put("message", "Bulk reject failed: " + e.getMessage());
+            return error;
+        }
     }
 
     // ── Revert Request (24h window) - Phase 3 ────────────────────────────────

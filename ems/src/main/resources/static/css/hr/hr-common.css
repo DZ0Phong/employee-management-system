@@ -149,3 +149,48 @@
 .leave-panel.active {
     display: block;
 }
+
+/* --- Flatpickr & Date Picker Standards --- */
+/* Match user's "capsule" request */
+.hr-datepicker-capsule {
+    @apply bg-white border border-slate-200 rounded-full px-2 py-1.5 focus:ring-primary focus:border-primary shadow-sm transition-all;
+    width: 115px;
+    text-align: center;
+    font-weight: 600;
+    color: #1414b8;
+    cursor: pointer;
+}
+
+.hr-datepicker-capsule-range {
+    @apply bg-white border border-slate-200 rounded-full px-4 py-1.5 focus:ring-primary focus:border-primary shadow-sm transition-all;
+    min-width: 220px;
+    text-align: center;
+    font-weight: 600;
+    color: #1414b8;
+    cursor: pointer;
+}
+
+.flatpickr-calendar {
+    box-shadow: 0 10px 25px -5px rgba(20, 20, 184, 0.1), 0 8px 10px -6px rgba(20, 20, 184, 0.1) !important;
+    border-radius: 16px !important;
+    border: 1px solid #f1f5f9 !important;
+}
+
+.flatpickr-day.selected {
+    background: #1414b8 !important;
+    border-color: #1414b8 !important;
+}
+
+.flatpickr-day:hover {
+    background: #e8e8fb !important;
+}
+
+.flatpickr-months .flatpickr-month {
+    background: #fff !important;
+    color: #1e293b !important;
+    fill: #1e293b !important;
+}
+
+.flatpickr-current-month .flatpickr-monthDropdown-months {
+    font-weight: 700 !important;
+}

@@ -52,8 +52,9 @@ public class HrLeaveService {
     private final LogService logService;
 
     private static final int MIN_REJECTION_REASON_LENGTH = 10;
-    private static final DateTimeFormatter DTF = DateTimeFormatter.ofPattern("MMM dd, yyyy");
-    private static final DateTimeFormatter DTF_FULL = DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm");
+    private static final DateTimeFormatter DTF = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static final DateTimeFormatter DTF_FULL = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
 
     // ── Rejection reason categories ──
     private static final Map<String, String> REJECTION_CATEGORIES = new HashMap<>();
@@ -430,6 +431,63 @@ public class HrLeaveService {
             processedAt = request.getApprovedAt().format(DTF_FULL);
         }
 
+        // UI Status Mapping
+        String statusLabel = request.getStatus();
+        String currentStep = request.getStep();
+        String statusClass = "bg-slate-100 dark:bg-slate-800 text-slate-600 border-slate-200";
+        String statusDisplay = statusLabel;
+        String stepDisplay = workflowService.getStepDisplayName(currentStep);
+
+        if ("APPROVED".equalsIgnoreCase(statusLabel)) {
+            statusClass = "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-200";
+            statusDisplay = "Approved";
+        } else if ("REJECTED".equalsIgnoreCase(statusLabel)) {
+            statusClass = "bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 border-rose-200";
+            statusDisplay = "Rejected";
+        } else if (WorkflowConstants.STEP_WAITING_HR.equals(currentStep)) {
+            statusClass = "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-200";
+            statusDisplay = "Pending Your Action";
+        } else if (WorkflowConstants.STEP_WAITING_HRM.equals(currentStep)) {
+            statusClass = "bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 border-sky-200";
+            statusDisplay = "Sent to HRM";
+        } else if (WorkflowConstants.STEP_WAITING_DM.equals(currentStep)) {
+            statusClass = "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200";
+            statusDisplay = "Waiting for DM";
+        }
+
+        // Leave Balance
+        BigDecimal balanceRemaining = BigDecimal.ZERO;
+        BigDecimal balanceTotal = BigDecimal.ZERO;
+        Integer balancePercentage = 0;
+        
+        if (request.getEmployee() != null) {
+            int currentYear = LocalDate.now().getYear();
+            var balanceOpt = leaveBalanceRepository.findByEmployeeIdAndYear(request.getEmployeeId(), currentYear);
+            if (balanceOpt.isPresent()) {
+                var balance = balanceOpt.get();
+                balanceRemaining = balance.getRemainingDays();
+                balanceTotal = balance.getTotalDays();
+                if (balanceTotal.compareTo(BigDecimal.ZERO) > 0) {
+                    balancePercentage = balanceRemaining.multiply(new BigDecimal(100))
+                            .divide(balanceTotal, 0, java.math.RoundingMode.HALF_UP).intValue();
+                }
+            }
+        }
+
+        // Overlap Count
+        Integer overlapCount = 0;
+        if (request.getLeaveFrom() != null && request.getLeaveTo() != null) {
+            var overlaps = requestRepository.findOverlappingLeaveRequests("APPROVED", request.getLeaveFrom(), request.getLeaveTo());
+            overlapCount = (int) overlaps.stream()
+                    .filter(r -> !r.getId().equals(request.getId()))
+                    .count();
+        }
+
+        String employeePosition = "Employee";
+        if (request.getEmployee() != null && request.getEmployee().getPosition() != null) {
+            employeePosition = request.getEmployee().getPosition().getName();
+        }
+
         return HrLeaveRequestDTO.builder()
                 .id(request.getId())
                 .employeeName(fullName)
@@ -437,16 +495,25 @@ public class HrLeaveService {
                 .department(departmentName)
                 .departmentId(departmentId)
                 .employeeCode(employeeCode)
+                .employeePosition(employeePosition)
                 .leaveType(request.getRequestType() != null ? request.getRequestType().getName() : "N/A")
                 .duration(duration)
                 .dates(dates)
                 .reason(reason)
                 .leave_from(request.getLeaveFrom())
                 .leave_to(request.getLeaveTo())
-                .status(request.getStatus())
+                .status(statusLabel)
+                .statusClass(statusClass)
+                .statusDisplay(statusDisplay)
+                .stepDisplay(stepDisplay)
                 .rejectedReason(request.getRejectedReason())
+                .submittedAtDisplay(request.getCreatedAt() != null ? request.getCreatedAt().format(DTF_FULL) : "N/A")
                 .processedAt(processedAt)
                 .approverName(approverName)
+                .leaveBalanceRemaining(balanceRemaining)
+                .leaveBalanceTotal(balanceTotal)
+                .leaveBalancePercentage(balancePercentage)
+                .overlapCount(overlapCount)
                 .build();
     }
 

@@ -2,6 +2,7 @@ package com.group5.ems.dto.response;
 
 import lombok.Builder;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Builder
@@ -12,6 +13,7 @@ public record HrLeaveRequestDTO(
         String department,
         Long departmentId,
         String employeeCode,
+        String employeePosition,
         String leaveType,
         String duration,
         String dates,
@@ -19,8 +21,16 @@ public record HrLeaveRequestDTO(
         LocalDate leave_from,
         LocalDate leave_to,
         String status,
+        String statusClass,
+        String statusDisplay,
+        String stepDisplay,
         String rejectedReason,
+        String submittedAtDisplay,
         String processedAt,
-        String approverName
+        String approverName,
+        BigDecimal leaveBalanceRemaining,
+        BigDecimal leaveBalanceTotal,
+        Integer leaveBalancePercentage,
+        Integer overlapCount
 ) {
-}
+}

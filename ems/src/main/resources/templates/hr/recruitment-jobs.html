@@ -11,6 +11,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         rel="stylesheet" />
     <link rel="stylesheet" th:href="@{/css/hr/hr-common.css}">
+    <!-- Flatpickr -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script th:src="@{/js/hr/hr-common.js}"></script>
     <script>
         tailwind.config = {
@@ -538,13 +541,13 @@
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-600 mb-1.5">Open Date</label>
-                        <input type="date" name="openDate"
-                            class="w-full text-sm border border-slate-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-slate-700">
+                        <input type="text" name="openDate"
+                            class="hr-datepicker w-full text-sm border border-slate-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-primary">
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-600 mb-1.5">Close Date</label>
-                        <input type="date" name="closeDate"
-                            class="w-full text-sm border border-slate-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-slate-700">
+                        <input type="text" name="closeDate"
+                            class="hr-datepicker w-full text-sm border border-slate-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-primary">
                     </div>
                     <div class="col-span-2">
                         <label class="block text-xs font-bold text-slate-600 mb-1.5">Job Description</label>
@@ -634,13 +637,13 @@
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-600 mb-1.5">Open Date</label>
-                        <input type="date" id="editOpenDate" name="openDate"
-                            class="w-full text-sm border border-slate-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-slate-700">
+                        <input type="text" id="editOpenDate" name="openDate"
+                            class="hr-datepicker w-full text-sm border border-slate-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-primary">
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-600 mb-1.5">Close Date</label>
-                        <input type="date" id="editCloseDate" name="closeDate"
-                            class="w-full text-sm border border-slate-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-slate-700">
+                        <input type="text" id="editCloseDate" name="closeDate"
+                            class="hr-datepicker w-full text-sm border border-slate-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-primary">
                     </div>
                     <div class="col-span-2">
                         <label class="block text-xs font-bold text-slate-600 mb-1.5">Job Description</label>
@@ -734,13 +737,26 @@
             document.getElementById('editSalaryMin').value = parseFloat(d.salaryMin) > 0 ? d.salaryMin : '';
             document.getElementById('editSalaryMax').value = parseFloat(d.salaryMax) > 0 ? d.salaryMax : '';
 
-            // Convert "MMM dd, yyyy" → "yyyy-MM-dd"
+            // Convert "dd/MM/yyyy" → "yyyy-MM-dd"
             const parseDate = (str) => {
-                if (!str || str === '—') return '';
-                try { return new Date(str).toISOString().split('T')[0]; } catch { return ''; }
+                if (!str || str === '—' || str.trim() === '') return '';
+                try {
+                    const [d, m, y] = str.split('/');
+                    if (!d || !m || !y) return '';
+                    return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+                } catch { return ''; }
             };
-            document.getElementById('editOpenDate').value = parseDate(d.open);
-            document.getElementById('editCloseDate').value = parseDate(d.close);
+            // Update Flatpickr instances if they exist
+            if (document.getElementById('editOpenDate')._flatpickr) {
+                document.getElementById('editOpenDate')._flatpickr.setDate(parseDate(d.open));
+            } else {
+                document.getElementById('editOpenDate').value = parseDate(d.open);
+            }
+            if (document.getElementById('editCloseDate')._flatpickr) {
+                document.getElementById('editCloseDate')._flatpickr.setDate(parseDate(d.close));
+            } else {
+                document.getElementById('editCloseDate').value = parseDate(d.close);
+            }
 
             const statusSel = document.getElementById('editJobStatus');
             if (statusSel) statusSel.value = d.status || 'OPEN';

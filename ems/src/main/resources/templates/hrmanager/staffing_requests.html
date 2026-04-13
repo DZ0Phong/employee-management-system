@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title>Staffing Requests - HR Manager</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link rel="stylesheet" href="/css/app-icons.css" th:href="@{/css/app-icons.css}"/>
+    <script defer src="/js/app-icons.js" th:src="@{/js/app-icons.js}"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#1414b8",
+                        "primary-light": "#e8e8fb",
+                        "bg-light": "#f6f6f8",
+                    },
+                    fontFamily: { display: ["Inter"] },
+                },
+            },
+        };
+    </script>
+    <style>
+        .nav-active { box-shadow: 0 0 0 1px #1414b830, inset 3px 0 0 #1414b8; }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-slide-up { animation: slideUp 0.4s ease-out forwards; }
+        .animate-fade-in { animation: fadeIn 0.3s ease-out; }
+        .request-card { transition: all 0.3s ease; }
+        .request-card:hover { transform: translateY(-2px); box-shadow: 0 8px 16px rgba(0,0,0,0.08); }
+        .employee-card { transition: all 0.3s ease; }
+        .employee-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.1); }
+        .stat-card { transition: all 0.3s ease; }
+        .stat-card:hover { transform: translateY(-2px); }
+    </style>
+</head>
+<body class="bg-bg-light font-display text-slate-900 min-h-screen">
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/hrmanager-sidebar :: sidebar('staffing', ${currentUser})}"></aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col overflow-hidden">
+            <!-- Header -->
+            <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-white text-xl">group_add</span>
+                    </div>
+                    <div>
+                        <h2 class="text-base font-black text-slate-900 leading-tight">Staffing Requests</h2>
+                        <p class="text-xs text-slate-400">Manage employee assignments and transfers</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="location.reload()" class="px-3 py-2 text-sm text-slate-600 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors flex items-center gap-2">
+                        <span class="material-symbols-outlined text-lg">refresh</span>
+                        Refresh
+                    </button>
+                </div>
+            </header>
+
+            <!-- Content -->
+            <div class="flex-1 overflow-y-auto p-8 space-y-6">
+                <!-- Success/Error Messages -->
+                <div th:if="${successMsg}" class="animate-slide-up p-4 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 text-emerald-700 rounded-xl flex items-center gap-3">
+                    <span class="material-symbols-outlined text-2xl">check_circle</span>
+                    <span th:text="${successMsg}"></span>
+                </div>
+                <div th:if="${errorMsg}" class="animate-slide-up p-4 bg-gradient-to-r from-rose-50 to-red-50 border border-rose-200 text-rose-700 rounded-xl flex items-center gap-3">
+                    <span class="material-symbols-outlined text-2xl">error</span>
+                    <span th:text="${errorMsg}"></span>
+                </div>
+
+                <!-- Stats -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="stat-card bg-white border-2 border-slate-200 p-6 rounded-2xl shadow-sm animate-slide-up" style="animation-delay: 0.1s">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                                <span class="material-symbols-outlined text-blue-600 text-2xl">pending_actions</span>
+                            </div>
+                        </div>
+                        <div class="text-sm text-slate-600 mb-1">Pending Requests</div>
+                        <div class="text-3xl font-black text-slate-900" th:text="${pendingCount}">0</div>
+                    </div>
+                    
+                    <div class="stat-card bg-white border-2 border-slate-200 p-6 rounded-2xl shadow-sm animate-slide-up" style="animation-delay: 0.2s">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
+                                <span class="material-symbols-outlined text-emerald-600 text-2xl">person_check</span>
+                            </div>
+                        </div>
+                        <div class="text-sm text-slate-600 mb-1">Available Employees</div>
+                        <div class="text-3xl font-black text-slate-900" th:text="${availableEmployees.size()}">0</div>
+                    </div>
+
+                    <div class="stat-card bg-white border-2 border-slate-200 p-6 rounded-2xl shadow-sm animate-slide-up" style="animation-delay: 0.3s">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                                <span class="material-symbols-outlined text-purple-600 text-2xl">person_add</span>
+                            </div>
+                        </div>
+                        <div class="text-sm text-slate-600 mb-1">Total Requests</div>
+                        <div class="text-3xl font-black text-slate-900" th:text="${#lists.size(staffingRequests)}">0</div>
+                    </div>
+
+                    <div class="stat-card bg-white border-2 border-slate-200 p-6 rounded-2xl shadow-sm animate-slide-up" style="animation-delay: 0.4s">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
+                                <span class="material-symbols-outlined text-orange-600 text-2xl">assignment</span>
+                            </div>
+                        </div>
+                        <div class="text-sm text-slate-600 mb-1">Action Required</div>
+                        <div class="text-3xl font-black text-slate-900" th:text="${pendingCount}">0</div>
+                    </div>
+                </div>
+
+                <!-- Pending Requests -->
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm animate-slide-up" style="animation-delay: 0.5s">
+                    <div class="px-6 py-5 border-b border-slate-200 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
+                                <span class="material-symbols-outlined text-blue-600">assignment</span>
+                            </div>
+                            <div>
+                                <h2 class="text-lg font-bold text-slate-900">Pending Staffing Requests</h2>
+                                <p class="text-xs text-slate-500">Review and assign employees to departments</p>
+                            </div>
+                        </div>
+                        <span class="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full" th:text="${pendingCount} + ' pending'">0 pending</span>
+                    </div>
+                    <div class="p-6">
+                        <div th:if="${staffingRequests.isEmpty()}" class="flex flex-col items-center justify-center py-16 text-slate-400">
+                            <div class="w-20 h-20 rounded-2xl bg-slate-100 flex items-center justify-center mb-4">
+                                <span class="material-symbols-outlined text-4xl text-slate-300">inbox</span>
+                            </div>
+                            <p class="text-sm font-semibold text-slate-500">No pending requests</p>
+                            <p class="text-xs text-slate-400 mt-1">All staffing requests have been processed</p>
+                        </div>
+                        <div class="space-y-4">
+                            <div th:each="request, iterStat : ${staffingRequests}" 
+                                 class="request-card border-2 border-slate-200 rounded-2xl p-5 hover:border-primary/30 animate-slide-up"
+                                 th:style="'animation-delay: ' + (0.6 + ${iterStat.index} * 0.1) + 's'">
+                                <div class="flex justify-between items-start gap-4">
+                                    <div class="flex-1">
+                                        <div class="flex items-center gap-3 mb-3">
+                                            <span class="px-3 py-1.5 text-xs font-bold rounded-xl flex items-center gap-1.5"
+                                                  th:classappend="${request.requestType == 'RECRUITMENT' ? 'bg-gradient-to-r from-blue-100 to-blue-200 text-blue-700' : 'bg-gradient-to-r from-purple-100 to-purple-200 text-purple-700'}">
+                                                <span class="material-symbols-outlined text-sm" th:text="${request.requestType == 'RECRUITMENT' ? 'person_add' : 'swap_horiz'}"></span>
+                                                <span th:text="${request.requestType}"></span>
+                                            </span>
+                                            <div class="flex items-center gap-2 text-sm text-slate-600">
+                                                <span class="material-symbols-outlined text-base">apartment</span>
+                                                <span th:text="${request.departmentName}"></span>
+                                            </div>
+                                        </div>
+                                        <h3 class="text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
+                                            <span class="material-symbols-outlined text-primary">badge</span>
+                                            <span th:text="${request.roleRequested}"></span>
+                                        </h3>
+                                        <p class="text-sm text-slate-600 mb-3 leading-relaxed" th:text="${request.description}"></p>
+                                        <div class="flex items-center gap-4 text-xs text-slate-500">
+                                            <div class="flex items-center gap-1.5">
+                                                <span class="material-symbols-outlined text-sm">person</span>
+                                                <span>Requested by: <span class="font-semibold" th:text="${request.requesterName}"></span></span>
+                                            </div>
+                                            <div class="flex items-center gap-1.5">
+                                                <span class="material-symbols-outlined text-sm">schedule</span>
+                                                <span th:text="${#temporals.format(request.createdAt, 'dd/MM/yyyy HH:mm')}"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex flex-col gap-2 shrink-0">
+                                        <button onclick="openAssignModal(this)" 
+                                                th:attr="data-request-id=${request.id}, data-role=${request.roleRequested}, data-dept=${request.departmentName}"
+                                                class="px-5 py-2.5 bg-gradient-to-r from-primary to-primary/90 text-white text-sm font-semibold rounded-xl hover:shadow-lg hover:scale-105 transition-all flex items-center gap-2">
+                                            <span class="material-symbols-outlined text-lg">person_add</span>
+                                            Assign Employee
+                                        </button>
+                                        <button onclick="openRejectModal(this)" 
+                                                th:attr="data-request-id=${request.id}"
+                                                class="w-full px-5 py-2.5 bg-gradient-to-r from-rose-500 to-red-600 text-white text-sm font-semibold rounded-xl hover:shadow-lg hover:scale-105 transition-all flex items-center justify-center gap-2">
+                                            <span class="material-symbols-outlined text-lg">cancel</span>
+                                            Reject
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Available Employees -->
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm animate-slide-up" style="animation-delay: 0.7s">
+                    <div class="px-6 py-5 border-b border-slate-200 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
+                                <span class="material-symbols-outlined text-emerald-600">groups</span>
+                            </div>
+                            <div>
+                                <h2 class="text-lg font-bold text-slate-900">Available Employees</h2>
+                                <p class="text-xs text-slate-500">Unassigned employees ready for placement</p>
+                            </div>
+                        </div>
+                        <span class="px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full" th:text="${availableEmployees.size()} + ' available'">0 available</span>
+                    </div>
+                    <div class="p-6">
+                        <div th:if="${availableEmployees.isEmpty()}" class="flex flex-col items-center justify-center py-16 text-slate-400">
+                            <div class="w-20 h-20 rounded-2xl bg-slate-100 flex items-center justify-center mb-4">
+                                <span class="material-symbols-outlined text-4xl text-slate-300">person_off</span>
+                            </div>
+                            <p class="text-sm font-semibold text-slate-500">No unassigned employees</p>
+                            <p class="text-xs text-slate-400 mt-1">All employees are currently assigned to departments</p>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                            <div th:each="emp, iterStat : ${availableEmployees}" 
+                                 class="employee-card border-2 border-slate-200 rounded-2xl p-5 hover:border-emerald-300 bg-gradient-to-br from-white to-slate-50 animate-slide-up"
+                                 th:style="'animation-delay: ' + (0.8 + ${iterStat.index} * 0.05) + 's'">
+                                <div class="flex items-start gap-4 mb-4">
+                                    <div class="relative">
+                                        <img th:src="${emp.avatarUrl}" alt="Avatar" class="w-16 h-16 rounded-2xl object-cover border-2 border-white shadow-md">
+                                        <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full border-2 border-white"></div>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="font-bold text-slate-900 truncate mb-1" th:text="${emp.fullName}"></div>
+                                        <div class="text-sm text-primary font-semibold mb-1 flex items-center gap-1">
+                                            <span class="material-symbols-outlined text-sm">work</span>
+                                            <span th:text="${emp.position}"></span>
+                                        </div>
+                                        <div class="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs font-semibold rounded-md inline-block">
+                                            Available
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="space-y-2 text-xs text-slate-600">
+                                    <div class="flex items-center gap-2 p-2 bg-slate-50 rounded-lg">
+                                        <span class="material-symbols-outlined text-sm text-slate-400">badge</span>
+                                        <span class="font-mono" th:text="${emp.employeeCode}"></span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-slate-50 rounded-lg">
+                                        <span class="material-symbols-outlined text-sm text-slate-400">mail</span>
+                                        <span class="truncate" th:text="${emp.email}"></span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-slate-50 rounded-lg">
+                                        <span class="material-symbols-outlined text-sm text-slate-400">calendar_today</span>
+                                        <span>Hired: <span class="font-semibold" th:text="${#temporals.format(emp.hireDate, 'dd/MM/yyyy')}"></span></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Assign Employee Modal -->
+    <div id="assignModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
+        <div class="bg-white rounded-2xl p-8 w-full max-w-lg shadow-2xl animate-slide-up">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-white text-2xl">person_add</span>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-slate-900">Assign Employee</h3>
+                    <p class="text-sm text-slate-500">Select an employee for this position</p>
+                </div>
+            </div>
+            
+            <form id="assignForm" method="post" class="space-y-5">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                
+                <div class="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
+                    <div class="flex items-center gap-2 text-sm text-slate-600 mb-2">
+                        <span class="material-symbols-outlined text-base">apartment</span>
+                        <span>Department:</span>
+                    </div>
+                    <div class="font-bold text-slate-900" id="modalDept"></div>
+                </div>
+
+                <div class="p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-200">
+                    <div class="flex items-center gap-2 text-sm text-slate-600 mb-2">
+                        <span class="material-symbols-outlined text-base">badge</span>
+                        <span>Position:</span>
+                    </div>
+                    <div class="font-bold text-slate-900" id="modalRole"></div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-base">person</span>
+                        Select Employee
+                    </label>
+                    <select name="employeeId" required class="w-full border-2 border-slate-300 rounded-xl px-4 py-3 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all">
+                        <option value="">-- Choose an employee --</option>
+                        <option th:each="emp : ${availableEmployees}" 
+                                th:value="${emp.id}" 
+                                th:text="${emp.fullName + ' (' + emp.position + ')'}"></option>
+                    </select>
+                </div>
+                
+                <div class="flex gap-3 pt-4">
+                    <button type="submit" class="flex-1 px-6 py-3 bg-gradient-to-r from-primary to-primary/90 text-white font-bold rounded-xl hover:shadow-lg hover:scale-105 transition-all flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined">check_circle</span>
+                        Assign Employee
+                    </button>
+                    <button type="button" onclick="closeAssignModal()" class="flex-1 px-6 py-3 bg-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-300 hover:scale-105 transition-all flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined">cancel</span>
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Reject Request Modal -->
+    <div id="rejectModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
+        <div class="bg-white rounded-2xl p-8 w-full max-w-lg shadow-2xl animate-slide-up">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-rose-500 to-red-600 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-white text-2xl">cancel</span>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-slate-900">Reject Request</h3>
+                    <p class="text-sm text-slate-500">Please provide a reason for rejection</p>
+                </div>
+            </div>
+            
+            <form id="rejectForm" method="post" class="space-y-5">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-base">description</span>
+                        Rejection Reason <span class="text-rose-500">*</span>
+                    </label>
+                    <textarea name="rejectionReason" required rows="4" 
+                              placeholder="Enter the reason for rejecting this request..."
+                              class="w-full border-2 border-slate-300 rounded-xl px-4 py-3 focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20 transition-all resize-none"></textarea>
+                    <p class="text-xs text-slate-500 mt-2">This reason will be sent to the requester</p>
+                </div>
+                
+                <div class="flex gap-3 pt-4">
+                    <button type="submit" class="flex-1 px-6 py-3 bg-gradient-to-r from-rose-500 to-red-600 text-white font-bold rounded-xl hover:shadow-lg hover:scale-105 transition-all flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined">block</span>
+                        Reject Request
+                    </button>
+                    <button type="button" onclick="closeRejectModal()" class="flex-1 px-6 py-3 bg-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-300 hover:scale-105 transition-all flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined">close</span>
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        function openAssignModal(button) {
+            const requestId = button.getAttribute('data-request-id');
+            const role = button.getAttribute('data-role');
+            const dept = button.getAttribute('data-dept');
+            document.getElementById('modalRole').textContent = role;
+            document.getElementById('modalDept').textContent = dept;
+            document.getElementById('assignForm').action = '/hr-manager/staffing-requests/' + requestId + '/assign';
+            document.getElementById('assignModal').classList.remove('hidden');
+        }
+
+        function closeAssignModal() {
+            document.getElementById('assignModal').classList.add('hidden');
+        }
+
+        function openRejectModal(button) {
+            const requestId = button.getAttribute('data-request-id');
+            document.getElementById('rejectForm').action = '/hr-manager/staffing-requests/' + requestId + '/reject';
+            document.getElementById('rejectModal').classList.remove('hidden');
+        }
+
+        function closeRejectModal() {
+            document.getElementById('rejectModal').classList.add('hidden');
+            document.getElementById('rejectForm').reset();
+        }
+
+        // Close modal on ESC key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeAssignModal();
+                closeRejectModal();
+            }
+        });
+
+        // Close modal on backdrop click
+        document.getElementById('assignModal').addEventListener('click', function(e) {
+            if (e.target === this) closeAssignModal();
+        });
+        
+        document.getElementById('rejectModal').addEventListener('click', function(e) {
+            if (e.target === this) closeRejectModal();
+        });
+    </script>
+</body>
+</html>

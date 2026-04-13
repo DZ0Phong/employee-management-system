@@ -55,14 +55,14 @@ import lombok.extern.slf4j.Slf4j;
 @Transactional(readOnly = true)
 public class HrRecruitmentService {
 
-    private static final DateTimeFormatter DATE_FMT     = DateTimeFormatter.ofPattern("MMM dd, yyyy");
+    private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("MMM dd, yyyy");
     private static final DateTimeFormatter DATETIME_FMT = DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm");
 
     // ── Template codes (phải khớp với cột `code` trong bảng email_templates) ──
     private static final String TPL_INTERVIEW_ASSIGNED = "INTERVIEW_ASSIGNED";
-    private static final String TPL_APPLICATION_HIRED  = "APPLICATION_HIRED";
+    private static final String TPL_APPLICATION_HIRED = "APPLICATION_HIRED";
     private static final String TPL_APPLICATION_REJECT = "APPLICATION_REJECTED";
-    private static final String TPL_NEW_EMPLOYEE_REQ   = "NEW_EMPLOYEE_REQUEST";
+    private static final String TPL_NEW_EMPLOYEE_REQ = "NEW_EMPLOYEE_REQUEST";
 
     private final JobPostRepository jobPostRepository;
     private final ApplicationRepository applicationRepository;
@@ -108,8 +108,8 @@ public class HrRecruitmentService {
 
     /**
      * Cập nhật stage của application.
-     * Khi stage = HIRED  → gửi email chúc mừng cho candidate
-     *                     → gửi email yêu cầu tạo nhân viên cho tất cả Admin
+     * Khi stage = HIRED → gửi email chúc mừng cho candidate
+     * → gửi email yêu cầu tạo nhân viên cho tất cả Admin
      * Khi stage = REJECTED → gửi email thông báo từ chối cho candidate
      */
     @Transactional
@@ -210,11 +210,11 @@ public class HrRecruitmentService {
         if (fileType == null)
             return MediaType.APPLICATION_OCTET_STREAM;
         return switch (fileType.toLowerCase()) {
-            case "application/pdf"       -> MediaType.APPLICATION_PDF;
-            case "image/png"             -> MediaType.IMAGE_PNG;
+            case "application/pdf" -> MediaType.APPLICATION_PDF;
+            case "image/png" -> MediaType.IMAGE_PNG;
             case "image/jpeg", "image/jpg" -> MediaType.IMAGE_JPEG;
-            case "image/gif"             -> MediaType.IMAGE_GIF;
-            default                      -> MediaType.APPLICATION_OCTET_STREAM;
+            case "image/gif" -> MediaType.IMAGE_GIF;
+            default -> MediaType.APPLICATION_OCTET_STREAM;
         };
     }
 
@@ -263,7 +263,8 @@ public class HrRecruitmentService {
 
     /**
      * Assign interviewer cho application.
-     * Sau khi lưu thành công → gửi email thông báo cho từng interviewer được assign.
+     * Sau khi lưu thành công → gửi email thông báo cho từng interviewer được
+     * assign.
      */
     @Transactional
     public void assignInterviewers(Long applicationId, List<Long> interviewerIds, Long assignedBy) {
@@ -437,8 +438,7 @@ public class HrRecruitmentService {
     }
 
     public List<InterviewDTO> getMyInterviews(Long interviewerUserId) {
-        List<InterviewAssignment> assignments =
-                interviewAssignmentRepository.findByInterviewerId(interviewerUserId);
+        List<InterviewAssignment> assignments = interviewAssignmentRepository.findByInterviewerId(interviewerUserId);
 
         return assignments.stream()
                 .map(ia -> interviewRepository
@@ -450,9 +450,12 @@ public class HrRecruitmentService {
                 .sorted((a, b) -> {
                     boolean aHas = a.getScheduledAtRaw() != null && !a.getScheduledAtRaw().isBlank();
                     boolean bHas = b.getScheduledAtRaw() != null && !b.getScheduledAtRaw().isBlank();
-                    if (aHas && bHas) return b.getScheduledAtRaw().compareTo(a.getScheduledAtRaw());
-                    if (aHas) return 1;
-                    if (bHas) return -1;
+                    if (aHas && bHas)
+                        return b.getScheduledAtRaw().compareTo(a.getScheduledAtRaw());
+                    if (aHas)
+                        return 1;
+                    if (bHas)
+                        return -1;
                     return 0;
                 })
                 .collect(Collectors.toList());
@@ -467,15 +470,18 @@ public class HrRecruitmentService {
             var app = appOpt.get();
             if (app.getCandidate() != null) {
                 candidateName = app.getCandidate().getFullName() != null
-                        ? app.getCandidate().getFullName() : "Unknown";
+                        ? app.getCandidate().getFullName()
+                        : "Unknown";
                 candidateEmail = app.getCandidate().getEmail() != null
-                        ? app.getCandidate().getEmail() : "";
+                        ? app.getCandidate().getEmail()
+                        : "";
                 initials = buildInitials(candidateName);
             }
             if (app.getJobPost() != null) {
                 jobTitle = app.getJobPost().getTitle() != null ? app.getJobPost().getTitle() : "—";
                 department = app.getJobPost().getDepartment() != null
-                        ? app.getJobPost().getDepartment().getName() : "";
+                        ? app.getJobPost().getDepartment().getName()
+                        : "";
             }
         }
 
@@ -485,8 +491,7 @@ public class HrRecruitmentService {
                 jobTitle, department,
                 "", "", "",
                 "NOT_SCHEDULED",
-                null, null
-        );
+                null, null);
     }
 
     public List<InterviewDTO> getInterviewsByApplication(Long applicationId) {
@@ -529,7 +534,7 @@ public class HrRecruitmentService {
         JobPost job = jobPostRepository.findById(jobId)
                 .orElseThrow(() -> JobPostException.notFound(jobId));
 
-        LocalDate effectiveOpen  = openDate  != null ? openDate  : job.getOpenDate();
+        LocalDate effectiveOpen = openDate != null ? openDate : job.getOpenDate();
         LocalDate effectiveClose = closeDate != null ? closeDate : job.getCloseDate();
 
         if (effectiveOpen != null && effectiveClose != null && effectiveClose.isBefore(effectiveOpen)) {
@@ -553,23 +558,24 @@ public class HrRecruitmentService {
 
     /**
      * Gửi email INTERVIEW_ASSIGNED đến email của từng interviewer được assign.
-     * Variables: {{interviewerName}}, {{candidateName}}, {{jobTitle}}, {{applicationId}}
+     * Variables: {{interviewerName}}, {{candidateName}}, {{jobTitle}},
+     * {{applicationId}}
      */
     private void sendInterviewAssignedEmails(Application app, List<Long> interviewerIds) {
         String candidateName = resolveCandidateName(app);
-        String jobTitle      = resolveJobTitle(app);
+        String jobTitle = resolveJobTitle(app);
 
         for (Long userId : interviewerIds) {
             userRepository.findById(userId).ifPresent(user -> {
-                if (user.getEmail() == null || user.getEmail().isBlank()) return;
+                if (user.getEmail() == null || user.getEmail().isBlank())
+                    return;
 
                 String interviewerName = user.getFullName() != null ? user.getFullName() : user.getUsername();
                 Map<String, String> vars = Map.of(
                         "interviewerName", interviewerName,
-                        "candidateName",   candidateName,
-                        "jobTitle",        jobTitle,
-                        "applicationId",   String.valueOf(app.getId())
-                );
+                        "candidateName", candidateName,
+                        "jobTitle", jobTitle,
+                        "applicationId", String.valueOf(app.getId()));
                 emailService.sendFromTemplate(user.getEmail(), TPL_INTERVIEW_ASSIGNED, vars);
             });
         }
@@ -580,15 +586,16 @@ public class HrRecruitmentService {
      * Variables: {{candidateName}}, {{jobTitle}}, {{companyName}}
      */
     private void sendHiredNotification(Application app) {
-        if (app.getCandidate() == null) return;
+        if (app.getCandidate() == null)
+            return;
         String email = app.getCandidate().getEmail();
-        if (email == null || email.isBlank()) return;
+        if (email == null || email.isBlank())
+            return;
 
         Map<String, String> vars = Map.of(
                 "candidateName", resolveCandidateName(app),
-                "jobTitle",      resolveJobTitle(app),
-                "companyName",   "ERM Pro"
-        );
+                "jobTitle", resolveJobTitle(app),
+                "companyName", "ERM Pro");
         emailService.sendFromTemplate(email, TPL_APPLICATION_HIRED, vars);
     }
 
@@ -597,15 +604,16 @@ public class HrRecruitmentService {
      * Variables: {{candidateName}}, {{jobTitle}}, {{companyName}}
      */
     private void sendRejectedNotification(Application app) {
-        if (app.getCandidate() == null) return;
+        if (app.getCandidate() == null)
+            return;
         String email = app.getCandidate().getEmail();
-        if (email == null || email.isBlank()) return;
+        if (email == null || email.isBlank())
+            return;
 
         Map<String, String> vars = Map.of(
                 "candidateName", resolveCandidateName(app),
-                "jobTitle",      resolveJobTitle(app),
-                "companyName",   "ERM Pro"
-        );
+                "jobTitle", resolveJobTitle(app),
+                "companyName", "ERM Pro");
         emailService.sendFromTemplate(email, TPL_APPLICATION_REJECT, vars);
     }
 
@@ -615,20 +623,20 @@ public class HrRecruitmentService {
      */
     private void sendNewEmployeeRequestToAdmins(Application app) {
         String candidateName = resolveCandidateName(app);
-        String jobTitle      = resolveJobTitle(app);
+        String jobTitle = resolveJobTitle(app);
 
         // Lấy tất cả user có role có code = "ADMIN"
         List<User> admins = userRepository.findByRoleCode("ADMIN");
         for (User admin : admins) {
-            if (admin.getEmail() == null || admin.getEmail().isBlank()) continue;
+            if (admin.getEmail() == null || admin.getEmail().isBlank())
+                continue;
 
             String adminName = admin.getFullName() != null ? admin.getFullName() : admin.getUsername();
             Map<String, String> vars = Map.of(
-                    "adminName",     adminName,
+                    "adminName", adminName,
                     "candidateName", candidateName,
-                    "jobTitle",      jobTitle,
-                    "applicationId", String.valueOf(app.getId())
-            );
+                    "jobTitle", jobTitle,
+                    "applicationId", String.valueOf(app.getId()));
             emailService.sendFromTemplate(admin.getEmail(), TPL_NEW_EMPLOYEE_REQ, vars);
         }
     }
@@ -688,15 +696,14 @@ public class HrRecruitmentService {
                 iv.getLocation(),
                 iv.getStatus(),
                 iv.getFeedback(),
-                null
-        );
+                null);
     }
 
     private HrRecruitmentDTO mapToJobPostDTO(JobPost job) {
-        String dept      = job.getDepartment() != null ? job.getDepartment().getName() : "N/A";
-        int    applicants = (int) applicationRepository.countByJobPostId(job.getId());
+        String dept = job.getDepartment() != null ? job.getDepartment().getName() : "N/A";
+        int applicants = (int) applicationRepository.countByJobPostId(job.getId());
         String salaryRange = formatSalaryRange(job.getSalaryMin(), job.getSalaryMax());
-        Long   daysLeft   = job.getCloseDate() != null
+        Long daysLeft = job.getCloseDate() != null
                 ? ChronoUnit.DAYS.between(LocalDate.now(), job.getCloseDate())
                 : null;
         return HrRecruitmentDTO.builder()
@@ -728,11 +735,11 @@ public class HrRecruitmentService {
 
         if (app.getCandidate() != null) {
             var c = app.getCandidate();
-            name     = c.getFullName() != null ? c.getFullName() : "Unknown";
-            email    = c.getEmail()    != null ? c.getEmail()    : "";
-            phone    = c.getPhone()    != null ? c.getPhone()    : "";
+            name = c.getFullName() != null ? c.getFullName() : "Unknown";
+            email = c.getEmail() != null ? c.getEmail() : "";
+            phone = c.getPhone() != null ? c.getPhone() : "";
             yearsExp = c.getYearsExperience();
-            salary   = c.getExpectedSalary();
+            salary = c.getExpectedSalary();
             initials = buildInitials(name);
         }
 
@@ -774,19 +781,24 @@ public class HrRecruitmentService {
     // ══════════════════════════════════════════════════════════════════════════
 
     private String buildInitials(String name) {
-        if (name == null || name.isBlank()) return "?";
+        if (name == null || name.isBlank())
+            return "?";
         String[] parts = name.trim().split("\\s+");
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < Math.min(2, parts.length); i++) {
-            if (!parts[i].isEmpty()) sb.append(parts[i].charAt(0));
+            if (!parts[i].isEmpty())
+                sb.append(parts[i].charAt(0));
         }
         return sb.toString().toUpperCase();
     }
 
     private String formatSalaryRange(BigDecimal min, BigDecimal max) {
-        if (min == null && max == null) return null;
-        if (min != null && max != null) return formatUsd(min) + " – " + formatUsd(max);
-        if (min != null) return "From " + formatUsd(min);
+        if (min == null && max == null)
+            return null;
+        if (min != null && max != null)
+            return formatUsd(min) + " – " + formatUsd(max);
+        if (min != null)
+            return "From " + formatUsd(min);
         return "Up to " + formatUsd(max);
     }
 

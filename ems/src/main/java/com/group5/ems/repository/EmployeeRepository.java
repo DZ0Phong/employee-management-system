@@ -18,11 +18,15 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
        Optional<Employee> findByEmployeeCode(String employeeCode);
 
-       @Query("select e from Employee e join fetch e.user u where e.departmentId = :departmentId")
-       List<Employee> findByDepartmentIdWithUser(@Param("departmentId") Long departmentId);
-
        @Query("select e from Employee  e join e.user u where u.status = :status")
        List<Employee> findByStatus(@Param("status") String status);
+
+       @Query("select distinct e from Employee e " +
+                     "join fetch e.user u " +
+                     "left join fetch e.position p " +
+                     "left join fetch e.department d " +
+                     "where e.departmentId = :departmentId")
+       List<Employee> findByDepartmentIdWithUser(@Param("departmentId") Long departmentId);
 
        @Query("select e from Employee e join e.user u where u.status = :status")
        Page<Employee> findByStatus(@Param("status") String status, Pageable pageable);
@@ -135,5 +139,51 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
        @Query("SELECT COUNT(e) FROM Employee e WHERE e.updatedAt >= :since")
        long countByUpdatedAtAfter(@Param("since") java.time.LocalDateTime since);
+
+       // ── HR Reports: Aggregation Queries (read-only) ──────────────────────────
+
+       @Query("SELECT d.name, COUNT(e) FROM Employee e JOIN e.department d " +
+                     "WHERE e.status = 'ACTIVE' GROUP BY d.name ORDER BY COUNT(e) DESC")
+       List<Object[]> countActiveByDepartment();
+
+       @Query("SELECT e.status, COUNT(e) FROM Employee e GROUP BY e.status")
+       List<Object[]> countByStatusGrouped();
+
+       @Query("SELECT COUNT(e) FROM Employee e WHERE e.status = 'ACTIVE' " +
+                     "AND YEAR(e.hireDate) = :year AND MONTH(e.hireDate) = :month")
+       long countNewHiresInMonth(@Param("year") int year, @Param("month") int month);
+
+       @Query("SELECT COUNT(e) FROM Employee e WHERE e.status = 'TERMINATED' " +
+                     "AND e.terminationDate IS NOT NULL " +
+                     "AND YEAR(e.terminationDate) = :year AND MONTH(e.terminationDate) = :month")
+       long countTerminationsInMonth(@Param("year") int year, @Param("month") int month);
+
+       // ── Analytics: Retention Rate Calculation ────────────────────────────────
+
+       /**
+        * Count employees who were active at the start of the period
+        */
+       @Query("SELECT COUNT(e) FROM Employee e WHERE e.hireDate < :periodStart")
+       long countEmployeesAtPeriodStart(@Param("periodStart") LocalDate periodStart);
+
+       /**
+        * Count employees who left during the period
+        */
+       @Query("SELECT COUNT(e) FROM Employee e WHERE e.status = 'TERMINATED' " +
+                     "AND e.terminationDate >= :periodStart AND e.terminationDate < :periodEnd")
+       long countTerminationsBetween(@Param("periodStart") LocalDate periodStart,
+                     @Param("periodEnd") LocalDate periodEnd);
+
+       /**
+        * Count workforce changes (new hires) in a period
+        */
+       @Query("SELECT COUNT(e) FROM Employee e WHERE e.hireDate >= :periodStart AND e.hireDate < :periodEnd")
+       long countNewHiresBetween(@Param("periodStart") LocalDate periodStart,
+                     @Param("periodEnd") LocalDate periodEnd);
+
+       /**
+        * Find employees without department assignment (unassigned employees)
+        */
+       List<Employee> findByDepartmentIdIsNull();
 
 }

@@ -4,6 +4,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -28,7 +32,18 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
 
     boolean existsByUsernameAndIdNot(String username, Long id);
 
+    @Override
+    @EntityGraph(attributePaths = {"employee", "employee.department", "userRoles", "userRoles.role"})
+    Page<User> findAll(Specification<User> spec, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"employee", "employee.department", "userRoles", "userRoles.role"})
     List<User> findTop5ByOrderByCreatedAtDesc();
+
+    @Query("select count(u) from User u join u.employee e where u.status = :status")
+    long countUsersWithEmployeeByStatus(@Param("status") String status);
+
+    @Query("select count(u) from User u join u.employee e where u.status in :statuses")
+    long countUsersWithEmployeeByStatuses(@Param("statuses") List<String> statuses);
 
     /**
      * Bulk-update: LOCK5 accounts whose lockedUntil has passed → ACTIVE.

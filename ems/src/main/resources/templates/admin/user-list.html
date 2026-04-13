@@ -351,7 +351,7 @@
                                               th:action="@{'/admin/users/' + ${user.id} + '/unlock'}" method="post" class="inline">
                                             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                                             <button type="submit" title="Force-unlock before 30-minute timer expires"
-                                                    class="px-2.5 h-7 rounded-lg text-[11px] font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 transition-colors">
+                                                    class="px-2.5 h-7 rounded-lg text-[11px] font-semibold text-slate-500 bg-slate-100 hover:text-primary hover:bg-primary-light transition-colors">
                                                 Unlock Now
                                             </button>
                                         </form>
@@ -361,7 +361,7 @@
                                               th:action="@{'/admin/users/' + ${user.id} + '/unlock'}" method="post" class="inline">
                                             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                                             <button type="submit" title="Unlock this account"
-                                                    class="px-2.5 h-7 rounded-lg text-[11px] font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition-colors">
+                                                    class="px-2.5 h-7 rounded-lg text-[11px] font-semibold text-slate-500 bg-slate-100 hover:text-primary hover:bg-primary-light transition-colors">
                                                 Unlock
                                             </button>
                                         </form>
@@ -371,7 +371,7 @@
                                               th:action="@{'/admin/users/' + ${user.id} + '/lock'}" method="post" class="inline">
                                             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                                             <button type="submit" title="Admin lock — indefinite, only admin can unlock"
-                                                    class="px-2.5 h-7 rounded-lg text-[11px] font-semibold text-rose-600 bg-rose-50 hover:bg-rose-100 transition-colors">
+                                                    class="px-2.5 h-7 rounded-lg text-[11px] font-semibold text-slate-500 bg-slate-100 hover:text-primary hover:bg-primary-light transition-colors">
                                                 Lock
                                             </button>
                                         </form>
@@ -793,7 +793,7 @@
         var lockBtn   = document.getElementById('dp-lock-btn');
         var lockLabel = document.getElementById('dp-lock-label');
         var isLocked  = (status === 'Locked' || status === 'Lock5');
-        lockBtn.className = 'flex-1 min-w-[80px] py-2.5 text-xs font-bold rounded-xl text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors';
+        lockBtn.className = 'flex-1 min-w-[80px] py-2.5 text-xs font-bold rounded-xl text-slate-500 bg-slate-100 hover:text-primary hover:bg-primary-light transition-colors';
         if (isLocked) {
             lockLabel.textContent = 'Unlock';
             lockBtn.title = status === 'Lock5' ? 'Unlock brute-force lock' : 'Unlock admin lock';

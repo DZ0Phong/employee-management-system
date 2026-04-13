@@ -31,22 +31,22 @@ public class AdminAdminDashboardServiceImpl implements AdminDashboardService {
 
     @Override
     public int getAllActiveEmployees() {
-        return employeeRepository.findByStatus("ACTIVE").size();
+        return (int) userRepository.countUsersWithEmployeeByStatus("ACTIVE");
     }
 
     @Override
     public int getAllInactiveEmployees() {
-        return employeeRepository.findByStatus("INACTIVE").size();
+        return (int) userRepository.countUsersWithEmployeeByStatus("INACTIVE");
     }
 
     @Override
     public int getAllSuspendedEmployees() {
-        return employeeRepository.findByStatus("LOCKED").size();
+        return (int) userRepository.countUsersWithEmployeeByStatuses(List.of("LOCKED", "LOCK5"));
     }
 
     @Override
     public int getAllEmployeesCount() {
-        return employeeRepository.findAll().size();
+        return (int) employeeRepository.count();
     }
 
     @Override
@@ -79,7 +79,7 @@ public class AdminAdminDashboardServiceImpl implements AdminDashboardService {
 
     @Override
     public int getAllDepartmentsCount() {
-        return departmentRepository.findAll().size();
+        return (int) departmentRepository.count();
     }
 
     @Override
@@ -160,7 +160,14 @@ public class AdminAdminDashboardServiceImpl implements AdminDashboardService {
         else if ("INACTIVE".equalsIgnoreCase(status)) statusDB = "Inactive";
         else if ("LOCKED".equalsIgnoreCase(status)) statusDB = "Suspended";
 
-        Role role = userRoleRepository.getRoleByUserId(user.getId());
+        Role role = user.getUserRoles() != null
+                ? user.getUserRoles().stream()
+                .map(com.group5.ems.entity.UserRole::getRole)
+                .filter(java.util.Objects::nonNull)
+                .sorted(java.util.Comparator.comparing(Role::getName, java.util.Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)))
+                .findFirst()
+                .orElse(null)
+                : null;
         String roleCode = (role != null && role.getName() != null) ? role.getName() : "";
         String deptName = (user.getEmployee() != null && user.getEmployee().getDepartment() != null)
                 ? user.getEmployee().getDepartment().getName() : "";

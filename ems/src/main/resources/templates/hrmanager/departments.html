@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title>EMS Pro - Departments (HR Manager)</title>
+
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="/css/app-icons.css" th:href="@{/css/app-icons.css}"/>
+    <script defer src="/js/app-icons.js" th:src="@{/js/app-icons.js}"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#1414b8",
+                        "primary-light": "#e8e8fb",
+                        "bg-light": "#f6f6f8"
+                    },
+                    fontFamily: { display: ["Inter"] }
+                }
+            }
+        };
+    </script>
+
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined { font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24; visibility:hidden; }
+        .fill-icon { font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24; }
+        .icons-ready .material-symbols-outlined { visibility:visible; }
+
+        @keyframes fadeSlideUp { from { opacity:0; transform:translateY(14px) } to { opacity:1; transform:translateY(0) } }
+        .anim { animation: fadeSlideUp .45s ease both }
+        .anim-1 { animation-delay: .04s } .anim-2 { animation-delay: .10s }
+        .anim-3 { animation-delay: .16s } .anim-4 { animation-delay: .22s }
+        .anim-5 { animation-delay: .28s } .anim-6 { animation-delay: .34s }
+        .anim-7 { animation-delay: .40s }
+
+        @keyframes gShift { 0%,100% { background-position:0% 50% } 50% { background-position:100% 50% } }
+        .gradient-card {
+            background: linear-gradient(135deg,#1414b8,#3b3bea,#6366f1,#1414b8);
+            background-size: 300% 300%;
+            animation: gShift 6s ease infinite;
+        }
+
+        .dot-grid {
+            background-image: radial-gradient(circle, #1414b818 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+
+        .nav-active { box-shadow: inset 3px 0 0 #1414b8; }
+        .stat-num { font-feature-settings: "tnum"; font-variant-numeric: tabular-nums; }
+
+        .card-hover { transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
+        .card-hover:hover { transform: translateY(-3px); box-shadow: 0 16px 40px -10px rgba(20,20,184,.14); border-color: #1414b825; }
+
+        @keyframes pulseDot { 0%,100% { transform:scale(1); opacity:1 } 50% { transform:scale(1.6); opacity:.5 } }
+        .pulse-dot { animation: pulseDot 2s ease-in-out infinite; }
+
+        ::-webkit-scrollbar { width:5px; height:5px; }
+        ::-webkit-scrollbar-track { background:transparent; }
+        ::-webkit-scrollbar-thumb { background:#1414b840; border-radius:99px; }
+
+        #detail-panel { transition: transform .26s cubic-bezier(.4,0,.2,1); transform: translateX(100%); }
+        #detail-panel.open { transform: translateX(0); }
+
+        @keyframes cardIn { from { opacity:0; transform:translateY(10px) } to { opacity:1; transform:translateY(0) } }
+        .dept-card { animation: cardIn .38s ease both; }
+        .dept-card:nth-child(1) { animation-delay: .28s; }
+        .dept-card:nth-child(2) { animation-delay: .34s; }
+        .dept-card:nth-child(3) { animation-delay: .40s; }
+        .dept-card:nth-child(4) { animation-delay: .46s; }
+        .dept-card:nth-child(5) { animation-delay: .52s; }
+        .dept-card:nth-child(6) { animation-delay: .58s; }
+        .dept-card:nth-child(n+7) { animation-delay: .64s; }
+
+        .tab-btn { transition: all .15s ease; }
+        .tab-btn.active { background: #1414b8; color: #fff; }
+        .tab-btn:not(.active) { color: #64748b; }
+        .tab-btn:not(.active):hover { background: #f1f5f9; }
+
+        @keyframes memberIn { from { opacity:0; transform:translateX(6px) } to { opacity:1; transform:translateX(0) } }
+        .member-row { animation: memberIn .3s ease both; }
+    </style>
+</head>
+
+<body class="bg-bg-light font-display text-slate-900 min-h-screen">
+<div class="flex h-screen overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside th:replace="~{fragments/hrmanager-sidebar :: sidebar('departments', ${currentUser})}"></aside>
+
+    <!-- Main -->
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+
+        <!-- Top bar -->
+        <header class="h-16 bg-white border-b border-slate-100 flex items-center justify-between px-8 shrink-0">
+            <div>
+                <h2 class="text-base font-black text-slate-900 leading-tight">Department Management</h2>
+                <p class="text-xs text-slate-400">Organizational structure &amp; team overview (Read-only)</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-full bg-primary/10 text-primary font-bold text-xs flex items-center justify-center ml-1">
+                    HM
+                </div>
+            </div>
+        </header>
+
+        <!-- Scrollable content -->
+        <div class="flex-1 overflow-y-auto p-8 dot-grid">
+            <div class="max-w-7xl mx-auto space-y-6">
+
+                <!-- Page header -->
+                <div class="anim anim-1 flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                        <h3 class="text-3xl font-black text-slate-900 tracking-tight">All Departments</h3>
+                        <p class="text-sm text-slate-400 mt-0.5">
+                            <span th:text="${totalDepartments}">0</span> departments in your organization
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Stat cards -->
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="anim anim-2 card-hover gradient-card rounded-2xl p-5 text-white relative overflow-hidden">
+                        <div class="absolute inset-0 opacity-10"
+                             style="background:url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22><circle cx=%2230%22 cy=%2230%22 r=%2220%22 fill=%22none%22 stroke=%22white%22 stroke-width=%221%22/></svg>')"></div>
+                        <div class="relative">
+                            <div class="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center mb-3">
+                                <span class="material-symbols-outlined fill-icon text-[20px]">account_tree</span>
+                            </div>
+                            <p class="text-white/70 text-[10px] font-bold uppercase tracking-wider">Total Departments</p>
+                            <p class="text-3xl font-black stat-num mt-0.5" th:text="${totalDepartments}">0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Department cards -->
+                <div class="anim anim-6">
+                    <div th:if="${departments.isEmpty()}" class="bg-white rounded-2xl border border-slate-100 shadow-sm p-20 text-center">
+                        <div class="flex flex-col items-center gap-3">
+                            <div class="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center">
+                                <span class="material-symbols-outlined text-slate-300 text-4xl">account_tree</span>
+                            </div>
+                            <p class="text-sm font-bold text-slate-500">No departments yet</p>
+                        </div>
+                    </div>
+
+                    <div th:unless="${departments.isEmpty()}" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                        <div th:each="dept : ${departments}"
+                             th:data-id="${dept.id}"
+                             th:data-code="${dept.code}"
+                             th:data-name="${dept.name}"
+                             th:data-description="${dept.description}"
+                             th:data-manager-name="${dept.managerName}"
+                             th:data-staff-count="${dept.employeeCount}"
+                             class="dept-card card-hover bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden cursor-pointer group"
+                             onclick="openDetailPanel(this)">
+
+                            <div class="h-1 bg-primary/150 group-hover:bg-primary transition-colors"></div>
+
+                            <div class="p-5">
+                                <div class="flex items-start justify-between mb-3">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-11 h-11 rounded-xl bg-primary/10 text-primary font-black text-sm flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-white transition-colors uppercase"
+                                             th:text="${#strings.length(dept.code) > 3 ? #strings.substring(dept.code,0,3) : dept.code}">ENG</div>
+                                        <div>
+                                            <p class="text-sm font-black text-slate-800 leading-tight group-hover:text-primary transition-colors"
+                                               th:text="${dept.name}">Department</p>
+                                            <p class="text-[10px] text-slate-400 mt-0.5">View only</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <p class="text-xs text-slate-500 leading-relaxed line-clamp-2 min-h-[2.5rem] mb-4"
+                                   th:text="${dept.description != null and not #strings.isEmpty(dept.description) ? dept.description : 'No description provided.'}">Description</p>
+
+                                <div class="flex items-center justify-between pt-3 border-t border-slate-50">
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="material-symbols-outlined text-slate-300 text-[16px]">group</span>
+                                        <span class="text-xs font-semibold text-slate-600"
+                                              th:text="${dept.employeeCount} + ' member' + (${dept.employeeCount} != 1 ? 's' : '')">0 members</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5">
+                                        <div class="w-5 h-5 rounded-full bg-primary/10 text-primary text-[9px] font-bold flex items-center justify-center overflow-hidden shrink-0">
+                                            <span th:text="${dept.managerName != null ? #strings.substring(dept.managerName,0,1) : '?'}">?</span>
+                                        </div>
+                                        <span class="text-[11px] text-slate-500 max-w-[100px] truncate"
+                                              th:text="${dept.managerName ?: 'No manager'}">Manager</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Detail panel -->
+        <div id="detail-panel" class="absolute top-0 right-0 h-full w-96 bg-white border-l border-slate-100 shadow-2xl z-40 flex flex-col">
+            <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100 shrink-0">
+                <div class="flex items-center gap-3">
+                    <div id="dp-icon" class="w-9 h-9 rounded-xl bg-primary/10 text-primary font-black text-sm flex items-center justify-center uppercase">??</div>
+                    <div>
+                        <p id="dp-name" class="text-sm font-black text-slate-800 leading-tight">—</p>
+                        <p id="dp-code" class="text-[10px] font-mono text-slate-400">—</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeDetailPanel()"
+                        class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-400 transition-colors">
+                    <span class="material-symbols-outlined text-[18px]">close</span>
+                </button>
+            </div>
+
+            <!-- Tabs -->
+            <div class="flex items-center gap-1 px-4 py-3 border-b border-slate-100 shrink-0">
+                <button id="tab-info-btn" type="button" onclick="switchTab('info')"
+                        class="tab-btn active text-xs font-bold px-3 py-1.5 rounded-lg">Info</button>
+                <button id="tab-member-btn" type="button" onclick="switchTab('member')"
+                        class="tab-btn text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5">
+                    Members
+                    <span id="tab-member-count"
+                          class="text-[10px] font-bold bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded-full">0</span>
+                </button>
+            </div>
+
+            <!-- Tab: Info -->
+            <div id="tab-info" class="flex-1 overflow-y-auto p-5 space-y-4">
+                <div class="bg-slate-50 rounded-xl px-4 py-3">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1.5">Description</p>
+                    <p id="dp-desc" class="text-xs text-slate-600 leading-relaxed">—</p>
+                </div>
+                <div class="bg-slate-50 rounded-2xl divide-y divide-slate-100 overflow-hidden">
+                    <div class="flex items-center gap-3 px-4 py-3">
+                        <span class="material-symbols-outlined text-slate-300 text-[18px]">person</span>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Manager</p>
+                            <p id="dp-manager" class="text-xs font-semibold text-slate-700 mt-0.5 truncate">—</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3 px-4 py-3">
+                        <span class="material-symbols-outlined text-slate-300 text-[18px]">group</span>
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Staff Count</p>
+                            <p id="dp-staff" class="text-xs font-semibold text-slate-700 mt-0.5">—</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Members -->
+            <div id="tab-member" class="flex-1 overflow-y-auto hidden">
+                <!-- Loading spinner -->
+                <div id="members-loading"
+                     class="hidden flex-col items-center justify-center h-40 gap-3 text-slate-400">
+                    <div class="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+                    <p class="text-xs font-medium">Loading members…</p>
+                </div>
+                <!-- Empty -->
+                <div id="members-empty"
+                     class="hidden flex-col items-center justify-center p-12 gap-3 text-slate-400">
+                    <div class="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-slate-300 text-3xl">person_off</span>
+                    </div>
+                    <p class="text-sm font-bold text-slate-500">No members yet</p>
+                    <p class="text-xs text-center text-slate-400">No users assigned to this department.</p>
+                </div>
+                <!-- Member list (populated by JS) -->
+                <div id="members-list" class="p-4 space-y-2"></div>
+            </div>
+
+        </div>
+
+    </main>
+</div>
+
+<script th:inline="javascript">
+    var _currentEl = null;
+    var _csrfToken = /*[[${_csrf.token}]]*/ '';
+
+    function safe(val) {
+        return (val && val !== 'null' && val !== 'undefined') ? val : null;
+    }
+
+    document.fonts.ready.then(function(){ document.body.classList.add('icons-ready'); });
+
+    function switchTab(tab) {
+        var isInfo = (tab === 'info');
+        document.getElementById('tab-info').classList.toggle('hidden', !isInfo);
+        document.getElementById('tab-member').classList.toggle('hidden', isInfo);
+        document.getElementById('tab-info-btn').classList.toggle('active', isInfo);
+        document.getElementById('tab-member-btn').classList.toggle('active', !isInfo);
+        if (!isInfo && _currentEl) {
+            loadMembers(_currentEl.dataset.id);
+        }
+    }
+
+    function loadMembers(deptId) {
+        var loading = document.getElementById('members-loading');
+        var empty = document.getElementById('members-empty');
+        var list = document.getElementById('members-list');
+
+        loading.classList.remove('hidden');
+        loading.classList.add('flex');
+        empty.classList.add('hidden');
+        empty.classList.remove('flex');
+        list.innerHTML = '';
+
+        fetch('/hr-manager/departments/' + deptId + '/members', {
+            headers: { 'Accept': 'application/json' }
+        })
+            .then(function (r) {
+                if (!r.ok) throw new Error('Network response was not ok');
+                return r.json();
+            })
+            .then(function (data) {
+                loading.classList.add('hidden');
+                loading.classList.remove('flex');
+                document.getElementById('tab-member-count').textContent = data.length;
+
+                if (!data.length) {
+                    empty.classList.remove('hidden');
+                    empty.classList.add('flex');
+                    return;
+                }
+
+                data.forEach(function (emp, i) {
+                    var roleColors = {
+                        'ADMIN':     'bg-primary/10 text-primary',
+                        'MANAGER':   'bg-orange-100 text-orange-600',
+                        'EMPLOYEE':  'bg-sky-100 text-sky-600',
+                        'HR':        'bg-pink-100 text-pink-600'
+                    };
+                    
+                    var empRole = emp.role || '';
+                    var rc = roleColors[empRole.toUpperCase()] || 'bg-slate-100 text-slate-500';
+                    var statusDot = emp.status === 'ACTIVE' ? 'bg-emerald-400'
+                        : emp.status === 'SUSPENDED' ? 'bg-rose-500'
+                            : 'bg-slate-400';
+                    var initials = emp.initials || (emp.fullName ? emp.fullName.charAt(0) : '?');
+
+                    var row = document.createElement('div');
+                    row.className = 'member-row flex items-center gap-3 p-3 bg-slate-50 rounded-xl hover:bg-primary/5 transition-colors';
+                    row.style.animationDelay = (i * 0.05) + 's';
+                    row.innerHTML =
+                        '<div class="relative shrink-0">' +
+                        '<div class="w-8 h-8 rounded-xl bg-primary/10 text-primary font-bold text-xs flex items-center justify-center overflow-hidden">' +
+                        (emp.avatarUrl ? '<img src="' + emp.avatarUrl + '" class="w-full h-full object-cover" onerror="this.style.display=\'none\'">' : '') +
+                        '<span>' + initials + '</span>' +
+                        '</div>' +
+                        '<span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white ' + statusDot + '"></span>' +
+                        '</div>' +
+                        '<div class="flex-1 min-w-0">' +
+                        '<p class="text-xs font-semibold text-slate-800 truncate leading-tight">' + (emp.fullName || '—') + '</p>' +
+                        '<p class="text-[10px] text-slate-400 truncate">' + (emp.email || '') + '</p>' +
+                        '</div>' +
+                        '<span class="text-[10px] font-bold px-2 py-0.5 rounded-lg ' + rc + '">' + (emp.role || '—') + '</span>';
+                    list.appendChild(row);
+                });
+            })
+            .catch(function () {
+                loading.classList.add('hidden');
+                loading.classList.remove('flex');
+                alert('Failed to load members');
+            });
+    }
+
+    function openDetailPanel(el) {
+        _currentEl = el;
+        var d = el.dataset;
+
+        switchTab('info');
+
+        var code = (d.code || '??').substring(0, 3).toUpperCase();
+        document.getElementById('dp-icon').textContent = code;
+        document.getElementById('dp-name').textContent = d.name || '—';
+        document.getElementById('dp-code').textContent = d.code || '—';
+        document.getElementById('dp-desc').textContent = safe(d.description) || 'No description provided.';
+        document.getElementById('dp-manager').textContent = safe(d.managerName) || 'No manager assigned';
+        document.getElementById('dp-staff').textContent = (d.staffCount || '0') + ' members';
+        document.getElementById('tab-member-count').textContent = d.staffCount || '0';
+
+        document.getElementById('detail-panel').classList.add('open');
+    }
+
+    function closeDetailPanel() {
+        document.getElementById('detail-panel').classList.remove('open');
+        _currentEl = null;
+    }
+</script>
+</body>
+</html>
