@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import com.group5.ems.enums.AuditAction;
 import com.group5.ems.enums.AuditEntityType;
@@ -22,6 +23,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.jpa.domain.Specification;
+import jakarta.persistence.criteria.*;
+import java.util.ArrayList;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -29,15 +34,91 @@ import org.springframework.transaction.annotation.Transactional;
 public class HrEmployeeService {
 
     private final EmployeeRepository employeeRepository;
+    private final com.group5.ems.repository.EmployeeSkillRepository employeeSkillRepository;
+    private final com.group5.ems.repository.DepartmentRepository departmentRepository;
+    private final com.group5.ems.repository.PositionRepository positionRepository;
     private final LogService logService;
 
 
-    public Page<HrEmployeeDTO> searchEmployees(String search, String department, String status, Pageable pageable) {
-        String searchParam = (search != null && !search.trim().isEmpty()) ? search.trim() : null;
-        String deptParam = (department != null && !department.trim().isEmpty() && !"All".equalsIgnoreCase(department.trim())) ? department.trim() : null;
-        String statusParam = (status != null && !status.trim().isEmpty() && !"All".equalsIgnoreCase(status.trim())) ? status.trim() : null;
+    public Page<HrEmployeeDTO> searchEmployees(String search, String department, String status, Long skillId, Integer minProficiency, Pageable pageable) {
+        Specification<Employee> spec = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            
+            // Join User for name/email search
+            Join<Employee, com.group5.ems.entity.User> userJoin = root.join("user", JoinType.INNER);
 
-        Page<Employee> page = employeeRepository.searchEmployees(searchParam, deptParam, statusParam, pageable);
+            // Filtering
+            if (search != null && !search.trim().isEmpty()) {
+                String searchPattern = "%" + search.trim().toLowerCase() + "%";
+                predicates.add(cb.or(
+                    cb.like(cb.lower(userJoin.get("fullName")), searchPattern),
+                    cb.like(cb.lower(root.get("employeeCode")), searchPattern),
+                    cb.like(cb.lower(userJoin.get("email")), searchPattern)
+                ));
+            }
+
+            if (department != null && !department.trim().isEmpty() && !"All".equalsIgnoreCase(department.trim())) {
+                predicates.add(cb.equal(root.get("department").get("name"), department.trim()));
+            }
+
+            if (status != null && !status.trim().isEmpty() && !"All".equalsIgnoreCase(status.trim())) {
+                predicates.add(cb.equal(root.get("status"), status.trim()));
+            }
+
+            // Skill Filter using Subquery (Prevents duplicates)
+            if (skillId != null) {
+                Subquery<Long> skillSubquery = query.subquery(Long.class);
+                Root<com.group5.ems.entity.EmployeeSkill> esRoot = skillSubquery.from(com.group5.ems.entity.EmployeeSkill.class);
+                skillSubquery.select(esRoot.get("employeeId"));
+                
+                List<Predicate> esPredicates = new ArrayList<>();
+                esPredicates.add(cb.equal(esRoot.get("skillId"), skillId));
+                if (minProficiency != null) {
+                    esPredicates.add(cb.greaterThanOrEqualTo(esRoot.get("proficiency"), minProficiency));
+                }
+                
+                skillSubquery.where(cb.and(esPredicates.toArray(new Predicate[0])));
+                predicates.add(cb.in(root.get("id")).value(skillSubquery));
+            }
+
+            // Advanced Sorting: Proficiency Rank
+            Sort.Order proficiencyOrder = pageable.getSort().getOrderFor("proficiency");
+            if (proficiencyOrder != null) {
+                // Subquery for Sorting Value (Max proficiency for the filtered skill or global max)
+                Subquery<Integer> sortSubquery = query.subquery(Integer.class);
+                Root<com.group5.ems.entity.EmployeeSkill> sortEsRoot = sortSubquery.from(com.group5.ems.entity.EmployeeSkill.class);
+                sortSubquery.select(cb.max(sortEsRoot.get("proficiency")));
+                
+                Predicate sortSkillPred = (skillId != null) 
+                    ? cb.equal(sortEsRoot.get("skillId"), skillId)
+                    : cb.conjunction();
+                
+                sortSubquery.where(
+                    cb.equal(sortEsRoot.get("employee"), root),
+                    sortSkillPred
+                );
+
+                if (proficiencyOrder.isDescending()) {
+                    query.orderBy(cb.desc(cb.coalesce(sortSubquery, 0)), cb.desc(root.get("hireDate")));
+                } else {
+                    query.orderBy(cb.asc(cb.coalesce(sortSubquery, 0)), cb.desc(root.get("hireDate")));
+                }
+            }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+
+        // If sorting by proficiency, we've already set the order in the query via Criteria
+        // We need a Pageable without the 'proficiency' sort to avoid Hibernate mapping errors
+        Pageable effectivePageable = pageable;
+        if (pageable.getSort().getOrderFor("proficiency") != null) {
+            effectivePageable = org.springframework.data.domain.PageRequest.of(
+                pageable.getPageNumber(), 
+                pageable.getPageSize()
+            );
+        }
+
+        Page<Employee> page = employeeRepository.findAll(spec, effectivePageable);
         List<HrEmployeeDTO> dtos = page.getContent().stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
@@ -110,6 +191,16 @@ public class HrEmployeeService {
             }
         }
 
+        // Fetch skills
+        List<com.group5.ems.dto.response.HrEmployeeSkillDTO> skills = employeeSkillRepository.findByEmployeeId(id).stream()
+                .map(es -> com.group5.ems.dto.response.HrEmployeeSkillDTO.builder()
+                        .skillId(es.getSkillId())
+                        .name(es.getSkill().getName())
+                        .category(es.getSkill().getCategory())
+                        .proficiency(es.getProficiency())
+                        .build())
+                .collect(Collectors.toList());
+
         HrEmployeeDetailDTO dto = HrEmployeeDetailDTO.builder()
                 .id(employee.getId())
                 .initials(initials.toUpperCase())
@@ -130,9 +221,41 @@ public class HrEmployeeService {
                 .contractStart(contractStart)
                 .contractEnd(contractEnd)
                 .contractStatus(contractStatus)
+                .skills(skills)
                 .build();
 
         return dto;
+    }
+
+    @Transactional
+    public void updateJobInfo(Long employeeId, Long departmentId, Long positionId) {
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+        if (departmentId != null) {
+            com.group5.ems.entity.Department dept = departmentRepository.findById(departmentId)
+                    .orElseThrow(() -> new RuntimeException("Department not found"));
+            employee.setDepartmentId(dept.getId());
+        } else {
+            employee.setDepartmentId(null);
+        }
+
+        if (positionId != null) {
+            com.group5.ems.entity.Position pos = positionRepository.findById(positionId)
+                    .orElseThrow(() -> new RuntimeException("Position not found"));
+            
+            // Track promotion if position changes
+            if (!pos.getId().equals(employee.getPositionId())) {
+                employee.setPreviousPositionId(employee.getPositionId());
+                employee.setPromotionDate(LocalDate.now());
+                employee.setPositionId(pos.getId());
+            }
+        } else {
+            throw new RuntimeException("Position is required");
+        }
+
+        employeeRepository.save(employee);
+        logService.log(AuditAction.UPDATE, AuditEntityType.EMPLOYEE, employee.getId());
     }
 
 
