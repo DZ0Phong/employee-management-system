@@ -89,7 +89,7 @@
                     </div>
                     <div class="bg-white shadow-sm border border-slate-200 rounded-xl p-6 hover:shadow-md transition-shadow">
                         <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Company Total Net</p>
-                        <div class="flex items-end justify-between">
+
                             <p class="text-3xl font-black text-primary font-mono" 
                                th:text="'$' + ${#numbers.formatDecimal(summary.companyTotalNet, 1, 'COMMA', 2, 'POINT')}">$0.00</p>
                             <span th:if="${summary.netVarianceIndicator != null}" 
@@ -98,7 +98,7 @@
                                   th:text="${summary.netVarianceIndicator}">
                                 +2.4%
                             </span>
-                        </div>
+
                     </div>
                 </div>
 

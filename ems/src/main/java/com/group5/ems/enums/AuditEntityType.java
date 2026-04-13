@@ -18,5 +18,6 @@ public enum AuditEntityType {
     REQUEST,
     BANK_DETAILS,
     TIMESHEET_PERIOD,
-    PAYROLL_PREVIEW
+    PAYSLIPS,
+    HR_REPORTS
 }

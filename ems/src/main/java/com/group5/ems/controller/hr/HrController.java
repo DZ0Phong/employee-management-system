@@ -192,7 +192,7 @@ public class HrController {
     public String attendance(Model model,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @RequestParam(required = false) String search,
-            @RequestParam(required = false) String department,
+            @RequestParam(required = false) Long departmentId,
             @RequestParam(required = false) String status,
             @RequestParam(defaultValue = "0") int page) {
 
@@ -202,7 +202,7 @@ public class HrController {
 
         Pageable pageable = PageRequest.of(page, EMPLOYEE_PAGE_SIZE);
         org.springframework.data.domain.Page<com.group5.ems.dto.response.HrAttendanceDetailDTO> attendancePage = attendanceService
-                .getAttendanceRecords(queryDate, search, department, status, pageable);
+                .getAttendanceRecords(queryDate, search, departmentId, status, pageable);
 
         model.addAttribute("attendances", attendancePage.getContent());
         model.addAttribute("currentPage", page);
@@ -211,11 +211,28 @@ public class HrController {
 
         model.addAttribute("date", queryDate);
         model.addAttribute("search", search);
-        model.addAttribute("department", department);
+        model.addAttribute("departmentId", departmentId);
         model.addAttribute("status", status);
         model.addAttribute("departments", departmentRepository.findAll());
 
         return "hr/attendance";
+    }
+
+    @GetMapping("/attendance/export")
+    public void exportAttendaceCsv(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Long departmentId,
+            @RequestParam(required = false) String status,
+            jakarta.servlet.http.HttpServletResponse response) throws java.io.IOException {
+        
+        LocalDate queryDate = (date != null) ? date : LocalDate.now();
+        response.setContentType("text/csv");
+
+        String filename = "attendance_export_" + queryDate + ".csv";
+
+        response.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
+        attendanceService.exportAttendanceToCsv(queryDate, search, departmentId, status, response.getWriter());
     }
 
     @GetMapping("/leave")
@@ -407,6 +424,7 @@ public class HrController {
     public void exportLeaveCsv(
             @RequestParam(required = false) String status,
             @RequestParam(required = false) Long departmentId,
+            @RequestParam(required = false) String leaveType,
             @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) LocalDate endDate,
             jakarta.servlet.http.HttpServletResponse response) throws java.io.IOException {
@@ -421,12 +439,13 @@ public class HrController {
                 filename += "-dept-" + departmentId;
             }
         }
+        if (leaveType != null && !leaveType.isEmpty()) filename += "-type-" + leaveType.toLowerCase();
         if (startDate != null) filename += "-from-" + startDate;
         if (endDate != null) filename += "-to-" + endDate;
         filename += ".csv";
         
         response.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
-        leaveService.exportLeaveHistoryToCsv(status, departmentId, startDate, endDate, response.getWriter());
+        leaveService.exportLeaveHistoryToCsv(status, departmentId, leaveType, startDate, endDate, response.getWriter());
     }
 
     @GetMapping("/performance")
@@ -1131,9 +1150,9 @@ public class HrController {
             case "leave" -> model.addAttribute("report", reportService.getLeaveReport(reportYear));
             case "payroll" -> model.addAttribute("report", reportService.getPayrollReport());
             case "performance" -> model.addAttribute("report", reportService.getPerformanceReport(reviewPeriod));
+            case "saved" -> model.addAttribute("history", reportService.getAllReports());
             default -> model.addAttribute("report", reportService.getOverviewReport(reportYear));
         }
-
         return "hr/reports";
     }
 
@@ -1189,4 +1208,53 @@ public class HrController {
         }
     }
 
+    @PostMapping("/reports/prepare")
+    public String prepareReport(
+            @RequestParam String tab,
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo,
+            @RequestParam String title,
+            @RequestParam String remarks,
+            @AuthenticationPrincipal UserDetails userDetails,
+            RedirectAttributes redirectAttributes) {
+
+        try {
+            com.group5.ems.entity.User user = userRepository.findByUsername(userDetails.getUsername())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            
+            Long employeeId = (user.getEmployee() != null) ? user.getEmployee().getId() : null;
+            
+            reportService.saveReportDraft(tab, year, dateFrom, dateTo, title, remarks, employeeId);
+            redirectAttributes.addFlashAttribute("success", "Report draft saved successfully for professional review.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Failed to prepare report: " + e.getMessage());
+        }
+        
+        return "redirect:/hr/reports?tab=saved";
+    }
+
+    @PostMapping("/reports/{id}/publish")
+    public String publishReport(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            reportService.publishReport(id);
+            redirectAttributes.addFlashAttribute("success", "Report published and HR Manager notified.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Failed to publish report: " + e.getMessage());
+        }
+        return "redirect:/hr/reports?tab=saved";
+    }
+
+    @GetMapping("/reports/download/{id}")
+    public ResponseEntity<byte[]> downloadSavedReport(@PathVariable Long id) {
+        byte[] bytes = reportService.getReportFileBytes(id);
+        
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"HR_Report_" + id + ".pdf\"")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(bytes);
+    }
+
 }
+
+

@@ -131,7 +131,7 @@ public class PayrollCalculationServiceImpl implements PayrollCalculationService 
         payslipRepository.saveAll(payslipList);
         
         // Rule #15 Log the batch creation action
-        logService.log(AuditAction.CREATE, AuditEntityType.PAYROLL_PREVIEW, periodId);
+        logService.log(AuditAction.CREATE, AuditEntityType.PAYSLIPS, periodId);
 
         return payslipList.size();
     }

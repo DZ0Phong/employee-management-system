@@ -1,15 +1,11 @@
 package com.group5.ems.service.hr;
 
-import com.group5.ems.dto.response.HrReportAttendanceDTO;
-import com.group5.ems.dto.response.HrReportLeaveDTO;
-import com.group5.ems.dto.response.HrReportOverviewDTO;
-import com.group5.ems.dto.response.HrReportPayrollDTO;
-import com.group5.ems.dto.response.HrReportPerformanceDTO;
-import com.group5.ems.repository.AttendanceRepository;
-import com.group5.ems.repository.EmployeeRepository;
-import com.group5.ems.repository.PerformanceReviewRepository;
-import com.group5.ems.repository.RequestRepository;
-import com.group5.ems.repository.SalaryRepository;
+import com.group5.ems.dto.response.*;
+import com.group5.ems.entity.HrReport;
+import com.group5.ems.repository.*;
+import com.group5.ems.service.common.LogService;
+import com.group5.ems.enums.AuditAction;
+import com.group5.ems.enums.AuditEntityType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -39,6 +35,135 @@ public class HrReportService {
     private final RequestRepository requestRepository;
     private final SalaryRepository salaryRepository;
     private final PerformanceReviewRepository performanceReviewRepository;
+    private final HrReportRepository hrReportRepository;
+    private final org.thymeleaf.TemplateEngine templateEngine;
+    private final LogService logService;
+    private final com.group5.ems.service.common.EmailNotificationService emailNotificationService;
+
+    private static final String REPORT_BASE_DIR = "uploads/reports/hr/";
+
+    // ═══════════════════════════════════════════════════════════
+    // REPORT PERSISTENCE & WORKFLOW
+    // ═══════════════════════════════════════════════════════════
+
+    @Transactional
+    public HrGeneratedReportDTO saveReportDraft(String tab, Integer year, LocalDate from, LocalDate to, String title, String remarks, Long employeeId) {
+        // 1. Generate PDF Content
+        byte[] pdfContent = generatePdfBytes(tab, year, from, to, remarks);
+
+        // 2. Ensure directory exists
+        java.io.File directory = new java.io.File(REPORT_BASE_DIR);
+        if (!directory.exists()) {
+            boolean created = directory.mkdirs();
+            if(!created) throw new RuntimeException("Could not create report storage directory");
+        }
+
+        // 3. Save to file system
+        String filename = "report_" + System.currentTimeMillis() + ".pdf";
+        String filePath = REPORT_BASE_DIR + filename;
+        try {
+            java.nio.file.Files.write(java.nio.file.Paths.get(filePath), pdfContent);
+        } catch (java.io.IOException e) {
+            throw new RuntimeException("Failed to save report file: " + e.getMessage());
+        }
+
+        // 4. Persist Metadata
+        HrReport report = new HrReport();
+        report.setTitle(title);
+        report.setReportType(tab.toUpperCase());
+        report.setFormat("PDF");
+        report.setFilePath(filePath);
+        report.setStatus("DRAFT");
+        report.setRemarks(remarks);
+        report.setGeneratedById(employeeId);
+        hrReportRepository.save(report);
+
+        logService.log(AuditAction.EXPORT, AuditEntityType.HR_REPORTS, report.getId());
+
+        return convertToDTO(report);
+    }
+
+    @Transactional
+    public void publishReport(Long reportId) {
+        HrReport report = hrReportRepository.findById(reportId)
+                .orElseThrow(() -> new RuntimeException("Report not found"));
+        
+        report.setStatus("FINALIZED");
+        report.setPublished(true);
+        report.setPublishedAt(LocalDateTime.now());
+        hrReportRepository.save(report);
+
+        // Notify HR Managers
+        emailNotificationService.sendReportPublishedNotification(report);
+
+        logService.log(AuditAction.UPDATE, AuditEntityType.HR_REPORTS, report.getId());
+    }
+
+    public List<HrGeneratedReportDTO> getAllReports() {
+        return hrReportRepository.findAllByOrderByGeneratedAtDesc().stream()
+                .map(this::convertToDTO)
+                .toList();
+    }
+
+    public byte[] getReportFileBytes(Long reportId) {
+        HrReport report = hrReportRepository.findById(reportId)
+                .orElseThrow(() -> new RuntimeException("Report not found"));
+        try {
+            return java.nio.file.Files.readAllBytes(java.nio.file.Paths.get(report.getFilePath()));
+        } catch (java.io.IOException e) {
+            throw new RuntimeException("Could not read report file: " + e.getMessage());
+        }
+    }
+
+    private byte[] generatePdfBytes(String tab, Integer year, LocalDate from, LocalDate to, String remarks) {
+        int reportYear = year != null ? year : LocalDate.now().getYear();
+        org.thymeleaf.context.Context ctx = new org.thymeleaf.context.Context();
+        ctx.setVariable("selectedYear", reportYear);
+        ctx.setVariable("activeTab", tab);
+        ctx.setVariable("remarks", remarks); // Executive Summary for PDF
+        ctx.setVariable("exportDate", LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+
+        switch (tab) {
+            case "attendance" -> {
+                LocalDate f = from != null ? from : LocalDate.now().minusDays(29);
+                LocalDate t = to != null ? to : LocalDate.now();
+                ctx.setVariable("dateFrom", f);
+                ctx.setVariable("dateTo", t);
+                ctx.setVariable("report", getAttendanceReport(f, t));
+            }
+            case "leave" -> ctx.setVariable("report", getLeaveReport(reportYear));
+            case "payroll" -> ctx.setVariable("report", getPayrollReport());
+            case "performance" -> ctx.setVariable("report", getPerformanceReport(null));
+            default -> ctx.setVariable("report", getOverviewReport(reportYear));
+        }
+
+        String html = templateEngine.process("hr/reports-pdf", ctx);
+
+        try (java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream()) {
+            org.xhtmlrenderer.pdf.ITextRenderer renderer = new org.xhtmlrenderer.pdf.ITextRenderer();
+            renderer.setDocumentFromString(html);
+            renderer.layout();
+            renderer.createPDF(baos);
+            return baos.toByteArray();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to generate PDF: " + e.getMessage());
+        }
+    }
+
+    private HrGeneratedReportDTO convertToDTO(HrReport report) {
+        return HrGeneratedReportDTO.builder()
+                .id(report.getId())
+                .title(report.getTitle())
+                .reportType(report.getReportType())
+                .format(report.getFormat())
+                .status(report.getStatus())
+                .remarks(report.getRemarks())
+                .isPublished(report.isPublished())
+                .generatedAt(report.getGeneratedAt())
+                .publishedAt(report.getPublishedAt())
+                .generatedByName(report.getGeneratedBy() != null ? report.getGeneratedBy().getUser().getFullName() : "System")
+                .build();
+    }
 
     // ═══════════════════════════════════════════════════════════
     // 1. OVERVIEW REPORT

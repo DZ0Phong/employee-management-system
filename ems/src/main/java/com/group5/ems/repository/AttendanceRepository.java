@@ -24,22 +24,39 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
     List<Attendance> findByEmployeeIdInAndWorkDateBetweenOrderByWorkDateAsc(List<Long> employeeIds, LocalDate from, LocalDate to);
 
     @org.springframework.data.jpa.repository.Query("SELECT new com.group5.ems.dto.response.HrAttendanceDetailDTO(" +
-           "a.id, e.employeeCode, u.fullName, d.name, a.workDate, a.checkIn, a.checkOut, a.status, a.note) " +
-           "FROM Attendance a " +
-           "JOIN a.employee e " +
-           "JOIN e.user u " +
-           "LEFT JOIN e.department d " +
-           "WHERE a.workDate = :workDate " +
-           "AND (:department IS NULL OR d.name = :department) " +
-           "AND (:status IS NULL OR :status = '' OR a.status = :status) " +
-           "AND (:search IS NULL OR :search = '' OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(e.employeeCode) LIKE LOWER(CONCAT('%', :search, '%'))) " +
-           "ORDER BY a.checkIn ASC, u.fullName ASC")
+            "a.id, e.employeeCode, u.fullName, d.name, a.workDate, a.checkIn, a.checkOut, a.status, a.note) " +
+            "FROM Attendance a " +
+            "JOIN a.employee e " +
+            "JOIN e.user u " +
+            "LEFT JOIN e.department d " +
+            "WHERE a.workDate = :workDate " +
+            "AND (:departmentId IS NULL OR d.id = :departmentId) " +
+            "AND (:status IS NULL OR :status = '' OR a.status = :status) " +
+            "AND (:search IS NULL OR :search = '' OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(e.employeeCode) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+            "ORDER BY a.checkIn ASC, u.fullName ASC")
     org.springframework.data.domain.Page<com.group5.ems.dto.response.HrAttendanceDetailDTO> findAttendanceDetails(
             @org.springframework.data.repository.query.Param("workDate") LocalDate workDate,
-            @org.springframework.data.repository.query.Param("department") String department,
+            @org.springframework.data.repository.query.Param("departmentId") Long departmentId,
             @org.springframework.data.repository.query.Param("status") String status,
             @org.springframework.data.repository.query.Param("search") String search,
             org.springframework.data.domain.Pageable pageable);
+
+    @org.springframework.data.jpa.repository.Query("SELECT new com.group5.ems.dto.response.HrAttendanceDetailDTO(" +
+            "a.id, e.employeeCode, u.fullName, d.name, a.workDate, a.checkIn, a.checkOut, a.status, a.note) " +
+            "FROM Attendance a " +
+            "JOIN a.employee e " +
+            "JOIN e.user u " +
+            "LEFT JOIN e.department d " +
+            "WHERE a.workDate = :workDate " +
+            "AND (:departmentId IS NULL OR d.id = :departmentId) " +
+            "AND (:status IS NULL OR :status = '' OR a.status = :status) " +
+            "AND (:search IS NULL OR :search = '' OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(e.employeeCode) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+            "ORDER BY a.checkIn ASC, u.fullName ASC")
+    java.util.List<com.group5.ems.dto.response.HrAttendanceDetailDTO> findAllAttendanceDetails(
+            @org.springframework.data.repository.query.Param("workDate") LocalDate workDate,
+            @org.springframework.data.repository.query.Param("departmentId") Long departmentId,
+            @org.springframework.data.repository.query.Param("status") String status,
+            @org.springframework.data.repository.query.Param("search") String search);
 
     // ── HR Reports: Aggregation Queries (read-only) ──────────────────────────
 

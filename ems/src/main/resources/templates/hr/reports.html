@@ -47,12 +47,22 @@
                 <p class="text-xs text-slate-400">Data-driven workforce insights</p>
             </div>
             <div class="flex items-center gap-3">
+                <!-- Prepare Package Button -->
+                <button type="button" 
+                        th:if="${activeTab != 'saved'}"
+                        onclick="openPrepareModal()"
+                        class="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-indigo-700 transition-all shadow-md shadow-indigo-200 hover:shadow-lg hover:shadow-indigo-300 hover:-translate-y-0.5"
+                        id="prepareReportBtn">
+                    <span class="material-symbols-outlined text-sm">archive</span>
+                    Create Report
+                </button>
+
                 <!-- Export PDF Button -->
                 <a th:href="@{/hr/reports/export(tab=${activeTab}, year=${selectedYear}, dateFrom=${dateFrom}, dateTo=${dateTo})}"
                    class="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-primary/90 transition-all shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5"
                    id="exportPdfBtn">
                     <span class="material-symbols-outlined text-sm">picture_as_pdf</span>
-                    Export PDF
+                    PDF Export
                 </a>
             </div>
         </header>
@@ -83,6 +93,11 @@
                th:class="${activeTab == 'performance'} ? 'leave-tab active px-4 py-3 text-xs font-bold' : 'leave-tab px-4 py-3 text-xs font-bold'"
                id="tabPerformance">
                 <span class="material-symbols-outlined text-sm align-middle mr-1">military_tech</span> Performance
+            </a>
+            <a th:href="@{/hr/reports(tab='saved')}"
+               th:class="${activeTab == 'saved'} ? 'leave-tab active px-4 py-3 text-xs font-bold' : 'leave-tab px-4 py-3 text-xs font-bold'"
+               id="tabSaved">
+                <span class="material-symbols-outlined text-sm align-middle mr-1">history_edu</span> Saved Reports
             </a>
 
             <!-- Year Filter (for overview/leave tabs) -->
@@ -442,6 +457,79 @@
                     </div>
                 </div>
 
+                <!-- ═══════════════════════════════════════════════════ -->
+                <!-- TAB: SAVED REPORTS (HISTORY)                       -->
+                <!-- ═══════════════════════════════════════════════════ -->
+                <div th:if="${activeTab == 'saved'}" class="anim anim-1">
+                    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                        <div class="px-6 py-5 border-b border-slate-50 flex items-center justify-between">
+                            <div>
+                                <h3 class="text-sm font-black text-slate-800">Report History & Archives</h3>
+                                <p class="text-xs text-slate-400 mt-0.5">Manage professional report packages and review cycles</p>
+                            </div>
+                        </div>
+                        <table class="w-full">
+                            <thead>
+                                <tr class="bg-slate-50/70">
+                                    <th class="px-6 py-3 text-left text-[10px] font-bold text-slate-400 uppercase tracking-wider">Report Details</th>
+                                    <th class="px-4 py-3 text-left text-[10px] font-bold text-slate-400 uppercase tracking-wider">Generation</th>
+                                    <th class="px-4 py-3 text-center text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status</th>
+                                    <th class="px-4 py-3 text-right text-[10px] font-bold text-slate-400 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-50">
+                                <tr th:if="${history == null || history.isEmpty()}">
+                                    <td colspan="4" class="px-6 py-12 text-center text-slate-400">
+                                        <span class="material-symbols-outlined text-4xl mb-2">folder_off</span>
+                                        <p class="text-sm font-bold">No saved reports found</p>
+                                    </td>
+                                </tr>
+                                <tr th:each="item : ${history}" class="hover:bg-slate-50/50 transition-colors">
+                                    <td class="px-6 py-4">
+                                        <div class="flex flex-col">
+                                            <span class="text-sm font-black text-slate-800" th:text="${item.title()}">Title</span>
+                                            <div class="flex items-center gap-2 mt-1">
+                                                <span class="text-[10px] font-bold px-1.5 py-0.5 bg-slate-100 text-slate-500 rounded uppercase" th:text="${item.reportType()}">TYPE</span>
+                                                <span th:if="${item.remarks() != null}" class="text-[10px] text-slate-400 italic truncate max-w-[200px]" th:text="${item.remarks()}">Summary...</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-4">
+                                        <div class="flex flex-col">
+                                            <span class="text-[11px] font-bold text-slate-700" th:text="${#temporals.format(item.generatedAt(), 'dd MMM yyyy HH:mm')}">Date</span>
+                                            <span class="text-[10px] text-slate-400" th:text="'by ' + ${item.generatedByName()}">Creator</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-4 text-center">
+                                        <span th:if="${item.status() == 'DRAFT'}" class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-600 border border-amber-100">
+                                            <span class="w-1 h-1 rounded-full bg-amber-400 mr-1.5 animate-pulse"></span> Draft
+                                        </span>
+                                        <span th:if="${item.status() == 'FINALIZED'}" class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-100">
+                                            <span class="w-1 h-1 rounded-full bg-emerald-400 mr-1.5"></span> Finalized
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 text-right">
+                                        <div class="flex items-center justify-end gap-2">
+                                            <a th:href="@{/hr/reports/download/{id}(id=${item.id()})}" 
+                                               class="p-2 text-slate-400 hover:text-primary transition-colors" title="Download">
+                                                <span class="material-symbols-outlined text-lg">download</span>
+                                            </a>
+                                            <form th:if="${item.status() == 'DRAFT'}" th:action="@{/hr/reports/{id}/publish(id=${item.id()})}" method="post">
+                                                <button type="submit" class="text-xs font-bold text-primary hover:text-primary/80 transition-colors bg-primary/5 px-3 py-1.5 rounded-lg border border-primary/10">
+                                                    Publish to HRM
+                                                </button>
+                                            </form>
+                                            <span th:if="${item.status() == 'FINALIZED'}" class="text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-1.5 rounded-lg border border-slate-100">
+                                                Published
+                                            </span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
             </div><!-- /max-w -->
         </div><!-- /scrollable -->
 
@@ -544,7 +632,11 @@
             colors: [chartColors.emerald, chartColors.amber, chartColors.rose],
             plotOptions: { bar: { borderRadius: 3, columnWidth: '60%' } },
             dataLabels: { enabled: false },
-            legend: { position: 'top', fontSize: '11px', fontWeight: 600 }
+            legend: { position: 'top', fontSize: '11px', fontWeight: 600, floating: true, onItemHover: {
+                    highlightDataSeries: true
+                }, onItemClick: {
+                    toggleDataSeries: false
+                } }
         }).render();
     </script>
 
@@ -562,7 +654,7 @@
                 yaxis: { labels: { style: { fontSize: '10px' } } },
                 colors: [chartColors.primary],
                 plotOptions: { bar: { horizontal: true, borderRadius: 4, barHeight: '50%' } },
-                dataLabels: { enabled: true, style: { fontSize: '10px', fontWeight: 700 } }
+                dataLabels: { enabled: false }
             }).render();
         }
 
@@ -572,7 +664,7 @@
 
         new ApexCharts(document.querySelector('#leaveTrendChart'), {
             ...defaultOptions,
-            chart: { ...defaultOptions.chart, type: 'bar', height: 256, stacked: true },
+            chart: { ...defaultOptions.chart, type: 'bar', height: 256, stacked: false },
             series: [
                 { name: 'Approved', data: lmApproved },
                 { name: 'Rejected', data: lmRejected }
@@ -599,25 +691,101 @@
             yaxis: { labels: { style: { fontSize: '10px' } } },
             colors: [chartColors.primary],
             plotOptions: { bar: { borderRadius: 6, columnWidth: '55%', distributed: true } },
-            dataLabels: { enabled: true, style: { fontSize: '11px', fontWeight: 800 }, offsetY: -20 },
+            dataLabels: { enabled: false},
             legend: { show: false }
         }).render();
 
         const dsLabels = /*[[${report.deptAvgLabels()}]]*/ [];
         const dsValues = /*[[${report.deptAvgValues()}]]*/ [];
 
-        new ApexCharts(document.querySelector('#deptSalaryChart'), {
-            ...defaultOptions,
-            chart: { ...defaultOptions.chart, type: 'bar', height: 288 },
-            series: [{ name: 'Avg Salary', data: dsValues }],
-            xaxis: { categories: dsLabels, labels: { style: { fontSize: '10px', fontWeight: 600 } } },
-            yaxis: { labels: { style: { fontSize: '10px' }, formatter: (v) => '$' + Math.round(v).toLocaleString() } },
-            colors: [chartColors.emerald],
-            plotOptions: { bar: { horizontal: true, borderRadius: 4, barHeight: '55%' } },
-            dataLabels: { enabled: true, style: { fontSize: '10px' }, formatter: (v) => '$' + Math.round(v).toLocaleString() },
-            tooltip: { y: { formatter: (v) => '$' + Math.round(v).toLocaleString() } }
-        }).render();
+        if (dsLabels.length > 0) {
+            new ApexCharts(document.querySelector('#deptSalaryChart'), {
+                ...defaultOptions,
+                chart: { ...defaultOptions.chart, type: 'bar', height: 288 },
+                series: [{ name: 'Avg Salary', data: dsValues }],
+                xaxis: { categories: dsLabels, labels: { style: { fontSize: '10px', fontWeight: 600 }, formatter: (v) => Math.round(v).toLocaleString() } },
+                yaxis: { labels: { style: { fontSize: '10px' } } },
+                colors: [chartColors.emerald],
+                plotOptions: { bar: { horizontal: true, borderRadius: 4, barHeight: '55%' } },
+                dataLabels: { enabled: false },
+                tooltip: { y: { formatter: (v) => '$' + Math.round(v).toLocaleString() } }
+            }).render();
+        }
     </script>
 
+    <!-- Professional Report Preparation Modal -->
+    <div id="prepareModal" class="fixed inset-0 z-[100] hidden">
+        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px]" onclick="closePrepareModal()"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg anim-scale-up">
+            <div class="bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden">
+                <div class="px-8 pt-8 pb-6 border-b border-slate-50 bg-slate-50/50">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-indigo-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-200">
+                                <span class="material-symbols-outlined">auto_stories</span>
+                            </div>
+                            <div>
+                                <h2 class="text-lg font-black text-slate-800">Professional Report</h2>
+                                <p class="text-xs text-slate-400">Add executive context before publishing</p>
+                            </div>
+                        </div>
+                        <button onclick="closePrepareModal()" class="text-slate-400 hover:text-slate-600 transition-colors">
+                            <span class="material-symbols-outlined">close</span>
+                        </button>
+                    </div>
+                </div>
+
+                <form th:action="@{/hr/reports/prepare}" method="post" class="p-8">
+                    <!-- Context Propagation -->
+                    <input type="hidden" name="tab" th:value="${activeTab}" />
+                    <input type="hidden" name="year" th:value="${selectedYear}" />
+                    <input type="hidden" name="dateFrom" th:value="${dateFrom}" />
+                    <input type="hidden" name="dateTo" th:value="${dateTo}" />
+
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Report Title</label>
+                            <input type="text" name="title" required
+                                   th:value="'HR Report ' + ${activeTab.substring(0,1).toUpperCase() + activeTab.substring(1)} + ' - ' + ${#calendars.format(#calendars.createNow(), 'MMM yyyy')}"
+                                   class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 text-sm font-bold text-slate-800 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none" />
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Executive Summary (Remarks)</label>
+                            <textarea name="remarks" rows="6" required
+                                      placeholder="Provide strategic insights, highlight key trends, or suggest actions based on this report data..."
+                                      class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 text-sm font-medium text-slate-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none resize-none"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-4 mt-8">
+                        <button type="button" onclick="closePrepareModal()" 
+                                class="flex-1 px-6 py-3.5 rounded-2xl text-sm font-bold text-slate-500 hover:bg-slate-50 transition-all border border-slate-100">
+                            Keep Drafting
+                        </button>
+                        <button type="submit" 
+                                class="flex-1 px-6 py-3.5 rounded-2xl text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 hover:shadow-indigo-200">
+                            Save as Draft Package
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        function openPrepareModal() {
+            document.getElementById('prepareModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+        function closePrepareModal() {
+            document.getElementById('prepareModal').classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
+        // Auto Close Modal on ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closePrepareModal();
+        });
+    </script>
 </body>
 </html>

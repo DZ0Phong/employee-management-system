@@ -2,8 +2,7 @@ package com.group5.ems.service.common;
 
 import com.group5.ems.entity.Request;
 import com.group5.ems.entity.User;
-import com.group5.ems.repository.RequestRepository;
-import com.group5.ems.repository.UserRepository;
+import com.group5.ems.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +28,107 @@ public class EmailNotificationService {
     
     @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private EmployeeRepository employeeRepository;
+
+    @Autowired
+    private EmailTemplateRepository emailTemplateRepository;
+
+    @Autowired
+    private EmailLogRepository emailLogRepository;
+
+    @Autowired
+    private org.springframework.mail.javamail.JavaMailSender mailSender;
+
+    @Autowired
+    private LogService logService;
+
+    /**
+     * Send notification to HR Manager when a report is finalized and published
+     */
+    public void sendReportPublishedNotification(com.group5.ems.entity.HrReport report) {
+        if (report == null || !report.isPublished()) {
+            return;
+        }
+
+        try {
+            // Find all HR Managers
+            List<com.group5.ems.entity.Employee> hrManagers = employeeRepository
+                    .findEmployeesByRoleCodes(List.of("HR_MANAGER"));
+            
+            if (hrManagers.isEmpty()) return;
+
+            // Fetch Template
+            String templateCode = "REPORT_PUBLISHED";
+            com.group5.ems.entity.EmailTemplate template = emailTemplateRepository
+                    .findByCode(templateCode)
+                    .orElseThrow(() -> new RuntimeException("Email template not found: " + templateCode));
+
+            for (com.group5.ems.entity.Employee manager : hrManagers) {
+                if (manager.getUser() == null || manager.getUser().getEmail() == null) continue;
+                
+                String recipientEmail = manager.getUser().getEmail();
+                
+                // Prepare Variables for template
+                java.util.Map<String, String> vars = new java.util.HashMap<>();
+                vars.put("fullName", manager.getUser().getFullName());
+                vars.put("reportTitle", report.getTitle());
+                vars.put("reportType", report.getReportType());
+                vars.put("format", report.getFormat());
+                vars.put("publishedAt", report.getPublishedAt() != null ? report.getPublishedAt().toString() : java.time.LocalDateTime.now().toString());
+                vars.put("remarks", report.getRemarks() != null ? report.getRemarks() : "No executive summary provided.");
+
+                try {
+                    sendHtmlEmail(recipientEmail, template, vars);
+                    saveEmailLog(recipientEmail, templateCode, "SUCCESS");
+                } catch (Exception e) {
+                    System.err.println("Failed to send email to " + recipientEmail + ": " + e.getMessage());
+                    saveEmailLog(recipientEmail, templateCode, "FAILED");
+                }
+            }
+
+            // Global Audit Log for the report publication event
+            logService.log(com.group5.ems.enums.AuditAction.UPDATE, 
+                           com.group5.ems.enums.AuditEntityType.HR_REPORTS, 
+                           report.getId());
+
+        } catch (Exception e) {
+            System.err.println("Critical error in report notification service: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void sendHtmlEmail(String to, com.group5.ems.entity.EmailTemplate template, java.util.Map<String, String> variables) throws Exception {
+        String subject = replacePlaceholders(template.getSubject(), variables);
+        String htmlBody = replacePlaceholders(template.getBody(), variables);
+
+        jakarta.mail.internet.MimeMessage message = mailSender.createMimeMessage();
+        org.springframework.mail.javamail.MimeMessageHelper helper = 
+                new org.springframework.mail.javamail.MimeMessageHelper(message, true, "UTF-8");
+
+        helper.setTo(to);
+        helper.setSubject(subject);
+        helper.setText(htmlBody, true); // true = HTML
+
+        mailSender.send(message);
+    }
+
+    private void saveEmailLog(String email, String templateCode, String status) {
+        com.group5.ems.entity.EmailLog log = new com.group5.ems.entity.EmailLog();
+        log.setRecipientEmail(email);
+        log.setTemplateCode(templateCode);
+        log.setStatus(status);
+        emailLogRepository.save(log);
+    }
+
+    private String replacePlaceholders(String text, java.util.Map<String, String> variables) {
+        if (text == null) return "";
+        for (java.util.Map.Entry<String, String> entry : variables.entrySet()) {
+            text = text.replace("{{" + entry.getKey() + "}}", entry.getValue() != null ? entry.getValue() : "");
+        }
+        return text;
+    }
 
     /**
      * Send notification for critical requests to HR Manager

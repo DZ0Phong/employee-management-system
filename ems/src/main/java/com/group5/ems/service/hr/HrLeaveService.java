@@ -346,13 +346,14 @@ public class HrLeaveService {
     // CSV EXPORT (improvement #7)
     // ══════════════════════════════════════════════════════════════════
 
-    public void exportLeaveHistoryToCsv(String status, Long departmentId, java.time.LocalDate startDate, java.time.LocalDate endDate, PrintWriter writer) {
+    public void exportLeaveHistoryToCsv(String status, Long departmentId, String leaveType, java.time.LocalDate startDate, java.time.LocalDate endDate, PrintWriter writer) {
         status = normalizeBlank(status);
+        leaveType = normalizeBlank(leaveType);
         
         java.time.LocalDateTime start = (startDate != null) ? startDate.atStartOfDay() : null;
         java.time.LocalDateTime end = (endDate != null) ? endDate.atTime(23, 59, 59) : null;
 
-        List<Request> requests = requestRepository.findLeaveHistoryForExport(status, departmentId, start, end);
+        List<Request> requests = requestRepository.findLeaveHistoryForExport(status, departmentId, leaveType, start, end);
 
         // CSV header
         writer.println("Employee Name,Employee Code,Department,Leave Type,From,To,Duration,Status,Rejection Reason,Processed At");
