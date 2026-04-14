@@ -59,9 +59,9 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long>, JpaSp
                 OR LOWER(u.email) LIKE LOWER(CONCAT('%',:search,'%'))) 
             AND (:department IS NULL OR d.name = :department) 
             AND (:status IS NULL OR e.status = :status)
-            AND (:skillId IS NULL OR e.id IN (
+            AND (:skillIdCount = 0 OR e.id IN (
                 SELECT es.employee.id FROM EmployeeSkill es 
-                WHERE es.skillId = :skillId 
+                WHERE es.skillId IN :skillIds 
                 AND es.proficiency >= :minProficiency
             ))
             """,
@@ -75,16 +75,17 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long>, JpaSp
                 OR LOWER(u.email) LIKE LOWER(CONCAT('%',:search,'%'))) 
             AND (:department IS NULL OR d.name = :department) 
             AND (:status IS NULL OR e.status = :status)
-            AND (:skillId IS NULL OR e.id IN (
+            AND (:skillIdCount = 0 OR e.id IN (
                 SELECT es.employee.id FROM EmployeeSkill es 
-                WHERE es.skillId = :skillId 
+                WHERE es.skillId IN :skillIds 
                 AND es.proficiency >= :minProficiency
             ))
             """)
     Page<Employee> searchEmployees(@Param("search") String search,
                                    @Param("department") String department,
                                    @Param("status") String status,
-                                   @Param("skillId") Long skillId,
+                                   @Param("skillIds") List<Long> skillIds,
+                                   @Param("skillIdCount") Integer skillIdCount,
                                    @Param("minProficiency") Integer minProficiency,
                                    Pageable pageable);
        @Query("SELECT AVG(DATEDIFF(:date, e.hireDate)) FROM Employee e " +

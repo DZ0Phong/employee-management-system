@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.PrintWriter;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -61,11 +62,55 @@ public class HrAttendanceService {
         logService.log(AuditAction.EXPORT, AuditEntityType.ATTENDANCE, null);
     }
 
+    @Transactional
+    public void exportEmployeeAttendanceToCsv(Long employeeId, java.time.YearMonth targetMonth, String search, String status, PrintWriter writer) {
+        // Find employee name for header/logging (optional, we could fetch from DB to be clean)
+        String[] normalized = normalizeFilters(search, status);
+        
+        LocalDate startDate = targetMonth.atDay(1);
+        LocalDate endDate = targetMonth.atEndOfMonth();
+        
+        List<com.group5.ems.entity.Attendance> records = attendanceRepository.findByEmployeeIdAndWorkDateBetweenOrderByWorkDateDesc(
+                employeeId, 
+                startDate, 
+                endDate);
+
+        // Filter in memory for search/status if needed, but since it's just this employee we can simplify
+        // or just rely on the existing projection if we made a new repo method. Let's just do a simple filter here:
+        if (normalized[0] != null && !normalized[0].isEmpty()) {
+            records = records.stream()
+                .filter(r -> r.getNote() != null && r.getNote().toLowerCase().contains(normalized[0].toLowerCase()))
+                .collect(Collectors.toList());
+        }
+        if (normalized[1] != null) {
+            String qStatus = normalized[1];
+            records = records.stream()
+                .filter(r -> r.getStatus() != null && r.getStatus().equalsIgnoreCase(qStatus))
+                .collect(Collectors.toList());
+        }
+
+        // CSV Header
+        writer.println("Employee Code,Work Date,Check In,Check Out,Status,Note");
+
+        for (com.group5.ems.entity.Attendance record : records) {
+            writer.printf("\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"%n",
+                    escapeCsv(record.getEmployee().getEmployeeCode()),
+                    record.getWorkDate(),
+                    record.getCheckIn() != null ? record.getCheckIn().toString() : "",
+                    record.getCheckOut() != null ? record.getCheckOut().toString() : "",
+                    escapeCsv(record.getStatus()),
+                    escapeCsv(record.getNote()));
+        }
+        writer.flush();
+        
+        logService.log(AuditAction.EXPORT, AuditEntityType.ATTENDANCE, null);
+    }
+
     private String[] normalizeFilters(String search, String status) {
         if (search != null) search = search.trim();
         if (status != null) {
             status = status.trim();
-            if (status.equalsIgnoreCase("Status: All") || status.equalsIgnoreCase("All") || status.isEmpty()) {
+            if (status.equalsIgnoreCase("All Status") || status.equalsIgnoreCase("All") || status.isEmpty()) {
                 status = null;
             } else {
                 status = status.toUpperCase();

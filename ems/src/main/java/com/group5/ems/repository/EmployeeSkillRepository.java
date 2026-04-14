@@ -11,4 +11,7 @@ public interface EmployeeSkillRepository extends JpaRepository<EmployeeSkill, Em
     List<EmployeeSkill> findByEmployeeId(Long employeeId);
 
     List<EmployeeSkill> findBySkillId(Long skillId);
+
+    @org.springframework.data.jpa.repository.Query("SELECT es FROM EmployeeSkill es JOIN FETCH es.skill WHERE es.employeeId IN :employeeIds")
+    List<EmployeeSkill> findByEmployeeIdInWithSkill(@org.springframework.data.repository.query.Param("employeeIds") List<Long> employeeIds);
 }

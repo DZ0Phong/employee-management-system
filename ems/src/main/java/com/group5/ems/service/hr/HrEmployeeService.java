@@ -37,10 +37,12 @@ public class HrEmployeeService {
     private final com.group5.ems.repository.EmployeeSkillRepository employeeSkillRepository;
     private final com.group5.ems.repository.DepartmentRepository departmentRepository;
     private final com.group5.ems.repository.PositionRepository positionRepository;
+    private final com.group5.ems.repository.PerformanceReviewRepository performanceReviewRepository;
+    private final com.group5.ems.repository.RewardDisciplineRepository rewardDisciplineRepository;
     private final LogService logService;
 
 
-    public Page<HrEmployeeDTO> searchEmployees(String search, String department, String status, Long skillId, Integer minProficiency, Pageable pageable) {
+    public Page<HrEmployeeDTO> searchEmployees(String search, String department, String status, List<Long> skillIds, Integer minProficiency, Pageable pageable) {
         Specification<Employee> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
             
@@ -66,18 +68,20 @@ public class HrEmployeeService {
             }
 
             // Skill Filter using Subquery (Prevents duplicates)
-            if (skillId != null) {
+            if (skillIds != null && !skillIds.isEmpty()) {
                 Subquery<Long> skillSubquery = query.subquery(Long.class);
                 Root<com.group5.ems.entity.EmployeeSkill> esRoot = skillSubquery.from(com.group5.ems.entity.EmployeeSkill.class);
                 skillSubquery.select(esRoot.get("employeeId"));
                 
                 List<Predicate> esPredicates = new ArrayList<>();
-                esPredicates.add(cb.equal(esRoot.get("skillId"), skillId));
+                esPredicates.add(esRoot.get("skillId").in(skillIds));
                 if (minProficiency != null) {
                     esPredicates.add(cb.greaterThanOrEqualTo(esRoot.get("proficiency"), minProficiency));
                 }
                 
                 skillSubquery.where(cb.and(esPredicates.toArray(new Predicate[0])));
+                skillSubquery.groupBy(esRoot.get("employeeId"));
+                skillSubquery.having(cb.equal(cb.countDistinct(esRoot.get("skillId")), skillIds.size()));
                 predicates.add(cb.in(root.get("id")).value(skillSubquery));
             }
 
@@ -89,8 +93,8 @@ public class HrEmployeeService {
                 Root<com.group5.ems.entity.EmployeeSkill> sortEsRoot = sortSubquery.from(com.group5.ems.entity.EmployeeSkill.class);
                 sortSubquery.select(cb.max(sortEsRoot.get("proficiency")));
                 
-                Predicate sortSkillPred = (skillId != null) 
-                    ? cb.equal(sortEsRoot.get("skillId"), skillId)
+                Predicate sortSkillPred = (skillIds != null && !skillIds.isEmpty()) 
+                    ? sortEsRoot.get("skillId").in(skillIds)
                     : cb.conjunction();
                 
                 sortSubquery.where(
@@ -122,6 +126,35 @@ public class HrEmployeeService {
         List<HrEmployeeDTO> dtos = page.getContent().stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
+
+        List<Long> empIds = dtos.stream().map(HrEmployeeDTO::id).toList();
+        if (!empIds.isEmpty()) {
+            List<com.group5.ems.entity.EmployeeSkill> empSkills = employeeSkillRepository.findByEmployeeIdInWithSkill(empIds);
+            java.util.Map<Long, List<String>> skillsMap = empSkills.stream()
+                .collect(Collectors.groupingBy(
+                    com.group5.ems.entity.EmployeeSkill::getEmployeeId,
+                    Collectors.mapping(es -> "Lvl " + es.getProficiency() + " • " + es.getSkill().getName(), Collectors.toList())
+                ));
+
+            for (int i = 0; i < dtos.size(); i++) {
+                HrEmployeeDTO dto = dtos.get(i);
+                List<String> matchingSkills = skillsMap.getOrDefault(dto.id(), new java.util.ArrayList<>());
+                
+                // If a filter is applied, ONLY show the specific skills that were filtered for
+                if (skillIds != null && !skillIds.isEmpty()) {
+                    matchingSkills = empSkills.stream()
+                        .filter(es -> es.getEmployeeId().equals(dto.id()) && skillIds.contains(es.getSkillId()))
+                        .map(es -> "Lvl " + es.getProficiency() + " • " + es.getSkill().getName())
+                        .distinct()
+                        .toList();
+                }
+                
+                dtos.set(i, new HrEmployeeDTO(
+                    dto.id(), dto.initials(), dto.fullName(), dto.position(), dto.department(), 
+                    dto.code(), dto.status(), dto.email(), dto.phone(), matchingSkills
+                ));
+            }
+        }
 
         return new PageImpl<>(dtos, pageable, page.getTotalElements());
     }
@@ -201,6 +234,34 @@ public class HrEmployeeService {
                         .build())
                 .collect(Collectors.toList());
 
+        // Fetch performance reviews
+        List<com.group5.ems.dto.response.HrEmployeePerformanceDTO> performanceReviews = performanceReviewRepository.findByEmployeeIdOrderByCreatedAtDesc(id).stream()
+                .filter(pr -> pr.getStatus() != null && pr.getStatus().equalsIgnoreCase("PUBLISHED"))
+                .map(pr -> com.group5.ems.dto.response.HrEmployeePerformanceDTO.builder()
+                        .id(pr.getId())
+                        .reviewPeriod(pr.getReviewPeriod())
+                        .performanceScore(pr.getPerformanceScore())
+                        .potentialScore(pr.getPotentialScore())
+                        .talentMatrix(pr.getTalentMatrix())
+                        .status(pr.getStatus())
+                        .reviewerName(pr.getReviewer() != null && pr.getReviewer().getUser() != null ? pr.getReviewer().getUser().getFullName() : "System")
+                        .createdAt(pr.getCreatedAt())
+                        .build())
+                .collect(Collectors.toList());
+
+        // Fetch reward and disciplines
+        List<com.group5.ems.dto.response.HrEmployeeDisciplineDTO> disciplines = rewardDisciplineRepository.findByEmployeeIdOrderByDecisionDateDesc(id).stream()
+                .map(d -> com.group5.ems.dto.response.HrEmployeeDisciplineDTO.builder()
+                        .id(d.getId())
+                        .recordType(d.getRecordType())
+                        .title(d.getTitle())
+                        .description(d.getDescription())
+                        .decisionDate(d.getDecisionDate())
+                        .amount(d.getAmount())
+                        .decidedBy(d.getDecidedByUser() != null ? d.getDecidedByUser().getFullName() : "N/A")
+                        .build())
+                .collect(Collectors.toList());
+
         HrEmployeeDetailDTO dto = HrEmployeeDetailDTO.builder()
                 .id(employee.getId())
                 .initials(initials.toUpperCase())
@@ -222,6 +283,8 @@ public class HrEmployeeService {
                 .contractEnd(contractEnd)
                 .contractStatus(contractStatus)
                 .skills(skills)
+                .performanceReviews(performanceReviews)
+                .disciplines(disciplines)
                 .build();
 
         return dto;

@@ -35,6 +35,10 @@ public record HrEmployeeDetailDTO(
         String contractStatus,
 
         // Skills
-        java.util.List<HrEmployeeSkillDTO> skills
+        java.util.List<HrEmployeeSkillDTO> skills,
+
+        // Reports & Records
+        java.util.List<HrEmployeePerformanceDTO> performanceReviews,
+        java.util.List<HrEmployeeDisciplineDTO> disciplines
 ) {
 }

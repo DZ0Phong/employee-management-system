@@ -124,7 +124,7 @@
                                 <label>
                                     <select name="status"
                                         class="text-sm border-slate-200 rounded-xl focus:ring-primary focus:border-primary pl-3 pr-8 py-1.5 bg-white text-slate-600 font-medium shadow-sm">
-                                        <option value="">Status: All</option>
+                                        <option value="">All Status</option>
                                         <option value="PRESENT" th:selected="${status == 'PRESENT'}">Present</option>
                                         <option value="LATE" th:selected="${status == 'LATE'}">Late In</option>
                                         <option value="ABSENT" th:selected="${status == 'ABSENT'}">Absent</option>
@@ -251,7 +251,7 @@
                         <div>
                             <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Status Filter</label>
                             <select name="status" class="w-full text-xs border-slate-200 rounded-xl focus:ring-primary focus:border-primary px-3 py-2.5 bg-slate-50 text-slate-600 font-medium h-[42px]">
-                                <option value="">Status: All</option>
+                                <option value="">All Status</option>
                                 <option value="PRESENT" th:selected="${status == 'PRESENT'}">Present</option>
                                 <option value="LATE" th:selected="${status == 'LATE'}">Late In</option>
                                 <option value="ABSENT" th:selected="${status == 'ABSENT'}">Absent</option>

@@ -13,8 +13,12 @@ import com.group5.ems.entity.RewardDiscipline;
 public interface RewardDisciplineRepository extends JpaRepository<RewardDiscipline, Long> {
 
        List<RewardDiscipline> findByEmployeeId(Long employeeId);
+       
+       List<RewardDiscipline> findByEmployeeIdOrderByDecisionDateDesc(Long employeeId);
 
        List<RewardDiscipline> findByEmployeeIdAndRecordType(Long employeeId, String recordType);
+
+       List<RewardDiscipline> findByEmployeeIdAndRecordTypeOrderByDecisionDateDesc(Long employeeId, String recordType);
 
        List<RewardDiscipline> findByRecordTypeOrderByDecisionDateDesc(String recordType);
 

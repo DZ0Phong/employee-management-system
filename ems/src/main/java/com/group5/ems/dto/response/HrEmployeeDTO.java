@@ -12,6 +12,7 @@ public record HrEmployeeDTO(
         String code,
         String status,
         String email,
-        String phone
+        String phone,
+        java.util.List<String> skills
 ) {
 }

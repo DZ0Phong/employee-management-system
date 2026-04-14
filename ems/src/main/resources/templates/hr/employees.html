@@ -48,12 +48,6 @@
                     <p class="text-xs text-slate-400">Manage organizational members and profiles</p>
                 </div>
                 <div class="flex items-center gap-3">
-                    <a th:href="@{/hr/employee/new}"
-                       class="flex items-center gap-1.5 bg-primary text-white px-4 py-1.5 rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors shadow-sm shadow-primary/30">
-                        <span class="material-symbols-outlined text-[16px]">person_add</span>
-                        Add Employee
-                    </a>
-                    <div class="w-px h-6 bg-slate-200 mx-1"></div>
                     <div
                         class="w-8 h-8 rounded-full bg-primary/10 text-primary border border-primary/20 font-bold text-xs flex items-center justify-center">
                         HR</div>
@@ -63,9 +57,9 @@
             <div class="flex-1 overflow-y-auto p-8 dot-grid">
                 <div class="max-w-7xl mx-auto">
 
-                <!-- Filters and Summary -->
-                <form th:action="@{/hr/employees}" method="get"
-                    class="flex items-center justify-between mb-6 anim anim-1 flex-wrap gap-3">
+                    <!-- Filters and Summary -->
+                    <form th:action="@{/hr/employees}" method="get"
+                        class="mb-6 anim anim-1 relative z-40 space-y-4">
                     <div class="flex gap-2 flex-wrap">
                         <div
                             class="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 py-1.5 w-64 shadow-sm">
@@ -87,43 +81,51 @@
                         <label>
                             <select name="status"
                                 class="text-sm border-slate-200 rounded-xl focus:ring-primary focus:border-primary pl-3 pr-8 py-1.5 bg-white text-slate-600 font-medium shadow-sm">
-                                <option value="">Status: All</option>
+                                <option value="">All Status</option>
                                 <option value="ACTIVE" th:selected="${status == 'ACTIVE'}">Active</option>
-                                <option value="ON_LEAVE" th:selected="${status == 'ON_LEAVE'}">On Leave</option>
                                 <option value="TERMINATED" th:selected="${status == 'TERMINATED'}">Terminated
                                 </option>
                             </select>
                         </label>
-                        <label>
-                            <select name="skillId"
-                                class="text-sm border-slate-200 rounded-xl focus:ring-primary focus:border-primary pl-3 pr-8 py-1.5 bg-white text-slate-600 font-medium shadow-sm">
-                                <option value="">Any Expertise</option>
-                                <option th:each="s : ${skills}" th:value="${s.id}" th:text="${s.name}" 
-                                        th:selected="${s.id == skillId}">Skill</option>
-                            </select>
-                        </label>
-                        <label>
-                            <select name="minProficiency"
-                                class="text-sm border-slate-200 rounded-xl focus:ring-primary focus:border-primary pl-3 pr-8 py-1.5 bg-white text-slate-600 font-medium shadow-sm">
-                                <option value="">Min Level</option>
-                                <option value="1" th:selected="${minProficiency == 1}">Level 1+</option>
-                                <option value="2" th:selected="${minProficiency == 2}">Level 2+</option>
-                                <option value="3" th:selected="${minProficiency == 3}">Level 3+</option>
-                                <option value="4" th:selected="${minProficiency == 4}">Level 4+</option>
-                                <option value="5" th:selected="${minProficiency == 5}">Level 5</option>
-                            </select>
-                        </label>
-                        <div class="w-px h-6 bg-slate-200 mx-1"></div>
-                        <label>
-                            <select name="sort"
-                                class="text-sm border-slate-200 rounded-xl focus:ring-primary focus:border-primary pl-3 pr-8 py-1.5 bg-white text-slate-600 font-medium shadow-sm">
-                                <option value="hireDate:desc" th:selected="${sort == 'hireDate:desc'}">Latest Joiners</option>
-                                <option value="hireDate:asc" th:selected="${sort == 'hireDate:asc'}">Oldest Joiners</option>
-                                <option value="name:asc" th:selected="${sort == 'name:asc'}">Name (A-Z)</option>
-                                <option value="proficiency:desc" th:selected="${sort == 'proficiency:desc'}">Proficiency (Low-High)</option>
-                                <option value="proficiency:asc" th:selected="${sort == 'proficiency:asc'}">Proficiency (High-Low)</option>
-                            </select>
-                        </label>
+                        <!-- Combined Skill Filter -->
+                        <details class="relative group" id="skillDropdown" th:open="${(skillIds != null and !skillIds.isEmpty()) or (minProficiency != null)}">
+                            <summary class="list-none flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 py-1.5 shadow-sm text-sm text-slate-600 font-medium hover:bg-slate-50 transition-colors focus:outline-none cursor-pointer"
+                                     th:classappend="${(skillIds != null and !skillIds.isEmpty()) or (minProficiency != null) ? '!border-primary !text-primary bg-primary/5' : ''}">
+                                <span th:if="${skillIds == null or skillIds.isEmpty()}">All Skills</span>
+                                <span th:if="${skillIds != null and !skillIds.isEmpty()}" class="font-bold">
+                                    Skills (<span th:text="${skillIds.size()}">0</span>) 
+                                    <span th:if="${minProficiency != null}">- Lvl <span th:text="${minProficiency}"></span>+</span>
+                                </span>
+                                <span class="material-symbols-outlined text-slate-400 text-[18px]" th:classappend="${(skillIds != null and !skillIds.isEmpty()) or (minProficiency != null) ? '!text-primary' : ''}">expand_more</span>
+                            </summary>
+                            <!-- Dropdown Panel -->
+                            <div class="absolute top-full mt-2 left-0 w-64 bg-white rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] border border-slate-100 p-4 z-50">
+                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Required Skills (Multi-select)</p>
+                                <div class="mb-2 relative">
+                                    <span class="material-symbols-outlined absolute left-2 top-1.5 text-slate-400 text-[16px]">search</span>
+                                    <input type="text" id="skillSearchInput" onkeyup="filterSkills()" placeholder="Search skills..." 
+                                        class="w-full text-xs border-slate-200 rounded-lg pl-7 pr-2 py-1.5 focus:ring-primary focus:border-primary shadow-sm bg-slate-50 text-slate-600 placeholder-slate-400">
+                                </div>
+                                <div class="max-h-40 overflow-y-auto space-y-1 mb-3 custom-scrollbar pr-2" id="skillCheckboxContainer">
+                                    <label th:each="s : ${skills}" class="skill-label-item flex items-center gap-2 text-sm text-slate-700 cursor-pointer hover:bg-slate-50 p-1.5 rounded-lg border border-transparent hover:border-slate-100 transition-colors">
+                                        <input type="checkbox" name="skillIds" th:value="${s.id}" 
+                                            th:checked="${skillIds != null and skillIds.contains(s.id)}"
+                                            class="rounded border-slate-300 text-primary focus:ring-primary shadow-sm bg-white">
+                                        <span th:text="${s.name}" class="font-medium skill-name-text"></span>
+                                    </label>
+                                </div>
+                                <hr class="border-slate-100 my-3" />
+                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Minimum Level</p>
+                                <select name="minProficiency" class="w-full text-sm border-slate-200 rounded-lg focus:ring-primary focus:border-primary px-3 py-1.5 bg-slate-50 text-slate-600 font-bold shadow-inner">
+                                    <option value="" th:selected="${minProficiency == null}">Any Level</option>
+                                    <option value="1" th:selected="${minProficiency == 1}">Level 1 (Beginner)</option>
+                                    <option value="2" th:selected="${minProficiency == 2}">Level 2</option>
+                                    <option value="3" th:selected="${minProficiency == 3}">Level 3</option>
+                                    <option value="4" th:selected="${minProficiency == 4}">Level 4</option>
+                                    <option value="5" th:selected="${minProficiency == 5}">Level 5 (Expert)</option>
+                                </select>
+                            </div>
+                        </details>
                         <button type="submit"
                             class="flex items-center gap-1.5 bg-primary text-white px-4 py-1.5 rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors shadow-sm shadow-primary/30">
                             <span class="material-symbols-outlined text-[16px]">filter_alt</span>
@@ -135,8 +137,23 @@
                             Clear
                         </a>
                     </div>
-                    <p class="text-sm font-semibold text-slate-500">Showing <span class="text-slate-800"
-                            th:text="${totalItems}">0</span> employees</p>
+                    
+                    <div class="flex flex-col items-start gap-4 pt-2">
+                        <p class="text-sm font-semibold text-slate-500 mb-0">Showing <span class="text-slate-800"
+                                th:text="${totalItems}">0</span> employees</p>
+                                
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-slate-400 text-[18px]">sort</span>
+                            <span class="text-sm font-medium text-slate-500">Sort by:</span>
+                            <select name="sort" onchange="this.form.submit()" class="text-sm border-slate-200 rounded-lg hover:border-primary focus:ring-primary focus:border-primary py-1.5 pl-3 pr-8 text-slate-700 font-semibold cursor-pointer shadow-sm bg-white min-w-[160px]">
+                                <option value="hireDate:desc" th:selected="${sort == 'hireDate:desc'}">Latest Joiners</option>
+                                <option value="hireDate:asc" th:selected="${sort == 'hireDate:asc'}">Oldest Joiners</option>
+                                <option value="name:asc" th:selected="${sort == 'name:asc'}">Name (A-Z)</option>
+                                <option value="proficiency:desc" th:selected="${sort == 'proficiency:desc'}">Proficiency (Low-High)</option>
+                                <option value="proficiency:asc" th:selected="${sort == 'proficiency:asc'}">Proficiency (High-Low)</option>
+                            </select>
+                        </div>
+                    </div>
                 </form>
 
                 <!-- Employee Grid -->
@@ -174,6 +191,18 @@
                                     class="font-semibold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full"
                                     th:text="${emp.status}">Inactive</span>
                             </div>
+                            
+                            <!-- Skills Display -->
+                            <div th:if="${emp.skills != null and !emp.skills.isEmpty()}" class="pt-3 mt-3 border-t border-slate-50 flex flex-wrap gap-1">
+                                <span th:each="skill, iterStat : ${emp.skills}" 
+                                      th:if="${iterStat.index < 3}"
+                                      th:title="${skill}"
+                                      class="text-[10px] bg-indigo-50 text-indigo-600 border border-indigo-100/50 px-2 py-0.5 rounded-md font-medium"
+                                      th:text="${skill}">Skill</span>
+                                <span th:if="${emp.skills.size() > 3}" 
+                                      class="text-[10px] bg-slate-100 text-slate-500 border border-slate-200 px-2 py-0.5 rounded-md font-bold"
+                                      th:text="'+' + (${emp.skills.size()} - 3)">+2</span>
+                            </div>
                         </div>
                     </div>
 
@@ -190,7 +219,7 @@
                 <div th:if="${totalPages > 1}" class="mt-8 flex justify-center anim anim-1">
                     <div class="flex items-center gap-1 bg-white border border-slate-100 p-1 rounded-xl shadow-sm">
                         <a th:if="${currentPage > 0}"
-                            th:href="@{/hr/employees(page=${currentPage - 1}, search=${search}, department=${department}, status=${status}, skillId=${skillId}, minProficiency=${minProficiency}, sort=${sort})}"
+                            th:href="@{/hr/employees(page=${currentPage - 1}, search=${search}, department=${department}, status=${status}, skillIds=${skillIds}, minProficiency=${minProficiency}, sort=${sort})}"
                             class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-50 hover:text-slate-600">
                             <span class="material-symbols-outlined text-[18px]">chevron_left</span>
                         </a>
@@ -204,7 +233,7 @@
                                 class="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold bg-primary text-white"
                                 th:text="${i + 1}">1</a>
                             <a th:if="${i != currentPage and (i == 0 or i == totalPages - 1 or (i >= currentPage - 2 and i <= currentPage + 2))}"
-                                th:href="@{/hr/employees(page=${i}, search=${search}, department=${department}, status=${status}, skillId=${skillId}, minProficiency=${minProficiency}, sort=${sort})}"
+                                th:href="@{/hr/employees(page=${i}, search=${search}, department=${department}, status=${status}, skillIds=${skillIds}, minProficiency=${minProficiency}, sort=${sort})}"
                                 th:text="${i + 1}"
                                 class="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors">1</a>
                             <span
@@ -213,7 +242,7 @@
                         </th:block>
 
                         <a th:if="${currentPage < totalPages - 1}"
-                            th:href="@{/hr/employees(page=${currentPage + 1}, search=${search}, department=${department}, status=${status}, skillId=${skillId}, minProficiency=${minProficiency}, sort=${sort})}"
+                            th:href="@{/hr/employees(page=${currentPage + 1}, search=${search}, department=${department}, status=${status}, skillIds=${skillIds}, minProficiency=${minProficiency}, sort=${sort})}"
                             class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-50 hover:text-slate-600">
                             <span class="material-symbols-outlined text-[18px]">chevron_right</span>
                         </a>
@@ -254,11 +283,7 @@
                             <span class="material-symbols-outlined text-[16px]">account_balance</span>
                             Manage Bank Details
                         </a>
-                        <button onclick="openJobModal()"
-                                class="inline-flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white text-[11px] font-bold py-1.5 px-4 rounded-lg backdrop-blur-sm border border-white/30 transition-all ml-2">
-                            <span class="material-symbols-outlined text-[16px]">settings_accessibility</span>
-                            Manage Job Info
-                        </button>
+
                     </div>
                 </div>
 
@@ -266,123 +291,107 @@
                 <div class="border-b border-slate-100 flex">
                     <button onclick="switchTab('info')"
                         class="modal-tab active flex-1 py-3 text-xs font-bold uppercase tracking-wider text-center transition-colors"
-                        id="tab-info">Information</button>
-                    <button onclick="switchTab('salary')"
+                        id="tab-info">Basic Info & Skills</button>
+                    <button onclick="switchTab('job')"
                         class="modal-tab flex-1 py-3 text-xs font-bold uppercase tracking-wider text-center text-slate-400 transition-colors"
-                        id="tab-salary">Salary</button>
-                    <button onclick="switchTab('personal')"
+                        id="tab-job">Job & Salary</button>
+                    <button onclick="switchTab('reports')"
                         class="modal-tab flex-1 py-3 text-xs font-bold uppercase tracking-wider text-center text-slate-400 transition-colors"
-                        id="tab-personal">Personal</button>
-                    <button onclick="switchTab('skills')"
-                        class="modal-tab flex-1 py-3 text-xs font-bold uppercase tracking-wider text-center text-slate-400 transition-colors"
-                        id="tab-skills">Skills</button>
+                        id="tab-reports">Reports & Records</button>
                 </div>
 
                 <!-- Tab Content -->
                 <div class="p-6 max-h-[340px] overflow-y-auto">
-                    <!-- Info Tab -->
-                    <div id="content-info" class="tab-content active space-y-3">
-                        <div class="flex justify-between text-sm"><span class="text-slate-400">Department</span><span
-                                id="detDept" class="font-semibold text-slate-700">-</span></div>
-                        <div class="flex justify-between text-sm"><span class="text-slate-400">Position</span><span
-                                id="detPos" class="font-semibold text-slate-700">-</span></div>
-                        <div class="flex justify-between text-sm"><span class="text-slate-400">Employee Code</span><span
-                                id="detCode" class="font-semibold text-slate-700 font-mono">-</span></div>
-                        <div class="flex justify-between text-sm"><span class="text-slate-400">Status</span><span
-                                id="detStatus" class="font-semibold">-</span></div>
-                        <div class="flex justify-between text-sm"><span class="text-slate-400">Hire Date</span><span
-                                id="detHire" class="font-semibold text-slate-700">-</span></div>
-                        <hr class="my-2 border-slate-100" />
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Contract</p>
-                        <div class="flex justify-between text-sm"><span class="text-slate-400">Type</span><span
-                                id="detConType" class="font-semibold text-slate-700">-</span></div>
-                        <div class="flex justify-between text-sm"><span class="text-slate-400">Start</span><span
-                                id="detConStart" class="font-semibold text-slate-700">-</span></div>
-                        <div class="flex justify-between text-sm"><span class="text-slate-400">End</span><span
-                                id="detConEnd" class="font-semibold text-slate-700">-</span></div>
-                        <div class="flex justify-between text-sm"><span class="text-slate-400">Contract Status</span><span
-                                id="detConStatus" class="font-semibold">-</span></div>
-                    </div>
-
-                    <!-- Salary Tab -->
-                    <div id="content-salary" class="tab-content space-y-3">
-                        <div class="flex justify-between text-sm"><span class="text-slate-400">Base Salary</span><span
-                                id="detBase" class="font-bold text-slate-800 font-mono">-</span></div>
-                        <div class="flex justify-between text-sm"><span class="text-slate-400">Allowance</span><span
-                                id="detAllow" class="font-semibold text-emerald-600 font-mono">-</span></div>
-                        <div class="flex justify-between text-sm"><span class="text-slate-400">Salary Type</span><span
-                                id="detSalType" class="font-semibold text-slate-700">-</span></div>
-                        <div class="flex justify-between text-sm"><span class="text-slate-400">Effective From</span><span
-                                id="detSalFrom" class="font-semibold text-slate-700">-</span></div>
-                    </div>
-
-                    <!-- Personal Tab -->
-                    <div id="content-personal" class="tab-content space-y-3">
-                        <div class="flex justify-between text-sm"><span class="text-slate-400">Full Name</span><span
-                                id="detFullName" class="font-semibold text-slate-700">-</span></div>
-                        <div class="flex justify-between text-sm"><span class="text-slate-400">Email</span><span
-                                id="detEmail" class="font-semibold text-slate-700">-</span></div>
-                        <div class="flex justify-between text-sm"><span class="text-slate-400">Phone</span><span
-                                id="detPhone" class="font-semibold text-slate-700">-</span></div>
-                        <div class="flex justify-between text-sm"><span class="text-slate-400">Username</span><span
-                                id="detUser" class="font-semibold text-slate-700 font-mono">-</span></div>
-                    </div>
-
-                    <!-- Skills Tab -->
-                    <div id="content-skills" class="tab-content space-y-4">
-                        <div id="skillsList" class="flex flex-wrap gap-2">
-                            <!-- Dynamically populated skills -->
+                    <!-- Info Tab: Basic Info + Personal + Skills -->
+                    <div id="content-info" class="tab-content active space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <!-- Left Column: Work Info -->
+                            <div class="space-y-3">
+                                <div class="flex justify-between gap-3 text-sm"><span class="text-slate-400 whitespace-nowrap">Department</span><span id="detDept" class="font-semibold text-slate-700 text-right">-</span></div>
+                                <div class="flex justify-between gap-3 text-sm"><span class="text-slate-400 whitespace-nowrap">Position</span><span id="detPos" class="font-semibold text-slate-700 text-right">-</span></div>
+                                <div class="flex justify-between gap-3 text-sm"><span class="text-slate-400 whitespace-nowrap">Emp Code</span><span id="detCode" class="font-semibold text-slate-700 font-mono text-right">-</span></div>
+                                <div class="flex justify-between gap-3 text-sm"><span class="text-slate-400 whitespace-nowrap">Status</span><span id="detStatus" class="font-semibold text-right">-</span></div>
+                                <div class="flex justify-between gap-3 text-sm"><span class="text-slate-400 whitespace-nowrap">Hire Date</span><span id="detHire" class="font-semibold text-slate-700 text-right">-</span></div>
+                            </div>
+                            <!-- Right Column: Personal Info -->
+                            <div class="space-y-3 border-l border-slate-50 pl-4">
+                                <div class="flex justify-between gap-2 text-sm"><span class="text-slate-400 whitespace-nowrap">Full Name</span><span id="detFullName" class="font-semibold text-slate-700 text-right truncate w-24">-</span></div>
+                                <div class="flex justify-between gap-2 text-sm"><span class="text-slate-400 whitespace-nowrap">Email</span><span id="detEmail" class="font-semibold text-slate-700 text-right truncate w-24" title="">-</span></div>
+                                <div class="flex justify-between gap-2 text-sm"><span class="text-slate-400 whitespace-nowrap">Phone</span><span id="detPhone" class="font-semibold text-slate-700 text-right">-</span></div>
+                                <div class="flex justify-between gap-2 text-sm"><span class="text-slate-400 whitespace-nowrap">Username</span><span id="detUser" class="font-semibold text-slate-700 font-mono text-right">-</span></div>
+                            </div>
                         </div>
-                        <div id="noSkills" class="hidden text-center py-8">
-                             <span class="material-symbols-outlined text-slate-200 text-4xl">inventory_2</span>
-                             <p class="text-xs text-slate-400 mt-2 font-medium">No recorded skills for this employee</p>
+                        <hr class="my-4 border-slate-100" />
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Skills Profiling</p>
+                        <div id="skillsList" class="flex flex-wrap gap-2"></div>
+                        <div id="noSkills" class="hidden text-center py-4 bg-slate-50 rounded-xl border border-slate-100">
+                             <span class="material-symbols-outlined text-slate-300 text-2xl">inventory_2</span>
+                             <p class="text-xs text-slate-400 font-medium">No recorded skills</p>
                         </div>
+                    </div>
+
+                    <!-- Job Tab: Contract + Salary -->
+                    <div id="content-job" class="tab-content hidden space-y-4">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Base Compensation</p>
+                        <div class="bg-indigo-50/50 p-4 rounded-xl border border-indigo-50 space-y-3">
+                            <div class="flex justify-between text-sm"><span class="text-slate-500">Base Salary</span><span id="detBase" class="font-bold text-slate-800 font-mono">-</span></div>
+                            <div class="flex justify-between text-sm"><span class="text-slate-500">Allowance</span><span id="detAllow" class="font-semibold text-emerald-600 font-mono">-</span></div>
+                            <div class="flex justify-between text-sm border-t border-indigo-100 pt-2"><span class="text-slate-500">Total Fixed</span><span id="detTotalSal" class="font-black text-indigo-700 font-mono">-</span></div>
+                            <div class="flex justify-between text-xs mt-1 text-slate-400"><span id="detSalType">-</span><span id="detSalFrom">Effective: -</span></div>
+                        </div>
+                        
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-4">Current Contract</p>
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-3">
+                            <div class="flex justify-between text-sm"><span class="text-slate-500">Type</span><span id="detConType" class="font-semibold text-slate-700">-</span></div>
+                            <div class="flex justify-between text-sm"><span class="text-slate-500">Start Date</span><span id="detConStart" class="font-semibold text-slate-700">-</span></div>
+                            <div class="flex justify-between text-sm"><span class="text-slate-500">End Date</span><span id="detConEnd" class="font-semibold text-slate-700">-</span></div>
+                            <div class="flex justify-between text-sm"><span class="text-slate-500">Status</span><span id="detConStatus" class="font-semibold">-</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Reports tab -->
+                    <div id="content-reports" class="tab-content hidden space-y-5">
+                        
+                        <!-- Attendance Quick Exporter -->
+                        <div class="flex items-center justify-between bg-primary/5 p-4 rounded-xl border border-primary/10">
+                            <div>
+                                <h4 class="text-sm font-bold text-slate-800">Attendance Log</h4>
+                                <p class="text-xs text-slate-500">Download monthly clock-in/out history</p>
+                            </div>
+                            <form id="attendanceExportForm" action="#" method="get" class="flex items-center gap-2 m-0">
+                                <input type="month" id="exportMonth" name="month" class="text-xs rounded-lg border-primary/20 bg-white py-1.5 px-2 text-slate-700 focus:ring-primary focus:border-primary w-32" required />
+                                <button type="submit" class="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm text-primary hover:bg-primary hover:text-white transition-all border border-primary/20">
+                                    <span class="material-symbols-outlined text-[18px]">download</span>
+                                </button>
+                            </form>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <!-- Left: Performance -->
+                            <div>
+                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Performance Reviews</p>
+                                <div id="perfList" class="space-y-2"></div>
+                                <div id="noPerf" class="hidden text-center py-4 bg-slate-50 rounded-xl border border-slate-100">
+                                     <p class="text-xs text-slate-400 font-medium">No reviews found</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Right: Disciplinary -->
+                            <div>
+                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Rewards & Disciplines</p>
+                                <div id="discList" class="space-y-2"></div>
+                                <div id="noDisc" class="hidden text-center py-4 bg-slate-50 rounded-xl border border-slate-100">
+                                     <p class="text-xs text-slate-400 font-medium">No records found</p>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Job Info Update Modal -->
-        <div id="jobModal" class="fixed inset-0 z-[60] hidden items-center justify-center modal-backdrop">
-            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden animate-[fadeSlideUp_0.3s_ease]">
-                <div class="p-6 border-b border-slate-100 flex items-center justify-between">
-                    <h3 class="font-black text-slate-800 flex items-center gap-2">
-                        <span class="material-symbols-outlined text-primary">edit_note</span>
-                        Update Job Information
-                    </h3>
-                    <button onclick="closeJobModal()" class="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center transition-colors">
-                        <span class="material-symbols-outlined text-slate-400 text-[20px]">close</span>
-                    </button>
-                </div>
-                <form id="jobUpdateForm" method="post" class="p-6 space-y-4">
-                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Department</label>
-                        <select name="departmentId" id="jobDeptSelect" required
-                                class="w-full text-sm border-slate-200 rounded-xl focus:ring-primary focus:border-primary px-4 py-2 bg-slate-50 text-slate-700 font-medium">
-                            <option th:each="dept : ${departments}" th:value="${dept.id}" th:text="${dept.name}">Dept</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Position</label>
-                        <select name="positionId" id="jobPosSelect" required
-                                class="w-full text-sm border-slate-200 rounded-xl focus:ring-primary focus:border-primary px-4 py-2 bg-slate-50 text-slate-700 font-medium">
-                            <option th:each="pos : ${positions}" th:value="${pos.id}" th:text="${pos.name}">Pos</option>
-                        </select>
-                    </div>
-                    <div class="pt-4 flex gap-3">
-                        <button type="button" onclick="closeJobModal()"
-                                class="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-bold text-slate-600 hover:bg-slate-50 transition-colors">
-                            Cancel
-                        </button>
-                        <button type="submit"
-                                class="flex-1 py-2.5 rounded-xl bg-primary text-white text-sm font-bold shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all translate-y-0 active:translate-y-0.5">
-                            Apply Changes
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+
 
         <script th:inline="javascript">
             const csrfHeader = /*[[${_csrf.headerName}]]*/ 'X-CSRF-TOKEN';
@@ -430,35 +439,35 @@
                             ? 'font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full text-xs'
                             : 'font-semibold text-slate-600 bg-slate-50 px-2 py-0.5 rounded-full text-xs';
 
-                        // Salary
+                        // Salary + Total fixed
                         document.getElementById('detBase').textContent = d.baseSalary != null ? '$' + Number(d.baseSalary).toLocaleString('en-US', { minimumFractionDigits: 2 }) : 'N/A';
                         document.getElementById('detAllow').textContent = d.allowance != null ? '+$' + Number(d.allowance).toLocaleString('en-US', { minimumFractionDigits: 2 }) : 'N/A';
+                        const tSal = (d.baseSalary || 0) + (d.allowance || 0);
+                        document.getElementById('detTotalSal').textContent = '$' + Number(tSal).toLocaleString('en-US', {minimumFractionDigits: 2});
+
                         document.getElementById('detSalType').textContent = d.salaryType || 'N/A';
-                        document.getElementById('detSalFrom').textContent = d.salaryEffectiveFrom || 'N/A';
+                        document.getElementById('detSalFrom').textContent = 'Effective ' + (d.salaryEffectiveFrom || 'N/A');
 
                         // Personal
+                        const emailEl = document.getElementById('detEmail');
+                        emailEl.textContent = d.email || 'N/A';
+                        emailEl.title = d.email || '';
+                        
                         document.getElementById('detFullName').textContent = d.fullName || 'N/A';
-                        document.getElementById('detEmail').textContent = d.email || 'N/A';
                         document.getElementById('detPhone').textContent = d.phone || 'N/A';
                         document.getElementById('detUser').textContent = d.username || 'N/A';
 
-                        // Populate Job Update Form
-                        document.getElementById('jobUpdateForm').action = '/hr/employees/' + id + '/update-job';
+                        // Reports / Links
+                        const exportForm = document.getElementById('attendanceExportForm');
+                        exportForm.action = '/hr/attendance/export/' + id;
                         
-                        const deptSelect = document.getElementById('jobDeptSelect');
-                        for(let i=0; i<deptSelect.options.length; i++) {
-                            if(deptSelect.options[i].text === d.department) {
-                                deptSelect.selectedIndex = i;
-                                break;
-                            }
-                        }
-                        
-                        const posSelect = document.getElementById('jobPosSelect');
-                        for(let i=0; i<posSelect.options.length; i++) {
-                            if(posSelect.options[i].text === d.position) {
-                                posSelect.selectedIndex = i;
-                                break;
-                            }
+                        // Set current month as default if empty, and disable future months
+                        const monthInput = document.getElementById('exportMonth');
+                        const now = new Date();
+                        const currentMonthStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+                        monthInput.max = currentMonthStr; // UI validation rule
+                        if (!monthInput.value) {
+                            monthInput.value = currentMonthStr;
                         }
 
                         // Skills
@@ -470,9 +479,8 @@
                             noSkills.classList.add('hidden');
                             d.skills.forEach(s => {
                                 const badge = document.createElement('div');
-                                badge.className = 'group/skill flex items-center gap-2 bg-slate-50 border border-slate-100 rounded-xl px-3 py-2 transition-all hover:bg-white hover:border-primary/20 hover:shadow-sm';
+                                badge.className = 'group/skill flex items-center gap-2 bg-slate-50 border border-slate-100 rounded-xl px-2 py-1.5 transition-all hover:bg-white hover:border-primary/20 hover:shadow-sm w-[48%]';
                                 
-                                // Color based on proficiency (1-5 scale)
                                 let colorClass = 'bg-slate-400';
                                 if (s.proficiency >= 5) colorClass = 'bg-emerald-500';
                                 else if (s.proficiency >= 4) colorClass = 'bg-blue-500';
@@ -481,9 +489,9 @@
                                 
                                 badge.innerHTML = `
                                     <div class="w-1.5 h-6 rounded-full ${colorClass} opacity-70 group-hover/skill:opacity-100 transition-opacity"></div>
-                                    <div>
-                                        <p class="text-[11px] font-black text-slate-800 leading-none">${s.name}</p>
-                                        <p class="text-[9px] text-slate-400 font-bold uppercase tracking-tighter mt-0.5">${s.category} • Level ${s.proficiency}/5</p>
+                                    <div class="overflow-hidden">
+                                        <p class="text-[10px] font-black text-slate-800 leading-none truncate">${s.name}</p>
+                                        <p class="text-[8px] text-slate-400 font-bold uppercase tracking-tighter mt-0.5 truncate">${s.category} • Lv ${s.proficiency}</p>
                                     </div>
                                 `;
                                 skillsContainer.appendChild(badge);
@@ -491,6 +499,73 @@
                         } else {
                             noSkills.classList.remove('hidden');
                         }
+
+                        // Performance Reviews
+                        const perfList = document.getElementById('perfList');
+                        const noPerf = document.getElementById('noPerf');
+                        perfList.innerHTML = '';
+                        if (d.performanceReviews && d.performanceReviews.length > 0) {
+                            noPerf.classList.add('hidden');
+                            d.performanceReviews.forEach(pr => {
+                                let periodStr = pr.reviewPeriod ? pr.reviewPeriod.replace('YEAR_', '') : 'N/A';
+                                const div = document.createElement('div');
+                                div.className = 'bg-white border border-slate-100 p-2.5 rounded-lg';
+                                div.innerHTML = `
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-xs font-bold text-slate-800">${periodStr}</span>
+                                        <div class="flex gap-1">
+                                            <span class="text-[10px] font-mono px-1 py-0.5 rounded bg-indigo-50 text-indigo-700 font-bold border border-indigo-100" title="Performance Score">Perf: ${pr.performanceScore}/5</span>
+                                            <span class="text-[10px] font-mono px-1 py-0.5 rounded bg-amber-50 text-amber-700 font-bold border border-amber-100" title="Potential Score">Pot: ${pr.potentialScore}/5</span>
+                                        </div>
+                                    </div>
+                                `;
+                                perfList.appendChild(div);
+                            });
+                        } else {
+                            noPerf.classList.remove('hidden');
+                        }
+
+                        // Disciplinary & Rewards
+                        const discList = document.getElementById('discList');
+                        const noDisc = document.getElementById('noDisc');
+                        discList.innerHTML = '';
+                        if (d.disciplines && d.disciplines.length > 0) {
+                            noDisc.classList.add('hidden');
+                            d.disciplines.forEach(dc => {
+                                const isReward = dc.recordType === 'REWARD';
+                                const div = document.createElement('div');
+                                div.className = isReward 
+                                    ? 'bg-emerald-50/50 border border-emerald-100 p-2.5 rounded-lg'
+                                    : 'bg-rose-50/50 border border-rose-100 p-2.5 rounded-lg';
+                                
+                                const typeBadge = isReward 
+                                    ? '<span class="px-1.5 py-0.5 rounded bg-emerald-600 text-white text-[8px] font-black uppercase tracking-wider shrink-0 shadow-sm">Reward</span>'
+                                    : '<span class="px-1.5 py-0.5 rounded bg-rose-600 text-white text-[8px] font-black uppercase tracking-wider shrink-0 shadow-sm">Discipline</span>';
+
+                                const textTitleClass = isReward ? 'text-emerald-900' : 'text-rose-900';
+                                const textDateClass = isReward ? 'text-emerald-600' : 'text-rose-500';
+
+                                // Format date to Month Year
+                                let dateDisplay = dc.decisionDate;
+                                if (dateDisplay) {
+                                    const dObj = new Date(dateDisplay);
+                                    if (!isNaN(dObj)) {
+                                        dateDisplay = dObj.toLocaleString('en-US', { month: 'short', year: 'numeric' });
+                                    }
+                                }
+
+                                div.innerHTML = `
+                                    <div class="flex justify-between items-start gap-2">
+                                        <span class="text-xs font-bold ${textTitleClass} flex items-start gap-1.5">${typeBadge} <span class="break-words leading-tight mt-0.5">${dc.title}</span></span>
+                                        <span class="text-[10px] whitespace-nowrap ${textDateClass} font-medium mt-0.5">${dateDisplay}</span>
+                                    </div>
+                                `;
+                                discList.appendChild(div);
+                            });
+                        } else {
+                            noDisc.classList.remove('hidden');
+                        }
+
                     })
                     .catch(() => {
                         document.getElementById('modalName').textContent = 'Error loading data';
@@ -513,19 +588,35 @@
                 document.getElementById('content-' + tab).classList.add('active');
             }
 
-            function openJobModal() {
-                document.getElementById('jobModal').classList.remove('hidden');
-                document.getElementById('jobModal').classList.add('flex');
-            }
 
-            function closeJobModal() {
-                document.getElementById('jobModal').classList.add('hidden');
-                document.getElementById('jobModal').classList.remove('flex');
+
+            function filterSkills() {
+                const searchStr = document.getElementById('skillSearchInput').value.toLowerCase();
+                const labels = document.querySelectorAll('#skillCheckboxContainer .skill-label-item');
+                labels.forEach(label => {
+                    const text = label.querySelector('.skill-name-text').textContent.toLowerCase();
+                    if (text.includes(searchStr)) {
+                        label.style.display = 'flex';
+                    } else {
+                        label.style.display = 'none';
+                    }
+                });
             }
 
             // Close modal on backdrop click
             document.getElementById('empModal').addEventListener('click', function (e) {
                 if (e.target === this) closeModal();
+            });
+
+            // Close skill dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                const details = document.getElementById('skillDropdown');
+                if (details && details.hasAttribute('open') && !details.contains(e.target)) {
+                    // Do not close if clicking inside the search input
+                    if (e.target.id !== 'skillSearchInput') {
+                        details.removeAttribute('open');
+                    }
+                }
             });
 
             // Check for viewId to auto-open modal
