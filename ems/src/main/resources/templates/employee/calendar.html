@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title th:text="${pageTitle != null ? pageTitle : 'Calendar - EMS'}">Calendar - EMS</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="/css/app-icons.css" th:href="@{/css/app-icons.css}" />
+    <script defer src="/js/app-icons.js" th:src="@{/js/app-icons.js}"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#1414b8",
+                        "primary-light": "#e8e8fb",
+                        "bg-light": "#f6f6f8",
+                    },
+                    fontFamily: { display: ["Inter"] },
+                },
+            },
+        };
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        .fill-icon {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #1414b840;
+            border-radius: 99px;
+        }
+
+        .nav-active {
+            box-shadow: 0 0 0 1px #1414b830, inset 3px 0 0 #1414b8;
+        }
+    </style>
+</head>
+
+<body class="bg-bg-light font-display text-slate-900 min-h-screen">
+    <div class="flex h-screen overflow-hidden">
+
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <!-- SIDEBAR                                                   -->
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <aside th:replace="~{fragments/employee-sidebar :: sidebar('calendar', ${employee}, ${managementPortalUrl}, ${managementPortalLabel}, ${managementRoleLabel})}"></aside>
+
+        <!-- ── Main Content ─────────────────────────────────────────────────────── -->
+        <main class="flex-1 flex flex-col overflow-hidden">
+
+            <!-- Header -->
+            <header
+                class="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-8 shrink-0">
+                <div class="flex items-center gap-4">
+                    <h2 class="text-xl font-bold">Calendar</h2>
+                    <span
+                        class="px-2 py-1 text-xs font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded-lg">View
+                        Only</span>
+                    <!-- Month/Year navigation -->
+                    <div class="flex items-center gap-2">
+                        <a th:href="@{/employee/calendar(month=${currentMonth == 1 ? 12 : currentMonth - 1}, year=${currentMonth == 1 ? currentYear - 1 : currentYear})}"
+                            class="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
+                            <span class="material-symbols-outlined text-slate-500">chevron_left</span>
+                        </a>
+                        <span class="text-sm font-bold min-w-[120px] text-center" id="currentPeriodLabel">
+                            <!-- Rendered by JS -->
+                        </span>
+                        <a th:href="@{/employee/calendar(month=${currentMonth == 12 ? 1 : currentMonth + 1}, year=${currentMonth == 12 ? currentYear + 1 : currentYear})}"
+                            class="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
+                            <span class="material-symbols-outlined text-slate-500">chevron_right</span>
+                        </a>
+                        <a th:href="@{/employee/calendar}"
+                            class="px-3 py-1 text-xs font-bold border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors ml-2">
+                            Today
+                        </a>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Calendar Body -->
+            <div class="flex-1 overflow-y-auto p-6">
+                <!-- Day headers -->
+                <div class="grid grid-cols-7 mb-2">
+                    <div class="text-center text-xs font-bold text-slate-500 uppercase tracking-wider py-2">Sun</div>
+                    <div class="text-center text-xs font-bold text-slate-500 uppercase tracking-wider py-2">Mon</div>
+                    <div class="text-center text-xs font-bold text-slate-500 uppercase tracking-wider py-2">Tue</div>
+                    <div class="text-center text-xs font-bold text-slate-500 uppercase tracking-wider py-2">Wed</div>
+                    <div class="text-center text-xs font-bold text-slate-500 uppercase tracking-wider py-2">Thu</div>
+                    <div class="text-center text-xs font-bold text-slate-500 uppercase tracking-wider py-2">Fri</div>
+                    <div class="text-center text-xs font-bold text-slate-500 uppercase tracking-wider py-2">Sat</div>
+                </div>
+                <!-- Calendar grid — rendered by JS -->
+                <div id="monthGrid"
+                    class="grid grid-cols-7 gap-px bg-slate-200 dark:bg-slate-700 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700">
+                    <!-- Days injected by buildMonthGrid() -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ── Day Detail Modal (View All Events - Read Only) ───────────────────────────────── -->
+    <div id="dayDetailModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 backdrop-blur-sm">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg mx-4 max-h-[80vh] flex flex-col">
+            <!-- Header -->
+            <div class="p-6 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center shrink-0">
+                <div>
+                    <h3 id="dayDetailTitle" class="text-xl font-black">Events on April 8, 2026</h3>
+                    <p id="dayDetailCount" class="text-xs text-slate-500 mt-1">5 events</p>
+                </div>
+                <button onclick="closeDayDetailModal()"
+                    class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+
+            <!-- Events List (Scrollable) -->
+            <div id="dayDetailEventsList" class="flex-1 overflow-y-auto p-6 space-y-3">
+                <!-- Events will be injected here by JavaScript -->
+            </div>
+
+            <!-- Footer - View Only Notice -->
+            <div class="p-6 border-t border-slate-200 dark:border-slate-700 shrink-0 bg-slate-50 dark:bg-slate-800">
+                <div class="flex items-center gap-2 text-slate-500 text-sm justify-center">
+                    <span class="material-symbols-outlined text-[18px]">info</span>
+                    <span>View-only mode: You cannot add or edit events</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Toast ──────────────────────────────────────────────────────────────── -->
+    <div id="toast"
+        class="fixed bottom-6 right-6 z-50 hidden items-center gap-3 px-5 py-3 rounded-xl shadow-lg text-white text-sm font-semibold">
+        <span id="toast-icon" class="material-symbols-outlined text-[20px]">check_circle</span>
+        <span id="toast-msg">Done</span>
+    </div>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        var calendarMonth = /*[[${currentMonth}]]*/ 1;
+        var calendarYear = /*[[${currentYear}]]*/ 2026;
+        var calendarEvents = /*[[${events}]]*/[];
+        var calendarFlashMessage = /*[[${flashMessage}]]*/ null;
+        var calendarFlashType = /*[[${flashType}]]*/ 'success';
+
+        var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'];
+
+        document.getElementById('currentPeriodLabel').textContent = MONTHS[calendarMonth - 1] + ' ' + calendarYear;
+
+        function buildMonthGrid() {
+            var grid = document.getElementById('monthGrid');
+            if (!grid) return;
+
+            var today = new Date();
+            var firstDay = new Date(calendarYear, calendarMonth - 1, 1).getDay();
+            var daysInMonth = new Date(calendarYear, calendarMonth, 0).getDate();
+            var daysInPrev = new Date(calendarYear, calendarMonth - 1, 0).getDate();
+            var html = '';
+
+            // Ngày tháng trước
+            for (var i = firstDay - 1; i >= 0; i--) {
+                var d = daysInPrev - i;
+                html += '<div class="bg-white dark:bg-slate-900 min-h-[100px] p-2 opacity-40">'
+                    + '<span class="text-xs font-bold text-slate-400">' + d + '</span>'
+                    + '</div>';
+            }
+
+            // Ngày tháng hiện tại
+            for (var d = 1; d <= daysInMonth; d++) {
+                var isToday = d === today.getDate()
+                    && calendarMonth === today.getMonth() + 1
+                    && calendarYear === today.getFullYear();
+                var mm = String(calendarMonth).padStart(2, '0');
+                var dd = String(d).padStart(2, '0');
+                var dateStr = calendarYear + '-' + mm + '-' + dd;
+                var dayEvts = calendarEvents.filter(function (e) { return e.startDate === dateStr; });
+                var ringCls = isToday ? 'ring-2 ring-primary ring-inset' : '';
+
+                var numBadge = isToday
+                    ? '<span class="text-xs font-bold bg-primary text-white rounded-full w-6 h-6 flex items-center justify-center">' + d + '</span>'
+                    : '<span class="text-xs font-bold text-slate-700 dark:text-slate-300">' + d + '</span>';
+
+                var evtsHtml = '';
+                var shown = dayEvts.slice(0, 3);
+                for (var j = 0; j < shown.length; j++) {
+                    var ev = shown[j];
+
+                    evtsHtml += '<div class="text-[10px] font-bold px-1.5 py-0.5 rounded truncate cursor-pointer ' + getEventBgClass(ev.color) + '"'
+                        + ' onclick="event.stopPropagation(); openDayDetailModal(\'' + dateStr + '\')"'
+                        + ' title="' + (ev.title || '').replace(/"/g, '&quot;') + ' - Click to view all events">'
+                        + (ev.title || '')
+                        + '</div>';
+                }
+                if (dayEvts.length > 3) {
+                    evtsHtml += '<div class="text-[10px] text-slate-400 font-medium px-1 cursor-pointer hover:text-primary transition-colors"'
+                        + ' onclick="event.stopPropagation(); openDayDetailModal(\'' + dateStr + '\')"'
+                        + ' title="Click to view all events">+' + (dayEvts.length - 3) + ' more</div>';
+                }
+
+                var dayClickHandler = dayEvts.length > 0 ? 'openDayDetailModal(\'' + dateStr + '\')' : '';
+                var clickAttr = dayClickHandler ? ' onclick="' + dayClickHandler + '"' : '';
+                var cursorClass = dayEvts.length > 0 ? 'cursor-pointer hover:bg-slate-50' : '';
+
+                html += '<div class="bg-white dark:bg-slate-900 min-h-[100px] p-2 transition-colors ' + ringCls + ' ' + cursorClass + '"'
+                    + clickAttr + '>'
+                    + '<div class="flex justify-between items-start mb-1">' + numBadge + '</div>'
+                    + '<div class="space-y-1">' + evtsHtml + '</div>'
+                    + '</div>';
+            }
+
+            // Ngày tháng sau
+            var totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
+            for (var d = 1; d <= totalCells - firstDay - daysInMonth; d++) {
+                html += '<div class="bg-white dark:bg-slate-900 min-h-[100px] p-2 opacity-40">'
+                    + '<span class="text-xs font-bold text-slate-400">' + d + '</span>'
+                    + '</div>';
+            }
+
+            grid.innerHTML = html;
+            window.hydrateAppIcons?.(grid);
+        }
+
+        function getEventBgClass(color) {
+            var map = {
+                blue: 'bg-blue-100 text-blue-700',
+                purple: 'bg-purple-100 text-purple-700',
+                emerald: 'bg-emerald-100 text-emerald-700',
+                amber: 'bg-amber-100 text-amber-700',
+                rose: 'bg-rose-100 text-rose-700'
+            };
+            return map[color] || map.blue;
+        }
+
+        buildMonthGrid();
+
+        function showToast(message, type) {
+            var toast = document.getElementById('toast');
+            var icon = document.getElementById('toast-icon');
+            var msg = document.getElementById('toast-msg');
+            msg.textContent = message;
+            var iconName = type === 'success' ? 'check_circle' : type === 'error' ? 'error' : 'info';
+            if (window.setAppIcon) {
+                window.setAppIcon(icon, iconName);
+            } else {
+                icon.textContent = iconName;
+            }
+            toast.className = toast.className.replace(/bg-\S+/g, '');
+            toast.classList.add(type === 'success' ? 'bg-emerald-600' : type === 'error' ? 'bg-rose-600' : 'bg-slate-700');
+            toast.classList.remove('hidden'); toast.classList.add('flex');
+            setTimeout(function () { toast.classList.add('hidden'); toast.classList.remove('flex'); }, 3200);
+        }
+
+        // ── Day Detail Modal Functions ────────────────────────────────────────────
+        var currentDayDetailDate = null;
+
+        function openDayDetailModal(dateStr) {
+            currentDayDetailDate = dateStr;
+            var dayEvents = calendarEvents.filter(function (e) { return e.startDate === dateStr; });
+
+            // Format date for display
+            var dateParts = dateStr.split('-');
+            var dateObj = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
+            var monthName = MONTHS[dateObj.getMonth()];
+            var dayNum = dateObj.getDate();
+            var year = dateObj.getFullYear();
+
+            // Update modal title
+            document.getElementById('dayDetailTitle').textContent = 'Events on ' + monthName + ' ' + dayNum + ', ' + year;
+            document.getElementById('dayDetailCount').textContent = dayEvents.length + (dayEvents.length === 1 ? ' event' : ' events');
+
+            // Render events list
+            renderDayEvents(dayEvents);
+
+            // Show modal
+            var modal = document.getElementById('dayDetailModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeDayDetailModal() {
+            var modal = document.getElementById('dayDetailModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            currentDayDetailDate = null;
+        }
+
+        function renderDayEvents(events) {
+            var container = document.getElementById('dayDetailEventsList');
+
+            if (events.length === 0) {
+                container.innerHTML = '<div class="text-center py-8 text-slate-400">'
+                    + '<span class="material-symbols-outlined text-4xl mb-2">event_busy</span>'
+                    + '<p class="text-sm">No events on this day</p>'
+                    + '</div>';
+                window.hydrateAppIcons?.(container);
+                return;
+            }
+
+            var html = '';
+            events.forEach(function (ev) {
+                var colorClass = getEventBgClass(ev.color);
+                var timeStr = ev.isAllDay ? 'All Day' : (ev.startTime || '') + (ev.endTime ? ' - ' + ev.endTime : '');
+                var typeLabel = ev.type || 'OTHER';
+                var isCompanyWide = ev.isCompanyWide;
+
+                html += '<div class="bg-slate-50 dark:bg-slate-800 rounded-xl p-4 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">'
+                    + '<div class="flex items-start justify-between gap-3">'
+                    + '<div class="flex-1">'
+                    + '<div class="flex items-center gap-2 mb-1">'
+                    + '<div class="w-3 h-3 rounded-full ' + colorClass.split(' ')[0] + '"></div>'
+                    + '<h4 class="font-bold text-sm">' + (ev.title || 'Untitled') + '</h4>';
+
+                if (isCompanyWide) {
+                    html += '<span class="px-1.5 py-0.5 text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded">Company-wide</span>';
+                }
+
+                html += '</div>'
+                    + '<p class="text-xs text-slate-500 mb-1">' + timeStr + ' • ' + typeLabel + '</p>';
+
+                if (ev.description) {
+                    html += '<p class="text-xs text-slate-600 dark:text-slate-400 mt-2">' + ev.description + '</p>';
+                }
+
+                html += '</div>'
+                    + '</div>'
+                    + '</div>';
+            });
+
+            container.innerHTML = html;
+            window.hydrateAppIcons?.(container);
+        }
+
+        // Close modal on backdrop click
+        document.getElementById('dayDetailModal').addEventListener('click', function (e) {
+            if (e.target === this) closeDayDetailModal();
+        });
+
+        if (calendarFlashMessage) showToast(calendarFlashMessage, calendarFlashType);
+        /*]]>*/
+    </script>
+
+</body>
+
+</html>

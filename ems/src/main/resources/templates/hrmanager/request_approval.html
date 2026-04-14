@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title th:text="${pageTitle != null ? pageTitle : 'Request Management - EMS'}">Request Management - EMS</title>
+    <title th:text="${pageTitle != null ? pageTitle : 'Request Approval - EMS'}">Request Approval - EMS</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
         rel="stylesheet" />
@@ -378,8 +378,8 @@
             <!-- Topbar -->
             <header class="h-16 bg-white border-b border-slate-100 flex items-center justify-between px-8 shrink-0">
                 <div>
-                    <h2 class="text-base font-black text-slate-900 leading-tight">Request Management</h2>
-                    <p class="text-xs text-slate-400">Manage all employee requests</p>
+                    <h2 class="text-base font-black text-slate-900 leading-tight">Request Approval</h2>
+                    <p class="text-xs text-slate-400">Review and approve system requests</p>
                 </div>
                 <div class="flex items-center gap-2">
                     <!-- Export button -->
@@ -466,15 +466,11 @@
                     <!-- ── Main Table Card ────────────────────────────── -->
                     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden anim anim-2">
 
-                        <!-- Category Tabs - Phase 3 -->
+                        <!-- Category Tabs -->
                         <div class="border-b border-slate-100 flex items-center">
                             <button onclick="switchCategory('all')" data-category="all" 
                                 class="category-tab active">
                                 All Requests
-                            </button>
-                            <button onclick="switchCategory('leave')" data-category="leave" 
-                                class="category-tab">
-                                Leave Requests
                             </button>
                             <button onclick="switchCategory('hr')" data-category="hr" 
                                 class="category-tab">
@@ -483,6 +479,10 @@
                             <button onclick="switchCategory('status')" data-category="status" 
                                 class="category-tab">
                                 Status Changes
+                            </button>
+                            <button onclick="switchCategory('salary')" data-category="salary" 
+                                class="category-tab">
+                                Salary & Benefits
                             </button>
                             
                             <!-- Search -->
@@ -494,7 +494,7 @@
                             </div>
                         </div>
 
-                        <!-- ── Filter Bar - Single Row ──────────────────────────────── -->
+                        <!-- ── Filter Bar ──────────────────────────────── -->
                         <div class="px-6 py-3 border-b border-slate-100 flex items-center gap-3">
                             <!-- Status pills (toggle buttons) -->
                             <div class="flex items-center gap-2" id="status-filter">
@@ -513,17 +513,6 @@
                             </div>
 
                             <div class="w-px h-4 bg-slate-200 shrink-0"></div>
-
-                            <!-- Type dropdown -->
-                            <select id="type-filter" onchange="filterTable()"
-                                class="text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all cursor-pointer">
-                                <option value="">Type ▾</option>
-                                <option value="annual">Annual</option>
-                                <option value="sick">Sick</option>
-                                <option value="emergency">Emergency</option>
-                                <option value="maternity">Maternity</option>
-                                <option value="personal">Personal</option>
-                            </select>
 
                             <!-- Priority dropdown -->
                             <select id="priority-filter" onchange="filterTable()"
@@ -545,17 +534,6 @@
                                 <option value="hr">HR</option>
                                 <option value="finance">Finance</option>
                             </select>
-
-                            <!-- Date range -->
-                            <div class="flex items-center gap-2">
-                                <input type="date" id="date-from" onchange="filterTable()"
-                                    class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30" />
-                                <span class="text-xs text-slate-400">→</span>
-                                <input type="date" id="date-to" onchange="filterTable()"
-                                    class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30" />
-                            </div>
-
-                            <div class="w-px h-4 bg-slate-200 shrink-0"></div>
 
                             <!-- Result count -->
                             <span id="filter-count" class="text-xs text-slate-400 font-medium whitespace-nowrap shrink-0">5 of 5</span>
@@ -628,6 +606,7 @@
                                         <!-- Row 1: Alex Rivera — has overlap warning -->
                                         <tr class="hover:bg-slate-50/80 transition-colors data-row"
                                             data-name="alex rivera" data-type="annual" data-dept="marketing"
+                                            data-status="pending" data-priority="normal"
                                             data-id="1">
                                             <td class="px-6 py-4">
                                                 <input type="checkbox" onchange="onRowCheck(this,1)"
@@ -898,7 +877,9 @@
 
                                         <!-- Row 2: Jordan Lee -->
                                         <tr class="hover:bg-slate-50/80 transition-colors data-row"
-                                            data-name="jordan lee" data-type="sick" data-dept="engineering" data-id="2">
+                                            data-name="jordan lee" data-type="sick" data-dept="engineering" 
+                                            data-status="pending" data-priority="urgent"
+                                            data-id="2">
                                             <td class="px-6 py-4">
                                                 <input type="checkbox" onchange="onRowCheck(this,2)"
                                                     class="row-check w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary/30 cursor-pointer" />
@@ -1105,7 +1086,9 @@
 
                                         <!-- Row 3: Maria Garcia -->
                                         <tr class="hover:bg-slate-50/80 transition-colors data-row"
-                                            data-name="maria garcia" data-type="personal" data-dept="hr" data-id="3">
+                                            data-name="maria garcia" data-type="personal" data-dept="hr" 
+                                            data-status="pending" data-priority="high"
+                                            data-id="3">
                                             <td class="px-6 py-4">
                                                 <input type="checkbox" onchange="onRowCheck(this,3)"
                                                     class="row-check w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary/30 cursor-pointer" />
@@ -1262,6 +1245,7 @@
                                         <!-- Row 4: Robert Chen — long leave -->
                                         <tr class="hover:bg-slate-50/80 transition-colors data-row"
                                             data-name="robert chen" data-type="annual" data-dept="marketing"
+                                            data-status="pending" data-priority="normal"
                                             data-id="4">
                                             <td class="px-6 py-4">
                                                 <input type="checkbox" onchange="onRowCheck(this,4)"
@@ -1428,7 +1412,7 @@
                                             <tr th:id="'row-' + ${req.id}"
                                                 class="hover:bg-slate-50/80 transition-colors data-row"
                                                 th:data-name="${#strings.toLowerCase(req.employeeName)}"
-                                                th:data-type="${#strings.toLowerCase(req.leaveType)}"
+                                                th:data-type="${req.leaveType != null ? #strings.toLowerCase(#strings.replace(#strings.replace(req.leaveType, ' Leave', ''), ' ', '')) : ''}"
                                                 th:data-dept="${req.department != null ? #strings.toLowerCase(req.department) : ''}"
                                                 th:data-priority="${req.priority != null ? #strings.toLowerCase(req.priority) : 'normal'}"
                                                 th:data-status="${req.status != null ? #strings.toLowerCase(req.status) : 'pending'}"
@@ -1901,6 +1885,7 @@
         var rejectTargetId = null;
         var confirmCallback = null; // For custom confirm modal
         var activeFilters = { type: 'all', priority: 'all', status: 'all' };
+        var selectedStatuses = new Set(); // Multi-select status filter
         var currentCategory = 'all'; // Phase 3: Track current category
         
         // ── Custom Confirm Modal (No System Alert) ────────────────────
@@ -2028,22 +2013,27 @@
         }
 
         // ── Filter bar ────────────────────────────────────────────────
-        // Toggle status filter (can be turned on/off)
+        // Toggle status filter (multi-select - can select multiple statuses)
         function toggleStatusFilter(el, value) {
             var isActive = el.classList.contains('active');
             
             if (isActive) {
-                // Turn off - back to "all"
+                // Deselect this status
                 el.classList.remove('active');
-                activeFilters.status = 'all';
+                selectedStatuses.delete(value);
             } else {
-                // Turn off other status pills
-                document.querySelectorAll('.status-pill').forEach(function (p) {
-                    p.classList.remove('active');
-                });
-                // Turn on this one
+                // Select this status
                 el.classList.add('active');
-                activeFilters.status = value;
+                selectedStatuses.add(value);
+            }
+            
+            // Update activeFilters for backward compatibility
+            if (selectedStatuses.size === 0) {
+                activeFilters.status = 'all';
+            } else if (selectedStatuses.size === 1) {
+                activeFilters.status = Array.from(selectedStatuses)[0];
+            } else {
+                activeFilters.status = 'multi';
             }
             
             filterTable();
@@ -2059,35 +2049,28 @@
         }
 
         function filterTable() {
-            var search = (document.getElementById('search-input').value || '').toLowerCase();
-            var dept = (document.getElementById('dept-filter').value || '').toLowerCase();
-            var type = (document.getElementById('type-filter').value || '').toLowerCase();
-            var priority = (document.getElementById('priority-filter').value || '').toLowerCase();
-            var dateFrom = document.getElementById('date-from').value;
-            var dateTo = document.getElementById('date-to').value;
-            var status = activeFilters.status || 'all';
+            var search = (document.getElementById('search-input')?.value || '').toLowerCase();
+            var dept = (document.getElementById('dept-filter')?.value || '').toLowerCase();
+            var priority = (document.getElementById('priority-filter')?.value || '').toLowerCase();
 
             // Update dropdown styles when active
-            var typeSelect = document.getElementById('type-filter');
             var prioritySelect = document.getElementById('priority-filter');
             var deptSelect = document.getElementById('dept-filter');
             
-            if (type) {
-                typeSelect.classList.add('active-filter');
-            } else {
-                typeSelect.classList.remove('active-filter');
+            if (prioritySelect) {
+                if (priority) {
+                    prioritySelect.classList.add('active-filter');
+                } else {
+                    prioritySelect.classList.remove('active-filter');
+                }
             }
             
-            if (priority) {
-                prioritySelect.classList.add('active-filter');
-            } else {
-                prioritySelect.classList.remove('active-filter');
-            }
-            
-            if (dept) {
-                deptSelect.classList.add('active-filter');
-            } else {
-                deptSelect.classList.remove('active-filter');
+            if (deptSelect) {
+                if (dept) {
+                    deptSelect.classList.add('active-filter');
+                } else {
+                    deptSelect.classList.remove('active-filter');
+                }
             }
 
             var rows = document.querySelectorAll('.data-row');
@@ -2096,34 +2079,37 @@
 
             rows.forEach(function (row) {
                 var name = (row.dataset.name || '').toLowerCase();
-                var rowType = (row.dataset.type || '').toLowerCase();
                 var rowDept = (row.dataset.dept || '').toLowerCase();
                 var rowPriority = (row.dataset.priority || '').toLowerCase();
                 var rowStatus = (row.dataset.status || '').toLowerCase();
                 var rowCategory = (row.dataset.category || '').toLowerCase();
 
                 var matchSearch = !search || name.includes(search);
-                var matchType = !type || rowType.includes(type);
-                var matchDept = !dept || rowDept.includes(dept);
+                var matchDept = !dept || rowDept === dept || rowDept.includes(dept);
                 var matchPriority = !priority || rowPriority === priority;
-                var matchStatus = status === 'all' || rowStatus === status.toLowerCase();
                 
-                // Category filter - improved logic
+                // Multi-select status filter
+                var matchStatus = true;
+                if (selectedStatuses.size > 0) {
+                    matchStatus = selectedStatuses.has(rowStatus);
+                }
+                
+                // Category filter - updated for Request Approval
                 var matchCategory = true;
                 if (currentCategory === 'all') {
                     matchCategory = true; // Show all
-                } else if (currentCategory === 'leave') {
-                    // Show rows that have leave types (annual, sick, personal, etc.)
-                    matchCategory = rowType !== '' && !rowCategory;
                 } else if (currentCategory === 'hr') {
                     // Show rows marked as HR documents
                     matchCategory = rowCategory === 'hr';
                 } else if (currentCategory === 'status') {
                     // Show rows marked as status changes
                     matchCategory = rowCategory === 'status';
+                } else if (currentCategory === 'salary') {
+                    // Show rows marked as salary/benefits
+                    matchCategory = rowCategory === 'salary';
                 }
 
-                var show = matchSearch && matchType && matchDept && matchPriority && matchStatus && matchCategory;
+                var show = matchSearch && matchDept && matchPriority && matchStatus && matchCategory;
                 row.style.display = show ? '' : 'none';
 
                 // Also hide corresponding detail row
@@ -2138,7 +2124,7 @@
             if (countEl) countEl.textContent = visible + ' of ' + total;
 
             // Show/hide clear button
-            var hasActiveFilters = search || dept || type || priority || dateFrom || dateTo || status !== 'all';
+            var hasActiveFilters = search || dept || type || priority || selectedStatuses.size > 0;
             var clearBtn = document.getElementById('clear-filters-btn');
             if (clearBtn) {
                 clearBtn.style.display = hasActiveFilters ? 'flex' : 'none';
@@ -2149,13 +2135,16 @@
         }
 
         function clearFilters() {
-            document.getElementById('search-input').value = '';
-            document.getElementById('dept-filter').value = '';
-            document.getElementById('type-filter').value = '';
-            document.getElementById('priority-filter').value = '';
-            document.getElementById('date-from').value = '';
-            document.getElementById('date-to').value = '';
+            var searchInput = document.getElementById('search-input');
+            var deptFilter = document.getElementById('dept-filter');
+            var priorityFilter = document.getElementById('priority-filter');
+            
+            if (searchInput) searchInput.value = '';
+            if (deptFilter) deptFilter.value = '';
+            if (priorityFilter) priorityFilter.value = '';
+            
             activeFilters = { status: 'all' };
+            selectedStatuses.clear(); // Clear multi-select status
             
             // Reset status pills - remove all active states
             document.querySelectorAll('.status-pill').forEach(function (p) { 

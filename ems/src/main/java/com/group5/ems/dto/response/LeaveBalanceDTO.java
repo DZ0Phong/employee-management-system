@@ -10,9 +10,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class LeaveBalanceDTO {
-    private String leaveType;       // ANNUAL_LEAVE, SICK_LEAVE, PERSONAL_LEAVE
+    private String leaveType;       // ANNUAL_LEAVE, SICK_LEAVE, UNPAID_LEAVE
     private double totalDays;
     private double usedDays;
+    private double pendingDays;
     private double remainingDays;
-    private double usagePercentage; // để render progress bar
+    private double usagePercentage;
+    private boolean requestable;
+    private boolean unlimited;
 }

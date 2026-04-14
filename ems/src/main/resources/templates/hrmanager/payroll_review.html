@@ -103,7 +103,6 @@
                             class="bg-white shadow-sm border border-slate-200 rounded-xl p-6 hover:shadow-md transition-shadow">
                             <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Company Total
                                 Net</p>
-                            <div class="flex items-end justify-between">
                                 <p class="text-3xl font-black text-primary font-mono"
                                     th:text="'$' + ${#numbers.formatDecimal(summary.companyTotalNet, 1, 'COMMA', 2, 'POINT')}">
                                     $0.00</p>
@@ -113,7 +112,6 @@
                                     th:text="${summary.netVarianceIndicator}">
                                     +2.4%
                                 </span>
-                            </div>
                         </div>
                     </div>
 
@@ -238,7 +236,7 @@
                     <!-- Footer CTA & Pagination -->
                     <div class="flex flex-col md:flex-row items-center justify-between gap-6 pb-12 anim anim-4">
                         <div
-                            th:replace="~{fragments/pagination :: pagination(pageData=${payslips}, baseUrl='/hr/payroll-review/' + ${periodId})}">
+                            th:replace="~{fragments/pagination :: pagination(pageData=${payslips}, baseUrl='/hrmanager/payroll-review/' + ${periodId})}">
                         </div>
 
                         <div th:if="${!summary.isFullyApproved}" class="flex items-center gap-3">

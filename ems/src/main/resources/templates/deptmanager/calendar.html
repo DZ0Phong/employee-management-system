@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="/css/app-icons.css" th:href="@{/css/app-icons.css}" />
     <script defer src="/js/app-icons.js" th:src="@{/js/app-icons.js}"></script>
     <script defer src="/js/hrmanager-calendar.js" th:src="@{/js/hrmanager-calendar.js}"></script>
+    <script defer src="/js/deptmanager-calendar.js" th:src="@{/js/deptmanager-calendar.js}"></script>
     <script>
         tailwind.config = {
             darkMode: "class",
@@ -55,13 +56,13 @@
     </style>
 </head>
 
-<body class="bg-bg-light font-display text-slate-900 min-h-screen">
+<body class="bg-bg-light font-display text-slate-900 min-h-screen" data-user-dept-id="${userDepartmentId}" th:attr="data-user-dept-id=${userDepartmentId}">
     <div class="flex h-screen overflow-hidden">
 
         <!-- ══════════════════════════════════════════════════════════ -->
         <!-- SIDEBAR                                                   -->
         <!-- ══════════════════════════════════════════════════════════ -->
-        <aside th:replace="~{fragments/hrmanager-sidebar :: sidebar(${activePage}, ${currentUser})}"></aside>
+        <aside th:replace="~{fragments/deptmanager-sidebar :: sidebar(${activePage}, ${currentUser})}"></aside>
 
         <!-- ── Main Content ─────────────────────────────────────────────────────── -->
         <main class="flex-1 flex flex-col overflow-hidden">
@@ -126,56 +127,54 @@
     </div>
 
     <!-- ── Add/Edit Event Modal ─────────────────────────────────────────────── -->
-    <div id="eventModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-        <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-md mx-auto max-h-[85vh] flex flex-col">
-            <!-- Header - Fixed -->
-            <div class="flex justify-between items-center p-5 border-b border-slate-200 dark:border-slate-700 shrink-0">
-                <h3 id="modalTitle" class="text-lg font-black">Add Event</h3>
+    <div id="eventModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 backdrop-blur-sm">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg mx-4 p-8">
+            <div class="flex justify-between items-center mb-6">
+                <h3 id="modalTitle" class="text-xl font-black">Add Event</h3>
                 <button onclick="closeModal()"
                     class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors">
                     <span class="material-symbols-outlined">close</span>
                 </button>
             </div>
 
-            <!-- Form Content - Scrollable -->
-            <form id="eventForm" method="post" th:action="@{/hrmanager/calendar/create}" class="flex flex-col flex-1 overflow-hidden">
+            <form id="eventForm" method="post" th:action="@{/deptmanager/calendar/create}">
                 <input type="hidden" name="_method" value="post" />
                 <input type="hidden" id="eventId" name="id" />
 
-                <div class="space-y-3 p-5 overflow-y-auto flex-1">
+                <div class="space-y-4">
                     <!-- Title -->
                     <div>
-                        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Title *</label>
+                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Title *</label>
                         <input type="text" id="eventTitle" name="title" required
-                            class="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                            class="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
                             placeholder="Event title" />
                     </div>
 
                     <!-- Description -->
                     <div>
-                        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Description</label>
+                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Description</label>
                         <textarea id="eventDescription" name="description" rows="2"
-                            class="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
+                            class="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
                             placeholder="Optional description"></textarea>
                     </div>
 
                     <!-- Date Row -->
-                    <div class="grid grid-cols-2 gap-3">
+                    <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Start Date
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Start Date
                                 *</label>
                             <input type="date" id="eventStartDate" name="startDate" required
-                                class="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
+                                class="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
                         </div>
                         <div>
-                            <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">End Date</label>
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">End Date</label>
                             <input type="date" id="eventEndDate" name="endDate"
-                                class="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
+                                class="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
                         </div>
                     </div>
 
                     <!-- All Day Toggle -->
-                    <div class="flex items-center gap-2 p-2.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+                    <div class="flex items-center gap-3">
                         <input type="checkbox" id="eventAllDay" name="isAllDay"
                             class="rounded border-slate-300 text-primary focus:ring-primary"
                             onchange="toggleTimeFields(this.checked)" />
@@ -183,25 +182,25 @@
                     </div>
 
                     <!-- Time Row -->
-                    <div id="timeFields" class="grid grid-cols-2 gap-3">
+                    <div id="timeFields" class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Start Time</label>
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Start Time</label>
                             <input type="time" id="eventStartTime" name="startTime"
-                                class="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
+                                class="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
                         </div>
                         <div>
-                            <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">End Time</label>
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">End Time</label>
                             <input type="time" id="eventEndTime" name="endTime"
-                                class="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
+                                class="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
                         </div>
                     </div>
 
                     <!-- Type & Color Row -->
-                    <div class="grid grid-cols-2 gap-3">
+                    <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Type</label>
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Type</label>
                             <select id="eventType" name="type"
-                                class="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+                                class="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
                                 <option value="MEETING">Meeting</option>
                                 <option value="HOLIDAY">Holiday</option>
                                 <option value="REVIEW">Review</option>
@@ -210,9 +209,9 @@
                             </select>
                         </div>
                         <div>
-                            <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Color</label>
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Color</label>
                             <select id="eventColor" name="color"
-                                class="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+                                class="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
                                 <option value="blue">Blue</option>
                                 <option value="purple">Purple</option>
                                 <option value="emerald">Emerald</option>
@@ -223,25 +222,25 @@
                     </div>
 
                     <!-- Company-wide Toggle -->
-                    <div class="flex items-center gap-2 p-2.5 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
+                    <div class="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                         <input type="checkbox" id="eventCompanyWide" name="isCompanyWide"
                             class="rounded border-slate-300 text-primary focus:ring-primary"
                             onchange="toggleDepartmentFields(this.checked)" />
                         <div class="flex-1">
                             <label for="eventCompanyWide" class="text-sm font-bold text-blue-700 dark:text-blue-400">Company-wide Event</label>
-                            <p class="text-[11px] text-blue-600 dark:text-blue-500 mt-0.5">Visible to all departments</p>
+                            <p class="text-xs text-blue-600 dark:text-blue-500 mt-0.5">Visible to all departments</p>
                         </div>
-                        <span class="material-symbols-outlined text-blue-500 text-[20px]">corporate_fare</span>
+                        <span class="material-symbols-outlined text-blue-500">corporate_fare</span>
                     </div>
 
                     <!-- Departments Multi-select -->
                     <div id="departmentFields">
-                        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Assign to Departments</label>
-                        <div class="mt-1.5 space-y-1.5 max-h-32 overflow-y-auto p-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Assign to Departments</label>
+                        <div class="mt-2 space-y-2 max-h-40 overflow-y-auto p-3 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800/50">
                             <!-- Department checkboxes will be populated by JavaScript -->
                             <div id="departmentCheckboxes">
                                 <!-- Example structure (will be generated dynamically):
-                                <label class="flex items-center gap-2 p-1.5 hover:bg-white dark:hover:bg-slate-700 rounded-lg cursor-pointer">
+                                <label class="flex items-center gap-2 p-2 hover:bg-white dark:hover:bg-slate-700 rounded cursor-pointer">
                                     <input type="checkbox" name="departments" value="1" class="rounded border-slate-300 text-primary focus:ring-primary" />
                                     <span class="text-sm">Engineering</span>
                                 </label>
@@ -249,18 +248,17 @@
                             </div>
                         </div>
                         <input type="hidden" id="assignedDepartments" name="assignedDepartments" />
-                        <p class="text-[11px] text-slate-500 mt-1">Select one or more departments for this event</p>
+                        <p class="text-xs text-slate-500 mt-1">Select one or more departments for this event</p>
                     </div>
                 </div>
 
-                <!-- Footer Buttons - Fixed -->
-                <div class="flex gap-2.5 p-5 border-t border-slate-200 dark:border-slate-700 shrink-0">
+                <div class="flex gap-3 mt-6">
                     <button type="button" onclick="closeModal()"
-                        class="flex-1 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 font-bold text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                        class="flex-1 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 font-bold text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
                         Cancel
                     </button>
                     <button type="submit" id="submitBtn"
-                        class="flex-1 py-2 rounded-xl bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-colors">
+                        class="flex-1 py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-colors">
                         Save Event
                     </button>
                 </div>
@@ -279,7 +277,7 @@
                 <p class="text-sm text-slate-500 mt-1">Are you sure you want to delete <span id="deleteEventName"
                         class="font-bold text-slate-700 dark:text-slate-300"></span>?</p>
             </div>
-            <form id="deleteForm" method="post" th:action="@{/hrmanager/calendar/delete}">
+            <form id="deleteForm" method="post" th:action="@{/deptmanager/calendar/delete}">
                 <input type="hidden" id="deleteEventId" name="id" />
                 <div class="flex gap-3">
                     <button type="button" onclick="closeDeleteModal()"

@@ -622,24 +622,50 @@ public class HrRecruitmentService {
      * Variables: {{adminName}}, {{candidateName}}, {{jobTitle}}, {{applicationId}}
      */
     private void sendNewEmployeeRequestToAdmins(Application app) {
-        String candidateName = resolveCandidateName(app);
-        String jobTitle = resolveJobTitle(app);
+    String candidateName  = resolveCandidateName(app);
+    String jobTitle       = resolveJobTitle(app);
+    String candidateEmail = "";
+    String candidatePhone = "";
+    String role           = "";
+    String department     = "";
 
-        // Lấy tất cả user có role có code = "ADMIN"
-        List<User> admins = userRepository.findByRoleCode("ADMIN");
-        for (User admin : admins) {
-            if (admin.getEmail() == null || admin.getEmail().isBlank())
-                continue;
-
-            String adminName = admin.getFullName() != null ? admin.getFullName() : admin.getUsername();
-            Map<String, String> vars = Map.of(
-                    "adminName", adminName,
-                    "candidateName", candidateName,
-                    "jobTitle", jobTitle,
-                    "applicationId", String.valueOf(app.getId()));
-            emailService.sendFromTemplate(admin.getEmail(), TPL_NEW_EMPLOYEE_REQ, vars);
-        }
+    if (app.getCandidate() != null) {
+        var c = app.getCandidate();
+        candidateEmail = c.getEmail()  != null ? c.getEmail()  : "";
+        candidatePhone = c.getPhone()  != null ? c.getPhone()  : "";
     }
+
+    if (app.getJobPost() != null) {
+        var jp = app.getJobPost();
+        if (jp.getPosition() != null)
+            role = jp.getPosition().getName();
+        if (jp.getDepartment() != null)
+            department = jp.getDepartment().getName();
+    }
+
+    // ── Gửi cho từng Admin ────────────────────────────────────────────
+    List<User> admins = userRepository.findByRoleCode("ADMIN");
+    for (User admin : admins) {
+        if (admin.getEmail() == null || admin.getEmail().isBlank())
+            continue;
+
+        String adminName = admin.getFullName() != null
+                ? admin.getFullName()
+                : admin.getUsername();
+
+        Map<String, String> vars = Map.of(
+                "adminName",      adminName,
+                "candidateName",  candidateName,
+                "candidateEmail", candidateEmail,
+                "candidatePhone", candidatePhone,
+                "jobTitle",       jobTitle,
+                "role",           role,
+                "department",     department,
+                "applicationId",  String.valueOf(app.getId()));
+
+        emailService.sendFromTemplate(admin.getEmail(), TPL_NEW_EMPLOYEE_REQ, vars);
+    }
+}
 
     // ── small resolvers ───────────────────────────────────────────────────────
 

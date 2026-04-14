@@ -122,6 +122,8 @@ public class CalendarService {
         event.setColor(dto.getColor());
         event.setIsAllDay(dto.getIsAllDay());
         event.setDepartmentId(dto.getDepartmentId());
+        event.setAssignedDepartments(dto.getAssignedDepartments());
+        event.setIsCompanyWide(dto.getIsCompanyWide() != null ? dto.getIsCompanyWide() : false);
         event.setCreatedBy(createdBy);
         event.setCreatedAt(LocalDateTime.now());
         event.setUpdatedAt(LocalDateTime.now());
@@ -144,6 +146,8 @@ public class CalendarService {
         event.setColor(dto.getColor());
         event.setIsAllDay(dto.getIsAllDay());
         event.setDepartmentId(dto.getDepartmentId());
+        event.setAssignedDepartments(dto.getAssignedDepartments());
+        event.setIsCompanyWide(dto.getIsCompanyWide() != null ? dto.getIsCompanyWide() : false);
         event.setUpdatedAt(LocalDateTime.now());
         
         eventRepository.save(event);
@@ -169,7 +173,98 @@ public class CalendarService {
         dto.setType(event.getType());
         dto.setColor(event.getColor());
         dto.setIsAllDay(event.getIsAllDay());
+        dto.setAssignedDepartments(event.getAssignedDepartments());
+        dto.setIsCompanyWide(event.getIsCompanyWide());
         return dto;
+    }
+    
+    // ══════════════════════════════════════════════════════════════════════════
+    // MULTI-DEPARTMENT & PERMISSIONS METHODS
+    // ══════════════════════════════════════════════════════════════════════════
+    
+    /**
+     * Get events by month with department filtering
+     * @param month Month (1-12)
+     * @param year Year
+     * @param departmentId Department ID (null for HR Manager = see all)
+     * @param isHrManager True if user is HR Manager
+     */
+    public List<EventResponseDTO> getEventsByMonthForUser(int month, int year, Long departmentId, boolean isHrManager) {
+        LocalDate startOfMonth = LocalDate.of(year, month, 1);
+        LocalDate endOfMonth = startOfMonth.plusMonths(1).minusDays(1);
+        
+        List<Event> events;
+        
+        if (isHrManager) {
+            // HR Manager sees ALL events
+            events = eventRepository.findByStartTimeBetween(
+                startOfMonth, java.time.LocalTime.MIN,
+                endOfMonth, java.time.LocalTime.MAX
+            );
+        } else if (departmentId != null) {
+            // Department Manager/Employee sees: company-wide + their department events
+            events = eventRepository.findVisibleToDepartmentByDateRange(
+                departmentId, startOfMonth, endOfMonth
+            );
+        } else {
+            // Fallback: no events
+            events = new ArrayList<>();
+        }
+        
+        return events.stream()
+                .map(this::mapToEventResponseDTO)
+                .collect(Collectors.toList());
+    }
+    
+    /**
+     * Check if user can edit/delete an event
+     * @param event Event to check
+     * @param userId User ID
+     * @param userDepartmentId User's department ID
+     * @param isHrManager True if user is HR Manager
+     */
+    public boolean canUserModifyEvent(Event event, Long userId, Long userDepartmentId, boolean isHrManager) {
+        // HR Manager can modify all events
+        if (isHrManager) {
+            return true;
+        }
+        
+        // Department Manager can only modify events of their department
+        if (userDepartmentId != null && event.getDepartmentId() != null) {
+            return event.getDepartmentId().equals(userDepartmentId);
+        }
+        
+        // Creator can modify their own events (if same department)
+        if (event.getCreatedBy() != null && event.getCreatedBy().equals(userId)) {
+            return true;
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Validate department assignment based on user role
+     * @param assignedDepartments JSON string of department IDs
+     * @param userDepartmentId User's department ID
+     * @param isHrManager True if user is HR Manager
+     */
+    public boolean canAssignToDepartments(String assignedDepartments, Long userDepartmentId, boolean isHrManager) {
+        // HR Manager can assign to any department
+        if (isHrManager) {
+            return true;
+        }
+        
+        // Department Manager can only assign to their own department
+        if (assignedDepartments == null || assignedDepartments.isEmpty()) {
+            return true; // No assignment = OK
+        }
+        
+        // Check if assigned departments only contains user's department
+        if (userDepartmentId != null) {
+            return assignedDepartments.contains("\"" + userDepartmentId + "\"");
+        }
+        
+        return false;
     }
     
     public static class EventDTO {

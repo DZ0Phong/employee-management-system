@@ -22,6 +22,8 @@ public class EventResponseDTO {
     private Boolean isAllDay;
     private String creatorName;
     private String departmentName;
+    private String assignedDepartments; // JSON: ["1","2","3"] (department IDs)
+    private Boolean isCompanyWide;      // True = all departments
     private String monthLabel;     // "MAR"
     private String dayLabel;       // "18"
     private String timeLabel;      // "09:00 AM - 11:00 AM"

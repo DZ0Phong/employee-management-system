@@ -11,7 +11,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreateLeaveRequestDTO {
-    private String leaveType;   // ANNUAL_LEAVE, SICK_LEAVE, PERSONAL_LEAVE
+    private String leaveType;   // ANNUAL_LEAVE, SICK_LEAVE, UNPAID_LEAVE
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate leaveFrom;
@@ -20,4 +20,5 @@ public class CreateLeaveRequestDTO {
     private LocalDate leaveTo;
 
     private String content;
+    private boolean urgent;
 }

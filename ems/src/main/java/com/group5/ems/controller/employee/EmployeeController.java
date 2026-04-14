@@ -266,10 +266,12 @@ public class EmployeeController {
             model.addAttribute("employee", dashboardService.getEmployeeInfo(employee.getId(), user.getId()));
             model.addAttribute("balances", leaveService.getLeaveBalances(employee.getId()));
             model.addAttribute("leaveHistory", leaveService.getLeaveHistory(employee.getId()));
+            model.addAttribute("leaveTypes", leaveService.getSupportedLeaveTypes());
         } else {
             model.addAttribute("employee", buildDefaultEmployeeInfo(user));
             model.addAttribute("balances", List.of());
             model.addAttribute("leaveHistory", List.of());
+            model.addAttribute("leaveTypes", List.of());
         }
 
         return "employee/leave";
@@ -287,6 +289,22 @@ public class EmployeeController {
             redirectAttributes.addFlashAttribute("success", "Leave request submitted successfully");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Failed to submit leave request: " + e.getMessage());
+        }
+        return "redirect:/employee/leave";
+    }
+
+    @PostMapping("/leave/{id}/cancel")
+    public String cancelLeaveRequest(@PathVariable Long id,
+                                     Authentication authentication,
+                                     RedirectAttributes redirectAttributes) {
+        try {
+            User user = getUser(authentication);
+            Employee employee = getEmployee(user);
+            if (employee == null) throw new RuntimeException("You are not assigned to any department yet.");
+            leaveService.cancelLeaveRequest(employee.getId(), id);
+            redirectAttributes.addFlashAttribute("success", "Leave request cancelled successfully");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Failed to cancel leave request: " + e.getMessage());
         }
         return "redirect:/employee/leave";
     }

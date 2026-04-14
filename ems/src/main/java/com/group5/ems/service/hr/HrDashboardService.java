@@ -5,6 +5,7 @@ import com.group5.ems.entity.Employee;
 import com.group5.ems.repository.ApplicationRepository;
 import com.group5.ems.repository.AttendanceRepository;
 import com.group5.ems.repository.EmployeeRepository;
+import com.group5.ems.repository.EventRepository;
 import com.group5.ems.repository.JobPostRepository;
 import com.group5.ems.repository.RequestRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,7 @@ public class HrDashboardService {
     private final RequestRepository requestRepository;
     private final AttendanceRepository attendanceRepository;
     private final ApplicationRepository applicationRepository;
+    private final EventRepository eventRepository;
 
     public HrDashboardMetricsDTO getDashboardMetrics() {
         Long activeEmployees = employeeRepository.countByStatus("ACTIVE");
@@ -67,6 +69,10 @@ public class HrDashboardService {
         int pipelineInterviewing = applicationRepository.countByStatus("INTERVIEWING");
         int pipelineOfferSent = applicationRepository.countByStatus("OFFER");
 
+        // Upcoming events
+        List<com.group5.ems.dto.response.hr.HrEventDTO> upcomingEvents = eventRepository.findUpcomingEventsDto(LocalDate.now())
+                .stream().limit(5).toList();
+
         return HrDashboardMetricsDTO.builder()
                 .activeEmployees(activeEmployees)
                 .pendingLeaveRequests(pendingLeaveRequests)
@@ -82,6 +88,7 @@ public class HrDashboardService {
                 .pipelineReviewing(pipelineReviewing)
                 .pipelineInterviewing(pipelineInterviewing)
                 .pipelineOfferSent(pipelineOfferSent)
+                .upcomingEvents(upcomingEvents)
                 .build();
     }
 

@@ -34,6 +34,7 @@ public class HrManagerController {
     private final PayrollApprovalService payrollApprovalService;
     private final CalendarService calendarService;
     private final com.group5.ems.service.common.EmailNotificationService emailNotificationService;
+    private final com.group5.ems.repository.DepartmentRepository departmentRepository;
 
     // ── Dashboard ─────────────────────────────────────────────────────────────
     @GetMapping({"", "/", "/dashboard"})
@@ -302,9 +303,9 @@ public class HrManagerController {
     // END ACTIVITY CENTER ENDPOINTS
     // ══════════════════════════════════════════════════════════════════════════
 
-    // ── Request Management (renamed from Leave Approval) ─────────────────────
-    @GetMapping({"/leave-approval", "/request-management"})
-    public String requestManagement(Model model,
+    // ── Request Approval ──────────────────────────────────────────────────────
+    @GetMapping("/request-approval")
+    public String requestApproval(Model model,
                                 @RequestParam(defaultValue = "pending") String tab,
                                 @RequestParam(defaultValue = "all") String category,
                                 @RequestParam(defaultValue = "1") int page,
@@ -314,13 +315,13 @@ public class HrManagerController {
         model.addAttribute("pagination",    leaveApprovalService.getPagination(tab, page));
         model.addAttribute("activeTab",     tab);
         model.addAttribute("activeCategory", category);
-        model.addAttribute("activePage",    "leave");
+        model.addAttribute("activePage",    "request");
         model.addAttribute("requestId",     requestId); // For auto-expand
-        return "hrmanager/leave_approval";
+        return "hrmanager/request_approval";
     }
     
     // ── Notify Critical Items (Email Notification) ───────────────────────────
-    @PostMapping({"/leave-approval/notify-critical", "/request-management/notify-critical"})
+    @PostMapping("/request-approval/notify-critical")
     @ResponseBody
     public Map<String, Object> notifyCriticalItems(@org.springframework.web.bind.annotation.RequestBody Map<String, Object> payload) {
         Map<String, Object> response = new HashMap<>();
@@ -337,17 +338,6 @@ public class HrManagerController {
             response.put("message", "Failed to send notification: " + e.getMessage());
         }
         return response;
-    }
-
-    // ── Payroll Approval ──────────────────────────────────────────────────────
-    @GetMapping("/payroll-approval")
-    public String payrollApproval(Model model,
-                                  @RequestParam(defaultValue = "1") int page) {
-        model.addAttribute("summary",     payrollApprovalService.getSummary());
-        model.addAttribute("payrollRuns", payrollApprovalService.getPayrollRuns(page));
-        model.addAttribute("pagination",  payrollApprovalService.getPagination(page));
-        model.addAttribute("activePage",  "payroll");
-        return "hrmanager/payroll_approval";
     }
 
     // ── HR Analytics ──────────────────────────────────────────────────────────
@@ -373,10 +363,26 @@ public class HrManagerController {
         int currentYear  = year  != null ? year  : now.getYear();
 
         model.addAttribute("events",       calendarService.getEventsByMonth(currentMonth, currentYear));
+        model.addAttribute("departments",  departmentRepository.findAll());
         model.addAttribute("currentMonth", currentMonth);
         model.addAttribute("currentYear",  currentYear);
         model.addAttribute("activePage",   "calendar");
         return "hrmanager/calendar";
+    }
+
+    // ── Calendar API: Get Departments ─────────────────────────────────────────
+    @GetMapping("/calendar/departments")
+    @ResponseBody
+    public List<Map<String, Object>> getDepartments() {
+        return departmentRepository.findAll().stream()
+                .map(dept -> {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("id", dept.getId());
+                    map.put("name", dept.getName());
+                    map.put("code", dept.getCode());
+                    return map;
+                })
+                .collect(java.util.stream.Collectors.toList());
     }
 
     // ── Calendar Create ───────────────────────────────────────────────────────
@@ -424,8 +430,8 @@ public class HrManagerController {
         return "redirect:/hrmanager/calendar";
     }
 
-    // ── Request Management Actions (renamed from Leave Approval Actions) ─────
-    @PostMapping({"/leave-approval/approve", "/request-management/approve"})
+    // ── Request Approval Actions ──────────────────────────────────────────────
+    @PostMapping("/request-approval/approve")
     public String approveRequest(@RequestParam Long requestId,
                                       @RequestParam Long approverId,
                                       RedirectAttributes redirectAttributes) {
@@ -437,10 +443,10 @@ public class HrManagerController {
             redirectAttributes.addFlashAttribute("flashMessage", "Failed to approve: " + e.getMessage());
             redirectAttributes.addFlashAttribute("flashType", "error");
         }
-        return "redirect:/hrmanager/leave-approval?tab=pending";
+        return "redirect:/hrmanager/request-approval?tab=pending";
     }
 
-    @PostMapping({"/leave-approval/reject", "/request-management/reject"})
+    @PostMapping("/request-approval/reject")
     public String rejectRequest(@RequestParam Long requestId,
                                      @RequestParam Long approverId,
                                      @RequestParam String rejectedReason,
@@ -453,11 +459,11 @@ public class HrManagerController {
             redirectAttributes.addFlashAttribute("flashMessage", "Failed to reject: " + e.getMessage());
             redirectAttributes.addFlashAttribute("flashType", "error");
         }
-        return "redirect:/hrmanager/leave-approval?tab=pending";
+        return "redirect:/hrmanager/request-approval?tab=pending";
     }
     
     // ── Bulk Actions ──────────────────────────────────────────────────────────
-    @PostMapping({"/leave-approval/bulk-approve", "/request-management/bulk-approve"})
+    @PostMapping("/request-approval/bulk-approve")
     @ResponseBody
     public Map<String, Object> bulkApprove(@org.springframework.web.bind.annotation.RequestBody Map<String, Object> payload) {
         try {
@@ -479,7 +485,7 @@ public class HrManagerController {
         }
     }
     
-    @PostMapping({"/leave-approval/bulk-reject", "/request-management/bulk-reject"})
+    @PostMapping("/request-approval/bulk-reject")
     @ResponseBody
     public Map<String, Object> bulkReject(@org.springframework.web.bind.annotation.RequestBody Map<String, Object> payload) {
         try {
@@ -502,8 +508,8 @@ public class HrManagerController {
         }
     }
 
-    // ── Revert Request (24h window) - Phase 3 ────────────────────────────────
-    @PostMapping({"/leave-approval/revert", "/request-management/revert"})
+    // ── Revert Request (24h window) ───────────────────────────────────────────
+    @PostMapping("/request-approval/revert")
     public String revertRequest(@RequestParam Long requestId,
                                 @RequestParam(required = false) String reason,
                                 RedirectAttributes redirectAttributes) {
@@ -522,36 +528,6 @@ public class HrManagerController {
             redirectAttributes.addFlashAttribute("flashType", "error");
         }
         return "redirect:/hrmanager/leave-approval";
-    }
-
-    // ── Payroll Approve by Department ─────────────────────────────────────────
-    @PostMapping("/payroll-approval/approve")
-    public String approvePayroll(@RequestParam Long deptId,
-                                 RedirectAttributes redirectAttributes) {
-        try {
-            payrollApprovalService.approveByDepartment(deptId, getCurrentUserId());
-            redirectAttributes.addFlashAttribute("flashMessage", "Payroll approved successfully!");
-            redirectAttributes.addFlashAttribute("flashType", "success");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("flashMessage", e.getMessage());
-            redirectAttributes.addFlashAttribute("flashType", "error");
-        }
-        return "redirect:/hrmanager/payroll-approval";
-    }
-
-    @PostMapping("/payroll-approval/reject")
-    public String rejectPayroll(@RequestParam Long deptId,
-                                @RequestParam(required = false) String note,
-                                RedirectAttributes redirectAttributes) {
-        try {
-            payrollApprovalService.rejectByDepartment(deptId, getCurrentUserId(), note);
-            redirectAttributes.addFlashAttribute("flashMessage", "Payroll rejected.");
-            redirectAttributes.addFlashAttribute("flashType", "success");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("flashMessage", e.getMessage());
-            redirectAttributes.addFlashAttribute("flashType", "error");
-        }
-        return "redirect:/hrmanager/payroll-approval";
     }
 
     // ── Helper ────────────────────────────────────────────────────────────────

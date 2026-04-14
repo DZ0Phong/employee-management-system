@@ -865,8 +865,8 @@
 
     function getViewAllUrl(type, filter) {
         switch (type) {
-            case 'leave':   return filter === 'pending' ? '/hrmanager/leave-approval?tab=pending' : '/hrmanager/leave-approval';
-            case 'payroll': return '/hrmanager/payroll-approval';
+            case 'leave':   return filter === 'pending' ? '/hrmanager/request-approval?tab=pending' : '/hrmanager/request-approval';
+            case 'payroll': return '/hrmanager/payroll-periods';
             case 'status':
             case 'hr':      return '/hrmanager/hr-analytics';
             default:        return '/hrmanager/dashboard';
@@ -986,7 +986,7 @@
 
     function viewFullDetail(event, requestId) {
         event.stopPropagation();
-        window.location.href = `/hrmanager/leave-approval?requestId=${requestId}`;
+        window.location.href = `/hrmanager/request-approval?requestId=${requestId}`;
     }
 
     let approveTargetId = null;
