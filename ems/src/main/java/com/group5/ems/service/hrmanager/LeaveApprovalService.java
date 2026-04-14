@@ -8,6 +8,7 @@ import com.group5.ems.exception.WorkflowException;
 import com.group5.ems.repository.EmployeeLeaveBalanceRepository;
 import com.group5.ems.repository.RequestRepository;
 import com.group5.ems.service.common.ApprovalWorkflowService;
+import com.group5.ems.util.WorkingDayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -60,7 +61,8 @@ public class LeaveApprovalService {
             }
             
             // STRICT VALIDATION: Check leave balance before approving
-            if (request.getLeaveFrom() != null && request.getLeaveTo() != null && request.getEmployee() != null) {
+            if (request.getLeaveFrom() != null && request.getLeaveTo() != null && request.getEmployee() != null
+                    && !isUnpaidLeave(request)) {
                 Long employeeId = request.getEmployeeId();
                 int currentYear = java.time.LocalDate.now().getYear();
                 
@@ -71,8 +73,8 @@ public class LeaveApprovalService {
                     EmployeeLeaveBalance balance = balanceOpt.get();
                     
                     // Calculate request days
-                    long requestDays = java.time.temporal.ChronoUnit.DAYS.between(
-                            request.getLeaveFrom(), request.getLeaveTo()) + 1;
+                    long requestDays = WorkingDayUtils.countWorkingDays(
+                            request.getLeaveFrom(), request.getLeaveTo());
                     
                     BigDecimal remainingDays = balance.getRemainingDays() != null 
                             ? balance.getRemainingDays() 
@@ -436,7 +438,7 @@ public class LeaveApprovalService {
      * Update employee leave balance when request is approved
      */
     private void updateLeaveBalanceOnApproval(Request request) {
-        if (request.getEmployee() == null || request.getLeaveFrom() == null || request.getLeaveTo() == null) {
+        if (request.getEmployee() == null || request.getLeaveFrom() == null || request.getLeaveTo() == null || isUnpaidLeave(request)) {
             return;
         }
         
@@ -450,8 +452,8 @@ public class LeaveApprovalService {
             EmployeeLeaveBalance balance = balanceOpt.get();
             
             // Calculate days
-            long days = java.time.temporal.ChronoUnit.DAYS.between(
-                    request.getLeaveFrom(), request.getLeaveTo()) + 1;
+            long days = WorkingDayUtils.countWorkingDays(
+                    request.getLeaveFrom(), request.getLeaveTo());
             
             // Update: pending -> used
             BigDecimal daysDecimal = BigDecimal.valueOf(days);
@@ -473,7 +475,7 @@ public class LeaveApprovalService {
      * Update employee leave balance when request is rejected
      */
     private void updateLeaveBalanceOnRejection(Request request) {
-        if (request.getEmployee() == null || request.getLeaveFrom() == null || request.getLeaveTo() == null) {
+        if (request.getEmployee() == null || request.getLeaveFrom() == null || request.getLeaveTo() == null || isUnpaidLeave(request)) {
             return;
         }
         
@@ -487,8 +489,8 @@ public class LeaveApprovalService {
             EmployeeLeaveBalance balance = balanceOpt.get();
             
             // Calculate days
-            long days = java.time.temporal.ChronoUnit.DAYS.between(
-                    request.getLeaveFrom(), request.getLeaveTo()) + 1;
+            long days = WorkingDayUtils.countWorkingDays(
+                    request.getLeaveFrom(), request.getLeaveTo());
             
             // Remove from pending
             BigDecimal daysDecimal = BigDecimal.valueOf(days);
@@ -561,6 +563,14 @@ public class LeaveApprovalService {
         return result;
     }
 
+    private boolean isUnpaidLeave(Request request) {
+        if (request == null || request.getLeaveType() == null) {
+            return false;
+        }
+        String leaveType = request.getLeaveType().trim().toUpperCase(Locale.ROOT);
+        return "UNPAID_LEAVE".equals(leaveType) || "PERSONAL_LEAVE".equals(leaveType);
+    }
+
     /**
      * Revert request (soft revert within 24h window) - Phase 3
      * Only the original approver can revert
@@ -629,7 +639,7 @@ public class LeaveApprovalService {
      * Revert leave balance when request is reverted from APPROVED
      */
     private void revertLeaveBalanceOnRevert(Request request) {
-        if (request.getEmployee() == null || request.getLeaveFrom() == null || request.getLeaveTo() == null) {
+        if (request.getEmployee() == null || request.getLeaveFrom() == null || request.getLeaveTo() == null || isUnpaidLeave(request)) {
             return;
         }
         
@@ -643,8 +653,8 @@ public class LeaveApprovalService {
             EmployeeLeaveBalance balance = balanceOpt.get();
             
             // Calculate days
-            long days = java.time.temporal.ChronoUnit.DAYS.between(
-                    request.getLeaveFrom(), request.getLeaveTo()) + 1;
+            long days = WorkingDayUtils.countWorkingDays(
+                    request.getLeaveFrom(), request.getLeaveTo());
             
             // Revert: used -> pending
             BigDecimal daysDecimal = BigDecimal.valueOf(days);

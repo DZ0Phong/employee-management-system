@@ -88,9 +88,10 @@
                 <!-- CSV Export (improvement #7) -->
                 <!-- CSV Export Modal Trigger -->
                 <button onclick="openExportModal()"
-                   class="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-600 bg-white border border-slate-200 hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200 rounded-xl transition-colors"
+                   class="flex items-center gap-2 bg-primary text-white px-4 py-1.5 rounded-xl
+                         text-sm font-semibold hover:bg-primary/90 transition-colors shadow-sm shadow-primary/30"
                    title="Export leave history to CSV">
-                    <span class="material-symbols-outlined text-[16px]">download</span>
+                    <span class="material-symbols-outlined text-[18px] ">download</span>
                     Export CSV
                 </button>
             </div>
@@ -230,7 +231,9 @@
                                                 </div>
                                             </td>
                                             <td class="px-4 py-4">
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700" th:text="${leave.leaveType}">Annual Leave</span>
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold"
+                                                      th:classappend="${leave.leaveType == 'Annual Leave' ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' : (leave.leaveType == 'Sick Leave' ? 'bg-rose-50 text-rose-700 border border-rose-200' : (leave.leaveType == 'Unpaid Leave' ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-slate-100 text-slate-700 border border-slate-200'))}"
+                                                      th:text="${leave.leaveType}">Annual Leave</span>
                                             </td>
                                             <td class="px-4 py-4 text-sm font-semibold text-slate-700" th:text="${leave.duration}">5 Days</td>
                                             <td class="px-4 py-4">
@@ -456,7 +459,11 @@
                                                 </div>
                                             </div>
                                         </td>
-                                        <td class="px-5 py-4"><span class="font-semibold text-slate-600" th:text="${hist.leaveType}">Annual Leave</span></td>
+                                        <td class="px-5 py-4">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase"
+                                                  th:classappend="${hist.leaveType == 'Annual Leave' ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' : (hist.leaveType == 'Sick Leave' ? 'bg-rose-50 text-rose-700 border border-rose-200' : (hist.leaveType == 'Unpaid Leave' ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-slate-50 text-slate-700 border border-slate-200'))}"
+                                                  th:text="${hist.leaveType}">Annual Leave</span>
+                                        </td>
                                         <td class="px-5 py-4"><span class="text-xs font-bold text-slate-700" th:text="${hist.duration}">3 Days</span></td>
                                         <td class="px-5 py-4"><span class="text-xs text-slate-500" th:text="${hist.dates}">Mar 01 - Mar 03</span></td>
                                         <td class="px-5 py-4">
@@ -700,13 +707,24 @@
                     <option th:each="dept : ${departments}" th:value="${dept.id}" th:text="${dept.name}" th:selected="${histDepartmentId == dept.id}"></option>
                 </select>
             </div>
-            <div>
-                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Status Filter</label>
-                <select name="status" class="w-full text-xs border-slate-200 rounded-xl focus:ring-primary focus:border-primary px-3 py-2.5 bg-slate-50 text-slate-600 font-medium h-[42px]">
-                    <option value="">All Statuses</option>
-                    <option value="APPROVED" th:selected="${histStatus == 'APPROVED'}">Approved</option>
-                    <option value="REJECTED" th:selected="${histStatus == 'REJECTED'}">Rejected</option>
-                </select>
+            <div class="flex gap-3">
+                <div class="flex-1">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Status Filter</label>
+                    <select name="status" class="w-full text-xs border-slate-200 rounded-xl focus:ring-primary focus:border-primary px-3 py-2.5 bg-slate-50 text-slate-600 font-medium h-[42px]">
+                        <option value="">All Statuses</option>
+                        <option value="APPROVED" th:selected="${histStatus == 'APPROVED'}">Approved</option>
+                        <option value="REJECTED" th:selected="${histStatus == 'REJECTED'}">Rejected</option>
+                    </select>
+                </div>
+                <div class="flex-1">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Leave Type</label>
+                    <select name="leaveType" class="w-full text-xs border-slate-200 rounded-xl focus:ring-primary focus:border-primary px-3 py-2.5 bg-slate-50 text-slate-600 font-medium h-[42px]">
+                        <option value="">All Types</option>
+                        <option value="LEAVE_ANNUAL" th:selected="${histLeaveType == 'LEAVE_ANNUAL'}">Annual Leave</option>
+                        <option value="LEAVE_SICK" th:selected="${histLeaveType == 'LEAVE_SICK'}">Sick Leave</option>
+                        <option value="LEAVE_UNPAID" th:selected="${histLeaveType == 'LEAVE_UNPAID'}">Unpaid Leave</option>
+                    </select>
+                </div>
             </div>
             <div class="flex gap-3">
                 <div class="flex-1">
@@ -805,6 +823,48 @@
     // ── Export CSV Modal ──
     function openExportModal() {
         const modal = document.getElementById('exportModal');
+        const modalForm = document.getElementById('exportCsvForm');
+        
+        // Smart Defaults: Detect active tab and populate filters
+        let activeTab = 'current';
+        document.querySelectorAll('.leave-tab').forEach(t => {
+            if (t.classList.contains('active')) {
+                activeTab = t.id.replace('ltab-', '');
+            }
+        });
+
+        const activeForm = document.querySelector('#lpanel-' + activeTab + ' form');
+        if (activeForm && modalForm) {
+            const formData = new FormData(activeForm);
+            
+            const modalDept = modalForm.querySelector('select[name="departmentId"]');
+            if (modalDept && formData.has('departmentId')) {
+                modalDept.value = formData.get('departmentId');
+            }
+            
+            const modalStatus = modalForm.querySelector('select[name="status"]');
+            if (modalStatus && formData.has('status')) {
+                modalStatus.value = formData.get('status');
+            }
+
+            const modalType = modalForm.querySelector('select[name="leaveType"]');
+            if (modalType && formData.has('leaveType')) {
+                modalType.value = formData.get('leaveType');
+            }
+
+            const modalStart = modalForm.querySelector('input[name="startDate"]');
+            if (modalStart && formData.has('dateFrom')) {
+                if (modalStart._flatpickr) modalStart._flatpickr.setDate(formData.get('dateFrom'));
+                else modalStart.value = formData.get('dateFrom');
+            }
+
+            const modalEnd = modalForm.querySelector('input[name="endDate"]');
+            if (modalEnd && formData.has('dateTo')) {
+                if (modalEnd._flatpickr) modalEnd._flatpickr.setDate(formData.get('dateTo'));
+                else modalEnd.value = formData.get('dateTo');
+            }
+        }
+
         modal.classList.remove('hidden');
         modal.classList.add('flex');
     }

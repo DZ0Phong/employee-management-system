@@ -47,6 +47,12 @@
     <p th:text="'Report: ' + ${activeTab.substring(0,1).toUpperCase() + activeTab.substring(1)} + ' | Year: ' + ${selectedYear}">Report</p>
 </div>
 
+<!-- ═══════════════════ EXECUTIVE SUMMARY ═══════════════════ -->
+<div th:if="${remarks != null && !remarks.isEmpty()}" class="section" style="background-color: #f8fafc; padding: 15px; border-left: 4px solid #1414b8; border-radius: 4px;">
+    <h2>Executive Summary</h2>
+    <p style="font-size: 11px; color: #334155; white-space: pre-wrap;" th:text="${remarks}">Summary content</p>
+</div>
+
 <!-- ═══════════════════ OVERVIEW ═══════════════════ -->
 <div th:if="${activeTab == 'overview'}" class="section">
     <h2>Workforce Overview</h2>

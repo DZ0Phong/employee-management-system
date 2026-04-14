@@ -360,7 +360,7 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
             @Param("since") LocalDateTime since,
             @Param("until") LocalDateTime until);
 
-    @Query(value = "SELECT rt.code, COUNT(r) as cnt FROM Request r JOIN r.requestType rt " +
+    @Query(value = "SELECT rt.name, COUNT(r) as cnt FROM Request r JOIN r.requestType rt " +
             "WHERE rt.category = 'ATTENDANCE' AND r.status <> 'PENDING' " +
             "GROUP BY rt.code ORDER BY cnt DESC")
     List<Object[]> findTopLeaveTypes();
@@ -385,12 +385,14 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
             "WHERE r.status <> 'PENDING' AND rt.category = 'ATTENDANCE' " +
             "AND (:status IS NULL OR r.status = :status) " +
             "AND (:departmentId IS NULL OR d.id = :departmentId) " +
+            "AND (:leaveType IS NULL OR rt.code = :leaveType) " +
             "AND (cast(:startDate as timestamp) IS NULL OR r.updatedAt >= :startDate) " +
             "AND (cast(:endDate as timestamp) IS NULL OR r.updatedAt <= :endDate) " +
             "ORDER BY r.updatedAt DESC")
     List<Request> findLeaveHistoryForExport(
             @Param("status") String status,
             @Param("departmentId") Long departmentId,
+            @Param("leaveType") String leaveType,
             @Param("startDate") java.time.LocalDateTime startDate,
             @Param("endDate") java.time.LocalDateTime endDate);
 

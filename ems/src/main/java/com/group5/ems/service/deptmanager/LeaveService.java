@@ -9,6 +9,7 @@ import com.group5.ems.exception.WorkflowException;
 import com.group5.ems.repository.RequestRepository;
 import com.group5.ems.service.common.ApprovalWorkflowService;
 import com.group5.ems.service.common.LogService;
+import com.group5.ems.util.WorkingDayUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -97,6 +98,26 @@ public class LeaveService {
                 reqMap.put("typeDisplay", "Sick Leave");
                 reqMap.put("typeColorClass", "bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-300 border-rose-100");
                 reqMap.put("typeDotClass", "bg-rose-500");
+            } else if (typeStr.contains("unpaid") || typeStr.contains("personal")) {
+                reqMap.put("typeDisplay", "Unpaid Leave");
+                reqMap.put("typeColorClass", "bg-slate-100 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 border-slate-200");
+                reqMap.put("typeDotClass", "bg-slate-500");
+            } else if (typeStr.contains("maternity")) {
+                reqMap.put("typeDisplay", "Maternity Leave");
+                reqMap.put("typeColorClass", "bg-pink-50 dark:bg-pink-900/20 text-pink-600 dark:text-pink-300 border-pink-100");
+                reqMap.put("typeDotClass", "bg-pink-500");
+            } else if (typeStr.contains("paternity")) {
+                reqMap.put("typeDisplay", "Paternity Leave");
+                reqMap.put("typeColorClass", "bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-300 border-violet-100");
+                reqMap.put("typeDotClass", "bg-violet-500");
+            } else if (typeStr.contains("bereavement")) {
+                reqMap.put("typeDisplay", "Bereavement Leave");
+                reqMap.put("typeColorClass", "bg-slate-100 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 border-slate-200");
+                reqMap.put("typeDotClass", "bg-slate-500");
+            } else if (typeStr.contains("study")) {
+                reqMap.put("typeDisplay", "Study Leave");
+                reqMap.put("typeColorClass", "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-300 border-emerald-100");
+                reqMap.put("typeDotClass", "bg-emerald-500");
             } else {
                 reqMap.put("typeDisplay", req.getLeaveType());
                 reqMap.put("typeColorClass", "bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border-purple-100");
@@ -105,7 +126,7 @@ public class LeaveService {
 
             long durationDays = 0;
             if (req.getLeaveFrom() != null && req.getLeaveTo() != null) {
-                durationDays = java.time.temporal.ChronoUnit.DAYS.between(req.getLeaveFrom(), req.getLeaveTo()) + 1;
+                durationDays = WorkingDayUtils.countWorkingDays(req.getLeaveFrom(), req.getLeaveTo());
             }
             reqMap.put("durationDays", durationDays);
 
@@ -125,6 +146,7 @@ public class LeaveService {
             reqMap.put("reason", req.getContent() != null && !req.getContent().isBlank()
                     ? req.getContent().trim()
                     : "No reason provided.");
+            reqMap.put("urgent", req.isUrgent());
 
             reqMap.put("status", req.getStatus());
             reqMap.put("step", step);

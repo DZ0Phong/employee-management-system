@@ -7,12 +7,13 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.group5.ems.entity.Employee;
 
-public interface EmployeeRepository extends JpaRepository<Employee, Long> {
+public interface EmployeeRepository extends JpaRepository<Employee, Long>, JpaSpecificationExecutor<Employee> {
 
     Optional<Employee> findByUserId(Long userId);
 
@@ -49,46 +50,48 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     Double getAverageTenureInDays();
 
     @Query(value = """
-            SELECT e FROM Employee e
-            LEFT JOIN e.user u
-            LEFT JOIN e.department d
+            SELECT e FROM Employee e 
+            LEFT JOIN e.user u 
+            LEFT JOIN e.department d 
             LEFT JOIN e.position p
-            WHERE (:search IS NULL OR LOWER(u.fullName) LIKE LOWER(CONCAT('%',:search,'%'))
-                OR LOWER(e.employeeCode) LIKE LOWER(CONCAT('%',:search,'%'))
-                OR LOWER(u.email) LIKE LOWER(CONCAT('%',:search,'%')))
-            AND (:department IS NULL OR d.name = :department)
+            WHERE (:search IS NULL OR LOWER(u.fullName) LIKE LOWER(CONCAT('%',:search,'%')) 
+                OR LOWER(e.employeeCode) LIKE LOWER(CONCAT('%',:search,'%')) 
+                OR LOWER(u.email) LIKE LOWER(CONCAT('%',:search,'%'))) 
+            AND (:department IS NULL OR d.name = :department) 
             AND (:status IS NULL OR e.status = :status)
             AND (:skillId IS NULL OR e.id IN (
-                SELECT es.employee.id FROM EmployeeSkill es
-                WHERE es.skillId = :skillId
+                SELECT es.employee.id FROM EmployeeSkill es 
+                WHERE es.skillId = :skillId 
                 AND es.proficiency >= :minProficiency
             ))
-            """, countQuery = """
-            SELECT COUNT(e) FROM Employee e
-            LEFT JOIN e.user u
-            LEFT JOIN e.department d
+            """,
+            countQuery = """
+            SELECT COUNT(e) FROM Employee e 
+            LEFT JOIN e.user u 
+            LEFT JOIN e.department d 
             LEFT JOIN e.position p
-            WHERE (:search IS NULL OR LOWER(u.fullName) LIKE LOWER(CONCAT('%',:search,'%'))
-                OR LOWER(e.employeeCode) LIKE LOWER(CONCAT('%',:search,'%'))
-                OR LOWER(u.email) LIKE LOWER(CONCAT('%',:search,'%')))
-            AND (:department IS NULL OR d.name = :department)
+            WHERE (:search IS NULL OR LOWER(u.fullName) LIKE LOWER(CONCAT('%',:search,'%')) 
+                OR LOWER(e.employeeCode) LIKE LOWER(CONCAT('%',:search,'%')) 
+                OR LOWER(u.email) LIKE LOWER(CONCAT('%',:search,'%'))) 
+            AND (:department IS NULL OR d.name = :department) 
             AND (:status IS NULL OR e.status = :status)
             AND (:skillId IS NULL OR e.id IN (
-                SELECT es.employee.id FROM EmployeeSkill es
-                WHERE es.skillId = :skillId
+                SELECT es.employee.id FROM EmployeeSkill es 
+                WHERE es.skillId = :skillId 
                 AND es.proficiency >= :minProficiency
             ))
             """)
     Page<Employee> searchEmployees(@Param("search") String search,
-            @Param("department") String department,
-            @Param("status") String status,
-            @Param("skillId") Long skillId,
-            @Param("minProficiency") Integer minProficiency,
-            Pageable pageable);
+                                   @Param("department") String department,
+                                   @Param("status") String status,
+                                   @Param("skillId") Long skillId,
+                                   @Param("minProficiency") Integer minProficiency,
+                                   Pageable pageable);
+       @Query("SELECT AVG(DATEDIFF(:date, e.hireDate)) FROM Employee e " +
+                     "WHERE e.status = 'ACTIVE' AND e.hireDate IS NOT NULL AND e.hireDate <= :date")
+       Double getAverageTenureInDaysAtDate(@Param("date") LocalDate date);
 
-    @Query("SELECT AVG(DATEDIFF(:date, e.hireDate)) FROM Employee e " +
-            "WHERE e.status = 'ACTIVE' AND e.hireDate IS NOT NULL AND e.hireDate <= :date")
-    Double getAverageTenureInDaysAtDate(@Param("date") LocalDate date);
+       
 
     @Query("SELECT e FROM Employee e LEFT JOIN FETCH e.user LEFT JOIN FETCH e.department LEFT JOIN FETCH e.position WHERE e.id = :id")
     Optional<Employee> findByIdWithDetails(@Param("id") Long id);

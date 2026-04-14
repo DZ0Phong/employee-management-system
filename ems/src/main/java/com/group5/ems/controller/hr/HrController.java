@@ -8,6 +8,7 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -49,6 +50,7 @@ import com.group5.ems.repository.DepartmentRepository;
 import com.group5.ems.repository.EmployeeRepository;
 import com.group5.ems.repository.JobPostRepository;
 import com.group5.ems.repository.PositionRepository;
+import com.group5.ems.repository.SkillRepository;
 import com.group5.ems.repository.UserRepository;
 import com.group5.ems.service.admin.AdminService;
 import com.group5.ems.service.external.VietQrApiClient;
@@ -64,8 +66,11 @@ import com.group5.ems.service.hr.HrRecruitmentService;
 import com.group5.ems.service.hr.HrRequestService;
 import com.group5.ems.service.hr.HrReportService;
 import com.group5.ems.service.common.LogService;
-import com.group5.ems.enums.AuditAction;
-import com.group5.ems.enums.AuditEntityType;
+import com.group5.ems.service.hr.HrCalendarService;
+import com.group5.ems.dto.request.hr.HrEventCreateDTO;
+import com.group5.ems.dto.request.hr.HrEventUpdateDTO;
+import com.group5.ems.dto.response.hr.HrEventResponseDTO;
+import com.group5.ems.dto.response.hr.HrEventDTO;
 import com.group5.ems.exception.ReportExportException;
 
 import org.thymeleaf.TemplateEngine;
@@ -103,6 +108,8 @@ public class HrController {
     private final HrReportService reportService;
     private final LogService logService;
     private final TemplateEngine templateEngine;
+    private final SkillRepository skillRepository;
+    private final HrCalendarService calendarService;
 
     @GetMapping({ "", "/", "/dashboard" })
     public String dashboard(Model model) {
@@ -131,13 +138,31 @@ public class HrController {
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String department,
             @RequestParam(required = false) String status,
+            @RequestParam(required = false) Long skillId,
+            @RequestParam(required = false) Integer minProficiency,
+            @RequestParam(defaultValue = "hireDate:desc") String sort,
             @RequestParam(required = false) String tab,
             @RequestParam(required = false) String obSearch,
             @RequestParam(required = false) Long obDepartmentId) {
 
         // ── Directory Tab ─────────────────────────────
-        Pageable pageable = PageRequest.of(page, EMPLOYEE_PAGE_SIZE);
-        Page<HrEmployeeDTO> employeePage = employeeService.searchEmployees(search, department, status, pageable);
+        String sortBy = "hireDate";
+        String direction = "desc";
+        if (sort != null && sort.contains(":")) {
+            String[] parts = sort.split(":");
+            sortBy = parts[0];
+            direction = parts[1];
+        }
+
+        String sortField = switch (sortBy) {
+            case "name" -> "user.fullName";
+            case "proficiency" -> "proficiency";
+            default -> "hireDate";
+        };
+        Sort.Direction sortDirection = "asc".equalsIgnoreCase(direction) ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(page, EMPLOYEE_PAGE_SIZE, Sort.by(sortDirection, sortField));
+        
+        Page<HrEmployeeDTO> employeePage = employeeService.searchEmployees(search, department, status, skillId, minProficiency, pageable);
 
         model.addAttribute("employees", employeePage.getContent());
         model.addAttribute("currentPage", page);
@@ -146,9 +171,12 @@ public class HrController {
         model.addAttribute("search", search);
         model.addAttribute("department", department);
         model.addAttribute("status", status);
+        model.addAttribute("skillId", skillId);
+        model.addAttribute("minProficiency", minProficiency);
+        model.addAttribute("sort", sort);
 
-        List<Department> departments = departmentRepository.findAll();
-        model.addAttribute("departments", departments);
+        model.addAttribute("skills", skillRepository.findAll());
+        model.addAttribute("departments", departmentRepository.findAll());
 
         // ── Onboarding Tracker Tab ────────────────────
         /*
@@ -164,8 +192,6 @@ public class HrController {
         */
 
         // ── Wizard Form Data ──────────────────────────
-        model.addAttribute("positions", positionRepository.findAll());
-        model.addAttribute("managers", employeeRepository.findAllWithUser());
         // model.addAttribute("onboardingTemplates", onboardingService.getActiveTemplates());
 
         model.addAttribute("activeTab", tab != null ? tab : "directory");
@@ -177,7 +203,7 @@ public class HrController {
     @ResponseBody
     public ResponseEntity<List<HrEmployeeDTO>> searchEmployeesApi(@RequestParam String q) {
         Pageable pageable = PageRequest.of(0, 5);
-        Page<HrEmployeeDTO> page = employeeService.searchEmployees(q, null, null, pageable);
+        Page<HrEmployeeDTO> page = employeeService.searchEmployees(q, null, null, null, null, pageable);
         return ResponseEntity.ok(page.getContent());
     }
 
@@ -192,7 +218,7 @@ public class HrController {
     public String attendance(Model model,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @RequestParam(required = false) String search,
-            @RequestParam(required = false) String department,
+            @RequestParam(required = false) Long departmentId,
             @RequestParam(required = false) String status,
             @RequestParam(defaultValue = "0") int page) {
 
@@ -202,7 +228,7 @@ public class HrController {
 
         Pageable pageable = PageRequest.of(page, EMPLOYEE_PAGE_SIZE);
         org.springframework.data.domain.Page<com.group5.ems.dto.response.HrAttendanceDetailDTO> attendancePage = attendanceService
-                .getAttendanceRecords(queryDate, search, department, status, pageable);
+                .getAttendanceRecords(queryDate, search, departmentId, status, pageable);
 
         model.addAttribute("attendances", attendancePage.getContent());
         model.addAttribute("currentPage", page);
@@ -211,11 +237,28 @@ public class HrController {
 
         model.addAttribute("date", queryDate);
         model.addAttribute("search", search);
-        model.addAttribute("department", department);
+        model.addAttribute("departmentId", departmentId);
         model.addAttribute("status", status);
         model.addAttribute("departments", departmentRepository.findAll());
 
         return "hr/attendance";
+    }
+
+    @GetMapping("/attendance/export")
+    public void exportAttendaceCsv(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Long departmentId,
+            @RequestParam(required = false) String status,
+            jakarta.servlet.http.HttpServletResponse response) throws java.io.IOException {
+        
+        LocalDate queryDate = (date != null) ? date : LocalDate.now();
+        response.setContentType("text/csv");
+
+        String filename = "attendance_export_" + queryDate + ".csv";
+
+        response.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
+        attendanceService.exportAttendanceToCsv(queryDate, search, departmentId, status, response.getWriter());
     }
 
     @GetMapping("/leave")
@@ -407,6 +450,7 @@ public class HrController {
     public void exportLeaveCsv(
             @RequestParam(required = false) String status,
             @RequestParam(required = false) Long departmentId,
+            @RequestParam(required = false) String leaveType,
             @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) LocalDate endDate,
             jakarta.servlet.http.HttpServletResponse response) throws java.io.IOException {
@@ -421,12 +465,13 @@ public class HrController {
                 filename += "-dept-" + departmentId;
             }
         }
+        if (leaveType != null && !leaveType.isEmpty()) filename += "-type-" + leaveType.toLowerCase();
         if (startDate != null) filename += "-from-" + startDate;
         if (endDate != null) filename += "-to-" + endDate;
         filename += ".csv";
         
         response.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
-        leaveService.exportLeaveHistoryToCsv(status, departmentId, startDate, endDate, response.getWriter());
+        leaveService.exportLeaveHistoryToCsv(status, departmentId, leaveType, startDate, endDate, response.getWriter());
     }
 
     @GetMapping("/performance")
@@ -1104,6 +1149,74 @@ public class HrController {
 */
 
     // ═══════════════════════════════════════════════════════════════════════════
+    // CALENDAR MANAGEMENT
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    @GetMapping("/calendar")
+    public String calendar(Model model, 
+            @RequestParam(required = false) Integer month,
+            @RequestParam(required = false) Integer year) {
+        
+        int currentMonth = (month != null) ? month : LocalDate.now().getMonthValue();
+        int currentYear = (year != null) ? year : LocalDate.now().getYear();
+        
+        model.addAttribute("currentMonth", currentMonth);
+        model.addAttribute("currentYear", currentYear);
+        model.addAttribute("departments", departmentRepository.findAll());
+        return "hr/calendar";
+    }
+
+    @GetMapping("/calendar/events")
+    @ResponseBody
+    public ResponseEntity<List<HrEventResponseDTO>> getCalendarEvents(
+            @RequestParam int month,
+            @RequestParam int year) {
+        return ResponseEntity.ok(calendarService.getEventsByMonth(month, year));
+    }
+
+    @PostMapping("/calendar/create")
+    public String createEvent(
+            @ModelAttribute HrEventCreateDTO dto,
+            @AuthenticationPrincipal UserDetails principal,
+            RedirectAttributes ra) {
+        try {
+            calendarService.createEvent(dto, resolveCurrentUserId(principal));
+            ra.addFlashAttribute("successMessage", "Event created successfully.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMessage", "Failed to create event: " + e.getMessage());
+        }
+        return "redirect:/hr/calendar";
+    }
+
+    @PostMapping("/calendar/update")
+    public String updateEvent(
+            @ModelAttribute HrEventUpdateDTO dto,
+            @AuthenticationPrincipal UserDetails principal,
+            RedirectAttributes ra) {
+        try {
+            calendarService.updateEvent(dto, resolveCurrentUserId(principal));
+            ra.addFlashAttribute("successMessage", "Event updated successfully.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMessage", "Failed to update event: " + e.getMessage());
+        }
+        return "redirect:/hr/calendar";
+    }
+
+    @PostMapping("/calendar/delete")
+    public String deleteEvent(
+            @RequestParam Long id,
+            @AuthenticationPrincipal UserDetails principal,
+            RedirectAttributes ra) {
+        try {
+            calendarService.deleteEvent(id, resolveCurrentUserId(principal));
+            ra.addFlashAttribute("successMessage", "Event deleted.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMessage", "Failed to delete event: " + e.getMessage());
+        }
+        return "redirect:/hr/calendar";
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
     // REPORTS & ANALYTICS
     // ═══════════════════════════════════════════════════════════════════════════
 
@@ -1131,9 +1244,9 @@ public class HrController {
             case "leave" -> model.addAttribute("report", reportService.getLeaveReport(reportYear));
             case "payroll" -> model.addAttribute("report", reportService.getPayrollReport());
             case "performance" -> model.addAttribute("report", reportService.getPerformanceReport(reviewPeriod));
+            case "saved" -> model.addAttribute("history", reportService.getAllReports());
             default -> model.addAttribute("report", reportService.getOverviewReport(reportYear));
         }
-
         return "hr/reports";
     }
 
@@ -1189,4 +1302,53 @@ public class HrController {
         }
     }
 
+    @PostMapping("/reports/prepare")
+    public String prepareReport(
+            @RequestParam String tab,
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo,
+            @RequestParam String title,
+            @RequestParam String remarks,
+            @AuthenticationPrincipal UserDetails userDetails,
+            RedirectAttributes redirectAttributes) {
+
+        try {
+            com.group5.ems.entity.User user = userRepository.findByUsername(userDetails.getUsername())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            
+            Long employeeId = (user.getEmployee() != null) ? user.getEmployee().getId() : null;
+            
+            reportService.saveReportDraft(tab, year, dateFrom, dateTo, title, remarks, employeeId);
+            redirectAttributes.addFlashAttribute("success", "Report draft saved successfully for professional review.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Failed to prepare report: " + e.getMessage());
+        }
+        
+        return "redirect:/hr/reports?tab=saved";
+    }
+
+    @PostMapping("/reports/{id}/publish")
+    public String publishReport(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            reportService.publishReport(id);
+            redirectAttributes.addFlashAttribute("success", "Report published and HR Manager notified.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Failed to publish report: " + e.getMessage());
+        }
+        return "redirect:/hr/reports?tab=saved";
+    }
+
+    @GetMapping("/reports/download/{id}")
+    public ResponseEntity<byte[]> downloadSavedReport(@PathVariable Long id) {
+        byte[] bytes = reportService.getReportFileBytes(id);
+        
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"HR_Report_" + id + ".pdf\"")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(bytes);
+    }
+
 }
+
+

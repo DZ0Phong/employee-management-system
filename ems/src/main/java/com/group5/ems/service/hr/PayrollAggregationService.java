@@ -214,7 +214,7 @@ public class PayrollAggregationService {
         payslipRepository.saveAll(payslips);
 
         // Rule #15: Log generation action
-        logService.log(AuditAction.CREATE, AuditEntityType.PAYROLL_PREVIEW, periodId);
+        logService.log(AuditAction.CREATE, AuditEntityType.PAYSLIPS, periodId);
 
         return payslips.size();
     }

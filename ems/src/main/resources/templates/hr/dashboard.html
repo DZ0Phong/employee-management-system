@@ -255,12 +255,47 @@
                     </div>
                 </div>
 
-                <!-- ─── Third Row: Table Layout ─── -->
+                <!-- ─── Third Row: Actions & Events ─── -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
+                    <!-- Upcoming Events Widget -->
+                    <div class="anim anim-7 bg-white rounded-2xl border border-slate-100 shadow-sm p-6 overflow-hidden flex flex-col">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h3 class="text-sm font-black text-slate-800">Upcoming Events</h3>
+                                <p class="text-[10px] text-slate-400 mt-0.5 uppercase font-bold tracking-tight">Organization Schedule</p>
+                            </div>
+                            <a th:href="@{/hr/calendar}" class="w-8 h-8 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 hover:text-primary transition-all">
+                                <span class="material-symbols-outlined text-sm">calendar_month</span>
+                            </a>
+                        </div>
+                        
+                        <div class="space-y-4 flex-1">
+                            <div th:if="${dashMetrics?.upcomingEvents()?.isEmpty()}" class="py-8 text-center">
+                                <span class="material-symbols-outlined text-slate-200 text-3xl">event_available</span>
+                                <p class="text-[10px] font-bold text-slate-300 uppercase mt-2">No upcoming events</p>
+                            </div>
+
+                            <div th:each="event : ${dashMetrics?.upcomingEvents()}" class="flex items-center gap-4 group cursor-pointer">
+                                <div class="w-10 h-12 rounded-xl flex flex-col items-center justify-center shrink-0 transition-all group-hover:scale-105 border border-slate-100 shadow-sm"
+                                     th:classappend="${event.getColorClass()}">
+                                    <span class="text-[9px] font-black uppercase leading-none" th:text="${event.getMonthLabel()}">APR</span>
+                                    <span class="text-base font-black leading-none mt-1" th:text="${event.getDayLabel()}">15</span>
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <h4 class="text-xs font-bold text-slate-800 truncate line-clamp-1 group-hover:text-primary transition-colors" th:text="${event.title()}">Strategic Quarterly Review</h4>
+                                    <p class="text-[10px] text-slate-400 mt-0.5 font-medium" th:text="${event.getTimeLabel()}">09:00 - 11:30</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <a th:href="@{/hr/calendar}" class="mt-6 w-full py-2.5 rounded-xl border border-slate-100 text-[10px] font-black uppercase text-slate-400 hover:bg-slate-50 hover:text-primary text-center transition-all">
+                            Open Full Calendar
+                        </a>
+                    </div>
+
                     <!-- Pending Workflow Tasks / Requests -->
-                    <div
-                            class="anim anim-7 lg:col-span-2 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+                    <div class="anim anim-8 lg:col-span-2 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
                         <div class="flex items-center justify-between px-6 pt-5 pb-4 border-b border-slate-50">
                             <div>
                                 <h3 class="text-sm font-black text-slate-800">Pending Actions</h3>
@@ -292,11 +327,10 @@
                                 </thead>
                                 <tbody class="divide-y divide-slate-50 w-full whitespace-nowrap">
                                 <tr>
-                                    <td colspan="5" class="px-6 py-8 text-center">
-                                        <div class="flex flex-col items-center justify-center text-slate-400">
-                                            <span class="material-symbols-outlined text-4xl mb-2 text-slate-200">check_circle</span>
-                                            <p class="text-sm font-bold text-slate-500">All caught up!</p>
-                                            <p class="text-xs text-slate-400 mt-1">No pending actions at the moment.</p>
+                                    <td colspan="5" class="px-6 py-8 text-center text-slate-400">
+                                        <div class="flex flex-col items-center justify-center">
+                                            <span class="material-symbols-outlined text-3xl mb-1 text-slate-200">check_circle</span>
+                                            <p class="text-xs font-bold text-slate-400 uppercase">All caught up!</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -304,55 +338,6 @@
                             </table>
                         </div>
                     </div>
-
-                    <!-- Onboarding Quick Links -->
-                    <div
-                            class="anim anim-8 bg-white rounded-2xl border border-slate-100 shadow-sm p-6 overflow-hidden flex flex-col">
-                        <h3 class="text-sm font-black text-slate-800 mb-4">Quick Links</h3>
-
-                        <div class="space-y-3 flex-1">
-                            <a th:href="@{/hr/employee/new}"
-                               class="block group p-3 rounded-xl border border-slate-100 hover:border-primary/40 hover:bg-primary/5 transition-all">
-                                <div class="flex items-center gap-3">
-                                    <div
-                                            class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                                        <span class="material-symbols-outlined text-sm">person_add</span>
-                                    </div>
-                                    <div>
-                                        <p
-                                                class="text-sm font-bold text-slate-800 group-hover:text-primary transition-colors">
-                                            Onboard Employee</p>
-                                        <p class="text-[10px] text-slate-400">Create new profile & access</p>
-                                    </div>
-                                </div>
-                            </a>
-
-                            <a th:href="@{/hr/recruitment(action='new-job')}"
-                               class="block group p-3 rounded-xl border border-slate-100 hover:border-primary/40 hover:bg-primary/5 transition-all">
-                                <div class="flex items-center gap-3">
-                                    <div
-                                            class="w-8 h-8 rounded-lg border border-slate-200 text-slate-500 flex items-center justify-center shrink-0 group-hover:bg-primary/10 group-hover:border-transparent group-hover:text-primary transition-colors">
-                                        <span class="material-symbols-outlined text-sm">post_add</span>
-                                    </div>
-                                    <div>
-                                        <p
-                                                class="text-sm font-bold text-slate-800 group-hover:text-primary transition-colors">
-                                            Create Job Post</p>
-                                        <p class="text-[10px] text-slate-400">Draft a new job requisition</p>
-                                    </div>
-                                </div>
-                            </a>
-
-                            <a th:href="@{/hr/employees}"
-                               class="block group p-3 rounded-xl border border-slate-100 hover:border-primary/40 hover:bg-primary/5 transition-all">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-lg border border-slate-200 text-slate-500 flex items-center justify-center shrink-0 group-hover:bg-primary/10 group-hover:border-transparent group-hover:text-primary transition-colors">
-                                        <span class="material-symbols-outlined text-sm">badge</span>
-                                    </div>
-                                    <div>
-                                        <p
-                                                class="text-sm font-bold text-slate-800 group-hover:text-primary transition-colors">
-                                            Employee Directory</p>
                                         <p class="text-[10px] text-slate-400">Draft timesheet & generate slips</p>
                                     </div>
                                 </div>

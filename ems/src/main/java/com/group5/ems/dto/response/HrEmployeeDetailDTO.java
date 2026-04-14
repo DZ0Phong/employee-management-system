@@ -32,6 +32,9 @@ public record HrEmployeeDetailDTO(
         String contractType,
         LocalDate contractStart,
         LocalDate contractEnd,
-        String contractStatus
+        String contractStatus,
+
+        // Skills
+        java.util.List<HrEmployeeSkillDTO> skills
 ) {
 }
