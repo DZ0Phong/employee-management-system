@@ -17,6 +17,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+/*
 @Controller
 @RequestMapping("/hr/payroll-periods")
 @PreAuthorize("hasAnyRole('ADMIN', 'HR_MANAGER')")
@@ -27,9 +28,6 @@ public class TimesheetPeriodController {
 
     private final TimesheetPeriodService periodService;
 
-    /**
-     * List all timesheet periods with pagination.
-     */
     @GetMapping
     public String listPeriods(@RequestParam(defaultValue = "0") int page, Model model) {
         Pageable pageable = PageRequest.of(page, DEFAULT_PAGE_SIZE);
@@ -48,9 +46,6 @@ public class TimesheetPeriodController {
         return "hr/payroll-periods";
     }
 
-    /**
-     * Create a new timesheet period with validation.
-     */
     @PostMapping("/create")
     public String createPeriod(@Valid @ModelAttribute("periodCreateReq") PeriodCreateReq req,
                                BindingResult bindingResult,
@@ -89,9 +84,6 @@ public class TimesheetPeriodController {
         }
     }
 
-    /**
-     * Lock a timesheet period (irreversible action).
-     */
     @PostMapping("/{id}/lock")
     public String lockPeriod(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
@@ -105,3 +97,4 @@ public class TimesheetPeriodController {
         return "redirect:/hr/payroll-periods";
     }
 }
+*/

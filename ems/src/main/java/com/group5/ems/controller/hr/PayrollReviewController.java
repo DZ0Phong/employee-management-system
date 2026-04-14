@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 
+/*
 @Controller
 @RequestMapping("/hr/payroll-review")
 @RequiredArgsConstructor
@@ -54,3 +55,4 @@ public class PayrollReviewController {
     }
 
 }
+*/

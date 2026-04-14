@@ -80,9 +80,11 @@ public class ApprovalWorkflowService {
                 break;
                 
             case WorkflowConstants.STEP_WAITING_HR:
-                request.setStep(WorkflowConstants.STEP_WAITING_HRM);
-                request.setStatus(WorkflowConstants.STATUS_PENDING);
-                saveHistory(request.getId(), approverId, "APPROVED_BY_HR", "Approved by HR");
+                request.setStep(WorkflowConstants.STEP_DONE);
+                request.setStatus(WorkflowConstants.STATUS_APPROVED);
+                request.setApprovedAt(LocalDateTime.now());
+                request.setApprovedBy(approverId);
+                saveHistory(request.getId(), approverId, "APPROVED_BY_HR", "Approved by HR (Final)");
                 break;
                 
             case WorkflowConstants.STEP_WAITING_HRM:
@@ -147,6 +149,8 @@ public class ApprovalWorkflowService {
                 return "Waiting for HR Manager";
             case WorkflowConstants.STEP_COMPLETED:
                 return "Completed";
+            case WorkflowConstants.STEP_DONE:
+                return "Approved";
             case WorkflowConstants.STEP_REJECTED:
                 return "Rejected";
             default:

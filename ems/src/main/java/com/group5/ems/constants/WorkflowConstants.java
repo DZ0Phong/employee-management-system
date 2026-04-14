@@ -7,6 +7,7 @@ public class WorkflowConstants {
     public static final String STEP_WAITING_HR = "WAITING_HR";
     public static final String STEP_WAITING_HRM = "WAITING_HRM";
     public static final String STEP_COMPLETED = "COMPLETED";
+    public static final String STEP_DONE = "DONE";
     public static final String STEP_REJECTED = "REJECTED";
     public static final String STEP_CANCELLED = "CANCELLED";
     

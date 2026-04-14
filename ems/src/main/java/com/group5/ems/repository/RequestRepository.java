@@ -48,6 +48,8 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
 
     @Query("SELECT r FROM Request r JOIN FETCH r.employee e JOIN FETCH e.user u " +
             "LEFT JOIN FETCH e.department d JOIN FETCH r.requestType rt " +
+            "LEFT JOIN FETCH d.manager dm LEFT JOIN FETCH dm.user dmu " +
+            "LEFT JOIN FETCH e.position p " +
             "WHERE r.status = 'PENDING' AND r.step = 'WAITING_HR' AND rt.category = 'ATTENDANCE' " +
             "AND (:departmentId IS NULL OR d.id = :departmentId) " +
             "AND (:leaveType IS NULL OR rt.code = :leaveType) " +
@@ -61,6 +63,8 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
 
     @Query("SELECT r FROM Request r JOIN FETCH r.employee e JOIN FETCH e.user u " +
             "LEFT JOIN FETCH e.department d JOIN FETCH r.requestType rt " +
+            "LEFT JOIN FETCH d.manager dm LEFT JOIN FETCH dm.user dmu " +
+            "LEFT JOIN FETCH e.position p " +
             "WHERE r.status = 'PENDING' AND r.step = 'WAITING_HRM' AND rt.category = 'ATTENDANCE' " +
             "AND (:departmentId IS NULL OR d.id = :departmentId) " +
             "AND (:leaveType IS NULL OR rt.code = :leaveType) " +
@@ -72,8 +76,10 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
             @Param("leaveType") String leaveType,
             @Param("search") String search);
 
-    @Query(value = "SELECT r FROM Request r JOIN r.employee e JOIN e.user u " +
-            "LEFT JOIN e.department d JOIN r.requestType rt " +
+    @Query(value = "SELECT r FROM Request r JOIN FETCH r.employee e JOIN FETCH e.user u " +
+            "LEFT JOIN FETCH e.department d JOIN FETCH r.requestType rt " +
+            "LEFT JOIN FETCH d.manager dm LEFT JOIN FETCH dm.user dmu " +
+            "LEFT JOIN FETCH e.position p " +
             "WHERE r.status <> 'PENDING' AND rt.category = 'ATTENDANCE' " +
             "ORDER BY r.updatedAt DESC, r.createdAt DESC",
             countQuery = "SELECT COUNT(r) FROM Request r JOIN r.requestType rt " +
@@ -302,8 +308,10 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
 
     // ── Filtered Leave History (server-side) ──
 
-    @Query(value = "SELECT r FROM Request r JOIN r.employee e JOIN e.user u " +
-            "LEFT JOIN e.department d JOIN r.requestType rt " +
+    @Query(value = "SELECT r FROM Request r JOIN FETCH r.employee e JOIN FETCH e.user u " +
+            "LEFT JOIN FETCH e.department d JOIN FETCH r.requestType rt " +
+            "LEFT JOIN FETCH d.manager dm LEFT JOIN FETCH dm.user dmu " +
+            "LEFT JOIN FETCH e.position p " +
             "WHERE r.status <> 'PENDING' AND rt.category = 'ATTENDANCE' " +
             "AND (:status IS NULL OR r.status = :status) " +
             "AND (:departmentId IS NULL OR d.id = :departmentId) " +

@@ -28,9 +28,14 @@ public record HrLeaveRequestDTO(
         String submittedAtDisplay,
         String processedAt,
         String approverName,
+        String approverEmployeeCode,
         BigDecimal leaveBalanceRemaining,
+
         BigDecimal leaveBalanceTotal,
         Integer leaveBalancePercentage,
-        Integer overlapCount
+        Integer overlapCount,
+        String managerName,
+        String managerEmployeeCode,
+        long workingDays
 ) {
-}
+}
