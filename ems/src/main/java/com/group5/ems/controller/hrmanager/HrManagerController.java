@@ -34,6 +34,7 @@ public class HrManagerController {
     private final PayrollApprovalService payrollApprovalService;
     private final CalendarService calendarService;
     private final com.group5.ems.service.common.EmailNotificationService emailNotificationService;
+    private final com.group5.ems.repository.DepartmentRepository departmentRepository;
 
     // ── Dashboard ─────────────────────────────────────────────────────────────
     @GetMapping({"", "/", "/dashboard"})
@@ -362,10 +363,26 @@ public class HrManagerController {
         int currentYear  = year  != null ? year  : now.getYear();
 
         model.addAttribute("events",       calendarService.getEventsByMonth(currentMonth, currentYear));
+        model.addAttribute("departments",  departmentRepository.findAll());
         model.addAttribute("currentMonth", currentMonth);
         model.addAttribute("currentYear",  currentYear);
         model.addAttribute("activePage",   "calendar");
         return "hrmanager/calendar";
+    }
+
+    // ── Calendar API: Get Departments ─────────────────────────────────────────
+    @GetMapping("/calendar/departments")
+    @ResponseBody
+    public List<Map<String, Object>> getDepartments() {
+        return departmentRepository.findAll().stream()
+                .map(dept -> {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("id", dept.getId());
+                    map.put("name", dept.getName());
+                    map.put("code", dept.getCode());
+                    return map;
+                })
+                .collect(java.util.stream.Collectors.toList());
     }
 
     // ── Calendar Create ───────────────────────────────────────────────────────

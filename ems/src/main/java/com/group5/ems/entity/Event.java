@@ -49,6 +49,12 @@ public class Event {
     @Column(name = "department_id")
     private Long departmentId;
 
+    @Column(name = "assigned_departments", columnDefinition = "TEXT")
+    private String assignedDepartments; // JSON array of department IDs: ["1","2","3"]
+
+    @Column(name = "is_company_wide")
+    private Boolean isCompanyWide = false;
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
@@ -102,6 +108,10 @@ public class Event {
     public void setCreatedBy(Long createdBy) { this.createdBy = createdBy; }
     public Long getDepartmentId() { return departmentId; }
     public void setDepartmentId(Long departmentId) { this.departmentId = departmentId; }
+    public String getAssignedDepartments() { return assignedDepartments; }
+    public void setAssignedDepartments(String assignedDepartments) { this.assignedDepartments = assignedDepartments; }
+    public Boolean getIsCompanyWide() { return isCompanyWide; }
+    public void setIsCompanyWide(Boolean isCompanyWide) { this.isCompanyWide = isCompanyWide; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }

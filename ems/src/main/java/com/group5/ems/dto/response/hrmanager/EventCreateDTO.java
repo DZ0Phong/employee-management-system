@@ -23,4 +23,6 @@ public class EventCreateDTO {
     private String color;
     private Boolean isAllDay;
     private Long departmentId;
+    private String assignedDepartments; // JSON: ["1","2","3"] (department IDs)
+    private Boolean isCompanyWide;      // True = all departments
 }

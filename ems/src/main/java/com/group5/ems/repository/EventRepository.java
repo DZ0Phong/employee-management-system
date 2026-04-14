@@ -77,4 +77,50 @@ public interface EventRepository extends JpaRepository<Event, Long> {
            "AND (e.endDate IS NULL OR e.endDate >= :cutoffDate) " +
            "ORDER BY e.startDate DESC")
     List<Event> findActiveTrainingEvents(@Param("cutoffDate") LocalDate cutoffDate);
-}
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // MULTI-DEPARTMENT & COMPANY-WIDE QUERIES
+    // ══════════════════════════════════════════════════════════════════════════
+
+    /**
+     * Get events visible to a specific department (for Department Manager/Employee)
+     * Includes: company-wide events + events assigned to their department
+     */
+    @Query("SELECT e FROM Event e WHERE " +
+           "e.isCompanyWide = true OR " +
+           "e.departmentId = :deptId OR " +
+           "e.assignedDepartments LIKE CONCAT('%\"', :deptId, '\"%') " +
+           "ORDER BY e.startDate ASC, e.startTime ASC")
+    List<Event> findVisibleToDepartment(@Param("deptId") Long departmentId);
+
+    /**
+     * Get events visible to a department within a date range
+     */
+    @Query("SELECT e FROM Event e WHERE " +
+           "(e.isCompanyWide = true OR " +
+           "e.departmentId = :deptId OR " +
+           "e.assignedDepartments LIKE CONCAT('%\"', :deptId, '\"%')) AND " +
+           "e.startDate BETWEEN :start AND :end " +
+           "ORDER BY e.startDate ASC, e.startTime ASC")
+    List<Event> findVisibleToDepartmentByDateRange(
+        @Param("deptId") Long departmentId,
+        @Param("start") LocalDate start,
+        @Param("end") LocalDate end
+    );
+
+    /**
+     * Get company-wide events only
+     */
+    @Query("SELECT e FROM Event e WHERE e.isCompanyWide = true " +
+           "ORDER BY e.startDate ASC, e.startTime ASC")
+    List<Event> findCompanyWideEvents();
+
+    /**
+     * Get events by multiple department IDs (for HR Manager filtering)
+     */
+    @Query("SELECT e FROM Event e WHERE " +
+           "e.departmentId IN :deptIds OR " +
+           "e.assignedDepartments LIKE CONCAT('%\"', :deptId, '\"%') " +
+           "ORDER BY e.startDate ASC, e.startTime ASC")
+    List<Event> findByDepartmentIds(@Param("deptIds") List<Long> departmentIds, @Param("deptId") Long deptId);
+}
