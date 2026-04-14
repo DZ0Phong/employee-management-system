@@ -22,6 +22,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
  * Controller for the Payroll Preview dashboard.
  * Provides paginated aggregated view of attendance, bonuses, and deductions per period.
  */
+/*
 @Controller
 @RequestMapping("/hr/payroll-preview")
 @RequiredArgsConstructor
@@ -31,10 +32,6 @@ public class PayrollPreviewController {
 
     private final PayrollAggregationService aggregationService;
 
-    /**
-     * Displays the payroll preview dashboard for a given timesheet period.
-     * Uses server-side pagination — only the current page of employees is loaded and aggregated.
-     */
     @GetMapping("/{periodId}")
     public String previewPeriod(@PathVariable Long periodId,
                                 @RequestParam(defaultValue = "0") int page,
@@ -56,10 +53,6 @@ public class PayrollPreviewController {
         }
     }
 
-    /**
-     * Generates payslips for all active employees in a locked period.
-     * The period must be locked before payslips can be generated.
-     */
     @PostMapping("/{periodId}/generate-payslips")
     public String generatePayslips(@PathVariable Long periodId,
                                     RedirectAttributes redirectAttributes) {
@@ -77,3 +70,4 @@ public class PayrollPreviewController {
         return "redirect:/hr/payroll-preview/" + periodId;
     }
 }
+*/

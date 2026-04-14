@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+/*
 @Controller
 @RequestMapping("/hr/payroll-periods")
 @PreAuthorize("hasAnyRole('ADMIN', 'HR_MANAGER')")
@@ -40,3 +41,4 @@ public class PayrollCalculationController {
         }
     }
 }
+*/

@@ -18,6 +18,7 @@ import com.group5.ems.repository.RequestTypeRepository;
 import com.group5.ems.repository.UserRepository;
 import com.group5.ems.service.common.ApprovalWorkflowService;
 import com.group5.ems.service.common.LogService;
+import com.group5.ems.util.WorkingDayUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -420,10 +421,17 @@ public class HrLeaveService {
 
         String reason = request.getContent() != null ? request.getContent() : "No reason provided";
 
-        // Approver name (improvement #8)
+        // Approver name & code
         String approverName = "HR";
-        if (request.getApprovedByUser() != null && request.getApprovedByUser().getFullName() != null) {
-            approverName = request.getApprovedByUser().getFullName();
+        String approverEmployeeCode = "N/A";
+        if (request.getApprovedByUser() != null) {
+            if (request.getApprovedByUser().getFullName() != null) {
+                approverName = request.getApprovedByUser().getFullName();
+            }
+            if (request.getApprovedByUser().getEmployee() != null && 
+                request.getApprovedByUser().getEmployee().getEmployeeCode() != null) {
+                approverEmployeeCode = request.getApprovedByUser().getEmployee().getEmployeeCode();
+            }
         }
 
         // Processed timestamp
@@ -431,6 +439,7 @@ public class HrLeaveService {
         if (request.getApprovedAt() != null) {
             processedAt = request.getApprovedAt().format(DTF_FULL);
         }
+
 
         // UI Status Mapping
         String statusLabel = request.getStatus();
@@ -489,6 +498,26 @@ public class HrLeaveService {
             employeePosition = request.getEmployee().getPosition().getName();
         }
 
+        // Department Manager
+        String managerName = "N/A";
+        String managerEmployeeCode = "N/A";
+        if (request.getEmployee() != null && request.getEmployee().getDepartment() != null
+                && request.getEmployee().getDepartment().getManager() != null) {
+            var mgr = request.getEmployee().getDepartment().getManager();
+            if (mgr.getUser() != null) {
+                managerName = mgr.getUser().getFullName();
+            }
+            if (mgr.getEmployeeCode() != null) {
+                managerEmployeeCode = mgr.getEmployeeCode();
+            }
+        }
+
+        // Working Days calculation (excludes weekends)
+        long workingDays = 0;
+        if (request.getLeaveFrom() != null && request.getLeaveTo() != null) {
+            workingDays = WorkingDayUtils.countWorkingDays(request.getLeaveFrom(), request.getLeaveTo());
+        }
+
         return HrLeaveRequestDTO.builder()
                 .id(request.getId())
                 .employeeName(fullName)
@@ -511,10 +540,15 @@ public class HrLeaveService {
                 .submittedAtDisplay(request.getCreatedAt() != null ? request.getCreatedAt().format(DTF_FULL) : "N/A")
                 .processedAt(processedAt)
                 .approverName(approverName)
+                .approverEmployeeCode(approverEmployeeCode)
                 .leaveBalanceRemaining(balanceRemaining)
+
                 .leaveBalanceTotal(balanceTotal)
                 .leaveBalancePercentage(balancePercentage)
                 .overlapCount(overlapCount)
+                .managerName(managerName)
+                .managerEmployeeCode(managerEmployeeCode)
+                .workingDays(workingDays)
                 .build();
     }
 
