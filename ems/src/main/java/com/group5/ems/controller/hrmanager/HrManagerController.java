@@ -99,11 +99,11 @@ public class HrManagerController {
             java.util.List<com.group5.ems.dto.response.hrmanager.RecentActivityDTO> activities;
             
             switch (type.toLowerCase()) {
-                case "leave":
-                    activities = dashboardService.getLeaveActivities(since);
+                case "request":
+                    activities = dashboardService.getRequestActivities(since);
                     // Apply sub-filter if needed
                     if (!"all".equals(filter)) {
-                        activities = filterLeaveActivities(activities, filter);
+                        activities = filterRequestActivities(activities, filter);
                     }
                     break;
                     
@@ -123,11 +123,19 @@ public class HrManagerController {
                     }
                     break;
                     
-                case "hr":
-                    activities = dashboardService.getHRRequestActivities(since);
+                case "staffing":
+                    activities = dashboardService.getStaffingRequestActivities(since);
                     // Apply sub-filter if needed
                     if (!"all".equals(filter)) {
-                        activities = filterHRActivities(activities, filter);
+                        activities = filterStaffingActivities(activities, filter);
+                    }
+                    break;
+                    
+                case "history":
+                    activities = dashboardService.getHistoryActivities(since);
+                    // Apply sub-filter if needed
+                    if (!"all".equals(filter)) {
+                        activities = filterHistoryActivities(activities, filter);
                     }
                     break;
                     
@@ -200,6 +208,32 @@ public class HrManagerController {
 
     // ── Helper methods for filtering activities ──────────────────────────────
 
+    private java.util.List<com.group5.ems.dto.response.hrmanager.RecentActivityDTO> filterRequestActivities(
+            java.util.List<com.group5.ems.dto.response.hrmanager.RecentActivityDTO> activities, 
+            String filter) {
+        
+        return activities.stream()
+                .filter(a -> {
+                    switch (filter.toLowerCase()) {
+                        case "pending":
+                            return "PENDING".equals(a.getStatus());
+                        case "completed":
+                            return "COMPLETED".equals(a.getStatus()) || "APPROVED".equals(a.getStatus());
+                        case "contract":
+                            return a.getActionLabel() != null && a.getActionLabel().toLowerCase().contains("contract");
+                        case "benefits":
+                            return a.getActionLabel() != null && a.getActionLabel().toLowerCase().contains("benefit");
+                        case "documents":
+                            return a.getActionLabel() != null && 
+                                   (a.getActionLabel().toLowerCase().contains("document") ||
+                                    a.getActionLabel().toLowerCase().contains("letter"));
+                        default:
+                            return true;
+                    }
+                })
+                .collect(java.util.stream.Collectors.toList());
+    }
+
     private java.util.List<com.group5.ems.dto.response.hrmanager.RecentActivityDTO> filterLeaveActivities(
             java.util.List<com.group5.ems.dto.response.hrmanager.RecentActivityDTO> activities, 
             String filter) {
@@ -263,9 +297,6 @@ public class HrManagerController {
                             return "Promotion".equalsIgnoreCase(a.getBadge());
                         case "transfer":
                             return "Transfer".equalsIgnoreCase(a.getBadge());
-                        case "onleave":
-                        case "on_leave":
-                            return a.getDetails() != null && a.getDetails().toLowerCase().contains("on leave");
                         default:
                             return true;
                     }
@@ -292,6 +323,46 @@ public class HrManagerController {
                             return a.getActionLabel() != null && 
                                    (a.getActionLabel().toLowerCase().contains("document") ||
                                     a.getActionLabel().toLowerCase().contains("letter"));
+                        default:
+                            return true;
+                    }
+                })
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    private java.util.List<com.group5.ems.dto.response.hrmanager.RecentActivityDTO> filterStaffingActivities(
+            java.util.List<com.group5.ems.dto.response.hrmanager.RecentActivityDTO> activities, 
+            String filter) {
+        
+        return activities.stream()
+                .filter(a -> {
+                    switch (filter.toLowerCase()) {
+                        case "pending":
+                            return "PENDING".equals(a.getStatus());
+                        case "approved":
+                            return "APPROVED".equals(a.getStatus());
+                        case "recruitment":
+                            return a.getActionLabel() != null && a.getActionLabel().toLowerCase().contains("recruitment");
+                        case "transfer":
+                            return a.getActionLabel() != null && a.getActionLabel().toLowerCase().contains("transfer");
+                        default:
+                            return true;
+                    }
+                })
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    private java.util.List<com.group5.ems.dto.response.hrmanager.RecentActivityDTO> filterHistoryActivities(
+            java.util.List<com.group5.ems.dto.response.hrmanager.RecentActivityDTO> activities, 
+            String filter) {
+        
+        return activities.stream()
+                .filter(a -> {
+                    switch (filter.toLowerCase()) {
+                        case "approved":
+                            return "APPROVED".equals(a.getStatus());
+                        case "rejected":
+                            return "REJECTED".equals(a.getStatus());
                         default:
                             return true;
                     }

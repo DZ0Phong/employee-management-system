@@ -306,6 +306,31 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
            "WHERE r.status = :status AND r.step = 'WAITING_HR' AND rt.category = :category")
     long countByStatusAndStepWaitingHRAndRequestTypeCategory(@Param("status") String status, @Param("category") String category);
 
+    // New methods for excluding ATTENDANCE category
+    @Query("SELECT COUNT(r) FROM Request r JOIN r.requestType rt WHERE rt.category <> :excludeCategory")
+    long countByRequestTypeCategoryNot(@Param("excludeCategory") String excludeCategory);
+
+    @Query("SELECT COUNT(r) FROM Request r JOIN r.requestType rt " +
+           "WHERE r.status = :status AND rt.category <> :excludeCategory")
+    long countByStatusAndRequestTypeCategoryNot(@Param("status") String status, @Param("excludeCategory") String excludeCategory);
+
+    @Query("SELECT COUNT(r) FROM Request r JOIN r.requestType rt " +
+           "WHERE r.status IN :statuses AND rt.category <> :excludeCategory")
+    long countByStatusInAndRequestTypeCategoryNot(@Param("statuses") java.util.List<String> statuses, @Param("excludeCategory") String excludeCategory);
+
+    @Query("SELECT r FROM Request r " +
+           "JOIN FETCH r.employee e " +
+           "JOIN FETCH e.user u " +
+           "LEFT JOIN FETCH e.department d " +
+           "LEFT JOIN FETCH e.position p " +
+           "JOIN FETCH r.requestType rt " +
+           "WHERE rt.category <> :excludeCategory " +
+           "AND (r.status = 'PENDING' OR r.updatedAt >= :since) " +
+           "ORDER BY CASE WHEN r.status = 'PENDING' THEN 0 ELSE 1 END, r.createdAt DESC")
+    List<Request> findRecentRequestsByCategoryNot(
+            @Param("excludeCategory") String excludeCategory,
+            @Param("since") LocalDateTime since);
+
     // ── Filtered Leave History (server-side) ──
 
     @Query(value = "SELECT r FROM Request r JOIN FETCH r.employee e JOIN FETCH e.user u " +

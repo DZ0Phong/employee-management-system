@@ -315,22 +315,22 @@
             <!-- Quick Stats Bar (4 clickable cards) -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 anim anim-5">
 
-                <!-- Leave Requests Card -->
+                <!-- Requests Card (excluding leave) -->
                 <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5 cursor-pointer card-hover transition-all hover:border-primary/30"
-                     id="quick-card-leave">
+                     id="quick-card-request">
                     <div class="flex items-start justify-between mb-3">
                         <div class="w-11 h-11 rounded-lg bg-amber-50 flex items-center justify-center text-amber-600">
-                            <span class="material-symbols-outlined text-[22px]">calendar_today</span>
+                            <span class="material-symbols-outlined text-[22px]">description</span>
                         </div>
-                        <span id="leave-pending-badge" class="px-2.5 py-1 bg-amber-100 text-amber-700 text-xs font-bold rounded-full">
+                        <span id="request-pending-badge" class="px-2.5 py-1 bg-amber-100 text-amber-700 text-xs font-bold rounded-full">
                             3 pending
                         </span>
                     </div>
-                    <p class="text-slate-500 text-sm font-medium mb-1">Leave Requests</p>
-                    <h3 class="text-3xl font-black text-slate-900" id="leave-total">12</h3>
+                    <p class="text-slate-500 text-sm font-medium mb-1">Requests</p>
+                    <h3 class="text-3xl font-black text-slate-900" id="request-total">12</h3>
                 </div>
 
-                <!-- Payroll Card -->
+                <!-- Payroll Reports Card -->
                 <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5 cursor-pointer card-hover transition-all hover:border-primary/30"
                      id="quick-card-payroll">
                     <div class="flex items-start justify-between mb-3">
@@ -341,8 +341,8 @@
                             2 pending
                         </span>
                     </div>
-                    <p class="text-slate-500 text-sm font-medium mb-1">Payroll</p>
-                    <h3 class="text-3xl font-black text-slate-900" id="payroll-total">$847K</h3>
+                    <p class="text-slate-500 text-sm font-medium mb-1">Payroll Reports</p>
+                    <h3 class="text-3xl font-black text-slate-900" id="payroll-total">5</h3>
                 </div>
 
                 <!-- Status Changes Card -->
@@ -350,7 +350,7 @@
                      id="quick-card-status">
                     <div class="flex items-start justify-between mb-3">
                         <div class="w-11 h-11 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600">
-                            <span class="material-symbols-outlined text-[22px]">group</span>
+                            <span class="material-symbols-outlined text-[22px]">swap_horiz</span>
                         </div>
                         <span class="px-2.5 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full">
                             this month
@@ -360,19 +360,19 @@
                     <h3 class="text-3xl font-black text-slate-900" id="status-total">7</h3>
                 </div>
 
-                <!-- HR Requests Card -->
+                <!-- Staffing Requests Card -->
                 <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5 cursor-pointer card-hover transition-all hover:border-primary/30"
-                     id="quick-card-hr">
+                     id="quick-card-staffing">
                     <div class="flex items-start justify-between mb-3">
                         <div class="w-11 h-11 rounded-lg bg-rose-50 flex items-center justify-center text-rose-600">
-                            <span class="material-symbols-outlined text-[22px]">description</span>
+                            <span class="material-symbols-outlined text-[22px]">person_add</span>
                         </div>
-                        <span id="hr-pending-badge" class="px-2.5 py-1 bg-rose-100 text-rose-700 text-xs font-bold rounded-full">
+                        <span id="staffing-pending-badge" class="px-2.5 py-1 bg-rose-100 text-rose-700 text-xs font-bold rounded-full">
                             4 pending
                         </span>
                     </div>
-                    <p class="text-slate-500 text-sm font-medium mb-1">HR Requests</p>
-                    <h3 class="text-3xl font-black text-slate-900" id="hr-total">9</h3>
+                    <p class="text-slate-500 text-sm font-medium mb-1">Staffing Requests</p>
+                    <h3 class="text-3xl font-black text-slate-900" id="staffing-total">9</h3>
                 </div>
             </div>
 
@@ -401,17 +401,12 @@
                         <!-- Dynamic tabs from backend -->
                         <button th:each="cat : ${activityCategories}"
                                 th:data-tab="${cat.type}"
-                                th:classappend="${cat.type == 'leave' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}"
+                                th:classappend="${cat.type == 'all' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}"
                                 class="activity-tab flex items-center gap-2 px-1 py-4 text-sm font-semibold border-b-2 transition-colors whitespace-nowrap">
                             <span th:text="${cat.label}">Category</span>
                             <span th:if="${cat.count > 0}"
                                   th:text="${cat.count}"
                                   class="tab-badge px-2 py-0.5 bg-slate-100 text-slate-600 text-xs font-bold rounded-full">0</span>
-                        </button>
-                        <!-- All Activity tab -->
-                        <button data-tab="all"
-                                class="activity-tab flex items-center gap-2 px-1 py-4 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 transition-colors whitespace-nowrap">
-                            <span>All Activity</span>
                         </button>
                     </nav>
                 </div>
@@ -662,21 +657,25 @@
     if (flashMessage) showToast(flashMessage, flashType);
 
     // ── Activity Center ────────────────────────────────────────────────────────
-    let currentTab = 'leave';
+    let currentTab = 'all';
     let currentFilter = 'all';
     let quickStats = {};
     let rejectTargetId = null;
 
     // Sub-filter definitions for each tab
     const subFilters = {
-        leave: [
+        all: [
+            { value: 'all',      label: 'All' },
+            { value: 'pending',  label: 'Pending' },
+            { value: 'approved', label: 'Approved' }
+        ],
+        request: [
             { value: 'all',       label: 'All' },
-            { value: 'annual',    label: 'Annual' },
-            { value: 'sick',      label: 'Sick' },
-            { value: 'maternity', label: 'Maternity / Paternity' },
-            { value: 'unpaid',    label: 'Unpaid' },
+            { value: 'contract',  label: 'Contract' },
+            { value: 'benefits',  label: 'Benefits' },
+            { value: 'documents', label: 'Documents' },
             { value: 'pending',   label: 'Pending' },
-            { value: 'approved',  label: 'Approved' }
+            { value: 'completed', label: 'Completed' }
         ],
         payroll: [
             { value: 'all',      label: 'All' },
@@ -690,18 +689,17 @@
             { value: 'promotion',   label: 'Promotion' },
             { value: 'transfer',    label: 'Transfer' }
         ],
-        hr: [
-            { value: 'all',       label: 'All' },
-            { value: 'contract',  label: 'Contract' },
-            { value: 'benefits',  label: 'Benefits' },
-            { value: 'documents', label: 'Documents' },
-            { value: 'pending',   label: 'Pending' },
-            { value: 'completed', label: 'Completed' }
+        staffing: [
+            { value: 'all',         label: 'All' },
+            { value: 'recruitment', label: 'Recruitment' },
+            { value: 'transfer',    label: 'Transfer' },
+            { value: 'pending',     label: 'Pending' },
+            { value: 'approved',    label: 'Approved' }
         ],
-        all: [
+        history: [
             { value: 'all',      label: 'All' },
-            { value: 'pending',  label: 'Pending' },
-            { value: 'approved', label: 'Approved' }
+            { value: 'approved', label: 'Approved' },
+            { value: 'rejected', label: 'Rejected' }
         ]
     };
 
@@ -717,22 +715,22 @@
     }
 
     function updateQuickStatsUI(data) {
-        document.getElementById('leave-total').textContent = data.leaveTotal || 0;
-        document.getElementById('leave-pending-badge').textContent = `${data.leavePending || 0} pending`;
+        document.getElementById('request-total').textContent = data.requestTotal || 0;
+        document.getElementById('request-pending-badge').textContent = `${data.requestPending || 0} pending`;
 
-        document.getElementById('payroll-total').textContent = data.payrollTotal || '$0';
+        document.getElementById('payroll-total').textContent = data.payrollTotal || 0;
         document.getElementById('payroll-pending-badge').textContent = `${data.payrollPending || 0} pending`;
 
         document.getElementById('status-total').textContent = data.statusChanges || 0;
 
-        document.getElementById('hr-total').textContent = data.hrTotal || 0;
-        document.getElementById('hr-pending-badge').textContent = `${data.hrPending || 0} pending`;
+        document.getElementById('staffing-total').textContent = data.staffingTotal || 0;
+        document.getElementById('staffing-pending-badge').textContent = `${data.staffingPending || 0} pending`;
 
         document.getElementById('total-pending-badge').textContent = `${data.totalPending || 0} needs attention`;
 
-        updateTabBadge('leave',   data.leavePending);
-        updateTabBadge('payroll', data.payrollPending);
-        updateTabBadge('hr',      data.hrPending);
+        updateTabBadge('request',  data.requestPending);
+        updateTabBadge('payroll',  data.payrollPending);
+        updateTabBadge('staffing', data.staffingPending);
     }
 
     function updateTabBadge(tab, count) {
@@ -847,11 +845,12 @@
     function updateLoadMoreButton(type, filter, data) {
         const loadMoreBtn = document.getElementById('load-more-btn');
         const typeLabels = {
-            leave:   'Leave Requests',
-            payroll: 'Payroll',
-            status:  'Status Changes',
-            hr:      'HR Requests',
-            all:     'Activities'
+            request:  'Requests',
+            payroll:  'Payroll Reports',
+            status:   'Status Changes',
+            staffing: 'Staffing Requests',
+            history:  'History',
+            all:      'Activities'
         };
         if (data.hasMore) {
             loadMoreBtn.innerHTML = `View all ${typeLabels[type] || 'Activities'} (${data.totalCount}) →`;
@@ -865,11 +864,12 @@
 
     function getViewAllUrl(type, filter) {
         switch (type) {
-            case 'leave':   return filter === 'pending' ? '/hrmanager/request-approval?tab=pending' : '/hrmanager/request-approval';
-            case 'payroll': return '/hrmanager/payroll-periods';
-            case 'status':
-            case 'hr':      return '/hrmanager/hr-analytics';
-            default:        return '/hrmanager/dashboard';
+            case 'request':  return '/hrmanager/request-approval';
+            case 'payroll':  return '/hrmanager/payroll-periods';
+            case 'status':   return '/hrmanager/hr-analytics';
+            case 'staffing': return '/hrmanager/staffing-requests';
+            case 'history':  return '/hrmanager/request-approval?tab=history';
+            default:         return '/hrmanager/dashboard';
         }
     }
 
@@ -1060,7 +1060,7 @@
     // Initialize on page load
     document.addEventListener('DOMContentLoaded', () => {
         loadQuickStats();
-        switchToTab('leave'); // Default tab
+        switchToTab('all'); // Default tab
         
         // Add click event listeners to all activity tabs
         document.querySelectorAll('.activity-tab').forEach(btn => {

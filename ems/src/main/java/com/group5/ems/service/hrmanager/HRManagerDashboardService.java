@@ -343,40 +343,32 @@ public class HRManagerDashboardService {
         Map<String, Object> stats = new HashMap<>();
         LocalDateTime since = LocalDateTime.now().minusDays(30);
         
-        // Leave Requests stats
-        long leaveTotal = requestRepository.countByRequestTypeCategory("ATTENDANCE");
-        long leavePending = requestRepository.countByStatusAndRequestTypeCategory("PENDING", "ATTENDANCE");
-        stats.put("leaveTotal", leaveTotal);
-        stats.put("leavePending", leavePending);
+        // Requests stats (excluding ATTENDANCE - leave requests)
+        long requestTotal = requestRepository.countByRequestTypeCategoryNot("ATTENDANCE");
+        long requestPending = requestRepository.countByStatusAndRequestTypeCategoryNot("PENDING", "ATTENDANCE");
+        stats.put("requestTotal", requestTotal);
+        stats.put("requestPending", requestPending);
         
-        // Payroll stats
-        List<Payslip> pendingPayslips = payslipRepository.findByStatus("PENDING");
-        Map<Long, List<Payslip>> byDept = pendingPayslips.stream()
-                .filter(p -> p.getEmployee() != null && p.getEmployee().getDepartment() != null)
-                .collect(Collectors.groupingBy(p -> p.getEmployee().getDepartment().getId()));
-        
-        java.math.BigDecimal payrollTotal = pendingPayslips.stream()
-                .map(Payslip::getNetSalary)
-                .filter(java.util.Objects::nonNull)
-                .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
-        
-        stats.put("payrollTotal", formatCurrency(payrollTotal));
-        stats.put("payrollPending", byDept.size());
+        // Payroll Reports stats (from HrReport table, not Payslip)
+        // TODO: Implement HrReportRepository and count reports
+        // For now, using placeholder
+        stats.put("payrollTotal", 0L);
+        stats.put("payrollPending", 0L);
         
         // Status Changes (this month)
         LocalDate monthStart = LocalDate.now().withDayOfMonth(1);
-        long newHires = employeeRepository.findNewHires(monthStart).size();
-        long terminations = employeeRepository.findRecentTerminations(monthStart).size();
-        stats.put("statusChanges", newHires + terminations);
+        int newHires = employeeRepository.findNewHires(monthStart).size();
+        int terminations = employeeRepository.findRecentTerminations(monthStart).size();
+        stats.put("statusChanges", (long)(newHires + terminations));
         
-        // HR Requests stats
-        long hrTotal = requestRepository.countByRequestTypeCategory("HR");
-        long hrPending = requestRepository.countByStatusAndRequestTypeCategory("PENDING", "HR");
-        stats.put("hrTotal", hrTotal);
-        stats.put("hrPending", hrPending);
+        // Staffing Requests stats (from StaffingRequest table)
+        // TODO: Implement StaffingRequestRepository count methods
+        // For now, using placeholder
+        stats.put("staffingTotal", 0L);
+        stats.put("staffingPending", 0L);
         
         // Total items needing action
-        stats.put("totalPending", leavePending + byDept.size() + hrPending);
+        stats.put("totalPending", requestPending + 0 + 0);
         
         return stats;
     }
@@ -516,6 +508,67 @@ public class HRManagerDashboardService {
     }
 
     /**
+     * Get Request Activities (excluding ATTENDANCE/leave requests)
+     */
+    public List<RecentActivityDTO> getRequestActivities(LocalDateTime since) {
+        List<Request> requests = requestRepository.findRecentRequestsByCategoryNot("ATTENDANCE", since);
+        
+        return requests.stream()
+                .map(request -> {
+                    Employee employee = request.getEmployee();
+                    String employeeName = employee != null && employee.getUser() != null 
+                            ? employee.getUser().getFullName() : "Unknown";
+                    String employeeInitials = getInitials(employeeName);
+                    String department = employee != null && employee.getDepartment() != null 
+                            ? employee.getDepartment().getName() : "N/A";
+                    String position = employee != null && employee.getPosition() != null 
+                            ? employee.getPosition().getName() : "Employee";
+                    
+                    String actionLabel = request.getTitle() != null ? request.getTitle() : "Request";
+                    String details = request.getContent() != null && request.getContent().length() > 50 
+                            ? request.getContent().substring(0, 50) + "..." 
+                            : (request.getContent() != null ? request.getContent() : "");
+                    
+                    // Calculate priority
+                    String priority = "NORMAL";
+                    int priorityScore = 0;
+                    if ("PENDING".equals(request.getStatus())) {
+                        Object[] priorityResult = PriorityCalculator.calculatePriority(request, employee);
+                        priorityScore = (Integer) priorityResult[0];
+                        priority = (String) priorityResult[1];
+                        
+                        request.setPriority(priority);
+                        request.setPriorityScore(priorityScore);
+                    } else {
+                        priority = request.getPriority() != null ? request.getPriority() : "NORMAL";
+                        priorityScore = request.getPriorityScore() != null ? request.getPriorityScore() : 0;
+                    }
+                    
+                    String statusLabel = getStatusLabel(request.getStatus());
+                    
+                    return RecentActivityDTO.builder()
+                            .id(request.getId())
+                            .activityType("REQUEST")
+                            .employeeName(employeeName)
+                            .employeePosition(position)
+                            .employeeInitials(employeeInitials)
+                            .department(department)
+                            .actionLabel(actionLabel)
+                            .details(details)
+                            .date(request.getCreatedAt().toLocalDate())
+                            .status(request.getStatus())
+                            .statusLabel(statusLabel)
+                            .priority(priority)
+                            .priorityScore(priorityScore)
+                            .icon("description")
+                            .color(getColorByStatus(request.getStatus()))
+                            .badge("")
+                            .build();
+                })
+                .collect(Collectors.toList());
+    }
+
+    /**
      * STEP 4 Part 4: Get Payroll Activities
      */
     public List<RecentActivityDTO> getPayrollActivities(LocalDateTime since) {
@@ -562,6 +615,89 @@ public class HRManagerDashboardService {
                             .priorityScore(priorityScore)
                             .icon("payments")
                             .color(getColorByStatus(payslip.getStatus()))
+                            .badge("")
+                            .build();
+                })
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Get Payroll Report Activities (from HrReport table)
+     * TODO: Implement when HrReportRepository is available
+     */
+    public List<RecentActivityDTO> getPayrollReportActivities(LocalDateTime since) {
+        // Placeholder - will implement when HrReport entity and repository are ready
+        List<RecentActivityDTO> activities = new ArrayList<>();
+        
+        // TODO: Query HrReport table for reports submitted by HR to HRM
+        // Example logic:
+        // List<HrReport> reports = hrReportRepository.findRecentReports(since);
+        // Map to RecentActivityDTO with type "PAYROLL_REPORT"
+        
+        return activities;
+    }
+
+    /**
+     * Get Staffing Request Activities (recruitment and transfer requests)
+     * TODO: Implement when StaffingRequestRepository methods are available
+     */
+    public List<RecentActivityDTO> getStaffingRequestActivities(LocalDateTime since) {
+        // Placeholder - will implement when StaffingRequest queries are ready
+        List<RecentActivityDTO> activities = new ArrayList<>();
+        
+        // TODO: Query StaffingRequest table
+        // Example logic:
+        // List<StaffingRequest> requests = staffingRequestRepository.findRecentRequests(since);
+        // Map to RecentActivityDTO with type "STAFFING_REQUEST"
+        // Include both RECRUITMENT and TRANSFER types
+        
+        return activities;
+    }
+
+    /**
+     * Get History Activities (approved/rejected requests)
+     */
+    public List<RecentActivityDTO> getHistoryActivities(LocalDateTime since) {
+        // Get all approved/rejected requests (excluding ATTENDANCE)
+        List<Request> requests = requestRepository.findRecentRequestsByCategoryNot("ATTENDANCE", since);
+        
+        return requests.stream()
+                .filter(r -> "APPROVED".equals(r.getStatus()) || "REJECTED".equals(r.getStatus()))
+                .map(request -> {
+                    Employee employee = request.getEmployee();
+                    String employeeName = employee != null && employee.getUser() != null 
+                            ? employee.getUser().getFullName() : "Unknown";
+                    String employeeInitials = getInitials(employeeName);
+                    String department = employee != null && employee.getDepartment() != null 
+                            ? employee.getDepartment().getName() : "N/A";
+                    String position = employee != null && employee.getPosition() != null 
+                            ? employee.getPosition().getName() : "Employee";
+                    
+                    String actionLabel = request.getTitle() != null ? request.getTitle() : "Request";
+                    String details = request.getContent() != null && request.getContent().length() > 50 
+                            ? request.getContent().substring(0, 50) + "..." 
+                            : (request.getContent() != null ? request.getContent() : "");
+                    
+                    String priority = request.getPriority() != null ? request.getPriority() : "NORMAL";
+                    int priorityScore = request.getPriorityScore() != null ? request.getPriorityScore() : 0;
+                    String statusLabel = getStatusLabel(request.getStatus());
+                    
+                    return RecentActivityDTO.builder()
+                            .id(request.getId())
+                            .activityType("HISTORY")
+                            .employeeName(employeeName)
+                            .employeePosition(position)
+                            .employeeInitials(employeeInitials)
+                            .department(department)
+                            .actionLabel(actionLabel)
+                            .details(details)
+                            .date(request.getCreatedAt().toLocalDate())
+                            .status(request.getStatus())
+                            .statusLabel(statusLabel)
+                            .priority(priority)
+                            .priorityScore(priorityScore)
+                            .icon("history")
+                            .color(getColorByStatus(request.getStatus()))
                             .badge("")
                             .build();
                 })
@@ -669,7 +805,7 @@ public class HRManagerDashboardService {
 
     /**
      * STEP 4 Part 6: Refactor getRecentActivities to combine all activity types
-     * UPDATED: Filter to show only URGENT/CRITICAL pending + processed within 7 days
+     * UPDATED: Show all activities, apply filter based on user selection
      */
     public List<RecentActivityDTO> getRecentActivitiesCombined(String filter, int days) {
         LocalDateTime since = LocalDateTime.now().minusDays(days);
@@ -677,31 +813,13 @@ public class HRManagerDashboardService {
         
         List<RecentActivityDTO> allActivities = new ArrayList<>();
         
-        // Add all activity types
-        allActivities.addAll(getLeaveActivities(since));
-        allActivities.addAll(getHRRequestActivities(since));
+        // Add all activity types (excluding leave requests)
+        allActivities.addAll(getRequestActivities(since));
         allActivities.addAll(getPayrollActivities(since));
         allActivities.addAll(getStatusChangeActivities(sinceDate));
+        allActivities.addAll(getStaffingRequestActivities(since));
         
-        // DASHBOARD FILTER: Only show URGENT/CRITICAL pending + processed within 7 days
-        LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(7);
-        allActivities = allActivities.stream()
-                .filter(activity -> {
-                    // Show if PENDING and priority is URGENT or CRITICAL
-                    if ("PENDING".equals(activity.getStatus())) {
-                        return "URGENT".equals(activity.getPriority()) || 
-                               "CRITICAL".equals(activity.getPriority());
-                    }
-                    // Show if APPROVED/REJECTED within last 7 days
-                    if ("APPROVED".equals(activity.getStatus()) || "REJECTED".equals(activity.getStatus())) {
-                        return activity.getDate() != null && 
-                               !activity.getDate().isBefore(sevenDaysAgo.toLocalDate());
-                    }
-                    return false;
-                })
-                .collect(Collectors.toList());
-        
-        // Apply additional filter if specified
+        // Apply filter based on user selection
         if ("pending".equals(filter)) {
             allActivities = allActivities.stream()
                     .filter(a -> "PENDING".equals(a.getStatus()))
@@ -711,6 +829,7 @@ public class HRManagerDashboardService {
                     .filter(a -> "APPROVED".equals(a.getStatus()) || "COMPLETED".equals(a.getStatus()))
                     .collect(Collectors.toList());
         }
+        // If filter is "all", show everything without additional filtering
         
         // Sort by priority score (highest first), then by date (newest first)
         allActivities.sort((a, b) -> {
@@ -757,26 +876,36 @@ public class HRManagerDashboardService {
     public List<com.group5.ems.dto.response.hrmanager.ActivityCategoryDTO> getActivityCategories() {
         List<com.group5.ems.dto.response.hrmanager.ActivityCategoryDTO> categories = new ArrayList<>();
         
-        // Leave Requests
-        long leaveCount = requestRepository.countByStatusAndRequestTypeCategory("PENDING", "ATTENDANCE");
+        // All Activity (always first)
         categories.add(com.group5.ems.dto.response.hrmanager.ActivityCategoryDTO.builder()
-                .type("leave")
-                .label("Leave Requests")
-                .icon("calendar_today")
-                .count(leaveCount)
-                .color("blue")
-                .description("Pending leave requests")
+                .type("all")
+                .label("All Activity")
+                .icon("view_list")
+                .count(0L)
+                .color("slate")
+                .description("All activities")
                 .build());
         
-        // Payroll
-        long payrollCount = requestRepository.countByStatusAndRequestTypeCategory("PENDING", "PAYROLL");
+        // Requests (excluding ATTENDANCE)
+        long requestCount = requestRepository.countByStatusAndRequestTypeCategoryNot("PENDING", "ATTENDANCE");
+        categories.add(com.group5.ems.dto.response.hrmanager.ActivityCategoryDTO.builder()
+                .type("request")
+                .label("Requests")
+                .icon("description")
+                .count(requestCount)
+                .color("amber")
+                .description("Employee requests")
+                .build());
+        
+        // Payroll Reports
+        // TODO: Implement HrReportRepository count
         categories.add(com.group5.ems.dto.response.hrmanager.ActivityCategoryDTO.builder()
                 .type("payroll")
-                .label("Payroll")
+                .label("Payroll Reports")
                 .icon("payments")
-                .count(payrollCount)
-                .color("green")
-                .description("Payroll approvals")
+                .count(0L)
+                .color("blue")
+                .description("Payroll report approvals")
                 .build());
         
         // Status Changes
@@ -791,15 +920,27 @@ public class HRManagerDashboardService {
                 .description("Employee status updates")
                 .build());
         
-        // HR Requests
-        long hrCount = requestRepository.countByStatusAndRequestTypeCategory("PENDING", "HR_STATUS");
+        // Staffing Requests
+        // TODO: Implement StaffingRequestRepository count
         categories.add(com.group5.ems.dto.response.hrmanager.ActivityCategoryDTO.builder()
-                .type("hr")
-                .label("HR Requests")
-                .icon("description")
-                .count(hrCount)
-                .color("orange")
-                .description("HR document requests")
+                .type("staffing")
+                .label("Staffing Requests")
+                .icon("person_add")
+                .count(0L)
+                .color("rose")
+                .description("Recruitment and transfer requests")
+                .build());
+        
+        // History - Approved/Rejected requests
+        long historyCount = requestRepository.countByStatusInAndRequestTypeCategoryNot(
+                java.util.Arrays.asList("APPROVED", "REJECTED"), "ATTENDANCE");
+        categories.add(com.group5.ems.dto.response.hrmanager.ActivityCategoryDTO.builder()
+                .type("history")
+                .label("History")
+                .icon("history")
+                .count(historyCount)
+                .color("gray")
+                .description("Processed requests")
                 .build());
         
         return categories;
