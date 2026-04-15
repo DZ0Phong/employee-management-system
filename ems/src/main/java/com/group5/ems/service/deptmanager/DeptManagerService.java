@@ -303,10 +303,11 @@ public class DeptManagerService {
 
         staffingUpdates = combinedUpdates.stream()
                 .sorted(Comparator.comparing(
+                        (Map<String, String> item) -> !"Pending".equalsIgnoreCase(item.get("status"))
+                ).thenComparing(
                         item -> LocalDateTime.parse(item.get("sortAt")),
                         Comparator.reverseOrder()
                 ))
-                .limit(6)
                 .map(item -> {
                     item.remove("sortAt");
                     return item;
@@ -375,6 +376,58 @@ public class DeptManagerService {
         StaffingRequest savedRequest = staffingRequestRepository.save(staffingRequest);
         logService.log(AuditAction.CREATE, AuditEntityType.REQUEST, savedRequest.getId(), managerEmployee.getUserId());
         
+        return true;
+    }
+
+    @Transactional
+    public boolean cancelStaffingRequest(Long requestId) {
+        Department department = utilService.getCurrentManagedDepartment();
+        Employee managerEmployee = utilService.getCurrentEmployee();
+        User currentUser = utilService.getCurrentUser();
+        if (department == null || managerEmployee == null || requestId == null) {
+            return false;
+        }
+
+        StaffingRequest request = staffingRequestRepository.findById(requestId).orElse(null);
+        if (request == null
+                || !department.getId().equals(request.getDepartmentId())
+                || !managerEmployee.getId().equals(request.getRequestedByEmployeeId())
+                || !"PENDING".equalsIgnoreCase(request.getStatus())) {
+            return false;
+        }
+
+        request.setStatus("CANCELLED");
+        request.setProcessedByUserId(currentUser.getId());
+        request.setProcessedAt(LocalDateTime.now());
+        staffingRequestRepository.save(request);
+        logService.log(AuditAction.UPDATE, AuditEntityType.REQUEST, request.getId(), currentUser.getId());
+        return true;
+    }
+
+    @Transactional
+    public boolean cancelRemovalRequest(Long requestId) {
+        Department department = utilService.getCurrentManagedDepartment();
+        Employee managerEmployee = utilService.getCurrentEmployee();
+        User currentUser = utilService.getCurrentUser();
+        if (department == null || managerEmployee == null || requestId == null) {
+            return false;
+        }
+
+        Request request = requestRepository.findById(requestId).orElse(null);
+        if (request == null
+                || request.getEmployee() == null
+                || !department.getId().equals(request.getEmployee().getDepartmentId())
+                || !managerEmployee.getId().equals(request.getEmployeeId())
+                || request.getRequestType() == null
+                || !"HR_REMOVAL".equalsIgnoreCase(request.getRequestType().getCode())
+                || !"PENDING".equalsIgnoreCase(request.getStatus())) {
+            return false;
+        }
+
+        request.setStatus("CANCELLED");
+        requestRepository.save(request);
+        saveHistory(request.getId(), currentUser.getId(), "CANCELLED", "Cancelled by Department Manager");
+        logService.log(AuditAction.UPDATE, AuditEntityType.REQUEST, request.getId(), currentUser.getId());
         return true;
     }
 
@@ -864,6 +917,9 @@ public class DeptManagerService {
         item.put("detail", staffingDetail(request, status));
         item.put("timestamp", formatStaffingTimestamp(request));
         item.put("sortAt", resolveStaffingTimestamp(request).toString());
+        item.put("sourceType", "STAFFING");
+        item.put("requestId", String.valueOf(request.getId()));
+        item.put("canCancel", String.valueOf("PENDING".equals(status)));
         return item;
     }
 
@@ -883,6 +939,9 @@ public class DeptManagerService {
         item.put("detail", removalDetail(request, status));
         item.put("timestamp", formatRemovalTimestamp(request));
         item.put("sortAt", resolveRemovalTimestamp(request).toString());
+        item.put("sourceType", "REMOVAL");
+        item.put("requestId", String.valueOf(request.getId()));
+        item.put("canCancel", String.valueOf("PENDING".equals(status)));
         return item;
     }
 
@@ -951,6 +1010,7 @@ public class DeptManagerService {
             case "COMPLETED" -> "Completed";
             case "APPROVED" -> "Approved";
             case "REJECTED" -> "Rejected";
+            case "CANCELLED" -> "Cancelled";
             default -> "Pending";
         };
     }

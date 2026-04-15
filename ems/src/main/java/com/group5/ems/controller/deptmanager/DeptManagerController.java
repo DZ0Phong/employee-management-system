@@ -213,4 +213,21 @@ public class DeptManagerController {
         }
         return "redirect:/dept-manager/my-department?success=add";
     }
+
+    @PostMapping("/my-department/staffing-updates/{id}/cancel")
+    public String cancelStaffingUpdate(@PathVariable Long id,
+                                       @RequestParam String sourceType,
+                                       Authentication authentication) {
+        if (!hasDepartmentAccess(authentication)) {
+            return "redirect:/dept-manager/dashboard";
+        }
+
+        boolean success = "REMOVAL".equalsIgnoreCase(sourceType)
+                ? deptManagerService.cancelRemovalRequest(id)
+                : deptManagerService.cancelStaffingRequest(id);
+
+        return success
+                ? "redirect:/dept-manager/my-department?success=cancelled"
+                : "redirect:/dept-manager/my-department?error=cancel";
+    }
 }
