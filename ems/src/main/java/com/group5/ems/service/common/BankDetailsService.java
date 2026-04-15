@@ -1,4 +1,4 @@
-package com.group5.ems.service.hr;
+package com.group5.ems.service.common;
 
 import com.group5.ems.dto.request.BankDetailsFormDTO;
 import com.group5.ems.dto.response.BankDetailsResponseDTO;
@@ -9,7 +9,6 @@ import com.group5.ems.enums.AuditAction;
 import com.group5.ems.enums.AuditEntityType;
 import com.group5.ems.repository.EmployeeBankDetailRepository;
 import com.group5.ems.repository.EmployeeRepository;
-import com.group5.ems.service.common.LogService;
 import com.group5.ems.service.external.VietQrApiClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,7 +19,7 @@ import org.springframework.data.domain.Pageable;
 
 @Service
 @RequiredArgsConstructor
-public class HrBankDetailsService {
+public class BankDetailsService {
 
     private final EmployeeBankDetailRepository bankDetailRepository;
     private final EmployeeRepository employeeRepository;

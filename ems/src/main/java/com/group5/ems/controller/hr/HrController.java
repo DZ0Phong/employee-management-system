@@ -55,7 +55,7 @@ import com.group5.ems.repository.UserRepository;
 import com.group5.ems.service.admin.AdminService;
 import com.group5.ems.service.external.VietQrApiClient;
 import com.group5.ems.service.hr.HrAttendanceService;
-import com.group5.ems.service.hr.HrBankDetailsService;
+import com.group5.ems.service.common.BankDetailsService;
 import com.group5.ems.service.hr.HrDashboardService;
 import com.group5.ems.service.hr.HrEmployeeService;
 import com.group5.ems.service.hr.HrLeaveService;
@@ -70,7 +70,6 @@ import com.group5.ems.service.hr.HrCalendarService;
 import com.group5.ems.dto.request.hr.HrEventCreateDTO;
 import com.group5.ems.dto.request.hr.HrEventUpdateDTO;
 import com.group5.ems.dto.response.hr.HrEventResponseDTO;
-import com.group5.ems.dto.response.hr.HrEventDTO;
 import com.group5.ems.exception.ReportExportException;
 
 import org.thymeleaf.TemplateEngine;
@@ -102,7 +101,7 @@ public class HrController {
     private final HrPerformanceService performanceService;
     private final HrRequestService requestService;
     private final AdminService adminService;
-    private final HrBankDetailsService bankDetailsService;
+    private final BankDetailsService bankDetailsService;
     private final VietQrApiClient vietQrApiClient;
     // private final HrOnboardingService onboardingService;
     private final HrReportService reportService;

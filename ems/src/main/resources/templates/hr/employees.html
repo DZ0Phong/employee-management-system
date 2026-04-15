@@ -316,7 +316,7 @@
                             <!-- Right Column: Personal Info -->
                             <div class="space-y-3 border-l border-slate-50 pl-4">
                                 <div class="flex justify-between gap-2 text-sm"><span class="text-slate-400 whitespace-nowrap">Full Name</span><span id="detFullName" class="font-semibold text-slate-700 text-right truncate w-24">-</span></div>
-                                <div class="flex justify-between gap-2 text-sm"><span class="text-slate-400 whitespace-nowrap">Email</span><span id="detEmail" class="font-semibold text-slate-700 text-right truncate w-24" title="">-</span></div>
+                                <div class="flex justify-between gap-2 text-sm"><span class="text-slate-400 whitespace-nowrap">Email</span><a id="detEmail" href="#" class="font-semibold text-primary hover:text-indigo-700 hover:underline text-right break-all transition-colors" title="">-</a></div>
                                 <div class="flex justify-between gap-2 text-sm"><span class="text-slate-400 whitespace-nowrap">Phone</span><span id="detPhone" class="font-semibold text-slate-700 text-right">-</span></div>
                                 <div class="flex justify-between gap-2 text-sm"><span class="text-slate-400 whitespace-nowrap">Username</span><span id="detUser" class="font-semibold text-slate-700 font-mono text-right">-</span></div>
                             </div>
@@ -452,6 +452,7 @@
                         const emailEl = document.getElementById('detEmail');
                         emailEl.textContent = d.email || 'N/A';
                         emailEl.title = d.email || '';
+                        emailEl.href = d.email ? 'mailto:' + d.email : '#';
                         
                         document.getElementById('detFullName').textContent = d.fullName || 'N/A';
                         document.getElementById('detPhone').textContent = d.phone || 'N/A';
