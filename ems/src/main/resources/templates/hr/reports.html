@@ -99,6 +99,11 @@
                id="tabSaved">
                 <span class="material-symbols-outlined text-sm align-middle mr-1">history_edu</span> Saved Reports
             </a>
+            <a th:href="@{/hr/reports(tab='builder')}"
+               th:class="${activeTab == 'builder'} ? 'leave-tab active px-4 py-3 text-xs font-bold' : 'leave-tab px-4 py-3 text-xs font-bold'"
+               id="tabBuilder">
+                <span class="material-symbols-outlined text-sm align-middle mr-1">build</span> Builder
+            </a>
 
             <!-- Year Filter (for overview/leave tabs) -->
             <div class="ml-auto flex items-center gap-2" th:if="${activeTab == 'overview' || activeTab == 'leave'}">
@@ -114,9 +119,9 @@
             <div class="ml-auto flex items-center gap-2" th:if="${activeTab == 'attendance'}">
                 <form th:action="@{/hr/reports}" method="get" class="flex items-center gap-2">
                     <input type="hidden" name="tab" value="attendance" />
-                    <input type="text" name="dateFrom" th:value="${dateFrom}" class="hr-datepicker text-xs border-slate-200 rounded-lg py-1.5 px-2 focus:ring-primary/20 focus:border-primary text-primary" />
-                    <span class="text-xs text-slate-400">to</span>
-                    <input type="text" name="dateTo" th:value="${dateTo}" class="hr-datepicker text-xs border-slate-200 rounded-lg py-1.5 px-2 focus:ring-primary/20 focus:border-primary text-primary" />
+                    <input type="hidden" name="dateFrom" id="attendanceDateFrom" th:value="${dateFrom}" />
+                    <input type="hidden" name="dateTo" id="attendanceDateTo" th:value="${dateTo}" />
+                    <input type="text" class="date-range-combined-3m text-xs border-slate-200 rounded-lg py-1.5 px-2 focus:ring-primary/20 focus:border-primary text-primary min-w-[200px] text-center font-semibold" placeholder="Select Date Range..." />
                     <button type="submit" class="text-xs bg-primary text-white px-3 py-1.5 rounded-lg font-bold hover:bg-primary/90 transition-colors">Apply</button>
                 </form>
             </div>
@@ -530,6 +535,64 @@
                     </div>
                 </div>
 
+                <!-- ═══════════════════════════════════════════════════ -->
+                <!-- TAB: CUSTOM REPORT BUILDER                         -->
+                <!-- ═══════════════════════════════════════════════════ -->
+                <div th:if="${activeTab == 'builder'}" class="anim anim-1">
+                    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden p-6">
+                        <div class="mb-6">
+                            <h3 class="text-lg font-black text-slate-800">Custom Report Builder</h3>
+                            <p class="text-xs text-slate-400 mt-1">Select data source, columns, and date range to generate a tailored report.</p>
+                        </div>
+                        
+                        <form th:action="@{/hr/reports/builder/export}" method="get" id="customReportForm" target="_blank" class="space-y-6">
+                            
+                            <!-- Step 1: Data Source -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Data Source</label>
+                                    <select name="dataSource" id="dataSource" class="w-full text-sm border-slate-200 rounded-xl py-2.5 px-3 focus:ring-primary/20 focus:border-primary" onchange="updateColumns()">
+                                        <option value="employees">Employees Directory</option>
+                                        <option value="leave">Leave History</option>
+                                        <option value="attendance">Attendance Records</option>
+                                    </select>
+                                </div>
+                                <div class="flex items-end gap-3">
+                                    <div class="flex-1">
+                                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Date From</label>
+                                        <input type="text" name="dateFrom" class="hr-datepicker w-full text-sm border-slate-200 rounded-xl py-2.5 px-3 focus:ring-primary/20 focus:border-primary" placeholder="YYYY-MM-DD" />
+                                    </div>
+                                    <div class="flex-1">
+                                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Date To</label>
+                                        <input type="text" name="dateTo" class="hr-datepicker w-full text-sm border-slate-200 rounded-xl py-2.5 px-3 focus:ring-primary/20 focus:border-primary" placeholder="YYYY-MM-DD" />
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Step 2: Columns Selection -->
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Select Columns below</label>
+                                <div class="bg-slate-50/50 rounded-xl p-4 border border-slate-100">
+                                    <div id="columnsContainer" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                        <!-- Columns will be injected here via JS -->
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Step 3: Export Options -->
+                            <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+                                <button type="submit" name="format" value="csv" class="flex items-center gap-2 bg-slate-800 text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-slate-700 transition-all shadow-md">
+                                    <span class="material-symbols-outlined text-[18px]">data_table</span> Export CSV
+                                </button>
+                                <button type="submit" name="format" value="pdf" class="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-primary/90 transition-all shadow-md shadow-primary/20">
+                                    <span class="material-symbols-outlined text-[18px]">picture_as_pdf</span> Export PDF
+                                </button>
+                            </div>
+                            
+                        </form>
+                    </div>
+                </div>
+
             </div><!-- /max-w -->
         </div><!-- /scrollable -->
 
@@ -785,6 +848,117 @@
         // Auto Close Modal on ESC
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') closePrepareModal();
+        });
+
+        // Builder Columns Logic
+        const columnsMap = {
+            'employees': [
+                { id: 'empCode', label: 'Employee Code' },
+                { id: 'fullName', label: 'Full Name' },
+                { id: 'email', label: 'Email' },
+                { id: 'phone', label: 'Phone' },
+                { id: 'department', label: 'Department' },
+                { id: 'position', label: 'Position' },
+                { id: 'skills', label: 'Skills' },
+                { id: 'status', label: 'Status' }
+            ],
+            'leave': [
+                { id: 'empCode', label: 'Employee Code' },
+                { id: 'fullName', label: 'Full Name' },
+                { id: 'department', label: 'Department' },
+                { id: 'leaveType', label: 'Leave Type' },
+                { id: 'startDate', label: 'Start Date' },
+                { id: 'endDate', label: 'End Date' },
+                { id: 'totalDays', label: 'Total Days' },
+                { id: 'reason', label: 'Reason' },
+                { id: 'status', label: 'Status' },
+                { id: 'submittedAt', label: 'Submitted At' },
+                { id: 'processedAt', label: 'Processed At' },
+                { id: 'approverName', label: 'Approver' }
+            ],
+            'attendance': [
+                { id: 'empCode', label: 'Employee Code' },
+                { id: 'fullName', label: 'Full Name' },
+                { id: 'department', label: 'Department' },
+                { id: 'workDate', label: 'Work Date' },
+                { id: 'clockIn', label: 'Clock In' },
+                { id: 'clockOut', label: 'Clock Out' },
+                { id: 'status', label: 'Status' },
+                { id: 'notes', label: 'Notes' }
+            ]
+        };
+
+        function updateColumns() {
+            const ds = document.getElementById('dataSource').value;
+            const container = document.getElementById('columnsContainer');
+            if(!container) return;
+            
+            container.innerHTML = '';
+            
+            if(columnsMap[ds]) {
+                columnsMap[ds].forEach(col => {
+                    const div = document.createElement('div');
+                    div.className = 'flex items-center gap-2';
+                    div.innerHTML = `
+                        <input type="checkbox" name="columns" value="${col.id}" id="col_${col.id}" checked class="rounded border-slate-300 text-primary focus:ring-primary h-4 w-4">
+                        <label for="col_${col.id}" class="text-sm font-medium text-slate-700 cursor-pointer">${col.label}</label>
+                    `;
+                    container.appendChild(div);
+                });
+            }
+        }
+        
+        // Initialize columns if on builder tab
+        if (activeTab === 'builder') {
+            updateColumns();
+        }
+
+        // Attendance Tab - Max 3 months Date Range Mapping
+        document.addEventListener('DOMContentLoaded', () => {
+            const hiddenFrom = document.getElementById('attendanceDateFrom');
+            const hiddenTo = document.getElementById('attendanceDateTo');
+            
+            document.querySelectorAll('.date-range-combined-3m').forEach(input => {
+                let defaultDates = [];
+                if (hiddenFrom && hiddenFrom.value && hiddenTo && hiddenTo.value) {
+                    defaultDates = [hiddenFrom.value, hiddenTo.value];
+                }
+
+                flatpickr(input, {
+                    mode: "range",
+                    dateFormat: "Y-m-d",
+                    altInput: true,
+                    altFormat: "d M Y",
+                    defaultDate: defaultDates,
+                    onChange: function(selectedDates, dateStr, instance) {
+                        if (selectedDates.length === 2) {
+                            // Max 3 months validation (approx 93 days)
+                            const diffTime = Math.abs(selectedDates[1] - selectedDates[0]);
+                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                            
+                            if (diffDays > 93) {
+                                // Reset to max 3 months
+                                const newDateTo = new Date(selectedDates[0]);
+                                newDateTo.setDate(newDateTo.getDate() + 93); // Ensure exact day clamping
+                                instance.setDate([selectedDates[0], newDateTo]);
+                                
+                                if (typeof showToast === 'function') {
+                                    showToast('Maximum date range allowed is 3 months', 'error');
+                                } else {
+                                    alert('Maximum date range allowed is 3 months.');
+                                }
+                                return; // the inner setDate will trigger another onChange
+                            }
+                            
+                            if (hiddenFrom) hiddenFrom.value = instance.formatDate(selectedDates[0], "Y-m-d");
+                            if (hiddenTo) hiddenTo.value = instance.formatDate(selectedDates[1], "Y-m-d");
+                        } else if (selectedDates.length === 0 || selectedDates.length === 1) {
+                            if (hiddenFrom) hiddenFrom.value = "";
+                            if (hiddenTo) hiddenTo.value = "";
+                        }
+                    }
+                });
+            });
         });
     </script>
 </body>
