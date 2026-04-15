@@ -480,7 +480,7 @@
                                         </td>
                                         <td class="px-4 py-4 text-right" onclick="event.stopPropagation()">
                                             <div class="flex flex-row justify-end items-center gap-2">
-                                                <a th:href="@{'/hr/leave?search=' + ${hist.employeeCode}}"
+                                                <a th:href="@{'/hr/leave?search=' + ${hist.employeeCode}+'&tab=history'}"
                                                    class="flex items-center justify-center px-3 py-1.5 rounded-lg border border-slate-100 bg-slate-50 text-slate-600 hover:bg-slate-100 transition-all gap-1.5">
                                                     <span class="material-symbols-outlined text-sm">history</span>
                                                     <span class="text-[9px] font-black uppercase">History</span>
@@ -713,6 +713,10 @@
                         <option value="LEAVE_ANNUAL" th:selected="${histLeaveType == 'LEAVE_ANNUAL'}">Annual Leave</option>
                         <option value="LEAVE_SICK" th:selected="${histLeaveType == 'LEAVE_SICK'}">Sick Leave</option>
                         <option value="LEAVE_UNPAID" th:selected="${histLeaveType == 'LEAVE_UNPAID'}">Unpaid Leave</option>
+                        <option value="LEAVE_MATERNITY" th:selected="${histLeaveType == 'LEAVE_MATERNITY'}">Maternity Leave</option>
+                        <option value="LEAVE_PATERNITY" th:selected="${histLeaveType == 'LEAVE_PATERNITY'}">Paternity Leave</option>
+                        <option value="LEAVE_BEREAVEMENT" th:selected="${histLeaveType == 'LEAVE_BEREAVEMENT'}">Bereavement Leave</option>
+                        <option value="LEAVE_STUDY" th:selected="${histLeaveType == 'LEAVE_STUDY'}">Study Leave</option>
                     </select>
                 </div>
             </div>
