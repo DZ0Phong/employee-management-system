@@ -231,7 +231,7 @@
     <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" onclick="closeAddModal()"></div>
     <div class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-lg p-6 anim">
         <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Add New Member</h3>
-        <p class="text-sm text-slate-500 mb-6">Choose how you want to add a new member to your team.</p>
+        <p class="text-sm text-slate-500 mb-6">Choose the staffing path that best fits your team needs.</p>
         
         <form th:action="@{/dept-manager/team/request-add}" method="post" id="add-member-form">
             <!-- CSRF Token -->
@@ -242,8 +242,8 @@
                 <label class="relative flex flex-col p-4 border-2 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors border-primary bg-primary/5 shadow-sm" id="type-transfer-label">
                     <input type="radio" name="requestType" value="TRANSFER" class="sr-only" checked onchange="toggleAddType('TRANSFER')"/>
                     <span class="material-symbols-outlined text-primary mb-2">swap_horiz</span>
-                    <span class="text-sm font-bold text-slate-900">Internal Transfer</span>
-                    <span class="text-[11px] text-slate-500 mt-1">Request an existing employee from another department.</span>
+                    <span class="text-sm font-bold text-slate-900">Internal Allocation</span>
+                    <span class="text-[11px] text-slate-500 mt-1">Request a company employee who can be reassigned into this department.</span>
                 </label>
                 <label class="relative flex flex-col p-4 border-2 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors border-slate-200" id="type-recruit-label">
                     <input type="radio" name="requestType" value="RECRUITMENT" class="sr-only" onchange="toggleAddType('RECRUITMENT')"/>
@@ -322,7 +322,7 @@
             recruitLabel.className = 'relative flex flex-col p-4 border-2 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors border-slate-200';
             recruitLabel.querySelector('.material-symbols-outlined').className = 'material-symbols-outlined text-slate-400 mb-2';
             
-            roleLabelText.innerText = 'Select Position (Internal Transfer)';
+            roleLabelText.innerText = 'Select Position (Internal Allocation)';
         } else {
             recruitLabel.className = 'relative flex flex-col p-4 border-2 rounded-xl cursor-pointer transition-colors border-primary bg-primary/5 shadow-sm';
             recruitLabel.querySelector('.material-symbols-outlined').className = 'material-symbols-outlined text-primary mb-2';
