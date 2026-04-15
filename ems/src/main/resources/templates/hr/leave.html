@@ -420,12 +420,10 @@
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">From</label>
-                                    <input type="text" name="dateFrom" th:value="${histDateFrom}" class="hr-datepicker text-xs border-slate-200 rounded-lg focus:ring-primary focus:border-primary px-2 bg-slate-50 text-primary h-8">
-                                </div>
-                                <div>
-                                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">To</label>
-                                    <input type="text" name="dateTo" th:value="${histDateTo}" class="hr-datepicker text-xs border-slate-200 rounded-lg focus:ring-primary focus:border-primary px-2 bg-slate-50 text-primary h-8">
+                                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Date Range</label>
+                                    <input type="text" class="date-range-combined text-xs border-slate-200 rounded-lg focus:ring-primary focus:border-primary px-2 bg-slate-50 text-primary h-8 min-w-[200px]" placeholder="Select date range...">
+                                    <input type="hidden" name="dateFrom" th:value="${histDateFrom}">
+                                    <input type="hidden" name="dateTo" th:value="${histDateTo}">
                                 </div>
                                 <button type="submit" class="h-8 px-4 text-xs font-semibold text-white bg-primary hover:bg-primary/90 rounded-lg transition-colors shadow-sm">
                                     <span class="material-symbols-outlined text-[14px] align-middle mr-1">filter_list</span>Filter
@@ -720,15 +718,11 @@
                     </select>
                 </div>
             </div>
-            <div class="flex gap-3">
-                <div class="flex-1">
-                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Start Date</label>
-                    <input type="text" name="startDate" class="hr-datepicker w-full text-xs border-slate-200 rounded-xl focus:ring-primary focus:border-primary px-3 py-2.5 bg-slate-50 text-primary h-[42px]">
-                </div>
-                <div class="flex-1">
-                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">End Date</label>
-                    <input type="text" name="endDate" class="hr-datepicker w-full text-xs border-slate-200 rounded-xl focus:ring-primary focus:border-primary px-3 py-2.5 bg-slate-50 text-primary h-[42px]">
-                </div>
+            <div>
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Date Range</label>
+                <input type="text" class="date-range-combined w-full text-xs border-slate-200 rounded-xl focus:ring-primary focus:border-primary px-3 py-2.5 bg-slate-50 text-primary h-[42px]" placeholder="Select start and end date...">
+                <input type="hidden" name="startDate">
+                <input type="hidden" name="endDate">
             </div>
             <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 mt-5 pt-4">
                 <button type="button" onclick="closeExportModal()"
@@ -783,6 +777,34 @@
         if (!tabBtn) activeTab = 'current';
 
         switchLeaveTab(activeTab);
+
+        // Initialize combined date range pickers
+        document.querySelectorAll('.date-range-combined').forEach(input => {
+            const form = input.closest('form');
+            const hiddenFrom = form.querySelector('input[name="dateFrom"], input[name="startDate"]');
+            const hiddenTo = form.querySelector('input[name="dateTo"], input[name="endDate"]');
+            
+            let defaultDates = [];
+            if (hiddenFrom && hiddenFrom.value) defaultDates.push(hiddenFrom.value);
+            if (hiddenTo && hiddenTo.value) defaultDates.push(hiddenTo.value);
+
+            flatpickr(input, {
+                mode: "range",
+                dateFormat: "Y-m-d",
+                altInput: true,
+                altFormat: "d/m/Y",
+                defaultDate: defaultDates.length > 0 ? defaultDates : null,
+                onChange: function(selectedDates, dateStr, instance) {
+                    if (selectedDates.length === 2) {
+                        if (hiddenFrom) hiddenFrom.value = instance.formatDate(selectedDates[0], "Y-m-d");
+                        if (hiddenTo) hiddenTo.value = instance.formatDate(selectedDates[1], "Y-m-d");
+                    } else if (selectedDates.length === 0 || selectedDates.length === 1) {
+                        if (hiddenFrom) hiddenFrom.value = "";
+                        if (hiddenTo) hiddenTo.value = "";
+                    }
+                }
+            });
+        });
     });
 
     // ── Reject Modal ──
