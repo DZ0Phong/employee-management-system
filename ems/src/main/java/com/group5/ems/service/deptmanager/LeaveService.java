@@ -44,6 +44,7 @@ public class LeaveService {
         requests = requests.stream()
                 .sorted(Comparator
                         .comparing((com.group5.ems.entity.Request req) -> !workflowService.canApprove(req, WorkflowConstants.ROLE_DEPT_MANAGER))
+                        .thenComparing((com.group5.ems.entity.Request req) -> !req.isUrgent())
                         .thenComparing(com.group5.ems.entity.Request::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())))
                 .toList();
 
@@ -184,7 +185,7 @@ public class LeaveService {
     }
 
     @Transactional
-    public boolean approveLeaveRequest(Long requestId) {
+    public boolean approveLeaveRequest(Long requestId, boolean urgent) {
         Department department = utilService.getCurrentManagedDepartment();
         if (department == null) {
             return false;
@@ -196,6 +197,7 @@ public class LeaveService {
                 return false;
             }
             try {
+                req.setUrgent(urgent);
                 workflowService.moveToNextStep(req, currentUser.getId(), WorkflowConstants.ROLE_DEPT_MANAGER);
                 logService.log(AuditAction.UPDATE, AuditEntityType.LEAVE, req.getId());
                 return true;
@@ -206,7 +208,7 @@ public class LeaveService {
     }
 
     @Transactional
-    public boolean rejectLeaveRequest(Long requestId, String rejectionReason) {
+    public boolean rejectLeaveRequest(Long requestId, String rejectionReason, boolean urgent) {
         Department department = utilService.getCurrentManagedDepartment();
         if (department == null) {
             return false;
@@ -223,6 +225,7 @@ public class LeaveService {
                 return false;
             }
             try {
+                req.setUrgent(urgent);
                 workflowService.rejectRequest(req, currentUser.getId(), WorkflowConstants.ROLE_DEPT_MANAGER, normalizedReason);
                 logService.log(AuditAction.UPDATE, AuditEntityType.LEAVE, req.getId());
                 return true;

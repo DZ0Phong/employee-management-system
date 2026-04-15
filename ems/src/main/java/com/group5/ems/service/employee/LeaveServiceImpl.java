@@ -117,6 +117,9 @@ public class LeaveServiceImpl {
 
         RequestType requestType = requestTypeRepository.findByCode(requestTypeCode)
                 .orElseThrow(() -> new RuntimeException("Request type not found: " + requestTypeCode));
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new RuntimeException("Employee not found."));
+        boolean autoForwardToHr = hasDeptManagerRole(employee);
 
         // ── Tạo request ────────────────────────────────────
         Request request = new Request();
@@ -129,11 +132,12 @@ public class LeaveServiceImpl {
         request.setTitle(requestType.getName() + " Request");
         request.setUrgent(dto.isUrgent());
         request.setStatus("PENDING");
-        request.setStep(WorkflowConstants.STEP_WAITING_DM);
+        request.setStep(autoForwardToHr ? WorkflowConstants.STEP_WAITING_HR : WorkflowConstants.STEP_WAITING_DM);
         request.setCreatedAt(LocalDateTime.now());
         request.setUpdatedAt(LocalDateTime.now());
 
         Request savedRequest = requestRepository.save(request);
+        saveSubmissionHistory(savedRequest.getId(), employee.getUserId(), autoForwardToHr);
         logService.log(AuditAction.CREATE, AuditEntityType.LEAVE, savedRequest.getId());
     }
 
@@ -310,6 +314,31 @@ public class LeaveServiceImpl {
         requestApprovalHistoryRepository.save(history);
     }
 
+
+    private void saveSubmissionHistory(Long requestId, Long userId, boolean autoForwardedToHr) {
+        if (userId == null) {
+            return;
+        }
+
+        RequestApprovalHistory history = new RequestApprovalHistory();
+        history.setRequestId(requestId);
+        history.setApproverId(userId);
+        history.setAction(autoForwardedToHr ? "AUTO_FORWARDED_TO_HR" : "SUBMITTED");
+        history.setComment(autoForwardedToHr
+                ? "Submitted by Department Manager and automatically forwarded to HR"
+                : "Submitted by employee");
+        requestApprovalHistoryRepository.save(history);
+    }
+
+    private boolean hasDeptManagerRole(Employee employee) {
+        return employee != null
+                && employee.getUser() != null
+                && employee.getUser().getUserRoles() != null
+                && employee.getUser().getUserRoles().stream()
+                .anyMatch(userRole -> userRole.getRole() != null
+                        && WorkflowConstants.ROLE_DEPT_MANAGER.equalsIgnoreCase(userRole.getRole().getCode()));
+    }
+
     private String normalizeLeaveType(String leaveType) {
         if (leaveType == null) {
             return "";
@@ -372,3 +401,4 @@ public class LeaveServiceImpl {
         };
     }
 }
+

@@ -32,7 +32,19 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
         List<Request> findByEmployeeIdAndLeaveTypeIsNotNullOrderByCreatedAtDesc(Long employeeId);
 
 
-        List<Request> findByEmployeeDepartmentIdAndLeaveTypeIsNotNullOrderByCreatedAtDesc(Long departmentId);
+    List<Request> findByEmployeeDepartmentIdAndLeaveTypeIsNotNullOrderByCreatedAtDesc(Long departmentId);
+
+    @Query("SELECT r FROM Request r " +
+            "JOIN FETCH r.employee e " +
+            "JOIN FETCH e.user u " +
+            "JOIN FETCH r.requestType rt " +
+            "LEFT JOIN FETCH r.approvedByUser abu " +
+            "WHERE e.departmentId = :departmentId " +
+            "AND rt.code = :requestTypeCode " +
+            "ORDER BY COALESCE(r.approvedAt, r.updatedAt, r.createdAt) DESC")
+    List<Request> findDepartmentWorkflowRequestsByTypeCode(
+            @Param("departmentId") Long departmentId,
+            @Param("requestTypeCode") String requestTypeCode);
 
         @Query("SELECT r FROM Request r " +
                         "JOIN FETCH r.employee e " +
