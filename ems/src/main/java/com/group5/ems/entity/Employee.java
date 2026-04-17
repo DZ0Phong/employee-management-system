@@ -23,7 +23,7 @@ public class Employee {
     @Column(name = "department_id", nullable = true)
     private Long departmentId;
 
-    @Column(name = "position_id", nullable = false)
+    @Column(name = "position_id", nullable = true)
     private Long positionId;
 
     @Column(name = "previous_position_id")
@@ -61,8 +61,8 @@ public class Employee {
     @JoinColumn(name = "department_id", insertable = false, updatable = false, nullable = true)
     private Department department;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "position_id", insertable = false, updatable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "position_id", insertable = false, updatable = false, nullable = true)
     private Position position;
 
     @ManyToOne(fetch = FetchType.LAZY)
