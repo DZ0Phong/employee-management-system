@@ -2,6 +2,7 @@ package com.group5.ems.service.employee;
 
 import com.group5.ems.dto.response.PayrollSummaryDTO;
 import com.group5.ems.dto.response.PayslipDTO;
+import com.group5.ems.dto.response.BankDetailsResponseDTO;
 import com.group5.ems.entity.Payslip;
 import com.group5.ems.entity.Salary;
 import com.group5.ems.enums.AuditAction;
@@ -64,6 +65,7 @@ public class PayrollServiceImpl implements PayrollService {
                 .latestNetPay(netPay)
                 .currentBaseSalary(baseSalary)
                 .currentAllowance(allowance)
+                .hasBankDetails(false)
                 .build();
     }
 
@@ -91,6 +93,24 @@ public class PayrollServiceImpl implements PayrollService {
                     .append(p.getStatus()).append("\n");
         }
         return csv.toString().getBytes();
+    }
+
+    @Override
+    public void applyPrimaryBankDetail(PayrollSummaryDTO summary, BankDetailsResponseDTO primaryBankDetail) {
+        if (summary == null) {
+            return;
+        }
+        if (primaryBankDetail == null) {
+            summary.setHasBankDetails(false);
+            summary.setPrimaryBankName(null);
+            summary.setPrimaryAccountName(null);
+            summary.setPrimaryMaskedAccountNumber(null);
+            return;
+        }
+        summary.setHasBankDetails(true);
+        summary.setPrimaryBankName(primaryBankDetail.bankName());
+        summary.setPrimaryAccountName(primaryBankDetail.accountName());
+        summary.setPrimaryMaskedAccountNumber(primaryBankDetail.maskedAccountNumber());
     }
 
     // ── Helper ─────────────────────────────────────────────

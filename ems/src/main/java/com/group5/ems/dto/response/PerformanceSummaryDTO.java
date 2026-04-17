@@ -14,7 +14,6 @@ import java.math.BigDecimal;
 public class PerformanceSummaryDTO {
     private BigDecimal currentRating;       // điểm review mới nhất
     private BigDecimal previousRating;      // điểm review trước đó
-    private String talentMatrix;            // Star, High Performer, ...
     private int totalReviews;
     private int kpisMet;
     private int kpisTotal;

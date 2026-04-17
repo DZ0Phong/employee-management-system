@@ -33,11 +33,8 @@ public class PerformanceServiceImpl implements PerformanceService {
 
         BigDecimal currentRating = BigDecimal.ZERO;
         BigDecimal previousRating = BigDecimal.ZERO;
-        String talentMatrix = "N/A";
-
         if (!reviews.isEmpty()) {
             currentRating = reviews.get(0).getPerformanceScore();
-            talentMatrix = reviews.get(0).getTalentMatrix() != null ? reviews.get(0).getTalentMatrix() : "N/A";
         }
         if (reviews.size() >= 2) {
             previousRating = reviews.get(1).getPerformanceScore();
@@ -54,7 +51,6 @@ public class PerformanceServiceImpl implements PerformanceService {
         return PerformanceSummaryDTO.builder()
                 .currentRating(currentRating)
                 .previousRating(previousRating)
-                .talentMatrix(talentMatrix)
                 .totalReviews(reviews.size())
                 .kpisMet((int) kpisMet)
                 .kpisTotal((int) kpisTotal)
@@ -84,7 +80,6 @@ public class PerformanceServiceImpl implements PerformanceService {
                 .reviewerName(reviewerName)
                 .performanceScore(review.getPerformanceScore())
                 .potentialScore(review.getPotentialScore())
-                .talentMatrix(review.getTalentMatrix())
                 .strengths(review.getStrengths())
                 .areasToImprove(review.getAreasToImprove())
                 .status(review.getStatus())

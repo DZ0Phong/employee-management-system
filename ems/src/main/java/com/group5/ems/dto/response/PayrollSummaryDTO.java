@@ -21,4 +21,10 @@ public class PayrollSummaryDTO {
     // Current salary info
     private BigDecimal currentBaseSalary;
     private BigDecimal currentAllowance;
+
+    // Primary bank info
+    private String primaryBankName;
+    private String primaryAccountName;
+    private String primaryMaskedAccountNumber;
+    private Boolean hasBankDetails;
 }

@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
 
@@ -138,7 +139,8 @@ public class DeptManagerController {
                                         @RequestParam(required = false) String strengths,
                                         @RequestParam(required = false) String areasToImprove,
                                         @RequestParam(defaultValue = "DRAFT") String status,
-                                        Authentication authentication) {
+                                        Authentication authentication,
+                                        RedirectAttributes redirectAttributes) {
         if (!hasDepartmentAccess(authentication)) {
             return "redirect:/dept-manager/dashboard";
         }
@@ -153,9 +155,11 @@ public class DeptManagerController {
                     areasToImprove,
                     status
             );
-            return "redirect:/dept-manager/performance-review?success=saved";
+            redirectAttributes.addFlashAttribute("successMessage", "Performance review has been saved successfully.");
+            return "redirect:/dept-manager/performance-review";
         } catch (IllegalArgumentException | IllegalStateException ex) {
-            return "redirect:/dept-manager/performance-review?error=save";
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+            return "redirect:/dept-manager/performance-review";
         }
     }
 

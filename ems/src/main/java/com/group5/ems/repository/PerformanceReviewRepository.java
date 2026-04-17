@@ -89,9 +89,35 @@ public interface PerformanceReviewRepository extends JpaRepository<PerformanceRe
            "WHERE pr.status = 'COMPLETED'")
     List<Object[]> getAvgScores();
 
-    @Query("SELECT pr.talentMatrix, COUNT(pr) FROM PerformanceReview pr " +
-           "WHERE pr.status = 'COMPLETED' AND pr.talentMatrix IS NOT NULL " +
-           "GROUP BY pr.talentMatrix")
+    @Query("""
+           SELECT
+             CASE
+               WHEN pr.performanceScore >= 4.0 AND pr.potentialScore >= 4.0 THEN 'Star'
+               WHEN pr.performanceScore >= 4.0 AND pr.potentialScore >= 2.5 THEN 'High Performer'
+               WHEN pr.performanceScore >= 4.0 THEN 'Workhorse'
+               WHEN pr.performanceScore >= 2.5 AND pr.potentialScore >= 4.0 THEN 'High Potential'
+               WHEN pr.performanceScore >= 2.5 AND pr.potentialScore >= 2.5 THEN 'Core Employee'
+               WHEN pr.performanceScore >= 2.5 THEN 'Effective'
+               WHEN pr.potentialScore >= 4.0 THEN 'Problem Child'
+               WHEN pr.potentialScore >= 2.5 THEN 'Inconsistent'
+               ELSE 'Underperformer'
+             END,
+             COUNT(pr)
+           FROM PerformanceReview pr
+           WHERE pr.status = 'COMPLETED'
+           GROUP BY
+             CASE
+               WHEN pr.performanceScore >= 4.0 AND pr.potentialScore >= 4.0 THEN 'Star'
+               WHEN pr.performanceScore >= 4.0 AND pr.potentialScore >= 2.5 THEN 'High Performer'
+               WHEN pr.performanceScore >= 4.0 THEN 'Workhorse'
+               WHEN pr.performanceScore >= 2.5 AND pr.potentialScore >= 4.0 THEN 'High Potential'
+               WHEN pr.performanceScore >= 2.5 AND pr.potentialScore >= 2.5 THEN 'Core Employee'
+               WHEN pr.performanceScore >= 2.5 THEN 'Effective'
+               WHEN pr.potentialScore >= 4.0 THEN 'Problem Child'
+               WHEN pr.potentialScore >= 2.5 THEN 'Inconsistent'
+               ELSE 'Underperformer'
+             END
+           """)
     List<Object[]> countByTalentMatrixGrouped();
 
     @Query("SELECT u.fullName, d.name, pr.performanceScore FROM PerformanceReview pr " +

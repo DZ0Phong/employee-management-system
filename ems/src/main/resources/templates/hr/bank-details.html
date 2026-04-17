@@ -163,7 +163,7 @@
                             <!-- Account Name -->
                             <div class="space-y-1.5">
                                 <label for="accountName" class="text-[11px] font-bold text-slate-500 uppercase tracking-wider px-1">Account Name (Must match exactly as registered at the bank)</label>
-                                <input type="text" id="accountName" th:field="*{accountName}" placeholder="e.g. NGUYEN VAN A" required style="text-transform: uppercase;"
+                                <input type="text" id="accountName" th:field="*{accountName}" placeholder="e.g. NGUYEN VAN A" required style="text-transform: uppercase;" oninput="this.value = this.value.toUpperCase()"
                                        class="w-full bg-slate-50 border-slate-100 rounded-xl px-4 py-2.5 text-sm focus:ring-primary focus:border-primary placeholder:text-slate-300"
                                        th:classappend="${#fields.hasErrors('accountName')} ? 'border-rose-300 focus:ring-rose-500 focus:border-rose-500 bg-rose-50/50' : ''">
                                 <p th:if="${#fields.hasErrors('accountName')}" class="text-[10px] font-bold text-rose-500 mt-1 px-1" th:errors="*{accountName}">Error</p>
@@ -172,7 +172,7 @@
                             <!-- Account Number -->
                             <div class="space-y-1.5">
                                 <label for="accountNumber" class="text-[11px] font-bold text-slate-500 uppercase tracking-wider px-1">Account Number</label>
-                                <input type="text" id="accountNumber" th:field="*{accountNumber}" placeholder="Encryption applied automatically" required pattern="[0-9]+"
+                                <input type="text" id="accountNumber" th:field="*{accountNumber}" placeholder="Encryption applied automatically" required pattern="[0-9]+" inputmode="numeric"
                                        class="w-full bg-slate-50 border-slate-100 rounded-xl px-4 py-2.5 text-sm font-mono focus:ring-primary focus:border-primary placeholder:text-slate-300"
                                        th:classappend="${#fields.hasErrors('accountNumber')} ? 'border-rose-300 focus:ring-rose-500 focus:border-rose-500 bg-rose-50/50' : ''">
                                 <p th:if="${#fields.hasErrors('accountNumber')}" class="text-[10px] font-bold text-rose-500 mt-1 px-1" th:errors="*{accountNumber}">Error</p>

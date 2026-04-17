@@ -29,9 +29,6 @@ public class PerformanceReview {
     @Column(name = "potential_score", nullable = false, precision = 3, scale = 2)
     private BigDecimal potentialScore;
 
-    @Column(name = "talent_matrix", length = 50, insertable = false, updatable = false)
-    private String talentMatrix;
-
     @Column(name = "strengths", columnDefinition = "TEXT")
     private String strengths;
 
@@ -78,7 +75,6 @@ public class PerformanceReview {
     public void setPerformanceScore(BigDecimal performanceScore) { this.performanceScore = performanceScore; }
     public BigDecimal getPotentialScore() { return potentialScore; }
     public void setPotentialScore(BigDecimal potentialScore) { this.potentialScore = potentialScore; }
-    public String getTalentMatrix() { return talentMatrix; }
     public String getStrengths() { return strengths; }
     public void setStrengths(String strengths) { this.strengths = strengths; }
     public String getAreasToImprove() { return areasToImprove; }
