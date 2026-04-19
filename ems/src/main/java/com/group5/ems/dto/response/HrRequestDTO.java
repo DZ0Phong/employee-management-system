@@ -10,6 +10,7 @@ public record HrRequestDTO(
     Long id,
     String requestedBy,
     String initials,
+    String avatarUrl,
     String department,
     Long departmentId,
     String employeeCode,

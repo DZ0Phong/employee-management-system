@@ -75,9 +75,13 @@
                     <span
                             class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 border-2 border-white"></span>
                 </button>
-                <div
-                        class="w-8 h-8 rounded-full bg-primary/10 text-primary border border-primary/20 font-bold text-xs flex items-center justify-center ml-1">
-                    HR</div>
+                <div class="w-8 h-8 rounded-full overflow-hidden bg-primary/10 text-primary border border-primary/20 font-bold text-xs flex items-center justify-center ml-1">
+                    <img th:if="${currentUser?.avatarUrl != null and !currentUser.avatarUrl.isEmpty()}" 
+                         th:src="${currentUser.avatarUrl}"
+                         th:alt="${currentUser.fullName}" class="w-full h-full object-cover">
+                    <span th:if="${currentUser?.avatarUrl == null or currentUser.avatarUrl.isEmpty()}" 
+                          th:text="${currentUser?.initials ?: 'HR'}">HR</span>
+                </div>
             </div>
         </header>
 
@@ -481,9 +485,14 @@
                                         <li>
                                             <a href="/hr/employees?viewId=${emp.id}" class="block px-4 py-3 hover:bg-slate-50 transition-colors cursor-pointer group">
                                                 <div class="flex justify-between items-center">
-                                                    <div>
-                                                        <p class="text-sm font-bold text-slate-800 group-hover:text-primary transition-colors">${emp.fullName}</p>
-                                                        <p class="text-xs text-slate-400 mt-0.5">${emp.position || 'Employee'} • ${emp.code}</p>
+                                                    <div class="flex items-center gap-3">
+                                                        <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-500 text-[10px] overflow-hidden border border-slate-100 transition-transform group-hover:scale-105">
+                                                            ${emp.avatarUrl ? `<img src="${emp.avatarUrl}" class="w-full h-full object-cover" alt="Avatar">` : `<span>${emp.initials}</span>`}
+                                                        </div>
+                                                        <div>
+                                                            <p class="text-sm font-bold text-slate-800 group-hover:text-primary transition-colors">${emp.fullName}</p>
+                                                            <p class="text-xs text-slate-400 mt-0.5">${emp.position || 'Employee'} • ${emp.code}</p>
+                                                        </div>
                                                     </div>
                                                     <span class="material-symbols-outlined text-[18px] text-slate-300 group-hover:text-primary transition-colors">chevron_right</span>
                                                 </div>

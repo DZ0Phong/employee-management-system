@@ -268,8 +268,14 @@
                          class="bg-white rounded-[32px] border border-slate-100 shadow-sm overflow-hidden flex flex-col card-hover relative group cursor-pointer">
                         <div class="p-6 flex items-start justify-between">
                             <div class="flex items-center gap-4">
-                                <div class="w-12 h-12 rounded-[20px] bg-primary/5 flex items-center justify-center text-primary font-black text-sm border border-primary/10 shadow-sm">
-                                    <span th:text="${#strings.substring(appr.employeeName, 0, 1)}">J</span>
+                                <div class="w-12 h-12 rounded-[20px] overflow-hidden flex items-center justify-center border border-primary/10 shadow-sm bg-primary/5 group-hover:scale-110 transition-transform duration-300">
+                                    <img th:if="${appr.avatarUrl != null and !appr.avatarUrl.isEmpty()}" 
+                                         th:src="${appr.avatarUrl}" 
+                                         class="w-full h-full object-cover" 
+                                         th:alt="${appr.employeeName}">
+                                    <span th:unless="${appr.avatarUrl != null and !appr.avatarUrl.isEmpty()}"
+                                          class="text-primary font-black text-sm"
+                                          th:text="${#strings.substring(appr.employeeName, 0, 1)}">J</span>
                                 </div>
                                 <div class="min-w-0">
                                     <h4 class="text-xs font-black text-slate-900 truncate" th:text="${appr.employeeName}">Jane Doe</h4>
@@ -377,7 +383,9 @@
                     c.innerHTML = `
                         <div class="px-10 pt-10 pb-6 flex items-start justify-between bg-slate-50/50 shrink-0">
                             <div class="flex items-center gap-6">
-                                <div class="w-16 h-16 rounded-[24px] bg-primary flex items-center justify-center text-white font-black text-2xl shadow-lg">${data.employeeName.charAt(0)}</div>
+                                <div class="w-16 h-16 rounded-[24px] overflow-hidden flex items-center justify-center bg-primary shadow-lg">
+                                    ${data.avatarUrl ? `<img src="${data.avatarUrl}" class="w-full h-full object-cover" alt="Avatar">` : `<span class="text-white font-black text-2xl">${data.employeeName.charAt(0)}</span>`}
+                                </div>
                                 <div>
                                     <h1 class="text-2xl font-black text-slate-900">${data.employeeName}</h1>
                                     <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-1">${data.employeeCode} • ${data.department}</p>

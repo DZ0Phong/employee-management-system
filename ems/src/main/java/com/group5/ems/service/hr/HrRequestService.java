@@ -359,6 +359,7 @@ public class HrRequestService {
     private HrRequestDTO mapToDTO(Request request) {
         String empName = "Unknown";
         String initials = "?";
+        String avatarUrl = null;
         String deptName = "N/A";
         Long deptId = null;
         String empCode = "N/A";
@@ -370,6 +371,7 @@ public class HrRequestService {
             if (emp.getUser() != null) {
                 empName = emp.getUser().getFullName();
                 initials = buildInitials(empName);
+                avatarUrl = emp.getUser().getAvatarUrl();
             }
             if (emp.getDepartment() != null) {
                 deptName = emp.getDepartment().getName();
@@ -450,6 +452,7 @@ public class HrRequestService {
                 .id(request.getId())
                 .requestedBy(empName)
                 .initials(initials)
+                .avatarUrl(avatarUrl)
                 .department(deptName)
                 .departmentId(deptId)
                 .employeeCode(empCode)

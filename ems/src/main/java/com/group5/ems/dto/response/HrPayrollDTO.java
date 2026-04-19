@@ -10,6 +10,7 @@ public record HrPayrollDTO(
     Long id,
     String employeeName,
     String initials,
+    String avatarUrl,
     String department,
     String position,
     BigDecimal basicSalary,

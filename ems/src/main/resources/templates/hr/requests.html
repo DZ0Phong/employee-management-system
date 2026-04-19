@@ -243,8 +243,9 @@
                                             th:onclick="'toggleDetail(\'' + ${req.id} + '\')'">
                                             <td class="px-6 py-4">
                                                 <div class="flex items-center gap-3">
-                                                    <div class="w-8 h-8 rounded-full bg-slate-100 flex-shrink-0 flex items-center justify-center font-bold text-slate-500 text-[11px]">
-                                                        <span th:text="${req.initials}">AB</span>
+                                                    <div class="w-8 h-8 rounded-full bg-slate-100 flex-shrink-0 flex items-center justify-center font-bold text-slate-500 text-[11px] overflow-hidden border border-slate-100 transition-transform group-hover:scale-105">
+                                                        <img th:if="${req.avatarUrl != null}" th:src="${req.avatarUrl}" class="w-full h-full object-cover" alt="Avatar">
+                                                        <span th:if="${req.avatarUrl == null}" th:text="${req.initials}">AB</span>
                                                     </div>
                                                     <div>
                                                         <p class="text-[13px] font-bold text-slate-900" th:text="${req.requestedBy}">Jane Doe</p>

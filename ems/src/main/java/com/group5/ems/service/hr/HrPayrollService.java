@@ -52,12 +52,14 @@ public class HrPayrollService {
     private HrPayrollDTO mapToDTO(Payslip payslip) {
         String initials = "";
         String fullName = "Unknown";
+        String avatarUrl = null;
         String departmentName = "N/A";
         String positionName = "N/A";
 
         if (payslip.getEmployee() != null) {
             if (payslip.getEmployee().getUser() != null) {
                 fullName = payslip.getEmployee().getUser().getFullName() != null ? payslip.getEmployee().getUser().getFullName() : fullName;
+                avatarUrl = payslip.getEmployee().getUser().getAvatarUrl();
                 if (!"Unknown".equals(fullName) && !fullName.trim().isEmpty()) {
                     String[] names = fullName.trim().split("\\s+");
                     initials += names[0].charAt(0);
@@ -78,6 +80,7 @@ public class HrPayrollService {
                 .id(payslip.getId())
                 .employeeName(fullName)
                 .initials(initials.toUpperCase())
+                .avatarUrl(avatarUrl)
                 .department(departmentName)
                 .position(positionName)
                 .basicSalary(payslip.getActualBaseSalary() != null ? payslip.getActualBaseSalary() : BigDecimal.ZERO)

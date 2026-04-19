@@ -24,7 +24,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
     List<Attendance> findByEmployeeIdInAndWorkDateBetweenOrderByWorkDateAsc(List<Long> employeeIds, LocalDate from, LocalDate to);
 
     @org.springframework.data.jpa.repository.Query("SELECT new com.group5.ems.dto.response.HrAttendanceDetailDTO(" +
-            "a.id, e.employeeCode, u.fullName, d.name, a.workDate, a.checkIn, a.checkOut, a.status, a.note) " +
+            "a.id, e.employeeCode, u.fullName, u.avatarUrl, d.name, a.workDate, a.checkIn, a.checkOut, a.status, a.note) " +
             "FROM Attendance a " +
             "JOIN a.employee e " +
             "JOIN e.user u " +
@@ -41,7 +41,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
             org.springframework.data.domain.Pageable pageable);
 
     @org.springframework.data.jpa.repository.Query("SELECT new com.group5.ems.dto.response.HrAttendanceDetailDTO(" +
-            "a.id, e.employeeCode, u.fullName, d.name, a.workDate, a.checkIn, a.checkOut, a.status, a.note) " +
+            "a.id, e.employeeCode, u.fullName, u.avatarUrl, d.name, a.workDate, a.checkIn, a.checkOut, a.status, a.note) " +
             "FROM Attendance a " +
             "JOIN a.employee e " +
             "JOIN e.user u " +

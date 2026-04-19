@@ -164,9 +164,15 @@
                         class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 card-hover relative group cursor-pointer"
                         th:data-id="${emp.id}" onclick="openEmployeeModal(this.dataset.id)">
                         <div class="flex flex-col items-center">
-                            <div
-                                class="w-16 h-16 rounded-full bg-gradient-to-tr from-primary/20 to-sky-400/20 text-primary font-black text-xl flex items-center justify-center mb-3">
-                                <span th:text="${emp.initials}">JS</span>
+                            <div class="w-16 h-16 rounded-full overflow-hidden flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300">
+                                <img th:if="${emp.avatarUrl != null and !emp.avatarUrl.isEmpty()}" 
+                                     th:src="${emp.avatarUrl}" 
+                                     class="w-full h-full object-cover" 
+                                     th:alt="${emp.fullName}">
+                                <div th:unless="${emp.avatarUrl != null and !emp.avatarUrl.isEmpty()}"
+                                     class="w-full h-full bg-gradient-to-tr from-primary/20 to-sky-400/20 text-primary font-black text-xl flex items-center justify-center">
+                                    <span th:text="${emp.initials}">JS</span>
+                                </div>
                             </div>
                             <h3 class="text-sm font-bold text-slate-800" th:text="${emp.fullName}">John Smith</h3>
                             <p class="text-xs text-slate-500 font-medium mt-0.5" th:text="${emp.position}">Senior
@@ -267,9 +273,11 @@
                         <span class="material-symbols-outlined text-white text-[20px]">close</span>
                     </button>
                     <div class="flex items-center gap-4">
-                        <div id="modalAvatar"
-                            class="w-16 h-16 rounded-full bg-white/20 text-white font-black text-xl flex items-center justify-center border-2 border-white/30">
-                            --</div>
+                        <div id="modalAvatarContainer"
+                            class="w-16 h-16 rounded-full overflow-hidden flex items-center justify-center border-2 border-white/30 bg-white/20">
+                            <img id="modalAvatarImg" class="hidden w-full h-full object-cover" alt="Avatar">
+                            <span id="modalAvatarInitials" class="text-white font-black text-xl">--</span>
+                        </div>
                         <div>
                             <h3 id="modalName" class="text-lg font-black">Loading...</h3>
                             <p id="modalPosition" class="text-white/70 text-sm font-medium"></p>
@@ -403,13 +411,25 @@
                 modal.classList.add('flex');
 
                 // Reset
-                document.getElementById('modalAvatar').textContent = '...';
+                const modalImg = document.getElementById('modalAvatarImg');
+                const modalInitials = document.getElementById('modalAvatarInitials');
+                modalImg.classList.add('hidden');
+                modalInitials.classList.remove('hidden');
+                modalInitials.textContent = '...';
                 document.getElementById('modalName').textContent = 'Loading...';
 
                 fetch('/hr/employees/' + id, { headers: { [csrfHeader]: csrfToken } })
                     .then(r => r.json())
                     .then(d => {
-                        document.getElementById('modalAvatar').textContent = d.initials || '--';
+                        if (d.avatarUrl) {
+                            modalImg.src = d.avatarUrl;
+                            modalImg.classList.remove('hidden');
+                            modalInitials.classList.add('hidden');
+                        } else {
+                            modalImg.classList.add('hidden');
+                            modalInitials.classList.remove('hidden');
+                            modalInitials.textContent = d.initials || '--';
+                        }
                         document.getElementById('modalName').textContent = d.fullName || 'Unknown';
                         document.getElementById('modalPosition').textContent = d.position || '';
                         document.getElementById('modalCode').textContent = d.code || '';

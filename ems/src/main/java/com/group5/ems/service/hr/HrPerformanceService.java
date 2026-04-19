@@ -100,6 +100,7 @@ public class HrPerformanceService {
                 .id(r.getId())
                 .employeeName(employeeName)
                 .employeeCode(employeeCode)
+                .avatarUrl(r.getEmployee() != null && r.getEmployee().getUser() != null ? r.getEmployee().getUser().getAvatarUrl() : null)
                 .department(departmentName)
                 .reviewerName(reviewerName)
                 .reviewerCode(reviewerCode)

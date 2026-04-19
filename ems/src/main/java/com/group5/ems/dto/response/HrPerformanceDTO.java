@@ -10,6 +10,7 @@ public record HrPerformanceDTO(
     Long id,
     String employeeName,
     String employeeCode,
+    String avatarUrl,
     String department,
     String reviewerName,
     String reviewerCode,

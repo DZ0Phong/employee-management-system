@@ -383,6 +383,7 @@ public class HrLeaveService {
     private HrLeaveRequestDTO mapToDTO(Request request) {
         String initials = "";
         String fullName = "Unknown";
+        String avatarUrl = null;
         String departmentName = "N/A";
         String employeeCode = "N/A";
         Long departmentId = null;
@@ -390,6 +391,7 @@ public class HrLeaveService {
         if (request.getEmployee() != null) {
             if (request.getEmployee().getUser() != null) {
                 fullName = request.getEmployee().getUser().getFullName();
+                avatarUrl = request.getEmployee().getUser().getAvatarUrl();
                 if (fullName != null && !fullName.trim().isEmpty()) {
                     String[] names = fullName.trim().split("\\s+");
                     initials += names[0].charAt(0);
@@ -522,6 +524,7 @@ public class HrLeaveService {
                 .id(request.getId())
                 .employeeName(fullName)
                 .initials(initials.toUpperCase())
+                .avatarUrl(avatarUrl)
                 .department(departmentName)
                 .departmentId(departmentId)
                 .employeeCode(employeeCode)

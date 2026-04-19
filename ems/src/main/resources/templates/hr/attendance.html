@@ -183,18 +183,21 @@
                                     <tbody class="divide-y divide-slate-50">
                                         <!-- Empty State -->
                                         <tr th:if="${#lists.isEmpty(attendances)}">
-                                            <td colspan="6" class="px-5 py-8 text-center text-slate-500">
-                                                <span class="material-symbols-outlined text-4xl text-slate-300 mb-2 block">event_busy</span>
-                                                <p class="text-sm font-medium">No attendance records found.</p>
-                                                <p class="text-xs text-slate-400 mt-1">Try adjusting your search criteria or date.</p>
+                                            <td colspan="5" class="px-5 py-24 text-center text-slate-500">
+                                                <div class="flex flex-col items-center justify-center anim anim-1">
+                                                    <span class="material-symbols-outlined text-6xl text-slate-300 mb-4">event_busy</span>
+                                                    <p class="text-base font-bold text-slate-600">No attendance records found</p>
+                                                    <p class="text-sm text-slate-400 mt-2">Try adjusting your search criteria or date.</p>
+                                                </div>
                                             </td>
                                         </tr>
                                         <!-- Log Items -->
                                         <tr th:each="att : ${attendances}" class="hover:bg-primary/[2%] transition-colors group">
                                             <td class="px-5 py-3">
                                                 <div class="flex items-center gap-3">
-                                                    <div class="w-8 h-8 rounded-full bg-slate-100 font-bold text-slate-400 text-[10px] flex items-center justify-center shrink-0 border border-slate-200">
-                                                        <span th:text="${att.initials()}">JD</span>
+                                                    <div class="w-8 h-8 rounded-full bg-slate-100 font-bold text-slate-400 text-[10px] flex items-center justify-center shrink-0 border border-slate-200 overflow-hidden transition-transform group-hover:scale-105">
+                                                        <img th:if="${att.avatarUrl() != null}" th:src="${att.avatarUrl()}" class="w-full h-full object-cover" alt="Avatar">
+                                                        <span th:if="${att.avatarUrl() == null}" th:text="${att.initials()}">JD</span>
                                                     </div>
                                                     <div>
                                                         <p class="text-sm font-semibold text-slate-800 leading-tight group-hover:text-primary transition-colors" th:text="${att.fullName()}">Jane Doe</p>

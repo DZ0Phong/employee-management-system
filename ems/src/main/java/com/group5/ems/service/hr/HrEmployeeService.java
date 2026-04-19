@@ -151,7 +151,7 @@ public class HrEmployeeService {
                 
                 dtos.set(i, new HrEmployeeDTO(
                     dto.id(), dto.initials(), dto.fullName(), dto.position(), dto.department(), 
-                    dto.code(), dto.status(), dto.email(), dto.phone(), matchingSkills
+                    dto.code(), dto.status(), dto.email(), dto.phone(), dto.avatarUrl(), matchingSkills
                 ));
             }
         }
@@ -265,6 +265,7 @@ public class HrEmployeeService {
         HrEmployeeDetailDTO dto = HrEmployeeDetailDTO.builder()
                 .id(employee.getId())
                 .initials(initials.toUpperCase())
+                .avatarUrl(employee.getUser() != null ? employee.getUser().getAvatarUrl() : null)
                 .fullName(fullName)
                 .code(employee.getEmployeeCode())
                 .department(departmentName)
@@ -353,6 +354,7 @@ public class HrEmployeeService {
                 .status(employee.getStatus())
                 .email(email)
                 .phone(phone)
+                .avatarUrl(employee.getUser() != null ? employee.getUser().getAvatarUrl() : null)
                 .build();
     }
 }
