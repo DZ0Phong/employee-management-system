@@ -73,6 +73,7 @@ import com.group5.ems.dto.request.hr.HrEventUpdateDTO;
 import com.group5.ems.dto.response.hr.HrEventResponseDTO;
 */
 import com.group5.ems.exception.ReportExportException;
+import com.group5.ems.exception.ValidationException;
 
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
@@ -534,6 +535,18 @@ public class HrController {
             @RequestParam(required = false) BigDecimal maxScore,
             @RequestParam(required = false) BigDecimal minPotential,
             @RequestParam(required = false) BigDecimal maxPotential) {
+
+        if (reviewYear != null && !reviewYear.isEmpty()) {
+            try {
+                int year = Integer.parseInt(reviewYear);
+                int currentYear = LocalDate.now().getYear();
+                if (year < 2025 || year > currentYear) {
+                    throw new ValidationException("Review year must be between 2025 and " + currentYear);
+                }
+            } catch (NumberFormatException e) {
+                throw new ValidationException("Invalid year format");
+            }
+        }
 
         if (minScore != null && maxScore != null && minScore.compareTo(maxScore) > 0) {
             BigDecimal temp = minScore;

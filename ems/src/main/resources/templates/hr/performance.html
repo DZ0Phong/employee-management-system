@@ -7,7 +7,12 @@
     <title>EMS Pro - Performance</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-<link rel="stylesheet" th:href="@{/css/hr/hr-common.css}">
+    <link rel="stylesheet" th:href="@{/css/hr/hr-common.css}">
+    <!-- Flatpickr -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/index.js"></script>
     <script th:src="@{/js/hr/hr-common.js}"></script>
     <script>
         /* global tailwind */
@@ -50,6 +55,73 @@
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
 
+        /* Modern Year Grid Picker Styling */
+        .year-only-picker {
+            width: 280px !important;
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(16px) !important;
+            border-radius: 24px !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15) !important;
+            padding: 16px !important;
+        }
+        .year-only-picker .flatpickr-months,
+        .year-only-picker .flatpickr-innerContainer {
+            display: none !important;
+        }
+        .year-grid-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            padding: 8px;
+        }
+        .year-grid-item {
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 14px;
+            font-size: 14px;
+            font-weight: 800;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid transparent;
+        }
+        .year-grid-item:hover {
+            background: #f8fafc;
+            color: #4f46e5;
+            transform: scale(1.05);
+            border-color: #e2e8f0;
+        }
+        .year-grid-item.active {
+            background: #4f46e5;
+            color: white;
+            box-shadow: 0 8px 15px -3px rgba(79, 70, 229, 0.3);
+        }
+        .year-current-shortcut {
+            margin-top: 12px;
+            width: 100%;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f1f5f9;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 800;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+        .year-current-shortcut:hover {
+            background: #4f46e5;
+            color: white;
+        }
+
             .card-hover { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
             .card-hover:hover { transform: translateY(-3px); box-shadow: 0 10px 20px -5px rgba(20, 20, 184, 0.1); }
 
@@ -57,11 +129,24 @@
             @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
             @keyframes scaleIn { from { transform: scale(0.98); opacity: 0; } to { transform: scale(1); opacity: 1; } }
             
+            
             .animate-slide-up { animation: slideUp 0.4s ease-out forwards; }
             .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
             .animate-scale-in { animation: scaleIn 0.15s ease-out forwards; }
+
+            .hr-year-picker-container .flatpickr-monthSelect-months { display: none !important; }
+            .hr-year-picker-container .flatpickr-monthSelect-month { display: none !important; }
+            .hr-year-picker-container .flatpickr-calendar.hasMonths { width: 220px !important; }
+            .hr-year-picker-container .flatpickr-innerContainer { display: none !important; }
+
+            /* Dual Range Slider Styles */
+            .dual-range-container { position: relative; width: 100%; height: 24px; display: flex; align-items: center; cursor: pointer; }
+            .track-rail { position: absolute; width: 100%; height: 4px; background: #e2e8f0; border-radius: 99px; }
+            .track-progress { position: absolute; height: 4px; border-radius: 99px; }
+            .slider-node { position: absolute; width: 100%; appearance: none; background: transparent; pointer-events: none; z-index: 10; margin: 0; }
+            .slider-node::-webkit-slider-thumb { appearance: none; width: 16px; height: 16px; background: white; border: 2.5px solid currentColor; border-radius: 50%; cursor: pointer; pointer-events: auto; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: all 0.2s; }
+            .slider-node::-webkit-slider-thumb:hover { transform: scale(1.15); box-shadow: 0 3px 6px rgba(0,0,0,0.15); }
         </style>
-    </th:block>
     <link rel="stylesheet" href="/css/app-icons.css" th:href="@{/css/app-icons.css}" />
     <script defer src="/js/app-icons.js" th:src="@{/js/app-icons.js}"></script>
 </head>
@@ -131,39 +216,44 @@
                         </div>
 
                         <!-- Row 2: Advanced Filters -->
-                        <div id="advancedFilters" class="hidden pt-4 border-t border-slate-50 grid grid-cols-12 gap-6 animate-fade-in overflow-visible">
-                            <div class="col-span-6 space-y-1.5">
+                        <div id="advancedFilters" class="hidden pt-4 border-t border-slate-50 grid grid-cols-12 gap-8 animate-fade-in overflow-visible">
+                            <!-- Review Period -->
+                            <div class="col-span-4 space-y-2">
                                 <label for="reviewYear" class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Review Period</label>
-                                <div class="flex gap-2">
-                                    <select id="reviewYear" name="reviewYear" class="w-1/2 bg-slate-50 border-transparent rounded-xl py-2 text-xs focus:ring-primary/20 focus:border-primary">
-                                        <option value="">Year</option>
-                                        <option th:each="year : ${#numbers.sequence(2024, 2027)}" th:value="${year}" th:text="${year}" th:selected="${reviewYear == #strings.toString(year)}"></option>
-                                    </select>
-                                    <select id="reviewPeriodType" name="reviewPeriodType" class="w-1/2 bg-slate-50 border-transparent rounded-xl py-2 text-xs focus:ring-primary/20 focus:border-primary">
-                                        <option value="Annual" th:selected="${reviewPeriodType == 'Annual'}">Annual</option>
-                                        <option value="H1" th:selected="${reviewPeriodType == 'H1'}">H1 (First)</option>
-                                        <option value="H2" th:selected="${reviewPeriodType == 'H2'}">H2 (Second)</option>
-                                    </select>
+                                <div class="relative group hr-year-picker-container">
+                                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm group-focus-within:text-primary transition-colors">calendar_month</span>
+                                    <input type="text" id="reviewYear" name="reviewYear" th:value="${reviewYear}" 
+                                           placeholder="Select Year..." readonly
+                                           class="w-full bg-slate-50 border-transparent rounded-xl pl-9 pr-3 py-2.5 text-xs font-bold text-slate-700 focus:ring-primary/20 focus:border-primary focus:bg-white transition-all cursor-pointer">
                                 </div>
                             </div>
 
-                            <div class="col-span-6 space-y-3">
-                                <div class="space-y-1">
-                                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-[.1em] flex justify-between">Performance Score <span class="text-primary font-bold" id="perfRangeLabel">1.0 - 5.0</span></label>
-                                    <div class="flex items-center gap-2">
+                            <!-- Performance Score -->
+                            <div class="col-span-4 space-y-2">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex justify-between">Performance <span class="text-indigo-600 font-bold" id="perfRangeLabel">1.0 - 5.0</span></label>
+                                <div class="h-[42px] bg-indigo-50/30 rounded-xl px-4 flex items-center border border-transparent hover:border-indigo-100 transition-all">
+                                    <div class="dual-range-container">
+                                        <div class="track-rail bg-indigo-100/50"></div>
+                                        <div id="perfRangeProgress" class="track-progress bg-indigo-600"></div>
                                         <input type="range" id="minScore" name="minScore" th:value="${minScore ?: 1.0}" min="1" max="5" step="0.1"
-                                               class="flex-1 h-1.5 bg-slate-100 rounded-full appearance-none accent-primary cursor-pointer" oninput="updateRangeLabel(this, 'minScore', 'maxScore', 'perfRangeLabel')">
+                                               class="slider-node text-indigo-600" oninput="updateRangeLabel(this, 'minScore', 'maxScore', 'perfRangeLabel')">
                                         <input type="range" id="maxScore" name="maxScore" th:value="${maxScore ?: 5.0}" min="1" max="5" step="0.1"
-                                               class="flex-1 h-1.5 bg-slate-100 rounded-full appearance-none accent-primary cursor-pointer" oninput="updateRangeLabel(this, 'minScore', 'maxScore', 'perfRangeLabel')">
+                                               class="slider-node text-indigo-600" oninput="updateRangeLabel(this, 'minScore', 'maxScore', 'perfRangeLabel')">
                                     </div>
                                 </div>
-                                <div class="space-y-1">
-                                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-[.1em] flex justify-between">Potential Score <span class="text-blue-500 font-bold" id="potRangeLabel">1.0 - 5.0</span></label>
-                                    <div class="flex items-center gap-2">
+                            </div>
+
+                            <!-- Potential Score -->
+                            <div class="col-span-4 space-y-2">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex justify-between">Potential <span class="text-amber-600 font-bold" id="potRangeLabel">1.0 - 5.0</span></label>
+                                <div class="h-[42px] bg-amber-50/30 rounded-xl px-4 flex items-center border border-transparent hover:border-amber-100 transition-all">
+                                    <div class="dual-range-container">
+                                        <div class="track-rail bg-amber-100/50"></div>
+                                        <div id="potRangeProgress" class="track-progress bg-amber-500"></div>
                                         <input type="range" id="minPotential" name="minPotential" th:value="${minPotential ?: 1.0}" min="1" max="5" step="0.1" 
-                                               class="flex-1 h-1.5 bg-slate-100 rounded-full appearance-none accent-blue-500 cursor-pointer" oninput="updateRangeLabel(this, 'minPotential', 'maxPotential', 'potRangeLabel')">
+                                               class="slider-node text-amber-600" oninput="updateRangeLabel(this, 'minPotential', 'maxPotential', 'potRangeLabel')">
                                         <input type="range" id="maxPotential" name="maxPotential" th:value="${maxPotential ?: 5.0}" min="1" max="5" step="0.1" 
-                                               class="flex-1 h-1.5 bg-slate-100 rounded-full appearance-none accent-blue-500 cursor-pointer" oninput="updateRangeLabel(this, 'minPotential', 'maxPotential', 'potRangeLabel')">
+                                               class="slider-node text-amber-600" oninput="updateRangeLabel(this, 'minPotential', 'maxPotential', 'potRangeLabel')">
                                     </div>
                                 </div>
                             </div>
@@ -173,7 +263,9 @@
 
                 <!-- Cards Grid -->
                 <div th:if="${not #lists.isEmpty(appraisals)}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 animate-slide-up">
-                    <div th:each="appr : ${appraisals}" class="bg-white rounded-[32px] border border-slate-100 shadow-sm overflow-hidden flex flex-col card-hover relative group">
+                    <div th:each="appr : ${appraisals}" 
+                         th:onclick="'viewReviewDetail(' + ${appr.id} + ')'"
+                         class="bg-white rounded-[32px] border border-slate-100 shadow-sm overflow-hidden flex flex-col card-hover relative group cursor-pointer">
                         <div class="p-6 flex items-start justify-between">
                             <div class="flex items-center gap-4">
                                 <div class="w-12 h-12 rounded-[20px] bg-primary/5 flex items-center justify-center text-primary font-black text-sm border border-primary/10 shadow-sm">
@@ -191,32 +283,39 @@
                                     <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Window</p>
                                     <p class="text-xs font-black text-slate-800 mt-1" th:text="${#strings.replace(appr.reviewPeriod, 'YEAR_', '')}">2026</p>
                                 </div>
-                                <div class="text-right">
-                                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Evaluation</p>
-                                    <div class="flex items-center gap-2 mt-1 justify-end">
-                                        <span class="text-sm font-black text-slate-900" th:text="${appr.performanceScore}">4.50</span>
-                                        <span th:class="'inline-flex items-center justify-center w-5 h-5 rounded-lg text-white font-black text-[10px] ' +
-                                            (appr.score == 'A' ? 'bg-emerald-500' : (appr.score == 'B' ? 'bg-blue-500' : (appr.score == 'C' ? 'bg-amber-500' : 'bg-rose-500')))"
-                                            th:text="${appr.score}">A</span>
+                                <div class="flex flex-col gap-2">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Perf:</span>
+                                        <div class="flex items-center gap-1.5">
+                                            <span class="text-sm font-black text-slate-800" th:text="${#numbers.formatDecimal(appr.performanceScore, 1, 2)}">4.50</span>
+                                            <span class="w-5 h-5 flex items-center justify-center bg-indigo-600 text-white rounded-md text-[9px] font-black"
+                                                  th:text="${appr.performanceGrade}">A</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Pot:</span>
+                                        <div class="flex items-center gap-1.5">
+                                            <span class="text-sm font-black text-slate-800" th:text="${#numbers.formatDecimal(appr.potentialScore, 1, 2)}">3.50</span>
+                                            <span class="w-5 h-5 flex items-center justify-center bg-amber-600 text-white rounded-md text-[9px] font-black"
+                                                  th:text="${appr.potentialGrade}">B</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                             <div class="grid grid-cols-2 gap-4">
                                 <div class="bg-white/50 p-3 rounded-2xl border border-dashed border-slate-200">
                                     <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none">Dept</p>
-                                    <p class="text-[11px] font-bold text-slate-600 truncate mt-1" th:text="${appr.department}">IT</p>
+                                    <p class="text-[11px] font-bold text-slate-600 break-words mt-1" th:text="${appr.department}">IT</p>
                                 </div>
                                 <div class="bg-white/50 p-3 rounded-2xl border border-dashed border-slate-200 text-right">
                                     <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none">Reviewer</p>
-                                    <p class="text-[11px] font-bold text-slate-600 truncate mt-1" th:text="${appr.reviewerName}">John Smith</p>
+                                    <p class="text-[11px] font-bold text-slate-600 break-words mt-1">
+                                        <span th:text="${appr.reviewerName}">John Smith</span>
+                                        <br>
+                                        <span class="text-[9px] text-slate-400 font-black uppercase tracking-widest" th:text="${appr.reviewerCode}">EMP001</span>
+                                    </p>
                                 </div>
                             </div>
-                        </div>
-                        <div class="px-6 py-5 bg-slate-50 border-t border-slate-100">
-                            <button th:onclick="'viewReviewDetail(' + ${appr.id} + ')'"
-                                    class="w-full flex items-center justify-center gap-2 text-primary bg-white border border-primary/20 hover:bg-primary hover:text-white transition-all py-3 rounded-2xl text-[12px] font-black uppercase tracking-widest shadow-sm">
-                                <span class="material-symbols-outlined text-[20px]">visibility</span> View Report
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -289,14 +388,14 @@
                             <div class="grid grid-cols-2 gap-8">
                                 <div class="p-8 rounded-[40px] bg-slate-50 border border-slate-100">
                                     <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Performance Index</p>
-                                    <p class="text-4xl font-black text-slate-900">${pe.toFixed(2)} <span class="text-lg text-slate-300">/ 5.0</span></p>
+                                    <p class="text-4xl font-black text-slate-900">${pe.toFixed(2)} <span class="text-lg text-indigo-600 font-black ml-2">${data.performanceGrade}</span></p>
                                     <div class="mt-6 h-2 bg-white rounded-full overflow-hidden border border-slate-100">
                                         <div class="h-full ${colorClass} transition-all perf-bar" style="width:0%"></div>
                                     </div>
                                 </div>
                                 <div class="p-8 rounded-[40px] bg-slate-50 border border-slate-100">
                                     <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Potential Index</p>
-                                    <p class="text-4xl font-black text-slate-900">${po.toFixed(2)} <span class="text-lg text-slate-300">/ 5.0</span></p>
+                                    <p class="text-4xl font-black text-slate-900">${po.toFixed(2)} <span class="text-lg text-amber-600 font-black ml-2">${data.potentialGrade}</span></p>
                                     <div class="mt-6 h-2 bg-white rounded-full overflow-hidden border border-slate-100">
                                         <div class="h-full bg-primary transition-all pot-bar" style="width:0%"></div>
                                     </div>
@@ -329,6 +428,54 @@
                 });
             }
 
+            const currentYear = new Date().getFullYear();
+            
+            // Premium Year Grid Picker Initialization
+            flatpickr("#reviewYear", {
+                dateFormat: "Y",
+                minDate: "2025",
+                maxDate: currentYear.toString(),
+                onReady: function(selectedDates, dateStr, instance) {
+                    const cont = instance.calendarContainer;
+                    cont.classList.add('year-only-picker');
+                    
+                    // Create and Inject the Modern Grid
+                    const gridHtml = `
+                        <div class="p-1">
+                            <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-2 text-center">Appraisal Year</div>
+                            <div class="year-grid-container" id="hrYearGrid"></div>
+                            <div class="year-current-shortcut" id="hrQuickCurrent">
+                                Current Year
+                            </div>
+                        </div>
+                    `;
+                    cont.innerHTML = gridHtml;
+
+                    const grid = cont.querySelector('#hrYearGrid');
+                    const selectedYear = instance.input.value;
+
+                    // Populate Grid (2025 to Current)
+                    for (let y = 2025; y <= currentYear; y++) {
+                        const item = document.createElement('div');
+                        item.className = `year-grid-item ${selectedYear == y ? 'active' : ''}`;
+                        item.textContent = y;
+                        item.onclick = () => {
+                            instance.setDate(y.toString(), true);
+                            instance.close();
+                            document.getElementById('filterForm').submit();
+                        };
+                        grid.appendChild(item);
+                    }
+
+                    // Shortcut Handler
+                    cont.querySelector('#hrQuickCurrent').onclick = () => {
+                        instance.setDate(currentYear.toString(), true);
+                        instance.close();
+                        document.getElementById('filterForm').submit();
+                    };
+                }
+            });
+
             function toggleAdvancedFilters() {
                 const p = document.getElementById('advancedFilters');
                 const b = document.getElementById('advToggleBtn');
@@ -340,21 +487,60 @@
                 }
             }
 
-            function updateRangeLabel(currentInput, minName, maxName, labelId) {
-                const minInput = document.querySelector(`input[name="${minName}"]`);
-                const maxInput = document.querySelector(`input[name="${maxName}"]`);
-                let min = parseFloat(minInput.value);
-                let max = parseFloat(maxInput.value);
+            function updateRangeLabel(currentInput, minId, maxId, labelId) {
+                const minInput = document.getElementById(minId);
+                const maxInput = document.getElementById(maxId);
+                const progress = document.getElementById(labelId.replace('Label', 'Progress'));
+                
+                let minVal = parseFloat(minInput.value);
+                let maxVal = parseFloat(maxInput.value);
 
-                if (currentInput.name === minName && min > max) {
-                    maxInput.value = min;
-                } else if (currentInput.name === maxName && max < min) {
-                    minInput.value = max;
+                if (minVal > maxVal) {
+                    if (currentInput.id === minId) {
+                        minInput.value = maxVal;
+                        minVal = maxVal;
+                    } else {
+                        maxInput.value = minVal;
+                        maxVal = minVal;
+                    }
+                }
+
+                const left = ((minVal - 1) / 4) * 100;
+                const right = ((maxVal - 1) / 4) * 100;
+                
+                if (progress) {
+                    progress.style.left = left + '%';
+                    progress.style.width = (right - left) + '%';
                 }
                 
-                document.getElementById(labelId).textContent = `${minInput.value} - ${maxInput.value}`;
+                document.getElementById(labelId).textContent = minVal.toFixed(1) + ' - ' + maxVal.toFixed(1);
             }
 
+            // Dual range slider interactive zone-based jump logic
+            document.querySelectorAll('.dual-range-container').forEach(container => {
+                const minInput = container.querySelector('input[id^="min"]');
+                const maxInput = container.querySelector('input[id^="max"]');
+                const labelId = minInput.id.includes('Score') ? 'perfRangeLabel' : 'potRangeLabel';
+
+                container.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('slider-node')) return;
+
+                    const rect = container.getBoundingClientRect();
+                    const percent = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+                    const val = 1 + (percent * 4);
+                    
+                    // Zone-based logic: Left half targets min handle, Right half targets max handle
+                    if (val < 3.0) {
+                        minInput.value = val.toFixed(1);
+                        updateRangeLabel(minInput, minInput.id, maxInput.id, labelId);
+                    } else {
+                        maxInput.value = val.toFixed(1);
+                        updateRangeLabel(maxInput, minInput.id, maxInput.id, labelId);
+                    }
+                });
+            });
+
+            // Department Search Custom Select
             document.querySelectorAll('.custom-select-parent').forEach(parent => {
                 const input = parent.querySelector('.custom-select-input');
                 const hidden = parent.querySelector('input[type="hidden"]');
@@ -382,8 +568,9 @@
                 });
             });
 
-            updateRangeLabel(document.querySelector('input[name="minScore"]'), 'minScore', 'maxScore', 'perfRangeLabel');
-            updateRangeLabel(document.querySelector('input[name="minPotential"]'), 'minPotential', 'maxPotential', 'potRangeLabel');
+            // Initial sync
+            updateRangeLabel(document.getElementById('minScore'), 'minScore', 'maxScore', 'perfRangeLabel');
+            updateRangeLabel(document.getElementById('minPotential'), 'minPotential', 'maxPotential', 'potRangeLabel');
             /*]]>*/
         </script>
     </div>
