@@ -634,7 +634,7 @@ public class HrController {
         model.addAttribute("totalItems", historyPage.getTotalElements());
 
         // Tab 3: Create request form data
-        model.addAttribute("requestTypes", requestService.getCreatableRequestTypes());
+        model.addAttribute("requestTypes", requestService.getGroupedRequestTypes());
 
 
         // Rejection modal data
@@ -682,9 +682,10 @@ public class HrController {
             @RequestParam Long requestTypeId,
             @RequestParam String title,
             @RequestParam String content,
+            @RequestParam(defaultValue = "false") boolean urgent,
             RedirectAttributes redirectAttributes) {
         try {
-            requestService.createRequest(requestTypeId, title, content);
+            requestService.createRequest(requestTypeId, title, content, urgent);
             redirectAttributes.addFlashAttribute("successMessage", "Request created successfully.");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());

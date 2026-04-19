@@ -26,12 +26,13 @@ public record HrRequestDTO(
     String approverName,
     String statusClass,
     String statusDisplay,
-    String stepDisplay,
+    String approverEmployeeCode,
     BigDecimal leaveBalanceRemaining,
     BigDecimal leaveBalanceTotal,
     Integer leaveBalancePercentage,
     Integer overlapCount,
-    boolean isLeaveRequest
+    boolean isLeaveRequest,
+    boolean urgentFlag
 ) {
 }
 
