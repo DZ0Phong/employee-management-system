@@ -546,11 +546,12 @@ public class HrManagerController {
             Long approverId = getCurrentUserId();
             
             Map<String, Object> result = leaveApprovalService.bulkApprove(requestIds, approverId);
-            result.put("success", true);
+            // Don't overwrite 'success' field from service - it contains the count
             return result;
         } catch (Exception e) {
             Map<String, Object> error = new HashMap<>();
-            error.put("success", false);
+            error.put("success", 0);
+            error.put("failed", 0);
             error.put("message", "Bulk approve failed: " + e.getMessage());
             return error;
         }
@@ -569,11 +570,12 @@ public class HrManagerController {
             String reason = (String) payload.getOrDefault("reason", "Bulk rejection");
             
             Map<String, Object> result = leaveApprovalService.bulkReject(requestIds, approverId, reason);
-            result.put("success", true);
+            // Don't overwrite 'success' field from service - it contains the count
             return result;
         } catch (Exception e) {
             Map<String, Object> error = new HashMap<>();
-            error.put("success", false);
+            error.put("success", 0);
+            error.put("failed", 0);
             error.put("message", "Bulk reject failed: " + e.getMessage());
             return error;
         }

@@ -117,7 +117,7 @@ public class HrRequestService {
         String safeSearch = (search != null && !search.isBlank()) ? search.trim() : null;
 
         Page<Request> page = requestRepository.findWorkflowRequestsFiltered(
-                currentEmployee.getId(), safeStatus, safeCategoryCode, safeSearch, dateFrom, dateTo, pageable);
+                safeStatus, safeCategoryCode, safeSearch, dateFrom, dateTo, pageable);
 
         List<HrRequestDTO> dtos = page.getContent().stream()
                 .map(this::mapToDTO)

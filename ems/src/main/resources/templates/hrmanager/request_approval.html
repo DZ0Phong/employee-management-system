@@ -4,6 +4,8 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
     <title th:text="${pageTitle != null ? pageTitle : 'Request Approval - EMS'}">Request Approval - EMS</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
@@ -143,6 +145,15 @@
 
         tr.selected-row>td:first-child {
             border-left: 3px solid #1414b8;
+        }
+        
+        /* Row clickable */
+        .data-row {
+            cursor: pointer;
+        }
+        
+        .data-row td:first-child {
+            cursor: default;
         }
 
         /* Filter pill active */
@@ -333,6 +344,12 @@
             border: 1px solid #e2e8f0; 
         }
 
+        /* Dot grid background */
+        .dot-grid {
+            background-image: radial-gradient(circle, #1414b820 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+
         /* Category tabs - Phase 3 */
         .category-tab { 
             padding: 12px 24px; 
@@ -348,21 +365,19 @@
             color: #1414b8; 
             background: #f8fafc;
         }
+        .tab-btn {
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+            color: #64748b;
+        }
+        .tab-btn:hover {
+            color: #1414b8;
+        }
+        .tab-btn.active {
+            border-bottom-color: #1414b8;
+            color: #1414b8;
+        }
 
-        /* Leave balance progress bar - Phase 3 */
-        .leave-balance-bar {
-            width: 100%;
-            height: 8px;
-            background: #e2e8f0;
-            border-radius: 99px;
-            overflow: hidden;
-        }
-        .leave-balance-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #10b981, #059669);
-            border-radius: 99px;
-            transition: width 0.3s ease;
-        }
     </style>
 </head>
 
@@ -402,148 +417,75 @@
             </header>
 
             <!-- Scrollable content -->
-            <div class="flex-1 overflow-y-auto p-8">
+            <div class="flex-1 overflow-y-auto p-8 dot-grid">
                 <div class="max-w-7xl mx-auto space-y-6">
 
-                    <!-- ── Stats Row ──────────────────────────────────── -->
-                    <div class="grid grid-cols-4 gap-6 anim anim-1">
-                        <div class="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
-                            <div class="flex justify-between items-start mb-4">
-                                <div class="size-10 bg-emerald-100 rounded-lg flex items-center justify-center text-emerald-600">
-                                    <span class="material-symbols-outlined">check_circle</span>
-                                </div>
-                                <span class="text-xs font-bold px-2 py-1 rounded bg-emerald-50 text-emerald-500"
-                                    th:text="${stats?.completionRate != null ? stats.completionRate + '%' : '100%'}">100%</span>
-                            </div>
-                            <p class="text-slate-500 text-sm font-medium">Approved Today</p>
-                            <h3 class="text-3xl font-bold mt-1"
-                                th:text="${stats?.approvedTodayCount != null ? stats.approvedTodayCount : 0}">0</h3>
-                        </div>
-                        
-                        <div class="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
-                            <div class="flex justify-between items-start mb-4">
-                                <div class="size-10 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">
-                                    <span class="material-symbols-outlined">flight_takeoff</span>
-                                </div>
-                                <span class="text-xs font-bold px-2 py-1 rounded bg-blue-50 text-blue-500"
-                                    th:text="${stats?.onLeaveNowCount != null ? stats.onLeaveNowCount : 0}">0</span>
-                            </div>
-                            <p class="text-slate-500 text-sm font-medium">On Leave Now</p>
-                            <h3 class="text-3xl font-bold mt-1"
-                                th:text="${stats?.onLeaveNowCount != null ? stats.onLeaveNowCount : 0}">0</h3>
-                            <p class="text-xs text-slate-400 mt-1"
-                                th:text="${stats?.nextReturnInfo != null ? stats.nextReturnInfo : 'Next return: 3 days'}">Next return: 3 days</p>
-                        </div>
-                        
-                        <div class="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
-                            <div class="flex justify-between items-start mb-4">
-                                <div class="size-10 bg-amber-100 rounded-lg flex items-center justify-center text-amber-600">
-                                    <span class="material-symbols-outlined">pending_actions</span>
-                                </div>
-                                <span class="text-xs font-bold px-2 py-1 rounded bg-amber-50 text-amber-600"
-                                    th:text="${stats?.pendingCount != null ? stats.pendingCount : 0}">0</span>
-                            </div>
-                            <p class="text-slate-500 text-sm font-medium">Pending Review</p>
-                            <h3 class="text-3xl font-bold mt-1"
-                                th:text="${stats?.pendingCount != null ? stats.pendingCount : 0}">0</h3>
-                            <p class="text-xs text-slate-400 mt-1">Awaiting action</p>
-                        </div>
-                        
-                        <div class="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
-                            <div class="flex justify-between items-start mb-4">
-                                <div class="size-10 bg-purple-100 rounded-lg flex items-center justify-center text-purple-600">
-                                    <span class="material-symbols-outlined">calendar_month</span>
-                                </div>
-                                <span class="text-xs font-bold px-2 py-1 rounded bg-purple-50 text-purple-500"
-                                    th:text="${stats?.thisMonthChange != null ? stats.thisMonthChange : '+12%'}">+12%</span>
-                            </div>
-                            <p class="text-slate-500 text-sm font-medium">This Month</p>
-                            <h3 class="text-3xl font-bold mt-1"
-                                th:text="${stats?.thisMonthCount != null ? stats.thisMonthCount : 0}">0</h3>
-                        </div>
-                    </div>
+
 
                     <!-- ── Main Table Card ────────────────────────────── -->
                     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden anim anim-2">
 
-                        <!-- Category Tabs -->
-                        <div class="border-b border-slate-100 flex items-center">
-                            <button onclick="switchCategory('all')" data-category="all" 
-                                class="category-tab active">
-                                All Requests
+                        <!-- Tab Bar -->
+                        <div class="bg-white border-b border-slate-100 px-6 flex gap-6">
+                            <button onclick="switchTab('current')" class="tab-btn active py-3 text-sm font-bold flex items-center gap-2" id="tab-current">
+                                <span class="material-symbols-outlined text-[18px]">pending_actions</span>
+                                Current Requests
+                                <span class="text-[10px] font-bold bg-amber-100 text-amber-600 px-1.5 py-0.5 rounded-md" th:text="${stats?.pendingCount ?: 0}">0</span>
                             </button>
-                            <button onclick="switchCategory('hr')" data-category="hr" 
-                                class="category-tab">
-                                HR Documents
+                            <button onclick="switchTab('history')" class="tab-btn py-3 text-sm font-bold flex items-center gap-2" id="tab-history">
+                                <span class="material-symbols-outlined text-[18px]">history</span>
+                                Leave History
+                                <span class="text-[10px] font-bold bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-md">100</span>
                             </button>
-                            <button onclick="switchCategory('status')" data-category="status" 
-                                class="category-tab">
-                                Status Changes
-                            </button>
-                            <button onclick="switchCategory('salary')" data-category="salary" 
-                                class="category-tab">
-                                Salary & Benefits
-                            </button>
-                            
+                        </div>
+
+                        <!-- Requires Approval Section -->
+                        <div class="px-6 py-4 bg-amber-50/30 border-b border-amber-100">
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-amber-500 text-[20px]">pending_actions</span>
+                                <h3 class="text-sm font-black text-slate-800">Requires Approval</h3>
+                                <span class="text-[10px] font-bold bg-amber-100 text-amber-600 px-2 py-0.5 rounded-md ml-auto" th:text="${stats?.pendingCount ?: 0}">0</span>
+                            </div>
+                        </div>
+
+
+                        <!-- Filter Bar (Simplified) -->
+                        <div class="px-6 py-4 border-b border-slate-100 flex items-center gap-3">
                             <!-- Search -->
-                            <div class="flex items-center gap-2 ml-auto mr-6 my-2 px-3 py-2 border border-slate-200 rounded-xl bg-slate-50 w-52 transition-all">
-                                <span class="material-symbols-outlined text-slate-400 text-[18px] shrink-0">search</span>
-                                <input id="search-input" type="text" placeholder="Search employee..."
-                                    oninput="filterTable()"
-                                    class="flex-1 bg-transparent border-none outline-none text-sm p-0 focus:ring-0" />
+                            <div class="flex-1 max-w-xs">
+                                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 block">SEARCH</label>
+                                <div class="relative">
+                                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">search</span>
+                                    <input id="search-input" type="text" placeholder="Name or code..." class="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-xl text-sm" />
+                                </div>
+                            </div>
+
+                            <!-- Department -->
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 block">DEPARTMENT</label>
+                                <select id="dept-filter" class="px-4 py-2 border border-slate-200 rounded-xl text-sm cursor-pointer">
+                                    <option value="">All Depts</option>
+                                </select>
+                            </div>
+
+                            <!-- Leave Type -->
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 block">LEAVE TYPE</label>
+                                <select id="type-filter" class="px-4 py-2 border border-slate-200 rounded-xl text-sm cursor-pointer">
+                                    <option value="">All Types</option>
+                                </select>
+                            </div>
+
+                            <!-- Buttons -->
+                            <div class="flex items-end gap-2">
+                                <button class="px-4 py-2 bg-primary text-white rounded-xl text-sm font-semibold">
+                                    <span class="material-symbols-outlined text-[16px]">filter_list</span>
+                                    Filter
+                                </button>
+                                <button class="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-sm">Clear</button>
                             </div>
                         </div>
 
-                        <!-- ── Filter Bar ──────────────────────────────── -->
-                        <div class="px-6 py-3 border-b border-slate-100 flex items-center gap-3">
-                            <!-- Status pills (toggle buttons) -->
-                            <div class="flex items-center gap-2" id="status-filter">
-                                <button onclick="toggleStatusFilter(this,'pending')" data-status="pending"
-                                    class="status-pill text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:border-primary/40 transition-all">
-                                    Pending
-                                </button>
-                                <button onclick="toggleStatusFilter(this,'approved')" data-status="approved"
-                                    class="status-pill text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:border-primary/40 transition-all">
-                                    Approved
-                                </button>
-                                <button onclick="toggleStatusFilter(this,'rejected')" data-status="rejected"
-                                    class="status-pill text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:border-primary/40 transition-all">
-                                    Rejected
-                                </button>
-                            </div>
-
-                            <div class="w-px h-4 bg-slate-200 shrink-0"></div>
-
-                            <!-- Priority dropdown -->
-                            <select id="priority-filter" onchange="filterTable()"
-                                class="text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all cursor-pointer">
-                                <option value="">Priority ▾</option>
-                                <option value="critical">Critical</option>
-                                <option value="urgent">Urgent</option>
-                                <option value="high">High</option>
-                                <option value="normal">Normal</option>
-                            </select>
-
-                            <!-- Department dropdown -->
-                            <select id="dept-filter" onchange="filterTable()"
-                                class="text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all cursor-pointer">
-                                <option value="">Dept ▾</option>
-                                <option value="engineering">Engineering</option>
-                                <option value="marketing">Marketing</option>
-                                <option value="operations">Operations</option>
-                                <option value="hr">HR</option>
-                                <option value="finance">Finance</option>
-                            </select>
-
-                            <!-- Result count -->
-                            <span id="filter-count" class="text-xs text-slate-400 font-medium whitespace-nowrap shrink-0">5 of 5</span>
-
-                            <!-- Clear filters (only show when active) -->
-                            <button onclick="clearFilters()" id="clear-filters-btn" style="display: none;"
-                                class="text-xs text-primary hover:text-primary/80 transition-colors flex items-center gap-1 font-semibold whitespace-nowrap shrink-0">
-                                Clear
-                            </button>
-                        </div>
 
                         <!-- ── Bulk Action Bar (hidden until selection) ─── -->
                         <div id="bulk-bar"
@@ -588,836 +530,40 @@
                                         <th class="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">
                                             Duration</th>
                                         <th class="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">
-                                            Leave Balance</th>
-                                        <th class="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">
                                             Priority</th>
                                         <th class="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">
                                             Status</th>
-                                        <th
-                                            class="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">
-                                            Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-100" id="table-body">
 
-                                    <!-- ── FALLBACK ROWS (delete when backend integrated) ── -->
-                                    <th:block th:if="${leaveRequests == null or #lists.isEmpty(leaveRequests)}">
+                                <!-- ── NO DATA MESSAGE ── -->
+                                <th:block th:if="${leaveRequests == null or #lists.isEmpty(leaveRequests)}">
+                                    <tr>
+                                        <td colspan="6" class="px-6 py-12 text-center">
+                                            <div class="flex flex-col items-center gap-3">
+                                                <span class="material-symbols-outlined text-emerald-400 text-[48px]">check_circle</span>
+                                                <p class="text-slate-600 font-bold text-lg">All caught up!</p>
+                                                <p class="text-xs text-slate-400">No pending leave requests to review</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </th:block>
 
-                                        <!-- Row 1: Alex Rivera — has overlap warning -->
-                                        <tr class="hover:bg-slate-50/80 transition-colors data-row"
-                                            data-name="alex rivera" data-type="annual" data-dept="marketing"
-                                            data-status="pending" data-priority="normal"
-                                            data-id="1">
-                                            <td class="px-6 py-4">
-                                                <input type="checkbox" onchange="onRowCheck(this,1)"
-                                                    class="row-check w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary/30 cursor-pointer" />
-                                            </td>
-                                            <td class="px-4 py-4">
-                                                <div class="flex items-center gap-3">
-                                                    <div
-                                                        class="size-9 rounded-full bg-indigo-100 flex-shrink-0 flex items-center justify-center font-bold text-indigo-700 text-sm">
-                                                        AR</div>
-                                                    <div>
-                                                        <p class="text-sm font-bold">Alex Rivera</p>
-                                                        <p class="text-xs text-slate-500">Product Designer · Marketing
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="px-4 py-4">
-                                                <span
-                                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">Annual
-                                                    Leave</span>
-                                            </td>
-                                            <td class="px-4 py-4 text-sm font-semibold">5 Days</td>
-                                            <td class="px-4 py-4">
-                                                <p class="text-sm font-medium">Oct 12 – Oct 17</p>
-                                                <p class="text-xs text-slate-400">2024</p>
-                                            </td>
-                                            <td class="px-4 py-4">
-                                                <p class="text-sm text-slate-600 truncate max-w-[160px]">Family vacation
-                                                    in Italy</p>
-                                            </td>
-                                            <td class="px-4 py-4">
-                                                <div class="flex items-center justify-end gap-2">
-                                                    <!-- Overlap warning -->
-                                                    <span class="overlap-badge">
-                                                        <span
-                                                            class="material-symbols-outlined text-[13px]">warning</span>
-                                                        3 on leave
-                                                    </span>
-                                                    <button onclick="toggleDetail(1)" id="btn-1"
-                                                        class="review-btn px-3 py-1.5 text-xs font-bold text-primary border border-primary/30 rounded-xl hover:bg-primary/5 transition-colors flex items-center gap-1">
-                                                        <span
-                                                            class="material-symbols-outlined text-[15px]">visibility</span>
-                                                        Review
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <tr id="detail-1" class="detail-row bg-slate-50/60">
-                                            <td colspan="7">
-                                                <div class="detail-inner">
-                                                    <div>
-                                                        <div
-                                                            class="px-6 py-5 grid grid-cols-4 gap-6 border-t border-slate-100">
-                                                            <!-- Request Details -->
-                                                            <div class="space-y-3">
-                                                                <h4
-                                                                    class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                                                                    <span
-                                                                        class="material-symbols-outlined text-primary text-[16px]">description</span>
-                                                                    Request Details
-                                                                </h4>
-                                                                <div
-                                                                    class="bg-white rounded-xl p-4 border border-slate-200 space-y-3 text-sm">
-                                                                    <div>
-                                                                        <p class="text-xs text-slate-400 mb-0.5">Full
-                                                                            reason</p>
-                                                                        <p class="text-slate-700">Family vacation in
-                                                                            Italy — pre-booked 3 months ago</p>
-                                                                    </div>
-                                                                    <div class="pt-2 border-t border-slate-100">
-                                                                        <p class="text-xs text-slate-400 mb-0.5">
-                                                                            Submitted</p>
-                                                                        <p
-                                                                            class="text-slate-700 flex items-center gap-1">
-                                                                            <span
-                                                                                class="material-symbols-outlined text-[14px] text-slate-400">schedule</span>
-                                                                            Oct 1, 2024 09:15
-                                                                        </p>
-                                                                    </div>
-                                                                    <div class="pt-2 border-t border-slate-100">
-                                                                        <p class="text-xs text-slate-400 mb-0.5">Request
-                                                                            ID</p>
-                                                                        <p class="font-mono text-slate-700">#1001</p>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
 
-                                                            <!-- Leave Balance -->
-                                                            <div class="space-y-3">
-                                                                <h4
-                                                                    class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                                                                    <span
-                                                                        class="material-symbols-outlined text-emerald-600 text-[16px]">account_balance_wallet</span>
-                                                                    Leave Balance
-                                                                </h4>
-                                                                <div
-                                                                    class="bg-emerald-50 rounded-xl p-4 border border-emerald-200">
-                                                                    <div class="flex justify-between items-center mb-2">
-                                                                        <span
-                                                                            class="text-xs text-emerald-700 font-medium">Current
-                                                                            balance</span>
-                                                                        <span
-                                                                            class="text-2xl font-black text-emerald-700">12
-                                                                            days</span>
-                                                                    </div>
-                                                                    <div
-                                                                        class="h-2 bg-emerald-200 rounded-full overflow-hidden mb-2">
-                                                                        <div class="h-full bg-emerald-500 rounded-full"
-                                                                            style="width:60%"></div>
-                                                                    </div>
-                                                                    <div class="flex justify-between text-xs">
-                                                                        <span class="text-emerald-700">After
-                                                                            approval</span>
-                                                                        <span class="font-bold text-emerald-800">7
-                                                                            days</span>
-                                                                    </div>
-                                                                </div>
-                                                                <div
-                                                                    class="bg-white rounded-xl p-3 border border-slate-200 text-xs space-y-1.5">
-                                                                    <div class="flex justify-between">
-                                                                        <span class="text-slate-500">Used this
-                                                                            year</span>
-                                                                        <span class="font-semibold">8 days</span>
-                                                                    </div>
-                                                                    <div class="flex justify-between">
-                                                                        <span class="text-slate-500">Annual quota</span>
-                                                                        <span class="font-semibold">20 days</span>
-                                                                    </div>
-                                                                    <div class="flex justify-between">
-                                                                        <span class="text-slate-500">Carried over</span>
-                                                                        <span class="font-semibold">0 days</span>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-
-                                                            <!-- Team Calendar -->
-                                                            <div class="space-y-3">
-                                                                <h4
-                                                                    class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                                                                    <span
-                                                                        class="material-symbols-outlined text-rose-500 text-[16px]">group</span>
-                                                                    Team overlap — Oct
-                                                                    <span
-                                                                        class="ml-auto px-1.5 py-0.5 rounded bg-rose-100 text-rose-700 text-[10px] font-bold">3
-                                                                        conflict</span>
-                                                                </h4>
-                                                                <div
-                                                                    class="bg-white rounded-xl p-3 border border-slate-200">
-                                                                    <!-- Mini calendar grid -->
-                                                                    <div
-                                                                        class="grid grid-cols-7 gap-1 text-center mb-2">
-                                                                        <span
-                                                                            class="text-[10px] text-slate-400 font-medium">M</span>
-                                                                        <span
-                                                                            class="text-[10px] text-slate-400 font-medium">T</span>
-                                                                        <span
-                                                                            class="text-[10px] text-slate-400 font-medium">W</span>
-                                                                        <span
-                                                                            class="text-[10px] text-slate-400 font-medium">T</span>
-                                                                        <span
-                                                                            class="text-[10px] text-slate-400 font-medium">F</span>
-                                                                        <span
-                                                                            class="text-[10px] text-slate-400 font-medium">S</span>
-                                                                        <span
-                                                                            class="text-[10px] text-slate-400 font-medium">S</span>
-                                                                    </div>
-                                                                    <div class="grid grid-cols-7 gap-1">
-                                                                        <div class="cal-day">1</div>
-                                                                        <div class="cal-day">2</div>
-                                                                        <div class="cal-day">3</div>
-                                                                        <div class="cal-day">4</div>
-                                                                        <div class="cal-day">5</div>
-                                                                        <div class="cal-day weekend">6</div>
-                                                                        <div class="cal-day weekend">7</div>
-                                                                        <div class="cal-day">8</div>
-                                                                        <div class="cal-day">9</div>
-                                                                        <div class="cal-day">10</div>
-                                                                        <div class="cal-day today">11</div>
-                                                                        <div class="cal-day conflict"
-                                                                            title="Alex + 2 others">12</div>
-                                                                        <div class="cal-day weekend">13</div>
-                                                                        <div class="cal-day weekend">14</div>
-                                                                        <div class="cal-day conflict"
-                                                                            title="Alex + 2 others">15</div>
-                                                                        <div class="cal-day conflict"
-                                                                            title="Alex + 1 other">16</div>
-                                                                        <div class="cal-day requested">17</div>
-                                                                        <div class="cal-day has-leave">18</div>
-                                                                        <div class="cal-day weekend">19</div>
-                                                                        <div class="cal-day weekend">20</div>
-                                                                        <div class="cal-day">21</div>
-                                                                        <div class="cal-day">22</div>
-                                                                        <div class="cal-day">23</div>
-                                                                        <div class="cal-day">24</div>
-                                                                        <div class="cal-day has-leave">25</div>
-                                                                        <div class="cal-day weekend">26</div>
-                                                                        <div class="cal-day weekend">27</div>
-                                                                        <div class="cal-day">28</div>
-                                                                        <div class="cal-day">29</div>
-                                                                        <div class="cal-day">30</div>
-                                                                        <div class="cal-day">31</div>
-                                                                    </div>
-                                                                    <div
-                                                                        class="mt-3 pt-2 border-t border-slate-100 flex flex-wrap gap-2 text-[10px]">
-                                                                        <span class="flex items-center gap-1"><span
-                                                                                class="w-3 h-3 rounded bg-rose-200 inline-block"></span>
-                                                                            Conflict</span>
-                                                                        <span class="flex items-center gap-1"><span
-                                                                                class="w-3 h-3 rounded bg-amber-200 inline-block"></span>
-                                                                            On leave</span>
-                                                                        <span class="flex items-center gap-1"><span
-                                                                                class="w-3 h-3 rounded bg-blue-200 border-2 border-primary inline-block"></span>
-                                                                            This request</span>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-
-                                                            <!-- Quick Actions -->
-                                                            <div class="space-y-3">
-                                                                <h4
-                                                                    class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                                                                    <span
-                                                                        class="material-symbols-outlined text-amber-500 text-[16px]">bolt</span>
-                                                                    Quick Actions
-                                                                </h4>
-                                                                <!-- Overlap alert -->
-                                                                <div
-                                                                    class="flex items-start gap-2 p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700">
-                                                                    <span
-                                                                        class="material-symbols-outlined text-[16px] text-rose-500 shrink-0 mt-0.5">warning</span>
-                                                                    <span><strong>3 team members</strong> are already on
-                                                                        leave Oct 12–16. Consider staggering if coverage
-                                                                        is critical.</span>
-                                                                </div>
-                                                                <div class="space-y-2">
-                                                                    <button onclick="handleApprove(1)"
-                                                                        class="w-full px-4 py-3 bg-emerald-500 text-white rounded-xl text-sm font-bold hover:bg-emerald-600 transition-all flex items-center justify-center gap-2">
-                                                                        <span
-                                                                            class="material-symbols-outlined text-[18px]">check_circle</span>
-                                                                        Approve Request
-                                                                    </button>
-                                                                    <button onclick="openRejectModal(1)"
-                                                                        class="w-full px-4 py-3 bg-rose-500 text-white rounded-xl text-sm font-bold hover:bg-rose-600 transition-all flex items-center justify-center gap-2">
-                                                                        <span
-                                                                            class="material-symbols-outlined text-[18px]">cancel</span>
-                                                                        Reject Request
-                                                                    </button>
-                                                                    <button
-                                                                        class="w-full px-4 py-2.5 border border-slate-200 text-slate-600 rounded-xl text-sm font-medium hover:bg-slate-50 transition-colors flex items-center justify-center gap-2">
-                                                                        <span
-                                                                            class="material-symbols-outlined text-[16px]">person</span>
-                                                                        Employee Profile
-                                                                    </button>
-                                                                    <button
-                                                                        class="w-full px-4 py-2.5 border border-slate-200 text-slate-600 rounded-xl text-sm font-medium hover:bg-slate-50 transition-colors flex items-center justify-center gap-2">
-                                                                        <span
-                                                                            class="material-symbols-outlined text-[16px]">history</span>
-                                                                        Leave History
-                                                                    </button>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        </tr>
-
-                                        <!-- Row 2: Jordan Lee -->
-                                        <tr class="hover:bg-slate-50/80 transition-colors data-row"
-                                            data-name="jordan lee" data-type="sick" data-dept="engineering" 
-                                            data-status="pending" data-priority="urgent"
-                                            data-id="2">
-                                            <td class="px-6 py-4">
-                                                <input type="checkbox" onchange="onRowCheck(this,2)"
-                                                    class="row-check w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary/30 cursor-pointer" />
-                                            </td>
-                                            <td class="px-4 py-4">
-                                                <div class="flex items-center gap-3">
-                                                    <div
-                                                        class="size-9 rounded-full bg-purple-100 flex-shrink-0 flex items-center justify-center font-bold text-purple-700 text-sm">
-                                                        JL</div>
-                                                    <div>
-                                                        <p class="text-sm font-bold">Jordan Lee</p>
-                                                        <p class="text-xs text-slate-500">Backend Engineer · Engineering
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="px-4 py-4">
-                                                <span
-                                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-700">Sick
-                                                    Leave</span>
-                                            </td>
-                                            <td class="px-4 py-4 text-sm font-semibold">1 Day</td>
-                                            <td class="px-4 py-4">
-                                                <p class="text-sm font-medium">Oct 05</p>
-                                                <p class="text-xs text-slate-400">2024</p>
-                                            </td>
-                                            <td class="px-4 py-4">
-                                                <p class="text-sm text-slate-600 truncate max-w-[160px]">Medical
-                                                    appointment</p>
-                                            </td>
-                                            <td class="px-4 py-4">
-                                                <div class="flex items-center justify-end gap-2">
-                                                    <button onclick="toggleDetail(2)" id="btn-2"
-                                                        class="review-btn px-3 py-1.5 text-xs font-bold text-primary border border-primary/30 rounded-xl hover:bg-primary/5 transition-colors flex items-center gap-1">
-                                                        <span
-                                                            class="material-symbols-outlined text-[15px]">visibility</span>
-                                                        Review
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <tr id="detail-2" class="detail-row bg-slate-50/60">
-                                            <td colspan="7">
-                                                <div class="detail-inner">
-                                                    <div>
-                                                        <div
-                                                            class="px-6 py-5 grid grid-cols-4 gap-6 border-t border-slate-100">
-                                                            <div class="space-y-3">
-                                                                <h4
-                                                                    class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                                                                    <span
-                                                                        class="material-symbols-outlined text-primary text-[16px]">description</span>Request
-                                                                    Details
-                                                                </h4>
-                                                                <div
-                                                                    class="bg-white rounded-xl p-4 border border-slate-200 space-y-3 text-sm">
-                                                                    <div>
-                                                                        <p class="text-xs text-slate-400 mb-0.5">Full
-                                                                            reason</p>
-                                                                        <p class="text-slate-700">Medical appointment —
-                                                                            routine check-up</p>
-                                                                    </div>
-                                                                    <div class="pt-2 border-t border-slate-100">
-                                                                        <p class="text-xs text-slate-400 mb-0.5">
-                                                                            Submitted</p>
-                                                                        <p class="text-slate-700">Oct 3, 2024 08:00</p>
-                                                                    </div>
-                                                                    <div class="pt-2 border-t border-slate-100">
-                                                                        <p class="text-xs text-slate-400 mb-0.5">Request
-                                                                            ID</p>
-                                                                        <p class="font-mono text-slate-700">#1002</p>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            <div class="space-y-3">
-                                                                <h4
-                                                                    class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                                                                    <span
-                                                                        class="material-symbols-outlined text-emerald-600 text-[16px]">account_balance_wallet</span>Leave
-                                                                    Balance
-                                                                </h4>
-                                                                <div
-                                                                    class="bg-emerald-50 rounded-xl p-4 border border-emerald-200">
-                                                                    <div class="flex justify-between items-center mb-2">
-                                                                        <span
-                                                                            class="text-xs text-emerald-700 font-medium">Current
-                                                                            balance</span><span
-                                                                            class="text-2xl font-black text-emerald-700">5
-                                                                            days</span>
-                                                                    </div>
-                                                                    <div
-                                                                        class="h-2 bg-emerald-200 rounded-full overflow-hidden mb-2">
-                                                                        <div class="h-full bg-emerald-500 rounded-full"
-                                                                            style="width:25%"></div>
-                                                                    </div>
-                                                                    <div class="flex justify-between text-xs"><span
-                                                                            class="text-emerald-700">After
-                                                                            approval</span><span
-                                                                            class="font-bold text-emerald-800">4
-                                                                            days</span></div>
-                                                                </div>
-                                                                <div
-                                                                    class="bg-white rounded-xl p-3 border border-slate-200 text-xs space-y-1.5">
-                                                                    <div class="flex justify-between"><span
-                                                                            class="text-slate-500">Used this
-                                                                            year</span><span class="font-semibold">15
-                                                                            days</span></div>
-                                                                    <div class="flex justify-between"><span
-                                                                            class="text-slate-500">Annual
-                                                                            quota</span><span class="font-semibold">20
-                                                                            days</span></div>
-                                                                </div>
-                                                            </div>
-                                                            <div class="space-y-3">
-                                                                <h4
-                                                                    class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                                                                    <span
-                                                                        class="material-symbols-outlined text-blue-500 text-[16px]">group</span>Team
-                                                                    overlap — Oct
-                                                                    <span
-                                                                        class="ml-auto px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 text-[10px] font-bold">No
-                                                                        conflict</span>
-                                                                </h4>
-                                                                <div
-                                                                    class="bg-white rounded-xl p-3 border border-slate-200">
-                                                                    <div
-                                                                        class="grid grid-cols-7 gap-1 text-center mb-2">
-                                                                        <span
-                                                                            class="text-[10px] text-slate-400 font-medium">M</span><span
-                                                                            class="text-[10px] text-slate-400 font-medium">T</span><span
-                                                                            class="text-[10px] text-slate-400 font-medium">W</span><span
-                                                                            class="text-[10px] text-slate-400 font-medium">T</span><span
-                                                                            class="text-[10px] text-slate-400 font-medium">F</span><span
-                                                                            class="text-[10px] text-slate-400 font-medium">S</span><span
-                                                                            class="text-[10px] text-slate-400 font-medium">S</span>
-                                                                    </div>
-                                                                    <div class="grid grid-cols-7 gap-1">
-                                                                        <div class="cal-day">1</div>
-                                                                        <div class="cal-day">2</div>
-                                                                        <div class="cal-day">3</div>
-                                                                        <div class="cal-day">4</div>
-                                                                        <div class="cal-day requested">5</div>
-                                                                        <div class="cal-day weekend">6</div>
-                                                                        <div class="cal-day weekend">7</div>
-                                                                        <div class="cal-day">8</div>
-                                                                        <div class="cal-day">9</div>
-                                                                        <div class="cal-day">10</div>
-                                                                        <div class="cal-day today">11</div>
-                                                                        <div class="cal-day">12</div>
-                                                                        <div class="cal-day weekend">13</div>
-                                                                        <div class="cal-day weekend">14</div>
-                                                                        <div class="cal-day">15</div>
-                                                                        <div class="cal-day">16</div>
-                                                                        <div class="cal-day">17</div>
-                                                                        <div class="cal-day">18</div>
-                                                                        <div class="cal-day">19</div>
-                                                                        <div class="cal-day weekend">20</div>
-                                                                        <div class="cal-day weekend">21</div>
-                                                                    </div>
-                                                                    <div
-                                                                        class="mt-2 pt-2 border-t border-slate-100 text-[10px] text-slate-400">
-                                                                        No other team members on leave Oct 5</div>
-                                                                </div>
-                                                            </div>
-                                                            <div class="space-y-3">
-                                                                <h4
-                                                                    class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                                                                    <span
-                                                                        class="material-symbols-outlined text-amber-500 text-[16px]">bolt</span>Quick
-                                                                    Actions
-                                                                </h4>
-                                                                <div class="space-y-2">
-                                                                    <button onclick="handleApprove(2)"
-                                                                        class="w-full px-4 py-3 bg-emerald-500 text-white rounded-xl text-sm font-bold hover:bg-emerald-600 transition-all flex items-center justify-center gap-2">
-                                                                        <span
-                                                                            class="material-symbols-outlined text-[18px]">check_circle</span>Approve
-                                                                        Request
-                                                                    </button>
-                                                                    <button onclick="openRejectModal(2)"
-                                                                        class="w-full px-4 py-3 bg-rose-500 text-white rounded-xl text-sm font-bold hover:bg-rose-600 transition-all flex items-center justify-center gap-2">
-                                                                        <span
-                                                                            class="material-symbols-outlined text-[18px]">cancel</span>Reject
-                                                                        Request
-                                                                    </button>
-                                                                    <button
-                                                                        class="w-full px-4 py-2.5 border border-slate-200 text-slate-600 rounded-xl text-sm font-medium hover:bg-slate-50 transition-colors flex items-center justify-center gap-2">
-                                                                        <span
-                                                                            class="material-symbols-outlined text-[16px]">person</span>Employee
-                                                                        Profile
-                                                                    </button>
-                                                                    <button
-                                                                        class="w-full px-4 py-2.5 border border-slate-200 text-slate-600 rounded-xl text-sm font-medium hover:bg-slate-50 transition-colors flex items-center justify-center gap-2">
-                                                                        <span
-                                                                            class="material-symbols-outlined text-[16px]">history</span>Leave
-                                                                        History
-                                                                    </button>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        </tr>
-
-                                        <!-- Row 3: Maria Garcia -->
-                                        <tr class="hover:bg-slate-50/80 transition-colors data-row"
-                                            data-name="maria garcia" data-type="personal" data-dept="hr" 
-                                            data-status="pending" data-priority="high"
-                                            data-id="3">
-                                            <td class="px-6 py-4">
-                                                <input type="checkbox" onchange="onRowCheck(this,3)"
-                                                    class="row-check w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary/30 cursor-pointer" />
-                                            </td>
-                                            <td class="px-4 py-4">
-                                                <div class="flex items-center gap-3">
-                                                    <div
-                                                        class="size-9 rounded-full bg-amber-100 flex-shrink-0 flex items-center justify-center font-bold text-amber-700 text-sm">
-                                                        MG</div>
-                                                    <div>
-                                                        <p class="text-sm font-bold">Maria Garcia</p>
-                                                        <p class="text-xs text-slate-500">HR Specialist · HR</p>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="px-4 py-4">
-                                                <span
-                                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">Personal
-                                                    Leave</span>
-                                            </td>
-                                            <td class="px-4 py-4 text-sm font-semibold">3 Days</td>
-                                            <td class="px-4 py-4">
-                                                <p class="text-sm font-medium">Oct 18 – Oct 20</p>
-                                                <p class="text-xs text-slate-400">2024</p>
-                                            </td>
-                                            <td class="px-4 py-4">
-                                                <p class="text-sm text-slate-600 truncate max-w-[160px]">Urgent family
-                                                    matter</p>
-                                            </td>
-                                            <td class="px-4 py-4">
-                                                <div class="flex items-center justify-end gap-2">
-                                                    <button onclick="toggleDetail(3)" id="btn-3"
-                                                        class="review-btn px-3 py-1.5 text-xs font-bold text-primary border border-primary/30 rounded-xl hover:bg-primary/5 transition-colors flex items-center gap-1">
-                                                        <span
-                                                            class="material-symbols-outlined text-[15px]">visibility</span>
-                                                        Review
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <tr id="detail-3" class="detail-row bg-slate-50/60">
-                                            <td colspan="7">
-                                                <div class="detail-inner">
-                                                    <div>
-                                                        <div
-                                                            class="px-6 py-5 grid grid-cols-4 gap-6 border-t border-slate-100">
-                                                            <div class="space-y-3">
-                                                                <h4
-                                                                    class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                                                                    <span
-                                                                        class="material-symbols-outlined text-primary text-[16px]">description</span>Request
-                                                                    Details
-                                                                </h4>
-                                                                <div
-                                                                    class="bg-white rounded-xl p-4 border border-slate-200 space-y-3 text-sm">
-                                                                    <div>
-                                                                        <p class="text-xs text-slate-400 mb-0.5">Full
-                                                                            reason</p>
-                                                                        <p class="text-slate-700">Urgent family matter —
-                                                                            requires immediate attention</p>
-                                                                    </div>
-                                                                    <div class="pt-2 border-t border-slate-100">
-                                                                        <p class="text-xs text-slate-400 mb-0.5">
-                                                                            Submitted</p>
-                                                                        <p class="text-slate-700">Oct 10, 2024 11:30</p>
-                                                                    </div>
-                                                                    <div class="pt-2 border-t border-slate-100">
-                                                                        <p class="text-xs text-slate-400 mb-0.5">Request
-                                                                            ID</p>
-                                                                        <p class="font-mono text-slate-700">#1003</p>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            <div class="space-y-3">
-                                                                <h4
-                                                                    class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                                                                    <span
-                                                                        class="material-symbols-outlined text-emerald-600 text-[16px]">account_balance_wallet</span>Leave
-                                                                    Balance
-                                                                </h4>
-                                                                <div
-                                                                    class="bg-amber-50 rounded-xl p-4 border border-amber-200">
-                                                                    <div class="flex justify-between items-center mb-2">
-                                                                        <span
-                                                                            class="text-xs text-amber-700 font-medium">Current
-                                                                            balance</span><span
-                                                                            class="text-2xl font-black text-amber-700">3
-                                                                            days</span>
-                                                                    </div>
-                                                                    <div
-                                                                        class="h-2 bg-amber-200 rounded-full overflow-hidden mb-2">
-                                                                        <div class="h-full bg-amber-500 rounded-full"
-                                                                            style="width:15%"></div>
-                                                                    </div>
-                                                                    <div class="flex justify-between text-xs"><span
-                                                                            class="text-amber-700">After
-                                                                            approval</span><span
-                                                                            class="font-bold text-amber-800">0
-                                                                            days</span></div>
-                                                                </div>
-                                                                <div
-                                                                    class="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-700">
-                                                                    <span
-                                                                        class="material-symbols-outlined text-[14px] shrink-0 mt-0.5">warning</span>
-                                                                    <span>This will exhaust the employee's annual leave
-                                                                        balance.</span>
-                                                                </div>
-                                                            </div>
-                                                            <div class="space-y-3">
-                                                                <h4
-                                                                    class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                                                                    <span
-                                                                        class="material-symbols-outlined text-blue-500 text-[16px]">group</span>Team
-                                                                    overlap<span
-                                                                        class="ml-auto px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 text-[10px] font-bold">No
-                                                                        conflict</span>
-                                                                </h4>
-                                                                <div
-                                                                    class="bg-white rounded-xl p-3 border border-slate-200 text-xs text-slate-500 flex items-center justify-center h-20">
-                                                                    No team members on leave Oct 18–20</div>
-                                                            </div>
-                                                            <div class="space-y-3">
-                                                                <h4
-                                                                    class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                                                                    <span
-                                                                        class="material-symbols-outlined text-amber-500 text-[16px]">bolt</span>Quick
-                                                                    Actions
-                                                                </h4>
-                                                                <div class="space-y-2">
-                                                                    <button onclick="handleApprove(3)"
-                                                                        class="w-full px-4 py-3 bg-emerald-500 text-white rounded-xl text-sm font-bold hover:bg-emerald-600 transition-all flex items-center justify-center gap-2"><span
-                                                                            class="material-symbols-outlined text-[18px]">check_circle</span>Approve
-                                                                        Request</button>
-                                                                    <button onclick="openRejectModal(3)"
-                                                                        class="w-full px-4 py-3 bg-rose-500 text-white rounded-xl text-sm font-bold hover:bg-rose-600 transition-all flex items-center justify-center gap-2"><span
-                                                                            class="material-symbols-outlined text-[18px]">cancel</span>Reject
-                                                                        Request</button>
-                                                                    <button
-                                                                        class="w-full px-4 py-2.5 border border-slate-200 text-slate-600 rounded-xl text-sm font-medium hover:bg-slate-50 transition-colors flex items-center justify-center gap-2"><span
-                                                                            class="material-symbols-outlined text-[16px]">person</span>Employee
-                                                                        Profile</button>
-                                                                    <button
-                                                                        class="w-full px-4 py-2.5 border border-slate-200 text-slate-600 rounded-xl text-sm font-medium hover:bg-slate-50 transition-colors flex items-center justify-center gap-2"><span
-                                                                            class="material-symbols-outlined text-[16px]">history</span>Leave
-                                                                        History</button>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        </tr>
-
-                                        <!-- Row 4: Robert Chen — long leave -->
-                                        <tr class="hover:bg-slate-50/80 transition-colors data-row"
-                                            data-name="robert chen" data-type="annual" data-dept="marketing"
-                                            data-status="pending" data-priority="normal"
-                                            data-id="4">
-                                            <td class="px-6 py-4">
-                                                <input type="checkbox" onchange="onRowCheck(this,4)"
-                                                    class="row-check w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary/30 cursor-pointer" />
-                                            </td>
-                                            <td class="px-4 py-4">
-                                                <div class="flex items-center gap-3">
-                                                    <div
-                                                        class="size-9 rounded-full bg-teal-100 flex-shrink-0 flex items-center justify-center font-bold text-teal-700 text-sm">
-                                                        RC</div>
-                                                    <div>
-                                                        <p class="text-sm font-bold">Robert Chen</p>
-                                                        <p class="text-xs text-slate-500">Marketing Lead · Marketing</p>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="px-4 py-4">
-                                                <span
-                                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">Annual
-                                                    Leave</span>
-                                            </td>
-                                            <td class="px-4 py-4 text-sm font-semibold">10 Days</td>
-                                            <td class="px-4 py-4">
-                                                <p class="text-sm font-medium">Dec 20 – Jan 02</p>
-                                                <p class="text-xs text-slate-400">2024–2025</p>
-                                            </td>
-                                            <td class="px-4 py-4">
-                                                <p class="text-sm text-slate-600 truncate max-w-[160px]">Year-end
-                                                    holiday break</p>
-                                            </td>
-                                            <td class="px-4 py-4">
-                                                <div class="flex items-center justify-end gap-2">
-                                                    <button onclick="toggleDetail(4)" id="btn-4"
-                                                        class="review-btn px-3 py-1.5 text-xs font-bold text-primary border border-primary/30 rounded-xl hover:bg-primary/5 transition-colors flex items-center gap-1">
-                                                        <span
-                                                            class="material-symbols-outlined text-[15px]">visibility</span>
-                                                        Review
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <tr id="detail-4" class="detail-row bg-slate-50/60">
-                                            <td colspan="7">
-                                                <div class="detail-inner">
-                                                    <div>
-                                                        <div
-                                                            class="px-6 py-5 grid grid-cols-4 gap-6 border-t border-slate-100">
-                                                            <div class="space-y-3">
-                                                                <h4
-                                                                    class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                                                                    <span
-                                                                        class="material-symbols-outlined text-primary text-[16px]">description</span>Request
-                                                                    Details
-                                                                </h4>
-                                                                <div
-                                                                    class="bg-white rounded-xl p-4 border border-slate-200 space-y-3 text-sm">
-                                                                    <div>
-                                                                        <p class="text-xs text-slate-400 mb-0.5">Full
-                                                                            reason</p>
-                                                                        <p class="text-slate-700">Year-end holiday break
-                                                                            — family trip abroad</p>
-                                                                    </div>
-                                                                    <div class="pt-2 border-t border-slate-100">
-                                                                        <p class="text-xs text-slate-400 mb-0.5">
-                                                                            Submitted</p>
-                                                                        <p class="text-slate-700">Nov 1, 2024 10:00</p>
-                                                                    </div>
-                                                                    <div class="pt-2 border-t border-slate-100">
-                                                                        <p class="text-xs text-slate-400 mb-0.5">Request
-                                                                            ID</p>
-                                                                        <p class="font-mono text-slate-700">#1004</p>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            <div class="space-y-3">
-                                                                <h4
-                                                                    class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                                                                    <span
-                                                                        class="material-symbols-outlined text-emerald-600 text-[16px]">account_balance_wallet</span>Leave
-                                                                    Balance
-                                                                </h4>
-                                                                <div
-                                                                    class="bg-emerald-50 rounded-xl p-4 border border-emerald-200">
-                                                                    <div class="flex justify-between items-center mb-2">
-                                                                        <span
-                                                                            class="text-xs text-emerald-700 font-medium">Current
-                                                                            balance</span><span
-                                                                            class="text-2xl font-black text-emerald-700">14
-                                                                            days</span>
-                                                                    </div>
-                                                                    <div
-                                                                        class="h-2 bg-emerald-200 rounded-full overflow-hidden mb-2">
-                                                                        <div class="h-full bg-emerald-500 rounded-full"
-                                                                            style="width:70%"></div>
-                                                                    </div>
-                                                                    <div class="flex justify-between text-xs"><span
-                                                                            class="text-emerald-700">After
-                                                                            approval</span><span
-                                                                            class="font-bold text-emerald-800">4
-                                                                            days</span></div>
-                                                                </div>
-                                                                <div
-                                                                    class="bg-white rounded-xl p-3 border border-slate-200 text-xs space-y-1.5">
-                                                                    <div class="flex justify-between"><span
-                                                                            class="text-slate-500">Used this
-                                                                            year</span><span class="font-semibold">6
-                                                                            days</span></div>
-                                                                    <div class="flex justify-between"><span
-                                                                            class="text-slate-500">Annual
-                                                                            quota</span><span class="font-semibold">20
-                                                                            days</span></div>
-                                                                </div>
-                                                            </div>
-                                                            <div class="space-y-3">
-                                                                <h4
-                                                                    class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                                                                    <span
-                                                                        class="material-symbols-outlined text-blue-500 text-[16px]">group</span>Team
-                                                                    overlap<span
-                                                                        class="ml-auto px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 text-[10px] font-bold">No
-                                                                        conflict</span>
-                                                                </h4>
-                                                                <div
-                                                                    class="bg-white rounded-xl p-3 border border-slate-200 text-xs text-slate-500 flex items-center justify-center h-20">
-                                                                    Year-end period — most employees on holiday</div>
-                                                            </div>
-                                                            <div class="space-y-3">
-                                                                <h4
-                                                                    class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                                                                    <span
-                                                                        class="material-symbols-outlined text-amber-500 text-[16px]">bolt</span>Quick
-                                                                    Actions
-                                                                </h4>
-                                                                <div class="space-y-2">
-                                                                    <button onclick="handleApprove(4)"
-                                                                        class="w-full px-4 py-3 bg-emerald-500 text-white rounded-xl text-sm font-bold hover:bg-emerald-600 transition-all flex items-center justify-center gap-2"><span
-                                                                            class="material-symbols-outlined text-[18px]">check_circle</span>Approve
-                                                                        Request</button>
-                                                                    <button onclick="openRejectModal(4)"
-                                                                        class="w-full px-4 py-3 bg-rose-500 text-white rounded-xl text-sm font-bold hover:bg-rose-600 transition-all flex items-center justify-center gap-2"><span
-                                                                            class="material-symbols-outlined text-[18px]">cancel</span>Reject
-                                                                        Request</button>
-                                                                    <button
-                                                                        class="w-full px-4 py-2.5 border border-slate-200 text-slate-600 rounded-xl text-sm font-medium hover:bg-slate-50 transition-colors flex items-center justify-center gap-2"><span
-                                                                            class="material-symbols-outlined text-[16px]">person</span>Employee
-                                                                        Profile</button>
-                                                                    <button
-                                                                        class="w-full px-4 py-2.5 border border-slate-200 text-slate-600 rounded-xl text-sm font-medium hover:bg-slate-50 transition-colors flex items-center justify-center gap-2"><span
-                                                                            class="material-symbols-outlined text-[16px]">history</span>Leave
-                                                                        History</button>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        </tr>
-
-                                    </th:block>
-
-                                    <!-- ── DYNAMIC ROWS (Spring backend) ── -->
+                                <!-- ── DYNAMIC ROWS (Spring backend) ── -->
                                     <th:block th:if="${leaveRequests != null and !#lists.isEmpty(leaveRequests)}">
                                         <th:block th:each="req : ${leaveRequests}">
                                             <tr th:id="'row-' + ${req.id}"
                                                 class="hover:bg-slate-50/80 transition-colors data-row"
+                                                th:onclick="|toggleDetail([[${req.id}]])|"
                                                 th:data-name="${#strings.toLowerCase(req.employeeName)}"
                                                 th:data-type="${req.leaveType != null ? #strings.toLowerCase(#strings.replace(#strings.replace(req.leaveType, ' Leave', ''), ' ', '')) : ''}"
                                                 th:data-dept="${req.department != null ? #strings.toLowerCase(req.department) : ''}"
                                                 th:data-priority="${req.priority != null ? #strings.toLowerCase(req.priority) : 'normal'}"
                                                 th:data-status="${req.status != null ? #strings.toLowerCase(req.status) : 'pending'}"
                                                 th:data-id="${req.id}">
-                                                <td class="px-6 py-4">
+                                                <td class="px-6 py-4" onclick="event.stopPropagation()">
                                                     <input type="checkbox"
                                                         th:onchange="|onRowCheck(this,[[${req.id}]])|"
                                                         class="row-check w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary/30 cursor-pointer" />
@@ -1439,26 +585,6 @@
                                                 </td>
                                                 <td class="px-4 py-4 text-sm font-semibold"
                                                     th:text="${req.durationLabel}">5 Days</td>
-                                                
-                                                <!-- Leave Balance Column - Phase 3 -->
-                                                <td class="px-4 py-4">
-                                                    <div class="w-32" th:if="${req.leaveBalancePercentage != null}">
-                                                        <div class="flex justify-between text-xs mb-1">
-                                                            <span class="text-slate-500">Balance</span>
-                                                            <span class="font-bold" 
-                                                                th:classappend="${req.leaveBalancePercentage >= 60 ? 'text-emerald-600' : (req.leaveBalancePercentage >= 30 ? 'text-amber-600' : 'text-rose-600')}"
-                                                                th:text="${req.leaveBalancePercentage + '%'}">60%</span>
-                                                        </div>
-                                                        <div class="leave-balance-bar">
-                                                            <div class="leave-balance-fill" 
-                                                                th:classappend="${req.leaveBalancePercentage >= 60 ? 'bg-emerald-500' : (req.leaveBalancePercentage >= 30 ? 'bg-amber-500' : 'bg-rose-500')}"
-                                                                th:style="'width: ' + ${req.leaveBalancePercentage} + '%'"></div>
-                                                        </div>
-                                                        <p class="text-xs text-slate-500 mt-1" 
-                                                            th:text="${req.leaveBalanceRemaining + ' of ' + req.leaveBalanceTotal + ' days'}">12 of 20 days</p>
-                                                    </div>
-                                                    <span th:unless="${req.leaveBalancePercentage != null}" class="text-xs text-slate-400">N/A</span>
-                                                </td>
                                                 
                                                 <!-- Priority Column - Phase 3 -->
                                                 <td class="px-4 py-4">
@@ -1507,30 +633,13 @@
                                                     </th:block>
                                                 </td>
                                                 
-                                                <td class="px-4 py-4">
-                                                    <div class="flex items-center justify-end gap-2">
-                                                        <span th:if="${req.hasOverlap}" class="overlap-badge">
-                                                            <span
-                                                                class="material-symbols-outlined text-[13px]">warning</span>
-                                                            <span
-                                                                th:text="${req.overlapCount + ' on leave'}">overlap</span>
-                                                        </span>
-                                                        <button th:id="'btn-' + ${req.id}"
-                                                            th:onclick="|toggleDetail([[${req.id}]])|"
-                                                            class="review-btn px-3 py-1.5 text-xs font-bold text-primary border border-primary/30 rounded-xl hover:bg-primary/5 transition-colors flex items-center gap-1">
-                                                            <span
-                                                                class="material-symbols-outlined text-[15px]">visibility</span>
-                                                            Review
-                                                        </button>
-                                                    </div>
-                                                </td>
                                             </tr>
                                             <tr th:id="'detail-' + ${req.id}" class="detail-row bg-slate-50/60">
-                                                <td colspan="8">
+                                                <td colspan="6">
                                                     <div class="detail-inner">
                                                         <div>
                                                             <div
-                                                                class="px-6 py-5 grid grid-cols-4 gap-6 border-t border-slate-100">
+                                                                class="px-6 py-5 grid grid-cols-2 gap-6 border-t border-slate-100">
                                                                 <!-- Request Details -->
                                                                 <div class="space-y-3">
                                                                     <h4
@@ -1566,99 +675,6 @@
                                                                         </div>
                                                                     </div>
                                                                 </div>
-                                                                <!-- Leave Balance -->
-                                                                <div class="space-y-3">
-                                                                    <h4
-                                                                        class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                                                                        <span
-                                                                            class="material-symbols-outlined text-emerald-600 text-[16px]">account_balance_wallet</span>Leave
-                                                                        Balance
-                                                                    </h4>
-                                                                    <div
-                                                                        class="bg-emerald-50 rounded-xl p-4 border border-emerald-200">
-                                                                        <div
-                                                                            class="flex justify-between items-center mb-2">
-                                                                            <span
-                                                                                class="text-xs text-emerald-700 font-medium">Current
-                                                                                balance</span>
-                                                                            <span
-                                                                                class="text-2xl font-black text-emerald-700"
-                                                                                th:text="${req.currentBalance != null ? req.currentBalance + ' days' : '—'}">—</span>
-                                                                        </div>
-                                                                        <div
-                                                                            class="h-2 bg-emerald-200 rounded-full overflow-hidden mb-2">
-                                                                            <div class="h-full bg-emerald-500 rounded-full"
-                                                                                th:style="'width: ' + ${req.currentBalance != null && req.annualQuota != null && req.annualQuota > 0 ? (req.currentBalance * 100 / req.annualQuota) : 0} + '%'">
-                                                                            </div>
-                                                                        </div>
-                                                                        <div class="flex justify-between text-xs"><span
-                                                                                class="text-emerald-700">After
-                                                                                approval</span>
-                                                                            <span class="font-bold text-emerald-800"
-                                                                                th:text="${req.balanceAfterApproval != null ? req.balanceAfterApproval + ' days' : '—'}">—</span>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div
-                                                                        class="bg-white rounded-xl p-3 border border-slate-200 text-xs space-y-1.5">
-                                                                        <div class="flex justify-between"><span
-                                                                                class="text-slate-500">Used this
-                                                                                year</span><span class="font-semibold"
-                                                                                th:text="${req.usedThisYear != null ? req.usedThisYear + ' days' : '—'}">—</span>
-                                                                        </div>
-                                                                        <div class="flex justify-between"><span
-                                                                                class="text-slate-500">Annual
-                                                                                quota</span><span class="font-semibold"
-                                                                                th:text="${req.annualQuota != null ? req.annualQuota + ' days' : '—'}">—</span>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <!-- Team Overlap placeholder (backend sẽ inject data vào đây) -->
-                                                                <div class="space-y-3">
-                                                                    <h4
-                                                                        class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                                                                        <span
-                                                                            class="material-symbols-outlined text-blue-500 text-[16px]">group</span>Team
-                                                                        overlap
-                                                                        <span th:if="${req.hasOverlap}"
-                                                                            class="ml-auto px-1.5 py-0.5 rounded bg-rose-100 text-rose-700 text-[10px] font-bold"
-                                                                            th:text="${req.overlapCount + ' conflict'}">—</span>
-                                                                        <span th:unless="${req.hasOverlap}"
-                                                                            class="ml-auto px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 text-[10px] font-bold">No
-                                                                            conflict</span>
-                                                                    </h4>
-                                                                    
-                                                                    <!-- Request Type Badge -->
-                                                                    <div class="bg-white rounded-xl p-3 border border-slate-200">
-                                                                        <p class="text-xs text-slate-400 mb-2">Request Type</p>
-                                                                        <th:block th:switch="${req.leaveType}">
-                                                                            <span th:case="'Annual Leave'"
-                                                                                class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700"
-                                                                                th:text="${req.leaveType}">Annual Leave</span>
-                                                                            <span th:case="'Sick Leave'"
-                                                                                class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-700"
-                                                                                th:text="${req.leaveType}">Sick Leave</span>
-                                                                            <span th:case="'Personal Leave'"
-                                                                                class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700"
-                                                                                th:text="${req.leaveType}">Personal Leave</span>
-                                                                            <span th:case="'Maternity Leave'"
-                                                                                class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-pink-100 text-pink-700"
-                                                                                th:text="${req.leaveType}">Maternity Leave</span>
-                                                                            <span th:case="*"
-                                                                                class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700"
-                                                                                th:text="${req.leaveType != null ? req.leaveType : 'Other'}">Other</span>
-                                                                        </th:block>
-                                                                    </div>
-                                                                    
-                                                                    <!-- Overlap Info -->
-                                                                    <div
-                                                                        class="bg-white rounded-xl p-3 border border-slate-200 text-xs text-slate-500 min-h-[60px] flex items-center justify-center">
-                                                                        <span th:if="${req.overlapEmployees != null}"
-                                                                            th:text="${req.overlapEmployees}">—</span>
-                                                                        <span
-                                                                            th:unless="${req.overlapEmployees != null}">No
-                                                                            overlap data available</span>
-                                                                    </div>
-                                                                </div>
                                                                 <!-- Quick Actions -->
                                                                 <div class="space-y-3">
                                                                     <h4
@@ -1667,14 +683,6 @@
                                                                             class="material-symbols-outlined text-amber-500 text-[16px]">bolt</span>Quick
                                                                         Actions
                                                                     </h4>
-                                                                    <div th:if="${req.hasOverlap}"
-                                                                        class="flex items-start gap-2 p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700">
-                                                                        <span
-                                                                            class="material-symbols-outlined text-[14px] shrink-0 mt-0.5">warning</span>
-                                                                        <span
-                                                                            th:text="${req.overlapCount + ' team member(s) on leave during this period.'}">overlap
-                                                                            warning</span>
-                                                                    </div>
                                                                     <div class="space-y-2">
                                                                         <!-- Approve button (PENDING only) -->
                                                                         <button th:if="${req.status == 'PENDING'}"
@@ -1704,23 +712,6 @@
                                                                                 class="material-symbols-outlined text-[18px]">undo</span>Revert
                                                                             to Pending
                                                                         </button>
-                                                                        
-                                                                        <button onclick="openEmployeeProfile()"
-                                                                            class="w-full px-4 py-2.5 border border-slate-200 text-slate-600 rounded-xl text-sm font-medium hover:bg-slate-50 transition-colors flex items-center justify-center gap-2">
-                                                                            <span
-                                                                                class="material-symbols-outlined text-[16px]">person</span>Employee
-                                                                            Profile
-                                                                        </button>
-                                                                        
-                                                                        <button 
-                                                                            th:data-employee-id="${req.employeeId}"
-                                                                            th:data-employee-name="${req.employeeName}"
-                                                                            onclick="openLeaveHistory(this)"
-                                                                            class="w-full px-4 py-2.5 border border-slate-200 text-slate-600 rounded-xl text-sm font-medium hover:bg-slate-50 transition-colors flex items-center justify-center gap-2">
-                                                                            <span
-                                                                                class="material-symbols-outlined text-[16px]">history</span>Leave
-                                                                            History
-                                                                        </button>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -1734,7 +725,7 @@
                                 </tbody>
                             </table>
 
-                            <!-- Empty state -->
+                            <!-- Empty state for filtered results -->
                             <div id="empty-state" class="hidden py-16 text-center">
                                 <span
                                     class="material-symbols-outlined text-slate-300 text-5xl block mb-3">search_off</span>
@@ -1794,7 +785,7 @@
                         <span class="material-symbols-outlined text-rose-600">cancel</span>
                     </div>
                     <div>
-                        <h3 class="text-base font-bold text-slate-900">Reject Leave Request</h3>
+                        <h3 class="text-base font-bold text-slate-900">Reject Request</h3>
                         <p class="text-xs text-slate-500 mt-0.5" id="reject-modal-subtitle">Please provide a reason</p>
                     </div>
                 </div>
@@ -1804,7 +795,7 @@
                     <label class="block text-xs font-bold text-slate-600 mb-2">Rejection reason <span
                             class="text-rose-500">*</span></label>
                     <textarea id="reject-reason" rows="4"
-                        placeholder="e.g. Insufficient leave balance, critical project deadline, team coverage issue..."
+                        placeholder="e.g. Insufficient budget, policy violation, incomplete information, timing not appropriate..."
                         class="w-full px-4 py-3 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-rose-400 resize-none transition-all"></textarea>
                     <p class="text-xs text-slate-400 mt-1">This reason will be sent to the employee via email
                         notification.</p>
@@ -1813,18 +804,18 @@
                 <div>
                     <p class="text-xs text-slate-400 mb-2 font-medium">Quick select:</p>
                     <div class="flex flex-wrap gap-2">
-                        <button onclick="setReason('Insufficient leave balance remaining')"
+                        <button onclick="setReason('Insufficient budget allocation for this request')"
                             class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:border-rose-300 hover:bg-rose-50 transition-all">Insufficient
-                            balance</button>
-                        <button onclick="setReason('Critical project deadline during requested period')"
-                            class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:border-rose-300 hover:bg-rose-50 transition-all">Project
-                            deadline</button>
-                        <button onclick="setReason('Team coverage issue — too many members on leave')"
-                            class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:border-rose-300 hover:bg-rose-50 transition-all">Team
-                            coverage</button>
-                        <button onclick="setReason('Incomplete documentation provided')"
+                            budget</button>
+                        <button onclick="setReason('Request does not comply with company policy')"
+                            class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:border-rose-300 hover:bg-rose-50 transition-all">Policy
+                            violation</button>
+                        <button onclick="setReason('Incomplete information or documentation provided')"
                             class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:border-rose-300 hover:bg-rose-50 transition-all">Incomplete
-                            docs</button>
+                            info</button>
+                        <button onclick="setReason('Timing is not appropriate at this moment')"
+                            class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:border-rose-300 hover:bg-rose-50 transition-all">Bad
+                            timing</button>
                     </div>
                 </div>
             </div>
@@ -1966,49 +957,20 @@
                    '</span>';
         }
 
-        // ── Get Leave Balance HTML - Phase 3 ──────────────────────────
-        function getLeaveBalanceHTML(percentage, remaining, total) {
-            if (!percentage && percentage !== 0) percentage = 0;
-            if (!remaining && remaining !== 0) remaining = 0;
-            if (!total) total = 20;
-            
-            var color = percentage >= 60 ? 'emerald' : percentage >= 30 ? 'amber' : 'rose';
-            
-            return '<div class="w-32">' +
-                   '<div class="flex justify-between text-xs mb-1">' +
-                   '<span class="text-slate-500">Balance</span>' +
-                   '<span class="font-bold text-' + color + '-600">' + percentage + '%</span>' +
-                   '</div>' +
-                   '<div class="leave-balance-bar">' +
-                   '<div class="leave-balance-fill bg-' + color + '-500" style="width: ' + percentage + '%"></div>' +
-                   '</div>' +
-                   '<p class="text-xs text-slate-500 mt-1">' + remaining + ' of ' + total + ' days</p>' +
-                   '</div>';
-        }
-
         // ── Expand / Collapse row ─────────────────────────────────────
         function toggleDetail(id) {
             var detailRow = document.getElementById('detail-' + id);
-            var btn = document.getElementById('btn-' + id);
-            if (!detailRow || !btn) return;
+            if (!detailRow) return;
             var isExpanded = detailRow.classList.contains('expanded');
 
+            // Close all other expanded rows
             document.querySelectorAll('.detail-row.expanded').forEach(function (row) {
                 row.classList.remove('expanded');
             });
-            document.querySelectorAll('[id^="btn-"]').forEach(function (b) {
-                b.innerHTML = '<span class="material-symbols-outlined text-[15px]">visibility</span> Review';
-                b.classList.remove('bg-primary', 'text-white', 'border-primary');
-                b.classList.add('text-primary', 'border', 'border-primary/30');
-                window.hydrateAppIcons?.(b);
-            });
 
+            // Toggle current row
             if (!isExpanded) {
                 detailRow.classList.add('expanded');
-                btn.innerHTML = '<span class="material-symbols-outlined text-[15px]">visibility_off</span> Close';
-                btn.classList.add('bg-primary', 'text-white');
-                btn.classList.remove('border', 'border-primary/30');
-                window.hydrateAppIcons?.(btn);
             }
         }
 
@@ -2227,7 +1189,7 @@
                     var ids = Array.from(selectedIds);
                     
                     // Use AJAX instead of form submit
-                    fetch('/hrmanager/leave-approval/bulk-approve', {
+                    fetch('/hrmanager/request-approval/bulk-approve', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -2333,7 +1295,7 @@
             
             var form = document.createElement('form');
             form.method = 'POST';
-            form.action = '/hrmanager/leave-approval/approve';
+            form.action = '/hrmanager/request-approval/approve';
             appendHidden(form, 'requestId', id);
             appendHidden(form, 'approverId', 1);
             appendCsrf(form);
@@ -2422,13 +1384,13 @@
 
             if (rejectTargetId === '__bulk__') {
                 closeRejectModal();
-                submitBulkAction('/hrmanager/leave-approval/bulk-reject', Array.from(selectedIds), reason);
+                submitBulkAction('/hrmanager/request-approval/bulk-reject', Array.from(selectedIds), reason);
                 return;
             }
 
             var form = document.createElement('form');
             form.method = 'POST';
-            form.action = '/hrmanager/leave-approval/reject';
+            form.action = '/hrmanager/request-approval/reject';
             appendHidden(form, 'requestId', rejectTargetId);
             appendHidden(form, 'approverId', 1);
             appendHidden(form, 'rejectedReason', reason);

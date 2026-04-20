@@ -71,6 +71,20 @@ public class ApprovalWorkflowService {
             currentStep = WorkflowConstants.STEP_WAITING_DM;
         }
         
+        // Check if this is an ATTENDANCE request (leave requests)
+        // Safely check category to avoid lazy loading issues
+        boolean isAttendanceRequest = false;
+        try {
+            if (request.getRequestType() != null) {
+                String category = request.getRequestType().getCategory();
+                isAttendanceRequest = "ATTENDANCE".equals(category);
+            }
+        } catch (Exception e) {
+            // If lazy loading fails, assume it's not an attendance request
+            // This is safe because non-ATTENDANCE requests should go to HRM anyway
+            isAttendanceRequest = false;
+        }
+        
         // Move to next step
         switch (currentStep) {
             case WorkflowConstants.STEP_WAITING_DM:
@@ -80,19 +94,28 @@ public class ApprovalWorkflowService {
                 break;
                 
             case WorkflowConstants.STEP_WAITING_HR:
-                request.setStep(WorkflowConstants.STEP_DONE);
-                request.setStatus(WorkflowConstants.STATUS_APPROVED);
-                request.setApprovedAt(LocalDateTime.now());
-                request.setApprovedBy(approverId);
-                saveHistory(request.getId(), approverId, "APPROVED_BY_HR", "Approved by HR (Final)");
+                // ATTENDANCE requests (leave): HR gives final approval
+                // Non-ATTENDANCE requests: Move to HR Manager for final approval
+                if (isAttendanceRequest) {
+                    request.setStep(WorkflowConstants.STEP_COMPLETED);
+                    request.setStatus(WorkflowConstants.STATUS_APPROVED);
+                    request.setApprovedAt(LocalDateTime.now());
+                    request.setApprovedBy(approverId);
+                    saveHistory(request.getId(), approverId, "APPROVED_BY_HR", "Approved by HR (Final)");
+                } else {
+                    request.setStep(WorkflowConstants.STEP_WAITING_HRM);
+                    request.setStatus(WorkflowConstants.STATUS_PENDING);
+                    saveHistory(request.getId(), approverId, "APPROVED_BY_HR", "Approved by HR");
+                }
                 break;
                 
             case WorkflowConstants.STEP_WAITING_HRM:
+                // HR Manager gives final approval for non-ATTENDANCE requests
                 request.setStep(WorkflowConstants.STEP_COMPLETED);
                 request.setStatus(WorkflowConstants.STATUS_APPROVED);
                 request.setApprovedAt(LocalDateTime.now());
                 request.setApprovedBy(approverId);
-                saveHistory(request.getId(), approverId, "APPROVED_BY_HRM", "Approved by HR Manager");
+                saveHistory(request.getId(), approverId, "APPROVED_BY_HRM", "Approved by HR Manager (Final)");
                 break;
                 
             default:
