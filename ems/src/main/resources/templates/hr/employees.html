@@ -82,45 +82,6 @@
                                 </option>
                             </select>
                         </label>
-                        <!-- Combined Skill Filter -->
-                        <details class="relative group" id="skillDropdown" th:open="${(skillIds != null and !skillIds.isEmpty()) or (minProficiency != null)}">
-                            <summary class="list-none flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 py-1.5 shadow-sm text-sm text-slate-600 font-medium hover:bg-slate-50 transition-colors focus:outline-none cursor-pointer"
-                                     th:classappend="${(skillIds != null and !skillIds.isEmpty()) or (minProficiency != null) ? '!border-primary !text-primary bg-primary/5' : ''}">
-                                <span th:if="${skillIds == null or skillIds.isEmpty()}">All Skills</span>
-                                <span th:if="${skillIds != null and !skillIds.isEmpty()}" class="font-bold">
-                                    Skills (<span th:text="${skillIds.size()}">0</span>) 
-                                    <span th:if="${minProficiency != null}">- Lvl <span th:text="${minProficiency}"></span>+</span>
-                                </span>
-                                <span class="material-symbols-outlined text-slate-400 text-[18px]" th:classappend="${(skillIds != null and !skillIds.isEmpty()) or (minProficiency != null) ? '!text-primary' : ''}">expand_more</span>
-                            </summary>
-                            <!-- Dropdown Panel -->
-                            <div class="absolute top-full mt-2 left-0 w-64 bg-white rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] border border-slate-100 p-4 z-50">
-                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Required Skills (Multi-select)</p>
-                                <div class="mb-2 relative">
-                                    <span class="material-symbols-outlined absolute left-2 top-1.5 text-slate-400 text-[16px]">search</span>
-                                    <input type="text" id="skillSearchInput" onkeyup="filterSkills()" placeholder="Search skills..." 
-                                        class="w-full text-xs border-slate-200 rounded-lg pl-7 pr-2 py-1.5 focus:ring-primary focus:border-primary shadow-sm bg-slate-50 text-slate-600 placeholder-slate-400">
-                                </div>
-                                <div class="max-h-40 overflow-y-auto space-y-1 mb-3 custom-scrollbar pr-2" id="skillCheckboxContainer">
-                                    <label th:each="s : ${skills}" class="skill-label-item flex items-center gap-2 text-sm text-slate-700 cursor-pointer hover:bg-slate-50 p-1.5 rounded-lg border border-transparent hover:border-slate-100 transition-colors">
-                                        <input type="checkbox" name="skillIds" th:value="${s.id}" 
-                                            th:checked="${skillIds != null and skillIds.contains(s.id)}"
-                                            class="rounded border-slate-300 text-primary focus:ring-primary shadow-sm bg-white">
-                                        <span th:text="${s.name}" class="font-medium skill-name-text"></span>
-                                    </label>
-                                </div>
-                                <hr class="border-slate-100 my-3" />
-                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Minimum Level</p>
-                                <select name="minProficiency" class="w-full text-sm border-slate-200 rounded-lg focus:ring-primary focus:border-primary px-3 py-1.5 bg-slate-50 text-slate-600 font-bold shadow-inner">
-                                    <option value="" th:selected="${minProficiency == null}">Any Level</option>
-                                    <option value="1" th:selected="${minProficiency == 1}">Level 1 (Beginner)</option>
-                                    <option value="2" th:selected="${minProficiency == 2}">Level 2</option>
-                                    <option value="3" th:selected="${minProficiency == 3}">Level 3</option>
-                                    <option value="4" th:selected="${minProficiency == 4}">Level 4</option>
-                                    <option value="5" th:selected="${minProficiency == 5}">Level 5 (Expert)</option>
-                                </select>
-                            </div>
-                        </details>
                         <button type="submit"
                             class="flex items-center gap-1.5 bg-primary text-white px-4 py-1.5 rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors shadow-sm shadow-primary/30">
                             <span class="material-symbols-outlined text-[16px]">filter_alt</span>
@@ -144,8 +105,7 @@
                                 <option value="hireDate:desc" th:selected="${sort == 'hireDate:desc'}">Latest Joiners</option>
                                 <option value="hireDate:asc" th:selected="${sort == 'hireDate:asc'}">Oldest Joiners</option>
                                 <option value="name:asc" th:selected="${sort == 'name:asc'}">Name (A-Z)</option>
-                                <option value="proficiency:desc" th:selected="${sort == 'proficiency:desc'}">Proficiency (Low-High)</option>
-                                <option value="proficiency:asc" th:selected="${sort == 'proficiency:asc'}">Proficiency (High-Low)</option>
+                                <option value="name:desc" th:selected="${sort == 'name:desc'}">Name (Z-A)</option>
                             </select>
                         </div>
                     </div>
@@ -193,17 +153,6 @@
                                     th:text="${emp.status}">Inactive</span>
                             </div>
                             
-                            <!-- Skills Display -->
-                            <div th:if="${emp.skills != null and !emp.skills.isEmpty()}" class="pt-3 mt-3 border-t border-slate-50 flex flex-wrap gap-1">
-                                <span th:each="skill, iterStat : ${emp.skills}" 
-                                      th:if="${iterStat.index < 3}"
-                                      th:title="${skill}"
-                                      class="text-[10px] bg-indigo-50 text-indigo-600 border border-indigo-100/50 px-2 py-0.5 rounded-md font-medium"
-                                      th:text="${skill}">Skill</span>
-                                <span th:if="${emp.skills.size() > 3}" 
-                                      class="text-[10px] bg-slate-100 text-slate-500 border border-slate-200 px-2 py-0.5 rounded-md font-bold"
-                                      th:text="'+' + (${emp.skills.size()} - 3)">+2</span>
-                            </div>
                         </div>
                     </div>
 
@@ -220,7 +169,7 @@
                 <div th:if="${totalPages > 1}" class="mt-8 flex justify-center anim anim-1">
                     <div class="flex items-center gap-1 bg-white border border-slate-100 p-1 rounded-xl shadow-sm">
                         <a th:if="${currentPage > 0}"
-                            th:href="@{/hr/employees(page=${currentPage - 1}, search=${search}, department=${department}, status=${status}, skillIds=${skillIds}, minProficiency=${minProficiency}, sort=${sort})}"
+                            th:href="@{/hr/employees(page=${currentPage - 1}, search=${search}, department=${department}, status=${status}, sort=${sort})}"
                             class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-50 hover:text-slate-600">
                             <span class="material-symbols-outlined text-[18px]">chevron_left</span>
                         </a>
@@ -234,7 +183,7 @@
                                 class="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold bg-primary text-white"
                                 th:text="${i + 1}">1</a>
                             <a th:if="${i != currentPage and (i == 0 or i == totalPages - 1 or (i >= currentPage - 2 and i <= currentPage + 2))}"
-                                th:href="@{/hr/employees(page=${i}, search=${search}, department=${department}, status=${status}, skillIds=${skillIds}, minProficiency=${minProficiency}, sort=${sort})}"
+                                th:href="@{/hr/employees(page=${i}, search=${search}, department=${department}, status=${status}, sort=${sort})}"
                                 th:text="${i + 1}"
                                 class="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors">1</a>
                             <span
@@ -243,7 +192,7 @@
                         </th:block>
 
                         <a th:if="${currentPage < totalPages - 1}"
-                            th:href="@{/hr/employees(page=${currentPage + 1}, search=${search}, department=${department}, status=${status}, skillIds=${skillIds}, minProficiency=${minProficiency}, sort=${sort})}"
+                            th:href="@{/hr/employees(page=${currentPage + 1}, search=${search}, department=${department}, status=${status}, sort=${sort})}"
                             class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-50 hover:text-slate-600">
                             <span class="material-symbols-outlined text-[18px]">chevron_right</span>
                         </a>
@@ -294,7 +243,7 @@
                 <div class="border-b border-slate-100 flex">
                     <button onclick="switchTab('info')"
                         class="modal-tab active flex-1 py-3 text-xs font-bold uppercase tracking-wider text-center transition-colors"
-                        id="tab-info">Basic Info & Skills</button>
+                        id="tab-info">Basic Info</button>
                     <button onclick="switchTab('job')"
                         class="modal-tab flex-1 py-3 text-xs font-bold uppercase tracking-wider text-center text-slate-400 transition-colors"
                         id="tab-job">Job & Salary</button>
@@ -305,7 +254,7 @@
 
                 <!-- Tab Content -->
                 <div class="p-6 max-h-[340px] overflow-y-auto">
-                    <!-- Info Tab: Basic Info + Personal + Skills -->
+                    <!-- Info Tab: Basic Info + Personal -->
                     <div id="content-info" class="tab-content active space-y-4">
                         <div class="grid grid-cols-2 gap-4">
                             <!-- Left Column: Work Info -->
@@ -323,13 +272,6 @@
                                 <div class="flex justify-between gap-2 text-sm"><span class="text-slate-400 whitespace-nowrap">Phone</span><span id="detPhone" class="font-semibold text-slate-700 text-right">-</span></div>
                                 <div class="flex justify-between gap-2 text-sm"><span class="text-slate-400 whitespace-nowrap">Username</span><span id="detUser" class="font-semibold text-slate-700 font-mono text-right">-</span></div>
                             </div>
-                        </div>
-                        <hr class="my-4 border-slate-100" />
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Skills Profiling</p>
-                        <div id="skillsList" class="flex flex-wrap gap-2"></div>
-                        <div id="noSkills" class="hidden text-center py-4 bg-slate-50 rounded-xl border border-slate-100">
-                             <span class="material-symbols-outlined text-slate-300 text-2xl">inventory_2</span>
-                             <p class="text-xs text-slate-400 font-medium">No recorded skills</p>
                         </div>
                     </div>
 
@@ -486,35 +428,6 @@
                             monthInput.value = currentMonthStr;
                         }
 
-                        // Skills
-                        const skillsContainer = document.getElementById('skillsList');
-                        const noSkills = document.getElementById('noSkills');
-                        skillsContainer.innerHTML = '';
-                        
-                        if (d.skills && d.skills.length > 0) {
-                            noSkills.classList.add('hidden');
-                            d.skills.forEach(s => {
-                                const badge = document.createElement('div');
-                                badge.className = 'group/skill flex items-center gap-2 bg-slate-50 border border-slate-100 rounded-xl px-2 py-1.5 transition-all hover:bg-white hover:border-primary/20 hover:shadow-sm w-[48%]';
-                                
-                                let colorClass = 'bg-slate-400';
-                                if (s.proficiency >= 5) colorClass = 'bg-emerald-500';
-                                else if (s.proficiency >= 4) colorClass = 'bg-blue-500';
-                                else if (s.proficiency >= 3) colorClass = 'bg-amber-500';
-                                else if (s.proficiency >= 2) colorClass = 'bg-indigo-500';
-                                
-                                badge.innerHTML = `
-                                    <div class="w-1.5 h-6 rounded-full ${colorClass} opacity-70 group-hover/skill:opacity-100 transition-opacity"></div>
-                                    <div class="overflow-hidden">
-                                        <p class="text-[10px] font-black text-slate-800 leading-none truncate">${s.name}</p>
-                                        <p class="text-[8px] text-slate-400 font-bold uppercase tracking-tighter mt-0.5 truncate">${s.category} • Lv ${s.proficiency}</p>
-                                    </div>
-                                `;
-                                skillsContainer.appendChild(badge);
-                            });
-                        } else {
-                            noSkills.classList.remove('hidden');
-                        }
 
                         // Performance Reviews
                         const perfList = document.getElementById('perfList');
@@ -606,34 +519,12 @@
 
 
 
-            function filterSkills() {
-                const searchStr = document.getElementById('skillSearchInput').value.toLowerCase();
-                const labels = document.querySelectorAll('#skillCheckboxContainer .skill-label-item');
-                labels.forEach(label => {
-                    const text = label.querySelector('.skill-name-text').textContent.toLowerCase();
-                    if (text.includes(searchStr)) {
-                        label.style.display = 'flex';
-                    } else {
-                        label.style.display = 'none';
-                    }
-                });
-            }
 
             // Close modal on backdrop click
             document.getElementById('empModal').addEventListener('click', function (e) {
                 if (e.target === this) closeModal();
             });
 
-            // Close skill dropdown when clicking outside
-            document.addEventListener('click', function(e) {
-                const details = document.getElementById('skillDropdown');
-                if (details && details.hasAttribute('open') && !details.contains(e.target)) {
-                    // Do not close if clicking inside the search input
-                    if (e.target.id !== 'skillSearchInput') {
-                        details.removeAttribute('open');
-                    }
-                }
-            });
 
             // Check for viewId to auto-open modal
             window.addEventListener('DOMContentLoaded', () => {

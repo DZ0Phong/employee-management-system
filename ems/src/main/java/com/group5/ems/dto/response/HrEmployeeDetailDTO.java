@@ -35,9 +35,6 @@ public record HrEmployeeDetailDTO(
         LocalDate contractEnd,
         String contractStatus,
 
-        // Skills
-        java.util.List<HrEmployeeSkillDTO> skills,
-
         // Reports & Records
         java.util.List<HrEmployeePerformanceDTO> performanceReviews,
         java.util.List<HrEmployeeDisciplineDTO> disciplines

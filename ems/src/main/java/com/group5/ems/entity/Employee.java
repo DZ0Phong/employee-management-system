@@ -93,8 +93,6 @@ public class Employee {
     @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Request> requests = new ArrayList<>();
 
-    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<EmployeeSkill> employeeSkills = new ArrayList<>();
 
     @PrePersist
     protected void onCreate() {
@@ -159,7 +157,5 @@ public class Employee {
     public void setEmployeeBenefits(List<EmployeeBenefit> employeeBenefits) { this.employeeBenefits = employeeBenefits; }
     public List<Request> getRequests() { return requests; }
     public void setRequests(List<Request> requests) { this.requests = requests; }
-    public List<EmployeeSkill> getEmployeeSkills() { return employeeSkills; }
-    public void setEmployeeSkills(List<EmployeeSkill> employeeSkills) { this.employeeSkills = employeeSkills; }
 }
 

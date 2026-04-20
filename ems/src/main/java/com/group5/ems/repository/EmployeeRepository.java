@@ -49,45 +49,6 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long>, JpaSp
     @Query("SELECT AVG(DATEDIFF(CURRENT_DATE, e.hireDate)) FROM Employee e WHERE e.status = 'ACTIVE' AND e.hireDate IS NOT NULL")
     Double getAverageTenureInDays();
 
-    @Query(value = """
-            SELECT e FROM Employee e 
-            LEFT JOIN e.user u 
-            LEFT JOIN e.department d 
-            LEFT JOIN e.position p
-            WHERE (:search IS NULL OR LOWER(u.fullName) LIKE LOWER(CONCAT('%',:search,'%')) 
-                OR LOWER(e.employeeCode) LIKE LOWER(CONCAT('%',:search,'%')) 
-                OR LOWER(u.email) LIKE LOWER(CONCAT('%',:search,'%'))) 
-            AND (:department IS NULL OR d.name = :department) 
-            AND (:status IS NULL OR e.status = :status)
-            AND (:skillIdCount = 0 OR e.id IN (
-                SELECT es.employee.id FROM EmployeeSkill es 
-                WHERE es.skillId IN :skillIds 
-                AND es.proficiency >= :minProficiency
-            ))
-            """,
-            countQuery = """
-            SELECT COUNT(e) FROM Employee e 
-            LEFT JOIN e.user u 
-            LEFT JOIN e.department d 
-            LEFT JOIN e.position p
-            WHERE (:search IS NULL OR LOWER(u.fullName) LIKE LOWER(CONCAT('%',:search,'%')) 
-                OR LOWER(e.employeeCode) LIKE LOWER(CONCAT('%',:search,'%')) 
-                OR LOWER(u.email) LIKE LOWER(CONCAT('%',:search,'%'))) 
-            AND (:department IS NULL OR d.name = :department) 
-            AND (:status IS NULL OR e.status = :status)
-            AND (:skillIdCount = 0 OR e.id IN (
-                SELECT es.employee.id FROM EmployeeSkill es 
-                WHERE es.skillId IN :skillIds 
-                AND es.proficiency >= :minProficiency
-            ))
-            """)
-    Page<Employee> searchEmployees(@Param("search") String search,
-                                   @Param("department") String department,
-                                   @Param("status") String status,
-                                   @Param("skillIds") List<Long> skillIds,
-                                   @Param("skillIdCount") Integer skillIdCount,
-                                   @Param("minProficiency") Integer minProficiency,
-                                   Pageable pageable);
        @Query("SELECT AVG(DATEDIFF(:date, e.hireDate)) FROM Employee e " +
                      "WHERE e.status = 'ACTIVE' AND e.hireDate IS NOT NULL AND e.hireDate <= :date")
        Double getAverageTenureInDaysAtDate(@Param("date") LocalDate date);

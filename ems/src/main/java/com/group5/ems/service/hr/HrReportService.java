@@ -451,7 +451,7 @@ public class HrReportService {
 
         if ("employees".equalsIgnoreCase(dataSource)) {
             HrEmployeeService empService = applicationContext.getBean(HrEmployeeService.class);
-            org.springframework.data.domain.Page<HrEmployeeDTO> page = empService.searchEmployees(null, null, null, null, null, PageRequest.of(0, 10000));
+            org.springframework.data.domain.Page<HrEmployeeDTO> page = empService.searchEmployees(null, null, null, PageRequest.of(0, 10000));
             for (HrEmployeeDTO emp : page.getContent()) {
                 // Date filtering is skipped for employees as hireDate is not available in HrEmployeeDTO
                 rows.add(extractEmployeeColumns(emp, columns));
@@ -561,7 +561,6 @@ public class HrReportService {
                 case "phone" -> emp.phone();
                 case "department" -> emp.department();
                 case "position" -> emp.position();
-                case "skills" -> emp.skills() != null ? String.join(", ", emp.skills()) : "";
                 case "status" -> emp.status();
                 default -> "";
             });

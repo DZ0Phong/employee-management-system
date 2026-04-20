@@ -50,7 +50,6 @@ import com.group5.ems.repository.DepartmentRepository;
 import com.group5.ems.repository.EmployeeRepository;
 import com.group5.ems.repository.JobPostRepository;
 import com.group5.ems.repository.PositionRepository;
-import com.group5.ems.repository.SkillRepository;
 import com.group5.ems.repository.UserRepository;
 import com.group5.ems.service.admin.AdminService;
 import com.group5.ems.service.external.VietQrApiClient;
@@ -110,7 +109,6 @@ public class HrController {
     private final HrReportService reportService;
     private final LogService logService;
     private final TemplateEngine templateEngine;
-    private final SkillRepository skillRepository;
     // private final HrCalendarService calendarService;
 
     @GetMapping({ "", "/", "/dashboard" })
@@ -140,8 +138,6 @@ public class HrController {
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String department,
             @RequestParam(required = false) String status,
-            @RequestParam(required = false) List<Long> skillIds,
-            @RequestParam(required = false) Integer minProficiency,
             @RequestParam(defaultValue = "hireDate:desc") String sort,
             @RequestParam(required = false) String tab,
             @RequestParam(required = false) String obSearch,
@@ -158,13 +154,12 @@ public class HrController {
 
         String sortField = switch (sortBy) {
             case "name" -> "user.fullName";
-            case "proficiency" -> "proficiency";
             default -> "hireDate";
         };
         Sort.Direction sortDirection = "asc".equalsIgnoreCase(direction) ? Sort.Direction.ASC : Sort.Direction.DESC;
         Pageable pageable = PageRequest.of(page, EMPLOYEE_PAGE_SIZE, Sort.by(sortDirection, sortField));
         
-        Page<HrEmployeeDTO> employeePage = employeeService.searchEmployees(search, department, status, skillIds, minProficiency, pageable);
+        Page<HrEmployeeDTO> employeePage = employeeService.searchEmployees(search, department, status, pageable);
 
         model.addAttribute("employees", employeePage.getContent());
         model.addAttribute("currentPage", page);
@@ -173,11 +168,8 @@ public class HrController {
         model.addAttribute("search", search);
         model.addAttribute("department", department);
         model.addAttribute("status", status);
-        model.addAttribute("skillIds", skillIds);
-        model.addAttribute("minProficiency", minProficiency);
         model.addAttribute("sort", sort);
 
-        model.addAttribute("skills", skillRepository.findAll());
         model.addAttribute("departments", departmentRepository.findAll());
 
         // ── Onboarding Tracker Tab ────────────────────
@@ -205,7 +197,7 @@ public class HrController {
     @ResponseBody
     public ResponseEntity<List<HrEmployeeDTO>> searchEmployeesApi(@RequestParam String q) {
         Pageable pageable = PageRequest.of(0, 5);
-        Page<HrEmployeeDTO> page = employeeService.searchEmployees(q, null, null, null, null, pageable);
+        Page<HrEmployeeDTO> page = employeeService.searchEmployees(q, null, null, pageable);
         return ResponseEntity.ok(page.getContent());
     }
 
