@@ -562,7 +562,7 @@
         }
 
         /* Assign modal layout */
-        /* Ã¢â€â‚¬Ã¢â€â‚¬ My Interviews Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
+        /* Ã¢â€â‚══════════════â€â‚¬ My Interviews Ã¢â€â‚══════════════â€â‚══════════════â€â‚══════════════â€â‚══════════════â€â‚══════════════â€â‚══════════════â€â‚══════════════â€â‚══════════════â€â‚══════════════â€â‚══════════════â€â‚══════════════â€â‚══════════════â€â‚══════════════â€â‚══════════════â€â‚══════════════â€â‚══════════════â€â‚══════════════â€â‚══════════════â€â‚══════════════â€â‚══════════════â€â‚══════════════â€â‚══════════════â€â‚══════════════â€â‚══════════════â€â‚══════════════â€â‚══════════════â€â‚══════════════â€â‚══════════════â€â‚══════════════â€â‚══════════════â€â‚══════════════â€â‚══════════════â€â‚══════════════â€â‚══════════════â€â‚¬ */
         .iv-scheduled {
             background: #dbeafe;
             color: #1d4ed8;
@@ -761,7 +761,7 @@
             <div class="flex-1 overflow-y-auto p-8 dot-grid">
                 <div class="max-w-7xl mx-auto space-y-6">
 
-                    <!-- Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â TAB: PIPELINE Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â -->
+                    <!-- ══════════ TAB: PIPELINE ══════════ -->
                     <div id="section-pipeline">
 
                         <!-- Active Jobs -->
@@ -827,7 +827,7 @@
                                             th:data-job-benefits="${job.benefits ?: ''}"
                                             onclick="openJobDetail(this.dataset)"
                                             class="text-[11px] font-semibold text-primary hover:underline">
-                                            View Details Ã¢â€ â€™
+                                            View Details →
                                         </button>
                                     </div>
                                 </div>
@@ -939,7 +939,7 @@
                                             <!-- Date -->
                                             <td class="px-5 py-4">
                                                 <span class="text-xs text-slate-500"
-                                                    th:text="${app.appliedDateFormatted}">Ã¢â‚¬â€</span>
+                                                    th:text="${app.appliedDateFormatted}">—</span>
                                             </td>
                                             <!-- Stage -->
                                             <td class="px-5 py-4">
@@ -956,9 +956,9 @@
                                             <td class="px-5 py-4">
                                                 <span th:if="${app.yearsExperience != null}"
                                                     class="text-xs text-slate-500"
-                                                    th:text="${app.yearsExperience + ' yr' + (app.yearsExperience != 1 ? 's' : '')}">Ã¢â‚¬â€</span>
+                                                    th:text="${app.yearsExperience + ' yr' + (app.yearsExperience != 1 ? 's' : '')}">—</span>
                                                 <span th:if="${app.yearsExperience == null}"
-                                                    class="text-xs text-slate-300">Ã¢â‚¬â€</span>
+                                                    class="text-xs text-slate-300">—</span>
                                             </td>
                                             <!-- Interviewers -->
                                             <td class="px-5 py-4">
@@ -998,13 +998,13 @@
                             <div id="paginationBar"
                                 class="p-4 border-t border-slate-100 flex items-center justify-between flex-wrap gap-3"
                                 style="display:none!important;">
-                                <p class="text-xs text-slate-400" id="pageInfo">Showing 0Ã¢â‚¬â€œ0 of 0</p>
+                                <p class="text-xs text-slate-400" id="pageInfo">Showing 0–0 of 0</p>
                                 <div class="flex items-center gap-1" id="pageButtons"></div>
                             </div>
                         </div>
                     </div><!-- /section-pipeline -->
 
-                    <!-- Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â TAB: JOB POST REQUESTS Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â -->
+                    <!-- ══════════ TAB: JOB POST REQUESTS ══════════ -->
                     <div id="section-requests" class="hidden">
 
                         <!-- Stats bar -->
@@ -1104,7 +1104,7 @@
                                                 <p class="text-xs text-slate-500 flex items-center gap-1 flex-wrap">
                                                     <span class="material-symbols-outlined text-[13px]">business</span>
                                                     <span th:text="${req.departmentName ?: 'N/A'}">Department</span>
-                                                    <span class="text-slate-300">Ã‚Â·</span>
+                                                    <span class="text-slate-300">·</span>
                                                     <span class="material-symbols-outlined text-[13px]">person</span>
                                                     <span
                                                         th:text="${req.requestedByName ?: 'Employee'}">Requester</span>
@@ -1176,9 +1176,9 @@
                         </div>
                     </div><!-- /section-requests -->
 
-                    <!-- Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+                    <!-- ═══════════════════════════════════════════
                          SECTION: My Interviews (server-rendered)
-                    Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â -->
+                    ════════════════════════════════════════════ -->
                     <div id="section-my-interviews" class="hidden">
 
                         <!-- Filter bar + search -->
@@ -1283,19 +1283,19 @@
                                     </p>
                                 </div>
 
-                                <!-- Schedule details (khi Ã„â€˜ÃƒÂ£ cÃƒÂ³ lÃ¡Â»â€¹ch) -->
+                                <!-- Schedule details -->
                                 <div th:if="${iv.status != 'NOT_SCHEDULED'}" class="space-y-2 mb-4">
                                     <div class="flex items-center gap-2 text-xs text-slate-600">
                                         <span class="material-symbols-outlined text-primary text-[16px]">schedule</span>
                                         <span
                                             th:text="${iv.scheduledAt != null and !iv.scheduledAt.isEmpty() ? iv.scheduledAt : 'Not scheduled'}"
-                                            class="font-medium">Ã¢â‚¬â€</span>
+                                            class="font-medium">—</span>
                                     </div>
                                     <div th:if="${iv.location != null and !iv.location.isEmpty()}"
                                         class="flex items-center gap-2 text-xs text-slate-600">
                                         <span
                                             class="material-symbols-outlined text-primary text-[16px]">location_on</span>
-                                        <span th:text="${iv.location}" class="font-medium">Ã¢â‚¬â€</span>
+                                        <span th:text="${iv.location}" class="font-medium">—</span>
                                     </div>
                                 </div>
 
@@ -1321,7 +1321,7 @@
                                 <!-- Action buttons -->
                                 <div class="flex items-center gap-2 pt-3 border-t border-slate-100">
 
-                                    <!-- NOT_SCHEDULED: nÃƒÂºt Ã„â€˜Ã¡ÂºÂ·t lÃ¡Â»â€¹ch -->
+                                    <!-- NOT_SCHEDULED: nút đặt lịch -->
                                     <th:block th:if="${iv.status == 'NOT_SCHEDULED'}">
                                         <button th:data-app-id="${iv.applicationId}"
                                             th:data-interviewer-id="${currentUserId}"
@@ -1386,9 +1386,9 @@
         </main>
     </div>
 
-    <!-- Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
- MODAL: New Job Post
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â -->
+    <!-- ══════════════════════════════════════════════════════════
+     MODAL: New Job Post
+    ══════════════════════════════════════════════════════════ -->
     <div id="newJobModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="modal-backdrop absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeNewJobModal()">
         </div>
@@ -1483,9 +1483,9 @@
         </div>
     </div>
 
-    <!-- Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
- MODAL: Job Detail
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â -->
+    <!-- ══════════════════════════════════════════════════════════
+     MODAL: Job Detail
+    ══════════════════════════════════════════════════════════ -->
     <div id="jobDetailOverlay" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="closeJobDetail()"></div>
         <div class="job-detail-box relative">
@@ -1523,11 +1523,11 @@
                     </div>
                     <div class="jd-info-box">
                         <div class="jd-info-label">Open Date</div>
-                        <div class="jd-info-val" id="jd-open-date">Ã¢â‚¬â€</div>
+                        <div class="jd-info-val" id="jd-open-date">—</div>
                     </div>
                     <div class="jd-info-box">
                         <div class="jd-info-label">Closing Date</div>
-                        <div class="jd-info-val" id="jd-close-date">Ã¢â‚¬â€</div>
+                        <div class="jd-info-val" id="jd-close-date">—</div>
                     </div>
                 </div>
                 <div class="jd-section" id="jd-desc-section">
@@ -1558,9 +1558,9 @@
         </div>
     </div>
 
-    <!-- Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+    <!-- ═══════════════════════════════════════════════════════════
  MODAL: Candidate Detail
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â -->
+══════════════════════════════════════════════════════════ -->
     <div id="candidateDetailModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="modal-backdrop absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="closeCandidateDetail()">
         </div>
@@ -1607,22 +1607,22 @@
                         <div class="bg-slate-50 rounded-xl p-4 border border-slate-100">
                             <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Applied For
                             </p>
-                            <p id="cdJob" class="text-sm font-bold text-slate-800">Ã¢â‚¬â€</p>
-                            <p id="cdDept" class="text-xs text-slate-400 mt-0.5">Ã¢â‚¬â€</p>
+                            <p id="cdJob" class="text-sm font-bold text-slate-800">—</p>
+                            <p id="cdDept" class="text-xs text-slate-400 mt-0.5">—</p>
                         </div>
                         <div class="bg-slate-50 rounded-xl p-4 border border-slate-100">
                             <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Applied Date
                             </p>
-                            <p id="cdDate" class="text-sm font-bold text-slate-800">Ã¢â‚¬â€</p>
+                            <p id="cdDate" class="text-sm font-bold text-slate-800">—</p>
                         </div>
                         <div class="bg-slate-50 rounded-xl p-4 border border-slate-100">
                             <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Experience</p>
-                            <p id="cdExp" class="text-sm font-bold text-slate-800">Ã¢â‚¬â€</p>
+                            <p id="cdExp" class="text-sm font-bold text-slate-800">—</p>
                         </div>
                         <div class="bg-slate-50 rounded-xl p-4 border border-slate-100">
                             <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Expected
                                 Salary</p>
-                            <p id="cdSalary" class="text-sm font-bold text-primary">Ã¢â‚¬â€</p>
+                            <p id="cdSalary" class="text-sm font-bold text-primary">—</p>
                         </div>
                     </div>
                     <div class="bg-primary-light/60 rounded-xl p-4 border border-primary/10">
@@ -1727,9 +1727,9 @@
         </div>
     </div>
 
-    <!-- Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
- MODAL: Assign Interviewer
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â -->
+    <!-- ══════════════════════════════════════════════════════════
+     MODAL: Assign Interviewer
+    ══════════════════════════════════════════════════════════ -->
     <div id="assignModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4">
         <div class="modal-backdrop absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="closeAssignModal()">
         </div>
@@ -1778,8 +1778,8 @@
                         <p class="text-xs font-semibold text-slate-800 truncate" th:text="${emp.fullName}">Name</p>
                         <p class="text-[10px] text-slate-400 truncate">
                             <span th:text="${emp.jobTitle ?: 'Employee'}">Title</span>
-                            <span th:if="${emp.departmentName != null and !emp.departmentName.isEmpty()}"
-                                class="text-slate-300"> Ã‚Â· </span>
+                                <span th:if="${emp.departmentName != null and !emp.departmentName.isEmpty()}"
+                                    class="text-slate-300"> · </span>
                             <span th:if="${emp.departmentName != null and !emp.departmentName.isEmpty()}"
                                 th:text="${emp.departmentName}">Dept</span>
                         </p>
@@ -1824,9 +1824,9 @@
         </div>
     </div>
 
-    <!-- Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+    <!-- ═══════════════════════════════════════════════════════════
  MODAL: Review Application
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â -->
+══════════════════════════════════════════════════════════ -->
     <div id="reviewModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="modal-backdrop absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeReviewModal()">
         </div>
@@ -1850,15 +1850,15 @@
                 <div class="grid grid-cols-3 gap-3">
                     <div class="bg-slate-50 rounded-xl p-3 text-center">
                         <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Applied For</p>
-                        <p id="reviewJob" class="text-xs font-bold text-slate-700 mt-1 leading-tight">Ã¢â‚¬â€</p>
+                        <p id="reviewJob" class="text-xs font-bold text-slate-700 mt-1 leading-tight">—</p>
                     </div>
                     <div class="bg-slate-50 rounded-xl p-3 text-center">
                         <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Experience</p>
-                        <p id="reviewExp" class="text-xs font-bold text-slate-700 mt-1">Ã¢â‚¬â€</p>
+                        <p id="reviewExp" class="text-xs font-bold text-slate-700 mt-1">—</p>
                     </div>
                     <div class="bg-slate-50 rounded-xl p-3 text-center">
                         <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Expected Salary</p>
-                        <p id="reviewSalary" class="text-xs font-bold text-slate-700 mt-1">Ã¢â‚¬â€</p>
+                        <p id="reviewSalary" class="text-xs font-bold text-slate-700 mt-1">—</p>
                     </div>
                 </div>
                 <div>
@@ -1892,9 +1892,9 @@
         </div>
     </div>
 
-    <!-- Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+    <!-- ═══════════════════════════════════════════════════════════
  MODAL: Reject Job Request
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â -->
+══════════════════════════════════════════════════════════ -->
     <div id="rejectReqModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="modal-backdrop absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeRejectReqModal()">
         </div>
@@ -1937,7 +1937,7 @@
         </div>
     </div>
 
-    <!-- Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â MODAL: Edit Job Post Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â -->
+    <!-- ══════════════════ MODAL: Edit Job Post ══════════════════ -->
     <div id="editJobModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4">
         <div class="modal-backdrop absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeEditJobModal()">
         </div>
@@ -2033,7 +2033,7 @@
         </div>
     </div>
 
-    <!-- Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â MODAL: Delete Confirm Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â -->
+    <!-- ══════════════════ MODAL: Delete Confirm ══════════════════ -->
     <div id="deleteJobModal" class="hidden fixed inset-0 z-[70] flex items-center justify-center p-4">
         <div class="modal-backdrop absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="closeDeleteModal()">
         </div>
@@ -2078,7 +2078,7 @@
     <script>
         const STAGES = ['APPLIED', 'SCREENING', 'INTERVIEWING', 'OFFER', 'HIRED'];
 
-        // Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â MAIN TABS Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+        // ═══════════ MAIN TABS ═══════════
         function switchMainTab(tab) {
             ['pipeline', 'requests', 'my-interviews'].forEach(t => {
                 document.getElementById('section-' + t)?.classList.toggle('hidden', t !== tab);
@@ -2086,14 +2086,14 @@
             });
         }
 
-        // Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â NEW JOB MODAL Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
-        // Ã¢Å“â€¦ Fixed: openNewJobModal no longer resets fromRequestId
+        // ═══════════ NEW JOB MODAL ═══════════
+        // ✅ Fixed: openNewJobModal no longer resets fromRequestId
         function openNewJobModal() {
             document.getElementById('newJobModal').classList.remove('hidden');
             document.body.style.overflow = 'hidden';
         }
 
-        // Ã¢Å“â€¦ Fresh open (from "New Job Post" button) Ã¢â‚¬â€ clears pre-filled data
+        // Ã¢Å“â€¦ Fresh open (from "New Job Post" button) — clears pre-filled data
         function openNewJobModalFresh() {
             document.getElementById('newJobFromRequestId').value = '';
             document.getElementById('newJobTitle').value = '';
@@ -2106,7 +2106,7 @@
             document.body.style.overflow = '';
         }
 
-        // Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â JOB DETAIL MODAL Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+        // ═══════════ JOB DETAIL MODAL ═══════════
         // Store current job data for use by edit/delete
         let _currentJob = {};
 
@@ -2117,8 +2117,8 @@
             document.getElementById('jd-dept-text').textContent = data.jobDept || 'N/A';
             document.getElementById('jd-pos-text').textContent = data.jobPosition || 'General';
             document.getElementById('jd-applicant-text').textContent = (data.jobApplicants || '0') + ' Applicants';
-            document.getElementById('jd-open-date').textContent = data.jobOpen || 'Ã¢â‚¬â€';
-            document.getElementById('jd-close-date').textContent = data.jobClose || 'Ã¢â‚¬â€';
+            document.getElementById('jd-open-date').textContent = data.jobOpen || '—';
+            document.getElementById('jd-close-date').textContent = data.jobClose || '—';
 
             const badge = document.getElementById('jd-status-badge');
             const s = data.jobStatus || '';
@@ -2129,7 +2129,7 @@
             const salEl = document.getElementById('jd-salary');
             const fmt = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
             if (salMin > 0 || salMax > 0) {
-                if (salMin > 0 && salMax > 0) salEl.textContent = fmt.format(salMin) + ' Ã¢â‚¬â€œ ' + fmt.format(salMax);
+                if (salMin > 0 && salMax > 0) salEl.textContent = fmt.format(salMin) + ' – ' + fmt.format(salMax);
                 else if (salMin > 0) salEl.textContent = 'From ' + fmt.format(salMin);
                 else salEl.textContent = 'Up to ' + fmt.format(salMax);
             } else { salEl.textContent = 'Negotiable'; }
@@ -2169,7 +2169,7 @@
         }
         function closeJobDetail() { document.getElementById('jobDetailOverlay').classList.add('hidden'); document.body.style.overflow = ''; }
 
-        // Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â EDIT JOB MODAL Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+        // ═══════════ EDIT JOB MODAL ═══════════
         function openEditJobModal() {
             const d = _currentJob;
             if (!d || !d.jobId) return showToast('No job selected.', false);
@@ -2182,9 +2182,9 @@
             document.getElementById('editSalaryMin').value = parseFloat(d.jobSalaryMin) > 0 ? d.jobSalaryMin : '';
             document.getElementById('editSalaryMax').value = parseFloat(d.jobSalaryMax) > 0 ? d.jobSalaryMax : '';
 
-            // Dates: convert "dd/MM/yyyy" Ã¢â€ â€™ "yyyy-MM-dd" for date inputs
+            // Dates: convert "dd/MM/yyyy" → "yyyy-MM-dd" for date inputs
             const parseDate = (str) => {
-                if (!str || str === 'Ã¢â‚¬â€' || str.trim() === '') return '';
+                if (!str || str === '—' || str.trim() === '') return '';
                 try {
                     const [d, m, y] = str.split('/');
                     if (!d || !m || !y) return '';
@@ -2216,7 +2216,7 @@
             document.body.style.overflow = '';
         }
 
-        // Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â DELETE JOB Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+        // ═══════════ DELETE JOB ═══════════
         function confirmDeleteJob() {
             const d = _currentJob;
             if (!d || !d.jobId) return showToast('No job selected.', false);
@@ -2231,18 +2231,18 @@
             document.body.style.overflow = '';
         }
 
-        // Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â CANDIDATE DETAIL MODAL Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+        // ═══════════ CANDIDATE DETAIL MODAL ═══════════
         let _cd = {};
 
         function openCandidateDetail(data) {
             _cd = data;
             document.getElementById('cdAvatar').textContent = data.initials || '?';
             document.getElementById('cdName').textContent = data.name || 'Unknown';
-            document.getElementById('cdEmail').innerHTML = `<span class="material-symbols-outlined text-[12px]">mail</span>${data.email || 'Ã¢â‚¬â€'}`;
-            document.getElementById('cdPhone').innerHTML = `<span class="material-symbols-outlined text-[12px]">phone</span>${data.phone || 'Ã¢â‚¬â€'}`;
-            document.getElementById('cdJob').textContent = data.job || 'Ã¢â‚¬â€';
-            document.getElementById('cdDept').textContent = data.dept || 'Ã¢â‚¬â€';
-            document.getElementById('cdDate').textContent = data.date || 'Ã¢â‚¬â€';
+            document.getElementById('cdEmail').innerHTML = `<span class="material-symbols-outlined text-[12px]">mail</span>${data.email || '—'}`;
+            document.getElementById('cdPhone').innerHTML = `<span class="material-symbols-outlined text-[12px]">phone</span>${data.phone || '—'}`;
+            document.getElementById('cdJob').textContent = data.job || '—';
+            document.getElementById('cdDept').textContent = data.dept || '—';
+            document.getElementById('cdDate').textContent = data.date || '—';
             document.getElementById('cdStageAppId').value = data.appId || '';
 
             const exp = parseInt(data.exp) || 0, sal = parseFloat(data.salary) || 0;
@@ -2293,7 +2293,7 @@
                     <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
                         <div class="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[11px] font-bold shrink-0">${escHtml(buildInitials(iv.fullName))}</div>
                         <div class="flex-1 min-w-0">
-                            <p class="text-xs font-semibold text-slate-800 truncate">${escHtml(iv.fullName || 'Ã¢â‚¬â€')}</p>
+                            <p class="text-xs font-semibold text-slate-800 truncate">${escHtml(iv.fullName || '—')}</p>
                             ${iv.jobTitle ? `<p class="text-[10px] text-slate-400">${escHtml(iv.jobTitle)}</p>` : ''}
                         </div>
                         <span class="material-symbols-outlined text-emerald-400 text-[16px]">check_circle</span>
@@ -2302,7 +2302,7 @@
                 .catch(() => { el.innerHTML = '<p class="text-xs text-rose-400 italic">Failed to load.</p>'; });
         }
 
-        // Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â CV VIEWER Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+        // ═══════════ CV VIEWER ═══════════
         function loadCandidateCVs(candidateId) {
             const listEl = document.getElementById('cvList');
             listEl.innerHTML = '<div class="text-xs text-slate-400 italic">Loading...</div>';
@@ -2342,7 +2342,7 @@
             else viewer.innerHTML = `<div class="flex flex-col items-center justify-center h-full gap-3"><span class="material-symbols-outlined text-4xl text-slate-300">description</span><p class="text-xs text-slate-500 font-medium">${escHtml(fileName)}</p><a href="${url}" target="_blank" class="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl text-xs font-semibold"><span class="material-symbols-outlined text-[14px]">open_in_new</span>Open in new tab</a></div>`;
         }
 
-        // Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â STAGE HISTORY Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+        // ═══════════ STAGE HISTORY ═══════════
         function loadStageHistory(appId) {
             const el = document.getElementById('cdStageHistory');
             el.innerHTML = '<div class="flex items-center justify-center py-12"><div class="text-center"><span class="material-symbols-outlined text-3xl text-slate-300 block mb-2 spin">refresh</span><p class="text-xs text-slate-400">Loading...</p></div></div>';
@@ -2366,7 +2366,7 @@
                 .catch(() => { el.innerHTML = '<p class="text-xs text-rose-400 italic text-center py-8">Failed to load history.</p>'; });
         }
 
-        // Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â ASSIGN INTERVIEWER MODAL Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+        // ═══════════ ASSIGN INTERVIEWER MODAL ═══════════
         let _selectedInterviewers = [];
         let _currentAssignAppId = '';
 
@@ -2472,7 +2472,7 @@
             hiddenEl.innerHTML = _selectedInterviewers.map(e => `<input type="hidden" name="interviewerIds" value="${escHtml(e.id)}" />`).join('');
         }
 
-        // Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â REVIEW MODAL Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+        // ═══════════ REVIEW MODAL ═══════════
         function openReviewFromBtn(btn) {
             openReviewModal(btn.dataset.appId, btn.dataset.name, btn.dataset.email, btn.dataset.job, btn.dataset.stage, parseInt(btn.dataset.exp) || 0, btn.dataset.phone, parseFloat(btn.dataset.salary) || 0);
         }
@@ -2492,7 +2492,7 @@
         }
         function closeReviewModal() { document.getElementById('reviewModal').classList.add('hidden'); document.body.style.overflow = ''; }
 
-        // Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â JOB POST REQUESTS FILTER Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+        // ═══════════ JOB POST REQUESTS FILTER ═══════════
         function filterRequests(status) {
             document.querySelectorAll('.req-filter-tab').forEach(btn => {
                 const isActive = btn.id === 'reqTab-' + status;
@@ -2505,7 +2505,7 @@
             });
         }
 
-        // Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â REJECT MODAL Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+        // ═══════════ REJECT MODAL ═══════════
         function openRejectReqModal(data) {
             const reqId = data.reqId || data['req-id'] || '';
             const reqTitle = data.reqTitle || data['req-title'] || 'this request';
@@ -2518,8 +2518,8 @@
         }
         function closeRejectReqModal() { document.getElementById('rejectReqModal').classList.add('hidden'); document.body.style.overflow = ''; }
 
-        // Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â APPROVE FLOW Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
-        // Ã¢Å“â€¦ Fixed: sets fromRequestId BEFORE calling openNewJobModal (which no longer resets it)
+        // ═══════════ APPROVE FLOW ═══════════
+        // ✅ Fixed: sets fromRequestId BEFORE calling openNewJobModal (which no longer resets it)
         function openApproveFlow(data) {
             const reqId = data.reqId || data['req-id'] || '';
             const reqTitle = data.reqTitle || data['req-title'] || '';
@@ -2539,7 +2539,7 @@
             openNewJobModal();
         }
 
-        // Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â PIPELINE BUILDER Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+        // ═══════════ PIPELINE BUILDER ═══════════
         function buildPipelineIn(containerId, currentStage) {
             const container = document.getElementById(containerId);
             if (!container) return;
@@ -2561,7 +2561,7 @@
             }).join('');
         }
 
-        // Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â PAGINATION Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+        // ═══════════ PAGINATION ═══════════
         const PAGE_SIZE = 10;
         let allRows = [], filteredRows = [], currentPage = 1, activeFilter = 'all';
 
@@ -2587,14 +2587,14 @@
             const sv = document.getElementById('searchInput').value;
             if (totalPages <= 1 && activeFilter === 'all' && !sv) { bar.style.display = 'none'; return; }
             bar.style.display = 'flex';
-            document.getElementById('pageInfo').textContent = total === 0 ? 'No results' : `Showing ${start + 1}Ã¢â‚¬â€œ${end} of ${total}`;
+            document.getElementById('pageInfo').textContent = total === 0 ? 'No results' : `Showing ${start + 1}–${end} of ${total}`;
             const bc = document.getElementById('pageButtons'); bc.innerHTML = '';
-            const prev = mkBtn('Ã¢â‚¬Â¹', currentPage === 1); prev.onclick = () => { if (currentPage > 1) { currentPage--; renderPage(); } }; bc.appendChild(prev);
+            const prev = mkBtn('‹', currentPage === 1); prev.onclick = () => { if (currentPage > 1) { currentPage--; renderPage(); } }; bc.appendChild(prev);
             pageRange(currentPage, totalPages).forEach(p => {
-                if (p === '...') { const e = document.createElement('span'); e.className = 'pagination-btn'; e.textContent = 'Ã¢â‚¬Â¦'; e.style.cursor = 'default'; bc.appendChild(e); }
+                if (p === '...') { const e = document.createElement('span'); e.className = 'pagination-btn'; e.textContent = '…'; e.style.cursor = 'default'; bc.appendChild(e); }
                 else { const b = mkBtn(p, false, p === currentPage); b.onclick = () => { currentPage = p; renderPage(); }; bc.appendChild(b); }
             });
-            const next = mkBtn('Ã¢â‚¬Âº', currentPage === totalPages); next.onclick = () => { if (currentPage < totalPages) { currentPage++; renderPage(); } }; bc.appendChild(next);
+            const next = mkBtn('›', currentPage === totalPages); next.onclick = () => { if (currentPage < totalPages) { currentPage++; renderPage(); } }; bc.appendChild(next);
         }
         function mkBtn(l, d = false, a = false) { const b = document.createElement('button'); b.className = 'pagination-btn' + (a ? ' active' : ''); b.textContent = l; b.disabled = d; return b; }
         function pageRange(c, t) {
@@ -2613,7 +2613,7 @@
             applyFilters();
         }
 
-        // Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â HELPERS Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+        // ═══════════ HELPERS ═══════════
         function showToast(msg, ok = true) {
             const t = document.getElementById('toast'), ic = t.querySelector('.material-symbols-outlined');
             document.getElementById('toastMsg').textContent = msg;
@@ -2628,7 +2628,7 @@
             return n.trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
         }
 
-        // Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â INIT Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+        // ═══════════ INIT ═══════════
         window.addEventListener('DOMContentLoaded', () => {
             allRows = Array.from(document.querySelectorAll('.app-row'));
             applyFilters();
@@ -2662,7 +2662,7 @@
             }
         });
 
-        // Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â MY INTERVIEWS Ã¢â‚¬â€ Filter & Search Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+        // ═══════════ MY INTERVIEWS — Filter & Search ═══════════
         let currentIvFilter = 'ALL';
 
         function filterIv(status) {
@@ -2684,7 +2684,7 @@
             });
         }
 
-        // Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â FEEDBACK MODAL Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+        // ═══════════ FEEDBACK MODAL ═══════════
         function openFeedbackModal(ds) {
             const ivId = ds.ivId;
             const name = ds.ivCandidate;
@@ -2692,8 +2692,8 @@
             const fb = ds.ivFeedback;
             const status = ds.ivStatus;
 
-            document.getElementById('fbCandidateName').textContent = name || 'Ã¢â‚¬â€';
-            document.getElementById('fbJobTitle').textContent = job || 'Ã¢â‚¬â€';
+            document.getElementById('fbCandidateName').textContent = name || '—';
+            document.getElementById('fbJobTitle').textContent = job || '—';
 
             const parts = (name || '').trim().split(/\s+/);
             const initials = parts.slice(0, 2).map(p => p[0] || '').join('').toUpperCase() || '?';
@@ -2719,12 +2719,12 @@
             document.getElementById('feedbackModal').classList.add('hidden');
         }
 
-        // Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â SCHEDULE MODAL (My Interviews Ã¢â‚¬â€ NOT_SCHEDULED) Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+        // ═══════════ SCHEDULE MODAL (My Interviews — NOT_SCHEDULED) ═══════════
         function openScheduleModal(ds) {
             const appId = ds.appId;
             const interviewerId = ds.interviewerId;
-            const candidate = ds.candidate || 'Ã¢â‚¬â€';
-            const job = ds.job || 'Ã¢â‚¬â€';
+            const candidate = ds.candidate || '—';
+            const job = ds.job || '—';
 
             document.getElementById('smCandidateName').textContent = candidate;
             document.getElementById('smJobTitle').textContent = job;
@@ -2736,7 +2736,7 @@
             document.getElementById('smAppId').value = appId;
             document.getElementById('smInterviewerId').value = interviewerId;
 
-            // MÃ¡ÂºÂ·c Ã„â€˜Ã¡Â»â€¹nh scheduledAt = ngÃƒÂ y mai 09:00
+            // Mặc định scheduledAt = ngày mai 09:00
             const tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
             tomorrow.setHours(9, 0, 0, 0);
@@ -2753,9 +2753,9 @@
             document.body.style.overflow = '';
         }
     </script>
-    <!-- Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+    <!-- ═══════════════════════════════════════════════════════════
          MODAL: Interview Feedback (My Interviews tab)
-    Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â -->
+    ════════════════════════════════════════════════════════════ -->
     <div id="feedbackModal" class="hidden fixed inset-0 z-[70] flex items-center justify-center p-4">
         <div class="modal-backdrop absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeFeedbackModal()">
         </div>
@@ -2841,9 +2841,9 @@
         </div>
     </div>
 
-    <!-- Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
-         MODAL: Schedule Interview (My Interviews Ã¢â‚¬â€ NOT_SCHEDULED)
-    Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â -->
+    <!-- ═══════════════════════════════════════════════════════════
+         MODAL: Schedule Interview (My Interviews — NOT_SCHEDULED)
+    ════════════════════════════════════════════════════════════ -->
     <div id="scheduleModal" class="hidden fixed inset-0 z-[70] flex items-center justify-center p-4">
         <div class="modal-backdrop absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeScheduleModal()">
         </div>
@@ -2895,7 +2895,7 @@
                     <div class="relative">
                         <span
                             class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-[16px]">location_on</span>
-                        <input type="text" name="location" placeholder="Vd: Meeting Room 1, TÃ¡ÂºÂ§ng 3, Zoom..."
+                        <input type="text" name="location" placeholder="Vd: Meeting Room 1, Tầng 3, Zoom..."
                             class="w-full text-sm border border-slate-200 rounded-xl pl-9 pr-4 py-2.5
                                       focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder-slate-300" />
                     </div>
@@ -2905,7 +2905,7 @@
                 <div class="flex justify-end gap-3 pt-2">
                     <button type="button" onclick="closeScheduleModal()"
                         class="px-5 py-2.5 rounded-xl text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors">
-                        HuÃ¡Â»Â·
+                        Hủy
                     </button>
                     <button type="submit"
                         class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-amber-500 hover:bg-amber-600 transition-colors shadow-sm shadow-amber-200">
@@ -2920,3 +2920,4 @@
 </body>
 
 </html>
+
