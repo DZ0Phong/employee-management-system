@@ -108,6 +108,31 @@ public class HrBackblazeStorageService {
         }
     }
 
+    /**
+     * Deletes a report from Backblaze B2.
+     * @param fileName The key/name of the file in the bucket.
+     */
+    public void deleteReport(String fileName) {
+        if (s3Client == null) return;
+        
+        try {
+            DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(fileName)
+                    .build();
+
+            s3Client.deleteObject(deleteObjectRequest);
+            log.info("""
+                    Successfully deleted report from Backblaze: {}
+                    """, fileName);
+        } catch (S3Exception e) {
+            log.error("""
+                    Failed to delete report from Backblaze: {}
+                    """, e.getMessage());
+            throw new RuntimeException("Cloud storage deletion failed", e);
+        }
+    }
+
     private void validateConfig() {
         if (s3Client == null) {
             throw new IllegalStateException("""

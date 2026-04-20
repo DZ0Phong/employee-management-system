@@ -1364,14 +1364,13 @@ public class HrController {
             @RequestParam(required = false) List<String> columns,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo,
-            @RequestParam String format,
             jakarta.servlet.http.HttpServletResponse response) throws java.io.IOException {
             
         if (columns == null || columns.isEmpty()) {
             throw new IllegalArgumentException("At least one column must be selected.");
         }
         
-        reportService.exportCustomReport(dataSource, columns, dateFrom, dateTo, format, response);
+        reportService.exportCustomReport(dataSource, columns, dateFrom, dateTo, response);
     }
 
     @PostMapping("/reports/prepare")
@@ -1380,6 +1379,8 @@ public class HrController {
             @RequestParam(required = false) Integer year,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo,
+            @RequestParam(required = false) String dataSource,
+            @RequestParam(required = false) List<String> columns,
             @RequestParam String title,
             @RequestParam String remarks,
             @AuthenticationPrincipal UserDetails userDetails,
@@ -1391,7 +1392,7 @@ public class HrController {
             
             Long employeeId = (user.getEmployee() != null) ? user.getEmployee().getId() : null;
             
-            reportService.saveReportDraft(tab, year, dateFrom, dateTo, title, remarks, employeeId);
+            reportService.saveReportDraft(tab, year, dateFrom, dateTo, title, remarks, dataSource, columns, employeeId);
             redirectAttributes.addFlashAttribute("success", "Report draft saved successfully for professional review.");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Failed to prepare report: " + e.getMessage());
@@ -1407,6 +1408,17 @@ public class HrController {
             redirectAttributes.addFlashAttribute("success", "Report published and HR Manager notified.");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Failed to publish report: " + e.getMessage());
+        }
+        return "redirect:/hr/reports?tab=saved";
+    }
+
+    @PostMapping("/reports/{id}/delete")
+    public String deleteReport(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            reportService.deleteReportDraft(id);
+            redirectAttributes.addFlashAttribute("success", "Report draft deleted successfully.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Failed to delete report: " + e.getMessage());
         }
         return "redirect:/hr/reports?tab=saved";
     }

@@ -50,7 +50,7 @@
             <div class="flex items-center gap-3">
                 <!-- Prepare Package Button -->
                 <button type="button" 
-                        th:if="${activeTab != 'saved'}"
+                        th:if="${activeTab != 'saved' && activeTab != 'builder'}"
                         onclick="openPrepareModal()"
                         class="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-indigo-700 transition-all shadow-md shadow-indigo-200 hover:shadow-lg hover:shadow-indigo-300 hover:-translate-y-0.5"
                         id="prepareReportBtn">
@@ -59,7 +59,8 @@
                 </button>
 
                 <!-- Export PDF Button -->
-                <a th:href="@{/hr/reports/export(tab=${activeTab}, year=${selectedYear}, dateFrom=${dateFrom}, dateTo=${dateTo})}"
+                <a th:if="${activeTab != 'saved' && activeTab != 'builder'}"
+                   th:href="@{/hr/reports/export(tab=${activeTab}, year=${selectedYear}, dateFrom=${dateFrom}, dateTo=${dateTo})}"
                    class="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-primary/90 transition-all shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5"
                    id="exportPdfBtn">
                     <span class="material-symbols-outlined text-sm">picture_as_pdf</span>
@@ -95,15 +96,15 @@
                id="tabPerformance">
                 <span class="material-symbols-outlined text-sm align-middle mr-1">military_tech</span> Performance
             </a>
-            <a th:href="@{/hr/reports(tab='saved')}"
-               th:class="${activeTab == 'saved'} ? 'leave-tab active px-4 py-3 text-xs font-bold' : 'leave-tab px-4 py-3 text-xs font-bold'"
-               id="tabSaved">
-                <span class="material-symbols-outlined text-sm align-middle mr-1">history_edu</span> Saved Reports
-            </a>
             <a th:href="@{/hr/reports(tab='builder')}"
                th:class="${activeTab == 'builder'} ? 'leave-tab active px-4 py-3 text-xs font-bold' : 'leave-tab px-4 py-3 text-xs font-bold'"
                id="tabBuilder">
                 <span class="material-symbols-outlined text-sm align-middle mr-1">build</span> Builder
+            </a>
+            <a th:href="@{/hr/reports(tab='saved')}"
+               th:class="${activeTab == 'saved'} ? 'leave-tab active px-4 py-3 text-xs font-bold' : 'leave-tab px-4 py-3 text-xs font-bold'"
+               id="tabSaved">
+                <span class="material-symbols-outlined text-sm align-middle mr-1">history_edu</span> Saved Reports
             </a>
 
             <!-- Year Filter (for overview/leave tabs) -->
@@ -530,6 +531,13 @@
                                                     Publish to HRM
                                                 </button>
                                             </form>
+                                            <button th:if="${item.status() == 'DRAFT'}"
+                                                    type="button" 
+                                                    th:onclick="openDeleteModal([[${item.id()}]])"
+                                                    class="p-2 text-slate-400 hover:text-red-600 transition-colors flex items-center" 
+                                                    title="Delete Draft">
+                                                <span class="material-symbols-outlined text-lg">delete</span>
+                                            </button>
                                             <span th:if="${item.status() == 'FINALIZED'}" class="text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-1.5 rounded-lg border border-slate-100">
                                                 Published
                                             </span>
@@ -566,11 +574,11 @@
                                 <div class="flex items-end gap-3">
                                     <div class="flex-1">
                                         <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Date From</label>
-                                        <input type="text" name="dateFrom" class="hr-datepicker w-full text-sm border-slate-200 rounded-xl py-2.5 px-3 focus:ring-primary/20 focus:border-primary" placeholder="YYYY-MM-DD" />
+                                        <input type="text" name="dateFrom" id="builderDateFrom" class="hr-datepicker w-full text-sm border-slate-200 rounded-xl py-2.5 px-3 focus:ring-primary/20 focus:border-primary" placeholder="DD-MM-YYYY" />
                                     </div>
                                     <div class="flex-1">
                                         <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Date To</label>
-                                        <input type="text" name="dateTo" class="hr-datepicker w-full text-sm border-slate-200 rounded-xl py-2.5 px-3 focus:ring-primary/20 focus:border-primary" placeholder="YYYY-MM-DD" />
+                                        <input type="text" name="dateTo" id="builderDateTo" class="hr-datepicker w-full text-sm border-slate-200 rounded-xl py-2.5 px-3 focus:ring-primary/20 focus:border-primary" placeholder="DD-MM-YYYY" />
                                     </div>
                                 </div>
                             </div>
@@ -585,13 +593,13 @@
                                 </div>
                             </div>
                             
-                            <!-- Step 3: Export Options -->
+                            <!-- Step 3: Create Report Action -->
                             <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
-                                <button type="submit" name="format" value="csv" class="flex items-center gap-2 bg-slate-800 text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-slate-700 transition-all shadow-md">
-                                    <span class="material-symbols-outlined text-[18px]">data_table</span> Export CSV
+                                <button type="button" onclick="openPrepareModal()" class="flex items-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-indigo-700 transition-all shadow-md shadow-indigo-100 active:scale-95">
+                                    <span class="material-symbols-outlined text-[18px]">add_circle</span> Create Report
                                 </button>
-                                <button type="submit" name="format" value="pdf" class="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-primary/90 transition-all shadow-md shadow-primary/20">
-                                    <span class="material-symbols-outlined text-[18px]">picture_as_pdf</span> Export PDF
+                                <button type="submit" class="flex items-center gap-2 bg-primary text-white px-5 py-3 rounded-xl text-sm font-bold hover:bg-primary/90 transition-all shadow-md shadow-primary/20 hover:-translate-y-0.5 active:scale-95">
+                                    <span class="material-symbols-outlined text-[18px]">picture_as_pdf</span> PDF Export
                                 </button>
                             </div>
                             
@@ -806,10 +814,13 @@
 
                 <form th:action="@{/hr/reports/prepare}" method="post" class="p-8">
                     <!-- Context Propagation -->
-                    <input type="hidden" name="tab" th:value="${activeTab}" />
-                    <input type="hidden" name="year" th:value="${selectedYear}" />
-                    <input type="hidden" name="dateFrom" th:value="${dateFrom}" />
-                    <input type="hidden" name="dateTo" th:value="${dateTo}" />
+                    <input type="hidden" name="tab" id="modalTab" th:value="${activeTab}" />
+                    <input type="hidden" name="year" id="modalYear" th:value="${selectedYear}" />
+                    <input type="hidden" name="dateFrom" id="modalDateFrom" th:value="${dateFrom}" />
+                    <input type="hidden" name="dateTo" id="modalDateTo" th:value="${dateTo}" />
+                    <!-- Builder specific (only used if tab is builder) -->
+                    <input type="hidden" name="dataSource" id="modalDataSource" />
+                    <div id="modalColumnsContainer" class="hidden"></div>
 
                     <div class="space-y-6">
                         <div>
@@ -841,8 +852,65 @@
         </div>
     </div>
 
+    <!-- Deletion Confirmation Modal -->
+    <div id="deleteConfirmModal" class="fixed inset-0 z-[101] hidden">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-md" onclick="closeDeleteModal()"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm anim-scale-up p-4">
+            <div class="bg-white rounded-[2.5rem] shadow-2xl border border-rose-100 overflow-hidden text-center p-8">
+                <div class="w-20 h-20 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+                    <div class="w-14 h-14 bg-rose-100 rounded-full flex items-center justify-center text-rose-600 animate-pulse">
+                        <span class="material-symbols-outlined text-3xl">warning</span>
+                    </div>
+                </div>
+                
+                <h3 class="text-xl font-black text-slate-800 mb-2">Delete Report Draft?</h3>
+                <p class="text-sm text-slate-500 font-medium leading-relaxed mb-8 px-2">
+                    This action is permanent and will remove all cloud archives and database records related to this package.
+                </p>
+
+                <div class="flex flex-col gap-3">
+                    <button type="button" onclick="confirmDeletion()"
+                            class="w-full py-4 rounded-2xl bg-rose-600 text-white text-sm font-black hover:bg-rose-700 transition-all shadow-xl shadow-rose-200 active:scale-95">
+                        Permanently Delete
+                    </button>
+                    <button type="button" onclick="closeDeleteModal()"
+                            class="w-full py-4 rounded-2xl bg-white text-slate-500 text-sm font-bold hover:bg-slate-50 transition-all border border-slate-100 active:scale-95">
+                        Keep Report
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden Global Deletion Form -->
+    <form id="globalDeleteForm" method="post" class="hidden">
+        <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
+    </form>
+
     <script th:inline="javascript">
         function openPrepareModal() {
+            // Propagate Builder state if on builder tab
+            if (activeTab === 'builder') {
+                const dataSource = document.getElementById('dataSource').value;
+                const dateFrom = document.getElementById('builderDateFrom').value;
+                const dateTo = document.getElementById('builderDateTo').value;
+                
+                document.getElementById('modalDataSource').value = dataSource;
+                document.getElementById('modalDateFrom').value = dateFrom;
+                document.getElementById('modalDateTo').value = dateTo;
+                
+                // Clear and sync columns
+                const columnsContainer = document.getElementById('modalColumnsContainer');
+                columnsContainer.innerHTML = '';
+                document.querySelectorAll('input[name="columns"]:checked').forEach(cb => {
+                    const hidden = document.createElement('input');
+                    hidden.type = 'hidden';
+                    hidden.name = 'columns';
+                    hidden.value = cb.value;
+                    columnsContainer.appendChild(hidden);
+                });
+            }
+
             document.getElementById('prepareModal').classList.remove('hidden');
             document.body.style.overflow = 'hidden';
         }
@@ -851,9 +919,31 @@
             document.body.style.overflow = '';
         }
 
+        // Deletion Confirmation Logic
+        let reportIdToDelete = null;
+        function openDeleteModal(id) {
+            reportIdToDelete = id;
+            document.getElementById('deleteConfirmModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeDeleteModal() {
+            document.getElementById('deleteConfirmModal').classList.add('hidden');
+            document.body.style.overflow = '';
+            reportIdToDelete = null;
+        }
+        function confirmDeletion() {
+            if (!reportIdToDelete) return;
+            const form = document.getElementById('globalDeleteForm');
+            form.action = `/hr/reports/${reportIdToDelete}/delete`;
+            form.submit();
+        }
+
         // Auto Close Modal on ESC
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closePrepareModal();
+            if (e.key === 'Escape') {
+                closePrepareModal();
+                closeDeleteModal();
+            }
         });
 
         // Builder Columns Logic

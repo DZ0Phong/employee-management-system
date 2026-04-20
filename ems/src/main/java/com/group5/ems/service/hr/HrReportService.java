@@ -2,6 +2,7 @@ package com.group5.ems.service.hr;
 
 import com.group5.ems.dto.response.*;
 import com.group5.ems.entity.HrReport;
+import com.group5.ems.exception.ReportOperationException;
 import com.group5.ems.repository.*;
 import com.group5.ems.service.common.LogService;
 import com.group5.ems.enums.AuditAction;
@@ -52,23 +53,26 @@ public class HrReportService {
     // ═══════════════════════════════════════════════════════════
 
     @Transactional
-    public HrGeneratedReportDTO saveReportDraft(String tab, Integer year, LocalDate from, LocalDate to, String title, String remarks, Long employeeId) {
-        // 1. Generate PDF Content
-        byte[] pdfContent = generatePdfBytes(tab, year, from, to, remarks);
+    public HrGeneratedReportDTO saveReportDraft(String tab, Integer year, LocalDate from, LocalDate to, String title, String remarks, String dataSource, List<String> columns, Long employeeId) {
+        // 1. Generate Content
+        byte[] content;
+        if ("builder".equalsIgnoreCase(tab)) {
+            content = generateCustomReportPdfBytes(dataSource, columns, from, to, title, remarks);
+        } else {
+            content = generateReportBytes(tab, year, from, to, remarks);
+        }
 
         // 2. Upload to Backblaze B2 (New Standard)
         String cloudFilename = "reports/hr/report_" + System.currentTimeMillis() + ".pdf";
         String filePath;
         try {
-            filePath = hrBackblazeStorageService.uploadReport(cloudFilename, pdfContent);
+            filePath = hrBackblazeStorageService.uploadReport(cloudFilename, content);
         } catch (Exception e) {
-            // Backup/Fallback: Save to local filesystem if cloud upload fails during transition 
-            // OR if user specifically wants to keep local copy. 
-            // Based on rules, we prioritize cloud but maintain fallback ability.
+            // Backup/Fallback: Save to local filesystem if cloud upload fails
             String localFilename = "report_" + System.currentTimeMillis() + ".pdf";
             filePath = REPORT_BASE_DIR + localFilename;
             try {
-                java.nio.file.Files.write(java.nio.file.Paths.get(filePath), pdfContent);
+                java.nio.file.Files.write(java.nio.file.Paths.get(filePath), content);
             } catch (java.io.IOException ex) {
                 throw new RuntimeException("Failed to save report even to local storage: " + ex.getMessage());
             }
@@ -106,6 +110,40 @@ public class HrReportService {
         logService.log(AuditAction.UPDATE, AuditEntityType.HR_REPORTS, report.getId());
     }
 
+    @Transactional
+    public void deleteReportDraft(Long reportId) {
+        HrReport report = hrReportRepository.findById(reportId)
+                .orElseThrow(() -> new ReportOperationException("Report not found with ID: " + reportId));
+        
+        if (!"DRAFT".equals(report.getStatus())) {
+            throw new ReportOperationException("Only reports in DRAFT status can be deleted.");
+        }
+
+        String path = report.getFilePath();
+        
+        // 1. Delete from Cloud Storage
+        try {
+            hrBackblazeStorageService.deleteReport(path);
+        } catch (Exception e) {
+            // We ignore errors here as the file might not exist in cloud (local fallback)
+        }
+
+        // 2. Delete from Local Storage (Fallback/Transition handling)
+        try {
+            java.nio.file.Path localPath = java.nio.file.Paths.get(path);
+            if (java.nio.file.Files.exists(localPath)) {
+                java.nio.file.Files.delete(localPath);
+            }
+        } catch (java.io.IOException e) {
+            // Silently ignore or log - metadata deletion is higher priority
+        }
+
+        // 3. Delete Metadata
+        hrReportRepository.delete(report);
+
+        logService.log(AuditAction.DELETE, AuditEntityType.HR_REPORTS, reportId);
+    }
+
     public List<HrGeneratedReportDTO> getAllReports() {
         return hrReportRepository.findAllByOrderByGeneratedAtDesc().stream()
                 .map(this::convertToDTO)
@@ -123,7 +161,7 @@ public class HrReportService {
                 .orElseThrow(() -> new RuntimeException("Report file could not be found in cloud storage (Key: " + path + ")"));
     }
 
-    private byte[] generatePdfBytes(String tab, Integer year, LocalDate from, LocalDate to, String remarks) {
+    private byte[] generateReportBytes(String tab, Integer year, LocalDate from, LocalDate to, String remarks) {
         int reportYear = year != null ? year : LocalDate.now().getYear();
         org.thymeleaf.context.Context ctx = new org.thymeleaf.context.Context();
         ctx.setVariable("selectedYear", reportYear);
@@ -445,15 +483,52 @@ public class HrReportService {
     // 6. CUSTOM REPORT BUILDER
     // ═══════════════════════════════════════════════════════════
 
-    public void exportCustomReport(String dataSource, List<String> columns, LocalDate dateFrom, LocalDate dateTo, String format, jakarta.servlet.http.HttpServletResponse response) throws java.io.IOException {
-        List<List<String>> rows = new ArrayList<>();
+    public void exportCustomReport(String dataSource, List<String> columns, LocalDate dateFrom, LocalDate dateTo, jakarta.servlet.http.HttpServletResponse response) throws java.io.IOException {
+        byte[] content = generateCustomReportPdfBytes(dataSource, columns, dateFrom, dateTo, "Custom HR Report", null);
+        
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=\"custom_report_" + dataSource + ".pdf\"");
+        try (java.io.OutputStream os = response.getOutputStream()) {
+            os.write(content);
+        }
+    }
+
+    private byte[] generateCustomReportPdfBytes(String dataSource, List<String> columns, LocalDate dateFrom, LocalDate dateTo, String title, String remarks) {
+        List<List<String>> rows = fetchCustomReportData(dataSource, columns, dateFrom, dateTo);
         List<String> headers = getHeadersForCustomReport(dataSource, columns);
 
+        boolean limitReached = rows.size() > 1000;
+        if (limitReached) {
+            rows = rows.subList(0, 1000);
+        }
+
+        org.thymeleaf.context.Context ctx = new org.thymeleaf.context.Context();
+        ctx.setVariable("title", title);
+        ctx.setVariable("remarks", remarks); // Pass executive summary
+        ctx.setVariable("exportDate", LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+        ctx.setVariable("headers", headers);
+        ctx.setVariable("rows", rows);
+        ctx.setVariable("limitReached", limitReached);
+
+        String html = templateEngine.process("hr/custom-report-pdf", ctx);
+
+        try (java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream()) {
+            org.xhtmlrenderer.pdf.ITextRenderer renderer = new org.xhtmlrenderer.pdf.ITextRenderer();
+            renderer.setDocumentFromString(html);
+            renderer.layout();
+            renderer.createPDF(baos);
+            return baos.toByteArray();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to generate PDF: " + e.getMessage());
+        }
+    }
+
+    private List<List<String>> fetchCustomReportData(String dataSource, List<String> columns, LocalDate dateFrom, LocalDate dateTo) {
+        List<List<String>> rows = new ArrayList<>();
         if ("employees".equalsIgnoreCase(dataSource)) {
             HrEmployeeService empService = applicationContext.getBean(HrEmployeeService.class);
             org.springframework.data.domain.Page<HrEmployeeDTO> page = empService.searchEmployees(null, null, null, PageRequest.of(0, 10000));
             for (HrEmployeeDTO emp : page.getContent()) {
-                // Date filtering is skipped for employees as hireDate is not available in HrEmployeeDTO
                 rows.add(extractEmployeeColumns(emp, columns));
             }
         } else if ("leave".equalsIgnoreCase(dataSource)) {
@@ -464,10 +539,8 @@ public class HrReportService {
             }
         } else if ("attendance".equalsIgnoreCase(dataSource)) {
             HrAttendanceService attService = applicationContext.getBean(HrAttendanceService.class);
-            // Since attendance might be huge, we'll fetch day by day or just use DateFrom/DateTo if provided.
             LocalDate queryFrom = dateFrom != null ? dateFrom : LocalDate.now().minusDays(30);
             LocalDate queryTo = dateTo != null ? dateTo : LocalDate.now();
-            // Fetch for all days in range
             for (LocalDate day = queryFrom; !day.isAfter(queryTo); day = day.plusDays(1)) {
                 org.springframework.data.domain.Page<HrAttendanceDetailDTO> page = attService.getAttendanceRecords(day, null, null, null, PageRequest.of(0, 10000));
                 for (HrAttendanceDetailDTO att : page.getContent()) {
@@ -477,43 +550,7 @@ public class HrReportService {
         } else {
             throw new IllegalArgumentException("Invalid data source");
         }
-
-        if ("csv".equalsIgnoreCase(format)) {
-            response.setContentType("text/csv; charset=UTF-8");
-            response.setHeader("Content-Disposition", "attachment; filename=\"custom_report_" + dataSource + ".csv\"");
-            java.io.PrintWriter writer = response.getWriter();
-            writer.write('\ufeff'); // BOM for Excel
-            writer.println(String.join(",", headers.stream().map(this::escapeCsv).toList()));
-            for (List<String> row : rows) {
-                writer.println(String.join(",", row.stream().map(this::escapeCsv).toList()));
-            }
-        } else if ("pdf".equalsIgnoreCase(format)) {
-            boolean limitReached = rows.size() > 1000;
-            if (limitReached) {
-                rows = rows.subList(0, 1000); // Limit to prevent OOM
-            }
-
-            response.setContentType("application/pdf");
-            response.setHeader("Content-Disposition", "attachment; filename=\"custom_report_" + dataSource + ".pdf\"");
-            
-            org.thymeleaf.context.Context ctx = new org.thymeleaf.context.Context();
-            ctx.setVariable("title", "Custom Report: " + dataSource.toUpperCase());
-            ctx.setVariable("exportDate", LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
-            ctx.setVariable("headers", headers);
-            ctx.setVariable("rows", rows);
-            ctx.setVariable("limitReached", limitReached);
-            
-            String html = templateEngine.process("hr/custom-report-pdf", ctx);
-            
-            try (java.io.OutputStream os = response.getOutputStream()) {
-                org.xhtmlrenderer.pdf.ITextRenderer renderer = new org.xhtmlrenderer.pdf.ITextRenderer();
-                renderer.setDocumentFromString(html);
-                renderer.layout();
-                renderer.createPDF(os);
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to generate PDF: " + e.getMessage());
-            }
-        }
+        return rows;
     }
 
     private String escapeCsv(String value) {

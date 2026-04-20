@@ -99,6 +99,12 @@
         </p>
     </div>
 
+    <!-- Executive Summary Context -->
+    <div th:if="${remarks != null and !remarks.isEmpty()}" style="margin-bottom: 25px; background-color: #f8fafc; border-left: 4px solid #1414b8; padding: 15px; border-radius: 4px;">
+        <h3 style="margin-top: 0; margin-bottom: 8px; font-size: 11pt; color: #1e293b; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">Executive Summary</h3>
+        <p style="margin-bottom: 0; color: #475569; font-style: italic; white-space: pre-wrap; line-height: 1.5; font-size: 10pt;" th:text="${remarks}"></p>
+    </div>
+
     <table>
         <thead>
             <tr>

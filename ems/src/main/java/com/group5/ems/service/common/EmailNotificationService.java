@@ -117,7 +117,7 @@ public class EmailNotificationService {
                     if (manager.getUser() == null) continue;
                     
                     vars.put("managerName", manager.getUser().getFullName());
-                    sendHtmlEmail(manager.getUser().getEmail(), template, vars, pdfBytes, fileName);
+                    sendHtmlEmail(manager.getUser().getEmail(), template, vars, pdfBytes, fileName, "application/pdf");
                     
                     // Log to DB
                     saveEmailLog(manager.getUser().getEmail(), "REPORT_PUBLISHED", "SUCCESS");
@@ -141,10 +141,10 @@ public class EmailNotificationService {
     }
 
     private void sendHtmlEmail(String to, EmailTemplate template, Map<String, String> variables) throws Exception {
-        sendHtmlEmail(to, template, variables, null, null);
+        sendHtmlEmail(to, template, variables, null, null, null);
     }
 
-    private void sendHtmlEmail(String to, EmailTemplate template, Map<String, String> variables, byte[] attachment, String fileName) throws Exception {
+    private void sendHtmlEmail(String to, EmailTemplate template, Map<String, String> variables, byte[] attachment, String fileName, String contentType) throws Exception {
         String subject = replacePlaceholders(template.getSubject(), variables);
         String htmlBody = replacePlaceholders(template.getBody(), variables);
 
@@ -156,7 +156,8 @@ public class EmailNotificationService {
         helper.setText(htmlBody, true); // true = HTML
 
         if (attachment != null && fileName != null) {
-            helper.addAttachment(fileName, new ByteArrayDataSource(attachment, "application/pdf"));
+            String mimeType = contentType != null ? contentType : "application/pdf";
+            helper.addAttachment(fileName, new ByteArrayDataSource(attachment, mimeType));
         }
 
         mailSender.send(message);
