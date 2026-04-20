@@ -38,6 +38,12 @@
         ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #1414b840; border-radius: 99px; }
+
+        /* Dot grid background */
+        .dot-grid {
+            background-image: radial-gradient(circle, #1414b820 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
     </style>
 </head>
 
@@ -74,7 +80,7 @@
         </header>
 
         <!-- Content Area -->
-        <div class="flex-1 overflow-y-auto p-8">
+        <div class="flex-1 overflow-y-auto p-8 dot-grid">
             <!-- ── KPI Cards ───────────────────────────────────────────────────────── -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
 
