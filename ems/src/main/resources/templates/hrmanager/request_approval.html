@@ -4,6 +4,8 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
     <title th:text="${pageTitle != null ? pageTitle : 'Request Approval - EMS'}">Request Approval - EMS</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
@@ -1436,7 +1438,7 @@
                         <span class="material-symbols-outlined text-rose-600">cancel</span>
                     </div>
                     <div>
-                        <h3 class="text-base font-bold text-slate-900">Reject Leave Request</h3>
+                        <h3 class="text-base font-bold text-slate-900">Reject Request</h3>
                         <p class="text-xs text-slate-500 mt-0.5" id="reject-modal-subtitle">Please provide a reason</p>
                     </div>
                 </div>
@@ -1446,7 +1448,7 @@
                     <label class="block text-xs font-bold text-slate-600 mb-2">Rejection reason <span
                             class="text-rose-500">*</span></label>
                     <textarea id="reject-reason" rows="4"
-                        placeholder="e.g. Insufficient leave balance, critical project deadline, team coverage issue..."
+                        placeholder="e.g. Insufficient budget, policy violation, incomplete information, timing not appropriate..."
                         class="w-full px-4 py-3 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-rose-400 resize-none transition-all"></textarea>
                     <p class="text-xs text-slate-400 mt-1">This reason will be sent to the employee via email
                         notification.</p>
@@ -1455,18 +1457,18 @@
                 <div>
                     <p class="text-xs text-slate-400 mb-2 font-medium">Quick select:</p>
                     <div class="flex flex-wrap gap-2">
-                        <button onclick="setReason('Insufficient leave balance remaining')"
+                        <button onclick="setReason('Insufficient budget allocation for this request')"
                             class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:border-rose-300 hover:bg-rose-50 transition-all">Insufficient
-                            balance</button>
-                        <button onclick="setReason('Critical project deadline during requested period')"
-                            class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:border-rose-300 hover:bg-rose-50 transition-all">Project
-                            deadline</button>
-                        <button onclick="setReason('Team coverage issue — too many members on leave')"
-                            class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:border-rose-300 hover:bg-rose-50 transition-all">Team
-                            coverage</button>
-                        <button onclick="setReason('Incomplete documentation provided')"
+                            budget</button>
+                        <button onclick="setReason('Request does not comply with company policy')"
+                            class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:border-rose-300 hover:bg-rose-50 transition-all">Policy
+                            violation</button>
+                        <button onclick="setReason('Incomplete information or documentation provided')"
                             class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:border-rose-300 hover:bg-rose-50 transition-all">Incomplete
-                            docs</button>
+                            info</button>
+                        <button onclick="setReason('Timing is not appropriate at this moment')"
+                            class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:border-rose-300 hover:bg-rose-50 transition-all">Bad
+                            timing</button>
                     </div>
                 </div>
             </div>
@@ -1840,7 +1842,7 @@
                     var ids = Array.from(selectedIds);
                     
                     // Use AJAX instead of form submit
-                    fetch('/hrmanager/leave-approval/bulk-approve', {
+                    fetch('/hrmanager/request-approval/bulk-approve', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -1946,7 +1948,7 @@
             
             var form = document.createElement('form');
             form.method = 'POST';
-            form.action = '/hrmanager/leave-approval/approve';
+            form.action = '/hrmanager/request-approval/approve';
             appendHidden(form, 'requestId', id);
             appendHidden(form, 'approverId', 1);
             appendCsrf(form);
@@ -2035,13 +2037,13 @@
 
             if (rejectTargetId === '__bulk__') {
                 closeRejectModal();
-                submitBulkAction('/hrmanager/leave-approval/bulk-reject', Array.from(selectedIds), reason);
+                submitBulkAction('/hrmanager/request-approval/bulk-reject', Array.from(selectedIds), reason);
                 return;
             }
 
             var form = document.createElement('form');
             form.method = 'POST';
-            form.action = '/hrmanager/leave-approval/reject';
+            form.action = '/hrmanager/request-approval/reject';
             appendHidden(form, 'requestId', rejectTargetId);
             appendHidden(form, 'approverId', 1);
             appendHidden(form, 'rejectedReason', reason);

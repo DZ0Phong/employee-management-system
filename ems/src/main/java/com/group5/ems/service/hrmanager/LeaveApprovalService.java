@@ -176,9 +176,10 @@ public class LeaveApprovalService {
 
     /**
      * Count pending leave requests (waiting for HR Manager approval)
+     * Note: Only non-ATTENDANCE requests
      */
     public long countPendingLeaveRequests() {
-        return requestRepository.countHrmPendingLeaveRequests();
+        return requestRepository.countHrmPendingWorkflowRequests();
     }
 
     /**
@@ -258,6 +259,8 @@ public class LeaveApprovalService {
 
     /**
      * Get leave requests with pagination
+     * Note: HR Manager only handles non-ATTENDANCE requests (PAYROLL, ADMIN, HR_STATUS)
+     * ATTENDANCE requests (leave) are finalized by HR
      */
     public List<LeaveRequestResponseDTO> getLeaveRequests(String tab, int page) {
         // Ensure page is at least 1
@@ -268,8 +271,8 @@ public class LeaveApprovalService {
         
         switch (tab.toLowerCase()) {
             case "pending":
-                // HR Manager only sees requests that have been approved by HR (step = WAITING_HRM)
-                requestPage = requestRepository.findHrmPendingLeaveRequestsWithPagination(pageable);
+                // HR Manager only sees non-ATTENDANCE requests (step = WAITING_HRM, category <> ATTENDANCE)
+                requestPage = requestRepository.findHrmPendingWorkflowRequestsWithPagination(pageable);
                 break;
             case "approved":
                 requestPage = requestRepository.findApprovedRequestsOrderByApprovedAt(pageable);
@@ -398,8 +401,8 @@ public class LeaveApprovalService {
         
         switch (tab.toLowerCase()) {
             case "pending":
-                // HR Manager only sees requests that have been approved by HR (step = WAITING_HRM)
-                requestPage = requestRepository.findHrmPendingLeaveRequestsWithPagination(pageable);
+                // HR Manager only sees non-ATTENDANCE requests (step = WAITING_HRM, category <> ATTENDANCE)
+                requestPage = requestRepository.findHrmPendingWorkflowRequestsWithPagination(pageable);
                 break;
             case "approved":
                 requestPage = requestRepository.findApprovedRequestsOrderByApprovedAt(pageable);

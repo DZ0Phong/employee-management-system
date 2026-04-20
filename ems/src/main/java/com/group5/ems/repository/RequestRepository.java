@@ -190,13 +190,13 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
             "LEFT JOIN FETCH e.position p " +
             "LEFT JOIN FETCH e.department d " +
             "JOIN FETCH r.requestType rt " +
-            "WHERE r.status = 'PENDING' AND r.step = 'WAITING_HRM' AND rt.category = 'ATTENDANCE' " +
+            "WHERE r.status = 'PENDING' AND r.step = 'WAITING_HRM' AND rt.category <> 'ATTENDANCE' " +
             "ORDER BY r.createdAt DESC")
-    Page<Request> findHrmPendingLeaveRequestsWithPagination(Pageable pageable);
+    Page<Request> findHrmPendingWorkflowRequestsWithPagination(Pageable pageable);
 
     @Query("SELECT COUNT(r) FROM Request r JOIN r.requestType rt " +
-            "WHERE r.status = 'PENDING' AND r.step = 'WAITING_HRM' AND rt.category = 'ATTENDANCE'")
-    long countHrmPendingLeaveRequests();
+            "WHERE r.status = 'PENDING' AND r.step = 'WAITING_HRM' AND rt.category <> 'ATTENDANCE'")
+    long countHrmPendingWorkflowRequests();
 
         @Query("SELECT COUNT(r) FROM Request r WHERE r.status = :status " +
                         "AND r.approvedAt BETWEEN :startDate AND :endDate")
