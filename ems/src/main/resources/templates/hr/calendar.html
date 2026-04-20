@@ -455,11 +455,11 @@
             msg.textContent = message;
             if (type === 'success') {
                 iconBg.className = 'w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-emerald-500 shadow-lg shadow-emerald-200';
-                icon.textContent = 'check_circle';
+                window.setAppIcon?.(icon, 'check_circle');
                 toast.classList.add('bg-emerald-600/90');
             } else {
                 iconBg.className = 'w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-rose-500 shadow-lg shadow-rose-200';
-                icon.textContent = 'error';
+                window.setAppIcon?.(icon, 'error');
                 toast.classList.add('bg-rose-600/90');
             }
 

@@ -43,6 +43,9 @@
 
     function hydrate(root) {
         const scope = root || document;
+        if (scope instanceof Element && scope.matches('.material-symbols-outlined')) {
+            hydrateIconSpan(scope);
+        }
         scope.querySelectorAll('.material-symbols-outlined').forEach(hydrateIconSpan);
     }
 

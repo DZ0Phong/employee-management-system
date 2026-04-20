@@ -875,7 +875,8 @@
             const t = document.getElementById('toast');
             const icon = document.getElementById('toastIcon');
             document.getElementById('toastMsg').textContent = msg;
-            icon.textContent = ok ? 'check_circle' : 'error';
+            window.setAppIcon?.(icon, ok ? 'check_circle' : 'error');
+            icon.className = 'material-symbols-outlined text-[18px] ' + (ok ? 'text-emerald-400' : 'text-rose-400');
             icon.style.color = ok ? '#34d399' : '#f87171';
             t.classList.remove('hidden');
             setTimeout(() => t.classList.add('hidden'), 3000);

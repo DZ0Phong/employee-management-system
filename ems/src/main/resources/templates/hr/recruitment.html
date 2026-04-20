@@ -773,7 +773,7 @@
                                         th:text="${activeJobs?.size() ?: 0}">0</span>
                                 </h3>
                                 <a th:href="@{/hr/recruitment/jobs}"
-                                    class="text-xs text-primary font-semibold hover:underline">View All Posts â†’</a>
+                                    class="text-xs text-primary font-semibold hover:underline">View All Posts →</a>
                             </div>
 
                             <div th:if="${activeJobs == null or activeJobs.isEmpty()}"
@@ -2617,7 +2617,7 @@
         function showToast(msg, ok = true) {
             const t = document.getElementById('toast'), ic = t.querySelector('.material-symbols-outlined');
             document.getElementById('toastMsg').textContent = msg;
-            ic.textContent = ok ? 'check_circle' : 'error';
+            window.setAppIcon?.(ic, ok ? 'check_circle' : 'error');
             ic.className = 'material-symbols-outlined text-[18px] ' + (ok ? 'text-emerald-400' : 'text-rose-400');
             t.classList.remove('hidden');
             setTimeout(() => t.classList.add('hidden'), 3000);

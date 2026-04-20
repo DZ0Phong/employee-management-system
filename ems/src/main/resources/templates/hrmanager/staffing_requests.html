@@ -74,18 +74,18 @@
             <!-- Content -->
             <div class="flex-1 overflow-y-auto p-8 space-y-6">
                 <!-- Success/Error Messages -->
-                <div th:if="${successMsg}" class="animate-slide-up p-4 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 text-emerald-700 rounded-xl flex items-center gap-3">
+                <div th:if="${successMsg}" class="p-4 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 text-emerald-700 rounded-xl flex items-center gap-3">
                     <span class="material-symbols-outlined text-2xl">check_circle</span>
                     <span th:text="${successMsg}"></span>
                 </div>
-                <div th:if="${errorMsg}" class="animate-slide-up p-4 bg-gradient-to-r from-rose-50 to-red-50 border border-rose-200 text-rose-700 rounded-xl flex items-center gap-3">
+                <div th:if="${errorMsg}" class="p-4 bg-gradient-to-r from-rose-50 to-red-50 border border-rose-200 text-rose-700 rounded-xl flex items-center gap-3">
                     <span class="material-symbols-outlined text-2xl">error</span>
                     <span th:text="${errorMsg}"></span>
                 </div>
 
                 <!-- Stats -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div class="stat-card bg-white border-2 border-slate-200 p-6 rounded-2xl shadow-sm animate-slide-up" style="animation-delay: 0.1s">
+                    <div class="stat-card bg-white border-2 border-slate-200 p-6 rounded-2xl shadow-sm">
                         <div class="flex items-center justify-between mb-3">
                             <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
                                 <span class="material-symbols-outlined text-blue-600 text-2xl">pending_actions</span>
@@ -95,7 +95,7 @@
                         <div class="text-3xl font-black text-slate-900" th:text="${pendingCount}">0</div>
                     </div>
                     
-                    <div class="stat-card bg-white border-2 border-slate-200 p-6 rounded-2xl shadow-sm animate-slide-up" style="animation-delay: 0.2s">
+                    <div class="stat-card bg-white border-2 border-slate-200 p-6 rounded-2xl shadow-sm">
                         <div class="flex items-center justify-between mb-3">
                             <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
                                 <span class="material-symbols-outlined text-emerald-600 text-2xl">person_check</span>
@@ -105,7 +105,7 @@
                         <div class="text-3xl font-black text-slate-900" th:text="${availableEmployees.size()}">0</div>
                     </div>
 
-                    <div class="stat-card bg-white border-2 border-slate-200 p-6 rounded-2xl shadow-sm animate-slide-up" style="animation-delay: 0.3s">
+                    <div class="stat-card bg-white border-2 border-slate-200 p-6 rounded-2xl shadow-sm">
                         <div class="flex items-center justify-between mb-3">
                             <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
                                 <span class="material-symbols-outlined text-purple-600 text-2xl">person_add</span>
@@ -115,7 +115,7 @@
                         <div class="text-3xl font-black text-slate-900" th:text="${#lists.size(staffingRequests)}">0</div>
                     </div>
 
-                    <div class="stat-card bg-white border-2 border-slate-200 p-6 rounded-2xl shadow-sm animate-slide-up" style="animation-delay: 0.4s">
+                    <div class="stat-card bg-white border-2 border-slate-200 p-6 rounded-2xl shadow-sm">
                         <div class="flex items-center justify-between mb-3">
                             <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
                                 <span class="material-symbols-outlined text-orange-600 text-2xl">assignment</span>
@@ -127,7 +127,7 @@
                 </div>
 
                 <!-- Pending Requests -->
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm animate-slide-up" style="animation-delay: 0.5s">
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm">
                     <div class="px-6 py-5 border-b border-slate-200 flex items-center justify-between">
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
@@ -150,8 +150,7 @@
                         </div>
                         <div class="space-y-4">
                             <div th:each="request, iterStat : ${staffingRequests}" 
-                                 class="request-card border-2 border-slate-200 rounded-2xl p-5 hover:border-primary/30 animate-slide-up"
-                                 th:style="'animation-delay: ' + (0.6 + ${iterStat.index} * 0.1) + 's'">
+                                 class="request-card border-2 border-slate-200 rounded-2xl p-5 hover:border-primary/30">
                                 <div class="flex justify-between items-start gap-4">
                                     <div class="flex-1">
                                         <div class="flex items-center gap-3 mb-3">
@@ -202,7 +201,7 @@
                 </div>
 
                 <!-- Available Employees -->
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm animate-slide-up" style="animation-delay: 0.7s">
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm">
                     <div class="px-6 py-5 border-b border-slate-200 flex items-center justify-between">
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
@@ -225,8 +224,7 @@
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                             <div th:each="emp, iterStat : ${availableEmployees}" 
-                                 class="employee-card border-2 border-slate-200 rounded-2xl p-5 hover:border-emerald-300 bg-gradient-to-br from-white to-slate-50 animate-slide-up"
-                                 th:style="'animation-delay: ' + (0.8 + ${iterStat.index} * 0.05) + 's'">
+                                 class="employee-card border-2 border-slate-200 rounded-2xl p-5 hover:border-emerald-300 bg-gradient-to-br from-white to-slate-50">
                                 <div class="flex items-start gap-4 mb-4">
                                     <div class="relative">
                                         <img th:src="${emp.avatarUrl}" alt="Avatar" class="w-16 h-16 rounded-2xl object-cover border-2 border-white shadow-md">
