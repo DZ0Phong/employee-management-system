@@ -18,7 +18,6 @@ public class PerformanceReviewDTO {
     private String reviewerName;
     private BigDecimal performanceScore;
     private BigDecimal potentialScore;
-    private String talentMatrix;
     private String strengths;
     private String areasToImprove;
     private String status;

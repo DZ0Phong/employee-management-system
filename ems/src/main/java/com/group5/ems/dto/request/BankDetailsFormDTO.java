@@ -24,7 +24,7 @@ public class BankDetailsFormDTO {
     
     @NotBlank(message = "Account number is required")
     @Pattern(regexp = "^[0-9]+$", message = "Account number must contain only digits")
-    @Size(min = 6, max = 20, message = "Account number must be between 6 and 20 digits")
+    @Size(min = 6, message = "Account number must contain at least 6 digits")
     private String accountNumber;
     
     @Builder.Default

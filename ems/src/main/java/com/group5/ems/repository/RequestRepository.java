@@ -32,7 +32,19 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
         List<Request> findByEmployeeIdAndLeaveTypeIsNotNullOrderByCreatedAtDesc(Long employeeId);
 
 
-        List<Request> findByEmployeeDepartmentIdAndLeaveTypeIsNotNullOrderByCreatedAtDesc(Long departmentId);
+    List<Request> findByEmployeeDepartmentIdAndLeaveTypeIsNotNullOrderByCreatedAtDesc(Long departmentId);
+
+    @Query("SELECT r FROM Request r " +
+            "JOIN FETCH r.employee e " +
+            "JOIN FETCH e.user u " +
+            "JOIN FETCH r.requestType rt " +
+            "LEFT JOIN FETCH r.approvedByUser abu " +
+            "WHERE e.departmentId = :departmentId " +
+            "AND rt.code = :requestTypeCode " +
+            "ORDER BY COALESCE(r.approvedAt, r.updatedAt, r.createdAt) DESC")
+    List<Request> findDepartmentWorkflowRequestsByTypeCode(
+            @Param("departmentId") Long departmentId,
+            @Param("requestTypeCode") String requestTypeCode);
 
         @Query("SELECT r FROM Request r " +
                         "JOIN FETCH r.employee e " +
@@ -80,10 +92,10 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
             "LEFT JOIN FETCH e.department d JOIN FETCH r.requestType rt " +
             "LEFT JOIN FETCH d.manager dm LEFT JOIN FETCH dm.user dmu " +
             "LEFT JOIN FETCH e.position p " +
-            "WHERE r.status <> 'PENDING' AND rt.category = 'ATTENDANCE' " +
+            "WHERE r.status NOT IN ('PENDING', 'CANCELLED') AND rt.category = 'ATTENDANCE' " +
             "ORDER BY r.updatedAt DESC, r.createdAt DESC",
             countQuery = "SELECT COUNT(r) FROM Request r JOIN r.requestType rt " +
-                    "WHERE r.status <> 'PENDING' AND rt.category = 'ATTENDANCE'")
+                    "WHERE r.status NOT IN ('PENDING', 'CANCELLED') AND rt.category = 'ATTENDANCE'")
     Page<Request> findLeaveHistory(Pageable pageable);
 
         // ── Pageable queries for HR workflow requests ──
@@ -337,7 +349,7 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
             "LEFT JOIN FETCH e.department d JOIN FETCH r.requestType rt " +
             "LEFT JOIN FETCH d.manager dm LEFT JOIN FETCH dm.user dmu " +
             "LEFT JOIN FETCH e.position p " +
-            "WHERE r.status <> 'PENDING' AND rt.category = 'ATTENDANCE' " +
+            "WHERE r.status NOT IN ('PENDING', 'CANCELLED') AND rt.category = 'ATTENDANCE' " +
             "AND (:status IS NULL OR r.status = :status) " +
             "AND (:departmentId IS NULL OR d.id = :departmentId) " +
             "AND (:leaveType IS NULL OR rt.code = :leaveType) " +
@@ -348,7 +360,7 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
             "ORDER BY r.updatedAt DESC, r.createdAt DESC",
             countQuery = "SELECT COUNT(r) FROM Request r JOIN r.employee e JOIN e.user u " +
             "LEFT JOIN e.department d JOIN r.requestType rt " +
-            "WHERE r.status <> 'PENDING' AND rt.category = 'ATTENDANCE' " +
+            "WHERE r.status NOT IN ('PENDING', 'CANCELLED') AND rt.category = 'ATTENDANCE' " +
             "AND (:status IS NULL OR r.status = :status) " +
             "AND (:departmentId IS NULL OR d.id = :departmentId) " +
             "AND (:leaveType IS NULL OR rt.code = :leaveType) " +
@@ -415,7 +427,7 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
 
     @Query("SELECT r FROM Request r JOIN FETCH r.employee e JOIN FETCH e.user u " +
             "LEFT JOIN FETCH e.department d JOIN FETCH r.requestType rt " +
-            "WHERE r.status <> 'PENDING' AND rt.category = 'ATTENDANCE' " +
+            "WHERE r.status NOT IN ('PENDING', 'CANCELLED') AND rt.category = 'ATTENDANCE' " +
             "AND (:status IS NULL OR r.status = :status) " +
             "AND (:departmentId IS NULL OR d.id = :departmentId) " +
             "AND (:leaveType IS NULL OR rt.code = :leaveType) " +

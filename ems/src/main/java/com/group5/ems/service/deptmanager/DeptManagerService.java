@@ -233,6 +233,7 @@ public class DeptManagerService {
         Map<String, String> departmentMap = new HashMap<>();
         List<Map<String, String>> teams = new ArrayList<>();
         List<Map<String, String>> positions = new ArrayList<>();
+        List<Map<String, String>> staffingUpdates = new ArrayList<>();
 
         if (department == null) {
             departmentMap.put("name", "No Department Assigned");
@@ -245,6 +246,7 @@ public class DeptManagerService {
             data.put("department", departmentMap);
             data.put("teams", teams);
             data.put("positions", positions);
+            data.put("staffingUpdates", staffingUpdates);
             return data;
         }
 
@@ -289,9 +291,33 @@ public class DeptManagerService {
             positions.add(positionMap);
         }
 
+        List<Map<String, String>> combinedUpdates = new ArrayList<>();
+
+        staffingRequestRepository.findRecentByDepartmentId(department.getId()).stream()
+                .map(this::mapStaffingUpdate)
+                .forEach(combinedUpdates::add);
+
+        requestRepository.findDepartmentWorkflowRequestsByTypeCode(department.getId(), "HR_REMOVAL").stream()
+                .map(this::mapRemovalUpdate)
+                .forEach(combinedUpdates::add);
+
+        staffingUpdates = combinedUpdates.stream()
+                .sorted(Comparator.comparing(
+                        (Map<String, String> item) -> !"Pending".equalsIgnoreCase(item.get("status"))
+                ).thenComparing(
+                        item -> LocalDateTime.parse(item.get("sortAt")),
+                        Comparator.reverseOrder()
+                ))
+                .map(item -> {
+                    item.remove("sortAt");
+                    return item;
+                })
+                .collect(Collectors.toList());
+
         data.put("department", departmentMap);
         data.put("teams", teams);
         data.put("positions", positions);
+        data.put("staffingUpdates", staffingUpdates);
 
         return data;
     }
@@ -350,6 +376,58 @@ public class DeptManagerService {
         StaffingRequest savedRequest = staffingRequestRepository.save(staffingRequest);
         logService.log(AuditAction.CREATE, AuditEntityType.REQUEST, savedRequest.getId(), managerEmployee.getUserId());
         
+        return true;
+    }
+
+    @Transactional
+    public boolean cancelStaffingRequest(Long requestId) {
+        Department department = utilService.getCurrentManagedDepartment();
+        Employee managerEmployee = utilService.getCurrentEmployee();
+        User currentUser = utilService.getCurrentUser();
+        if (department == null || managerEmployee == null || requestId == null) {
+            return false;
+        }
+
+        StaffingRequest request = staffingRequestRepository.findById(requestId).orElse(null);
+        if (request == null
+                || !department.getId().equals(request.getDepartmentId())
+                || !managerEmployee.getId().equals(request.getRequestedByEmployeeId())
+                || !"PENDING".equalsIgnoreCase(request.getStatus())) {
+            return false;
+        }
+
+        request.setStatus("CANCELLED");
+        request.setProcessedByUserId(currentUser.getId());
+        request.setProcessedAt(LocalDateTime.now());
+        staffingRequestRepository.save(request);
+        logService.log(AuditAction.UPDATE, AuditEntityType.REQUEST, request.getId(), currentUser.getId());
+        return true;
+    }
+
+    @Transactional
+    public boolean cancelRemovalRequest(Long requestId) {
+        Department department = utilService.getCurrentManagedDepartment();
+        Employee managerEmployee = utilService.getCurrentEmployee();
+        User currentUser = utilService.getCurrentUser();
+        if (department == null || managerEmployee == null || requestId == null) {
+            return false;
+        }
+
+        Request request = requestRepository.findById(requestId).orElse(null);
+        if (request == null
+                || request.getEmployee() == null
+                || !department.getId().equals(request.getEmployee().getDepartmentId())
+                || !managerEmployee.getId().equals(request.getEmployeeId())
+                || request.getRequestType() == null
+                || !"HR_REMOVAL".equalsIgnoreCase(request.getRequestType().getCode())
+                || !"PENDING".equalsIgnoreCase(request.getStatus())) {
+            return false;
+        }
+
+        request.setStatus("CANCELLED");
+        requestRepository.save(request);
+        saveHistory(request.getId(), currentUser.getId(), "CANCELLED", "Cancelled by Department Manager");
+        logService.log(AuditAction.UPDATE, AuditEntityType.REQUEST, request.getId(), currentUser.getId());
         return true;
     }
 
@@ -818,6 +896,153 @@ public class DeptManagerService {
             return employee.getUser().getFullName();
         }
         return employee.getEmployeeCode() != null ? employee.getEmployeeCode() : "Employee #" + employee.getId();
+    }
+
+    private Map<String, String> mapStaffingUpdate(StaffingRequest request) {
+        Map<String, String> item = new HashMap<>();
+
+        String requestType = request.getRequestType() != null
+                ? request.getRequestType().trim().toUpperCase(Locale.ROOT)
+                : "REQUEST";
+        String requestTypeLabel = "TRANSFER".equals(requestType) ? "Internal Transfer" : "Recruitment";
+        String role = request.getRoleRequested() != null ? request.getRoleRequested() : "Role request";
+        String status = request.getStatus() != null ? request.getStatus().trim().toUpperCase(Locale.ROOT) : "PENDING";
+
+        item.put("requestType", requestTypeLabel);
+        item.put("role", role);
+        item.put("status", prettifyStatus(status));
+        item.put("statusClass", staffingStatusClass(status));
+        item.put("statusDotClass", staffingStatusDotClass(status));
+        item.put("summary", staffingSummary(requestTypeLabel, role, status));
+        item.put("detail", staffingDetail(request, status));
+        item.put("timestamp", formatStaffingTimestamp(request));
+        item.put("sortAt", resolveStaffingTimestamp(request).toString());
+        item.put("sourceType", "STAFFING");
+        item.put("requestId", String.valueOf(request.getId()));
+        item.put("canCancel", String.valueOf("PENDING".equals(status)));
+        return item;
+    }
+
+    private Map<String, String> mapRemovalUpdate(Request request) {
+        Map<String, String> item = new HashMap<>();
+        String status = request.getStatus() != null ? request.getStatus().trim().toUpperCase(Locale.ROOT) : "PENDING";
+        String employeeName = request.getTitle() != null && !request.getTitle().isBlank()
+                ? request.getTitle().replaceFirst("^Removal request for\\s*", "")
+                : displayEmployeeName(request.getEmployee());
+
+        item.put("requestType", "Member Removal");
+        item.put("role", employeeName);
+        item.put("status", prettifyStatus(status));
+        item.put("statusClass", staffingStatusClass(status));
+        item.put("statusDotClass", staffingStatusDotClass(status));
+        item.put("summary", removalSummary(employeeName, status));
+        item.put("detail", removalDetail(request, status));
+        item.put("timestamp", formatRemovalTimestamp(request));
+        item.put("sortAt", resolveRemovalTimestamp(request).toString());
+        item.put("sourceType", "REMOVAL");
+        item.put("requestId", String.valueOf(request.getId()));
+        item.put("canCancel", String.valueOf("PENDING".equals(status)));
+        return item;
+    }
+
+    private String staffingSummary(String requestTypeLabel, String role, String status) {
+        return switch (status) {
+            case "COMPLETED" -> requestTypeLabel + " completed for " + role;
+            case "APPROVED" -> requestTypeLabel + " approved for " + role;
+            case "REJECTED" -> requestTypeLabel + " rejected for " + role;
+            default -> requestTypeLabel + " submitted for " + role;
+        };
+    }
+
+    private String staffingDetail(StaffingRequest request, String status) {
+        if ("COMPLETED".equals(status) && request.getAssignedEmployee() != null) {
+            return displayEmployeeName(request.getAssignedEmployee()) + " has already been assigned to your department.";
+        }
+        if ("APPROVED".equals(status)) {
+            return "HR approved this staffing request and is finalizing the next action.";
+        }
+        if ("REJECTED".equals(status)) {
+            return "HR closed this staffing request. Review with HR if you still need coverage.";
+        }
+        return "Your staffing request is currently waiting for HR review.";
+    }
+
+    private String removalSummary(String employeeName, String status) {
+        return switch (status) {
+            case "APPROVED" -> "Removal approved for " + employeeName;
+            case "REJECTED" -> "Removal rejected for " + employeeName;
+            default -> "Removal request submitted for " + employeeName;
+        };
+    }
+
+    private String removalDetail(Request request, String status) {
+        if ("APPROVED".equals(status)) {
+            return "HR approved this department removal request. Coordinate the handoff and profile update with HR if needed.";
+        }
+        if ("REJECTED".equals(status)) {
+            return request.getRejectedReason() != null && !request.getRejectedReason().isBlank()
+                    ? "HR response: " + request.getRejectedReason()
+                    : "HR rejected this department removal request.";
+        }
+        return "Your member removal request is still waiting for HR review.";
+    }
+
+    private String staffingStatusClass(String status) {
+        return switch (status) {
+            case "COMPLETED" -> "bg-emerald-100 text-emerald-700";
+            case "APPROVED" -> "bg-blue-100 text-blue-700";
+            case "REJECTED" -> "bg-rose-100 text-rose-700";
+            default -> "bg-amber-100 text-amber-700";
+        };
+    }
+
+    private String staffingStatusDotClass(String status) {
+        return switch (status) {
+            case "COMPLETED" -> "bg-emerald-500";
+            case "APPROVED" -> "bg-blue-500";
+            case "REJECTED" -> "bg-rose-500";
+            default -> "bg-amber-500";
+        };
+    }
+
+    private String prettifyStatus(String status) {
+        return switch (status) {
+            case "COMPLETED" -> "Completed";
+            case "APPROVED" -> "Approved";
+            case "REJECTED" -> "Rejected";
+            case "CANCELLED" -> "Cancelled";
+            default -> "Pending";
+        };
+    }
+
+    private String formatStaffingTimestamp(StaffingRequest request) {
+        LocalDateTime timestamp = resolveStaffingTimestamp(request);
+        if (timestamp == null) {
+            return "Just now";
+        }
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm", Locale.ENGLISH);
+        return timestamp.format(formatter);
+    }
+
+    private LocalDateTime resolveStaffingTimestamp(StaffingRequest request) {
+        return request.getProcessedAt() != null
+                ? request.getProcessedAt()
+                : (request.getUpdatedAt() != null ? request.getUpdatedAt() : request.getCreatedAt());
+    }
+
+    private String formatRemovalTimestamp(Request request) {
+        LocalDateTime timestamp = resolveRemovalTimestamp(request);
+        if (timestamp == null) {
+            return "Just now";
+        }
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm", Locale.ENGLISH);
+        return timestamp.format(formatter);
+    }
+
+    private LocalDateTime resolveRemovalTimestamp(Request request) {
+        return request.getApprovedAt() != null
+                ? request.getApprovedAt()
+                : (request.getUpdatedAt() != null ? request.getUpdatedAt() : request.getCreatedAt());
     }
 
     private void saveHistory(Long requestId, Long approverId, String action, String comment) {

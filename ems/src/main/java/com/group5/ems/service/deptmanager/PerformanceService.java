@@ -25,6 +25,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -42,6 +43,7 @@ public class PerformanceService {
 
         User currentUser = utilService.getCurrentUser();
         Department department = utilService.getDepartmentForManager(currentUser);
+        Employee managerEmployee = utilService.getCurrentEmployee();
 
         data.put("manager", utilService.getManagerMap(currentUser));
         data.put("pendingApprovals", utilService.getPendingApprovalsCount(department));
@@ -49,6 +51,8 @@ public class PerformanceService {
         if (department == null) {
             data.put("reviews", List.of());
             data.put("employees", List.of());
+            data.put("reviewPeriodOptions", buildReviewPeriodOptions());
+            data.put("notStartedCount", 0);
             data.put("overdueCount", 0);
             data.put("draftCount", 0);
             data.put("scheduledCount", 0);
@@ -58,7 +62,14 @@ public class PerformanceService {
             return data;
         }
 
-        List<Employee> employees = employeeRepository.findByDepartmentIdWithUser(department.getId());
+        List<Employee> employees = employeeRepository.findByDepartmentIdWithUser(department.getId()).stream()
+                .filter(this::isReviewableEmployee)
+                .filter(employee -> managerEmployee == null || !Objects.equals(employee.getId(), managerEmployee.getId()))
+                .sorted(Comparator.comparing(
+                        (Employee employee) -> employee.getUser() != null ? employee.getUser().getFullName() : "",
+                        String.CASE_INSENSITIVE_ORDER
+                ))
+                .toList();
         List<PerformanceReview> departmentReviews = reviewRepository.findByEmployee_DepartmentIdOrderByUpdatedAtDesc(department.getId());
 
         Map<Long, PerformanceReview> latestReviewByEmployee = new LinkedHashMap<>();
@@ -70,6 +81,7 @@ public class PerformanceService {
 
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MMM dd, yyyy");
         int overdueCount = 0;
+        int notStartedCount = 0;
         int draftCount = 0;
         int scheduledCount = 0;
         int completedCount = 0;
@@ -84,6 +96,7 @@ public class PerformanceService {
                 row.put("statusTheme", "bg-slate-100 text-slate-700 border-slate-200");
                 row.put("actionLabel", "Start Review");
                 row.put("actionMode", "create");
+                notStartedCount++;
                 reviews.add(row);
                 continue;
             }
@@ -118,13 +131,15 @@ public class PerformanceService {
             reviews.add(row);
         }
 
-        int totalTracked = overdueCount + draftCount + scheduledCount + completedCount;
-        int completionRate = totalTracked > 0
-                ? (int) Math.round((double) completedCount * 100 / totalTracked)
+        reviews.sort(Comparator
+                .comparingInt((Map<String, Object> row) -> reviewStatusPriority((String) row.get("status")))
+                .thenComparing(row -> ((String) row.getOrDefault("employeeName", "")).toLowerCase(Locale.ROOT)));
+
+        int completionRate = !employees.isEmpty()
+                ? (int) Math.round((double) completedCount * 100 / employees.size())
                 : 0;
 
         List<Map<String, Object>> employeeOptions = employees.stream()
-                .sorted(Comparator.comparing(emp -> emp.getUser() != null ? emp.getUser().getFullName() : "", String.CASE_INSENSITIVE_ORDER))
                 .map(employee -> {
                     Map<String, Object> item = new HashMap<>();
                     item.put("id", employee.getId());
@@ -136,6 +151,8 @@ public class PerformanceService {
 
         data.put("reviews", reviews);
         data.put("employees", employeeOptions);
+        data.put("reviewPeriodOptions", buildReviewPeriodOptions());
+        data.put("notStartedCount", notStartedCount);
         data.put("overdueCount", overdueCount);
         data.put("draftCount", draftCount);
         data.put("scheduledCount", scheduledCount);
@@ -157,22 +174,42 @@ public class PerformanceService {
                                       String status) {
         Department department = utilService.requireCurrentManagedDepartment();
         Employee managerEmployee = utilService.requireCurrentEmployee();
-        Employee targetEmployee = employeeRepository.findById(employeeId)
-                .filter(employee -> department.getId().equals(employee.getDepartmentId()))
-                .orElseThrow(() -> new IllegalArgumentException("Employee is outside your department."));
-
-        String normalizedPeriod = normalizeReviewPeriod(reviewPeriod);
         String normalizedStatus = normalizeStatus(status);
         BigDecimal safePerformanceScore = normalizeScore(performanceScore);
         BigDecimal safePotentialScore = normalizeScore(potentialScore);
 
         PerformanceReview review;
+        Employee targetEmployee;
+        String normalizedPeriod;
         if (reviewId != null) {
             review = reviewRepository.findByIdAndEmployee_DepartmentId(reviewId, department.getId())
                     .orElseThrow(() -> new IllegalArgumentException("Performance review not found."));
+            targetEmployee = review.getEmployee() != null
+                    ? review.getEmployee()
+                    : employeeRepository.findById(review.getEmployeeId())
+                            .orElseThrow(() -> new IllegalArgumentException("Employee not found."));
+            normalizedPeriod = review.getReviewPeriod();
         } else {
-            review = reviewRepository.findByEmployeeIdAndReviewPeriod(targetEmployee.getId(), normalizedPeriod)
-                    .orElseGet(PerformanceReview::new);
+            targetEmployee = employeeRepository.findById(employeeId)
+                    .filter(employee -> department.getId().equals(employee.getDepartmentId()))
+                    .orElseThrow(() -> new IllegalArgumentException("Employee is outside your department."));
+            normalizedPeriod = normalizeReviewPeriod(reviewPeriod);
+            if (reviewRepository.findByEmployeeIdAndReviewPeriod(targetEmployee.getId(), normalizedPeriod).isPresent()) {
+                throw new IllegalArgumentException("A performance review already exists for this employee and review period.");
+            }
+            review = new PerformanceReview();
+        }
+
+        if (!isReviewableEmployee(targetEmployee)) {
+            throw new IllegalArgumentException("Only active or on-leave employees can be reviewed.");
+        }
+        if (Objects.equals(targetEmployee.getId(), managerEmployee.getId())) {
+            throw new IllegalArgumentException("Department managers cannot submit performance reviews for themselves.");
+        }
+        if ("COMPLETED".equals(normalizedStatus)) {
+            if (trimToNull(strengths) == null || trimToNull(areasToImprove) == null) {
+                throw new IllegalArgumentException("Completed reviews must include both strengths and areas to improve.");
+            }
         }
 
         review.setEmployeeId(targetEmployee.getId());
@@ -324,9 +361,13 @@ public class PerformanceService {
 
     private String normalizeReviewPeriod(String rawReviewPeriod) {
         if (rawReviewPeriod == null || rawReviewPeriod.isBlank()) {
-            return "YEAR_" + LocalDate.now().getYear();
+            throw new IllegalArgumentException("Please choose a review period.");
         }
-        return rawReviewPeriod.trim().toUpperCase(Locale.ROOT);
+        String normalized = rawReviewPeriod.trim().toUpperCase(Locale.ROOT);
+        if (normalized.matches("YEAR_\\d{4}") || normalized.matches("H[12]_\\d{4}")) {
+            return normalized;
+        }
+        throw new IllegalArgumentException("Unsupported review period.");
     }
 
     private String normalizeStatus(String rawStatus) {
@@ -357,6 +398,36 @@ public class PerformanceService {
 
     private String trimToNull(String value) {
         return value == null || value.trim().isEmpty() ? null : value.trim();
+    }
+
+    private boolean isReviewableEmployee(Employee employee) {
+        if (employee == null) {
+            return false;
+        }
+        String status = employee.getStatus() == null ? "" : employee.getStatus().trim().toUpperCase(Locale.ROOT);
+        return "ACTIVE".equals(status) || "ON_LEAVE".equals(status);
+    }
+
+    private int reviewStatusPriority(String status) {
+        return switch (status == null ? "" : status) {
+            case "OVERDUE" -> 0;
+            case "DRAFT" -> 1;
+            case "SCHEDULED" -> 2;
+            case "NOT_STARTED" -> 3;
+            case "COMPLETED" -> 4;
+            default -> 5;
+        };
+    }
+
+    private List<String> buildReviewPeriodOptions() {
+        int currentYear = LocalDate.now().getYear();
+        List<String> options = new ArrayList<>();
+        for (int year = currentYear - 1; year <= currentYear + 1; year++) {
+            options.add("YEAR_" + year);
+            options.add("H1_" + year);
+            options.add("H2_" + year);
+        }
+        return options;
     }
 
     private LocalDate extractDueDate(String reviewPeriod) {

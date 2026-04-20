@@ -242,7 +242,6 @@ public class HrEmployeeService {
                         .reviewPeriod(pr.getReviewPeriod())
                         .performanceScore(pr.getPerformanceScore())
                         .potentialScore(pr.getPotentialScore())
-                        .talentMatrix(pr.getTalentMatrix())
                         .status(pr.getStatus())
                         .reviewerName(pr.getReviewer() != null && pr.getReviewer().getUser() != null ? pr.getReviewer().getUser().getFullName() : "System")
                         .createdAt(pr.getCreatedAt())

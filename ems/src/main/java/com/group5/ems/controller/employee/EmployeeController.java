@@ -2,6 +2,7 @@ package com.group5.ems.controller.employee;
 
 import com.group5.ems.dto.request.CreateLeaveRequestDTO;
 import com.group5.ems.dto.request.UpdateProfileRequest;
+import com.group5.ems.dto.request.BankDetailsFormDTO;
 import com.group5.ems.dto.response.*;
 import com.group5.ems.entity.Employee;
 import com.group5.ems.entity.Department;
@@ -23,6 +24,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import jakarta.validation.Valid;
+import org.springframework.validation.BindingResult;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -46,6 +49,7 @@ public class EmployeeController {
     private final AttendanceService attendanceService;
     private final PayrollService payrollService;
     private final PerformanceService performanceService;
+    private final EmployeeBankDetailsService employeeBankDetailsService;
 
     // ── Helper methods ─────────────────────────────────────
     private User getUser(Authentication authentication) {
@@ -448,16 +452,74 @@ public class EmployeeController {
         Employee employee = getEmployee(user);
 
         if (employee != null) {
+            PayrollSummaryDTO summary = payrollService.getPayrollSummary(employee.getId());
+            BankDetailsResponseDTO primaryBankDetail = employeeBankDetailsService.getPrimaryBankDetail(employee.getId());
+            payrollService.applyPrimaryBankDetail(summary, primaryBankDetail);
             model.addAttribute("employee", dashboardService.getEmployeeInfo(employee.getId(), user.getId()));
-            model.addAttribute("summary", payrollService.getPayrollSummary(employee.getId()));
+            model.addAttribute("summary", summary);
             model.addAttribute("payslips", payrollService.getPayslipHistory(employee.getId()));
+            model.addAttribute("bankDetails", employeeBankDetailsService.getBankDetails(employee.getId()));
+            model.addAttribute("banks", employeeBankDetailsService.getSupportedBanks());
+            if (!model.containsAttribute("bankDetailsForm")) {
+                model.addAttribute("bankDetailsForm", new BankDetailsFormDTO());
+            }
         } else {
             model.addAttribute("employee", buildDefaultEmployeeInfo(user));
-            model.addAttribute("summary", PayrollSummaryDTO.builder().build());
+            model.addAttribute("summary", PayrollSummaryDTO.builder().hasBankDetails(false).build());
             model.addAttribute("payslips", List.of());
+            model.addAttribute("bankDetails", List.of());
+            model.addAttribute("banks", List.of());
+            if (!model.containsAttribute("bankDetailsForm")) {
+                model.addAttribute("bankDetailsForm", new BankDetailsFormDTO());
+            }
         }
 
         return "employee/payroll";
+    }
+
+    @PostMapping("/payroll/bank-details/add")
+    public String addPayrollBankDetails(Authentication authentication,
+                                        @Valid @ModelAttribute("bankDetailsForm") BankDetailsFormDTO form,
+                                        BindingResult bindingResult,
+                                        RedirectAttributes redirectAttributes) {
+        User user = getUser(authentication);
+        Employee employee = getEmployee(user);
+        if (employee == null) {
+            redirectAttributes.addFlashAttribute("payrollError", "Employee profile not found.");
+            return "redirect:/employee/payroll";
+        }
+        if (bindingResult.hasErrors()) {
+            redirectAttributes.addFlashAttribute("payrollError", "Please review your bank details and try again.");
+            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.bankDetailsForm", bindingResult);
+            redirectAttributes.addFlashAttribute("bankDetailsForm", form);
+            return "redirect:/employee/payroll";
+        }
+        try {
+            employeeBankDetailsService.addBankDetails(employee.getId(), form);
+            redirectAttributes.addFlashAttribute("payrollSuccess", "Bank account saved successfully.");
+        } catch (IllegalArgumentException ex) {
+            redirectAttributes.addFlashAttribute("payrollError", ex.getMessage());
+        }
+        return "redirect:/employee/payroll";
+    }
+
+    @PostMapping("/payroll/bank-details/{bankId}/set-primary")
+    public String setPayrollPrimaryBank(Authentication authentication,
+                                        @PathVariable Long bankId,
+                                        RedirectAttributes redirectAttributes) {
+        User user = getUser(authentication);
+        Employee employee = getEmployee(user);
+        if (employee == null) {
+            redirectAttributes.addFlashAttribute("payrollError", "Employee profile not found.");
+            return "redirect:/employee/payroll";
+        }
+        try {
+            employeeBankDetailsService.setPrimaryAccount(employee.getId(), bankId);
+            redirectAttributes.addFlashAttribute("payrollSuccess", "Primary payout account updated.");
+        } catch (IllegalArgumentException ex) {
+            redirectAttributes.addFlashAttribute("payrollError", ex.getMessage());
+        }
+        return "redirect:/employee/payroll";
     }
 
     @GetMapping("/payroll/export")
@@ -491,8 +553,8 @@ public class EmployeeController {
             model.addAttribute("summary", PerformanceSummaryDTO.builder()
                     .currentRating(java.math.BigDecimal.ZERO)
                     .previousRating(java.math.BigDecimal.ZERO)
-                    .talentMatrix("N/A").totalReviews(0)
-                    .kpisMet(0).kpisTotal(0).skillsCount(0).build());
+                    .totalReviews(0)
+                    .build());
             model.addAttribute("reviews", List.of());
         }
 

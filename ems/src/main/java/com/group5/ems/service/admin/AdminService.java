@@ -38,7 +38,6 @@ public class AdminService {
     private final UserRepository userRepository;
     private final UserRoleRepository userRoleRepository;
     private final RoleRepository roleRepository;
-    private final PositionRepository positionRepository;
     private final DepartmentRepository departmentRepository;
     private final EmployeeRepository employeeRepository;
     private final PasswordEncoder passwordEncoder;
@@ -310,23 +309,14 @@ public class AdminService {
         if (employeeRepository.findByUserId(user.getId()).isPresent()) {
             return;
         }
-        Position defaultPosition = findDefaultPosition();
         Employee employee = new Employee();
         employee.setUserId(user.getId());
         employee.setEmployeeCode(generateEmployeeCode(user.getId()));
-        employee.setPositionId(defaultPosition.getId());
+        employee.setPositionId(null);
         employee.setHireDate(LocalDate.now());
         employee.setStatus("ACTIVE");
         employeeRepository.save(employee);
         logService.log(AuditAction.CREATE, AuditEntityType.EMPLOYEE, employee.getId());
-    }
-
-    private Position findDefaultPosition() {
-        return positionRepository.findByCode("EMPLOYEE")
-                .or(() -> positionRepository.findByCode("STAFF"))
-                .or(() -> positionRepository.findAll().stream().findFirst())
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Cannot create employee profile: no position configured"));
     }
 
     private String generateEmployeeCode(Long userId) {

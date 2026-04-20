@@ -217,7 +217,7 @@
                                         No leave requests found for your department.
                                     </td>
                                 </tr>
-                                <tr th:each="req : ${data.requests}" th:attr="data-id=${req.id}, data-duration=${req.durationDays}, data-type=${#strings.toLowerCase(req.typeDisplay)}, data-status=${req.status}, data-name=${req.employee.name}" class="request-row hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors group">
+                                <tr th:each="req : ${data.requests}" th:attr="data-id=${req.id}, data-duration=${req.durationDays}, data-type=${#strings.toLowerCase(req.typeDisplay)}, data-status=${req.status}, data-name=${req.employee.name}, data-can-review=${req.canReview}, data-urgent=${req.urgent}" class="request-row hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors group">
                                     <td class="px-6 py-4">
                                         <div class="flex items-center gap-3">
                                             <img th:src="${req.employee.avatarUrl}" class="h-9 w-9 rounded-xl object-cover shadow-sm"/>
@@ -228,10 +228,16 @@
                                         </div>
                                     </td>
                                     <td class="px-6 py-4">
-                                        <span th:class="'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ' + ${req.typeColorClass}">
-                                            <span th:class="'w-1.5 h-1.5 rounded-full ' + ${req.typeDotClass}"></span>
-                                            <span th:text="${req.typeDisplay}">Annual</span>
-                                        </span>
+                                        <div class="flex flex-wrap items-center gap-2">
+                                            <span th:class="'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ' + ${req.typeColorClass}">
+                                                <span th:class="'w-1.5 h-1.5 rounded-full ' + ${req.typeDotClass}"></span>
+                                                <span th:text="${req.typeDisplay}">Annual</span>
+                                            </span>
+                                            <span th:if="${req.urgent}" class="inline-flex items-center gap-1 rounded-full border border-rose-200 bg-rose-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-rose-600">
+                                                <span class="material-symbols-outlined text-[14px]">warning</span>
+                                                <span>Urgent</span>
+                                            </span>
+                                        </div>
                                     </td>
                                     <td class="px-6 py-4 text-sm font-bold text-slate-700 dark:text-slate-300" th:text="${req.durationDays} + ' Days'">3 Days</td>
                                     <td class="px-6 py-4">
@@ -259,8 +265,9 @@
                                                              data-dates=${req.dates},
                                                              data-applied-on=${req.appliedOn},
                                                              data-reason=${req.reason},
-                                                             data-step-display=${req.stepDisplay}"
-                                                    data-review-trigger>
+                                                             data-step-display=${req.stepDisplay},
+                                                             data-urgent=${req.urgent}"
+                                                     data-review-trigger>
                                                 <span class="material-symbols-outlined text-[18px]">visibility</span>
                                                 <span>Review</span>
                                             </button>
@@ -307,8 +314,8 @@
     </main>
 </div>
 
-<div id="review-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/45 px-4">
-    <div class="w-full max-w-[42rem] overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl">
+<div id="review-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/45 px-4 py-6">
+    <div class="flex w-full max-w-[38rem] max-h-[88vh] flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl">
         <div class="flex items-start justify-between border-b border-slate-100 px-5 py-4">
             <div>
                 <p class="text-xs font-bold uppercase tracking-[0.18em] text-primary">Leave Review</p>
@@ -320,7 +327,7 @@
             </button>
         </div>
 
-        <div class="space-y-4 px-5 py-5">
+        <div class="flex-1 space-y-4 overflow-y-auto px-5 py-5">
             <div class="flex items-center gap-3 rounded-2xl bg-slate-50 px-4 py-3">
                 <img id="modal-avatar" src="" alt="Employee avatar" class="h-12 w-12 rounded-2xl object-cover shadow-sm"/>
                 <div class="min-w-0">
@@ -362,6 +369,21 @@
 
             <form id="review-action-form" class="space-y-4">
                 <input type="hidden" id="modal-request-id" name="requestId" value=""/>
+                <div id="modal-urgent-box" class="hidden rounded-2xl border border-rose-100 bg-rose-50 px-4 py-4">
+                    <div class="flex items-start gap-3">
+                        <div class="rounded-xl bg-white p-2 text-rose-500 shadow-sm">
+                            <span class="material-symbols-outlined text-[18px]">warning</span>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm font-semibold text-rose-700">Employee marked this request as urgent.</p>
+                            <p class="mt-1 text-xs leading-5 text-rose-600">Review the reason carefully. If the urgency is not justified, you can clear the urgent flag before taking action.</p>
+                            <label class="mt-3 inline-flex items-center gap-3 rounded-xl border border-rose-200 bg-white px-3 py-2 text-sm font-medium text-slate-700">
+                                <input id="modal-urgent-checkbox" type="checkbox" class="rounded border-slate-300 text-primary focus:ring-primary">
+                                <span>Keep urgent priority on this request</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
                 <div>
                     <div class="mb-2 flex items-center justify-between gap-3">
                         <label for="modal-rejection-reason" class="text-sm font-semibold text-slate-700">Reject reason</label>
@@ -391,11 +413,13 @@
 </div>
 
 <form id="modal-forward-form" method="post" class="hidden">
+    <input type="hidden" name="urgent" id="modal-forward-hidden-urgent" value="false" />
     <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 </form>
 
 <form id="modal-reject-form" method="post" class="hidden">
     <input type="hidden" name="rejectionReason" id="modal-reject-hidden-reason" />
+    <input type="hidden" name="urgent" id="modal-reject-hidden-urgent" value="false" />
     <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 </form>
 
@@ -422,6 +446,8 @@
             const modalAppliedOn = document.getElementById('modal-applied-on');
             const modalReason = document.getElementById('modal-reason');
             const modalStepDisplay = document.getElementById('modal-step-display');
+            const modalUrgentBox = document.getElementById('modal-urgent-box');
+            const modalUrgentCheckbox = document.getElementById('modal-urgent-checkbox');
             const modalRejectReason = document.getElementById('modal-rejection-reason');
             const modalRejectError = document.getElementById('modal-rejection-error');
             const modalForwardBtn = document.getElementById('modal-forward-btn');
@@ -431,8 +457,10 @@
             const paginationPrev = document.getElementById('pagination-prev');
             const paginationNext = document.getElementById('pagination-next');
             const modalForwardForm = document.getElementById('modal-forward-form');
+            const modalForwardHiddenUrgent = document.getElementById('modal-forward-hidden-urgent');
             const modalRejectForm = document.getElementById('modal-reject-form');
             const modalRejectHiddenReason = document.getElementById('modal-reject-hidden-reason');
+            const modalRejectHiddenUrgent = document.getElementById('modal-reject-hidden-urgent');
 
             let currentTab = 'all'; // all, approved, rejected
             let searchTerm = '';
@@ -461,6 +489,18 @@
 
             function sortRows(filteredRows) {
                 filteredRows.sort((a, b) => {
+                    const aCanReview = a.getAttribute('data-can-review') === 'true' ? 1 : 0;
+                    const bCanReview = b.getAttribute('data-can-review') === 'true' ? 1 : 0;
+                    if (aCanReview !== bCanReview) {
+                        return bCanReview - aCanReview;
+                    }
+
+                    const aUrgent = a.getAttribute('data-urgent') === 'true' ? 1 : 0;
+                    const bUrgent = b.getAttribute('data-urgent') === 'true' ? 1 : 0;
+                    if (aUrgent !== bUrgent) {
+                        return bUrgent - aUrgent;
+                    }
+
                     if (currentSort === 'newest') return parseInt(b.getAttribute('data-id')) - parseInt(a.getAttribute('data-id'));
                     if (currentSort === 'oldest') return parseInt(a.getAttribute('data-id')) - parseInt(b.getAttribute('data-id'));
                     
@@ -600,6 +640,13 @@
                 modalStepDisplay.textContent = button.dataset.stepDisplay || 'Waiting for Department Manager';
                 modalRejectReason.value = '';
                 modalRejectError.classList.add('hidden');
+                if (button.dataset.urgent === 'true') {
+                    modalUrgentBox?.classList.remove('hidden');
+                    if (modalUrgentCheckbox) modalUrgentCheckbox.checked = true;
+                } else {
+                    modalUrgentBox?.classList.add('hidden');
+                    if (modalUrgentCheckbox) modalUrgentCheckbox.checked = false;
+                }
                 reviewModal.classList.remove('hidden');
                 reviewModal.classList.add('flex');
             }
@@ -609,6 +656,8 @@
                 reviewModal.classList.remove('flex');
                 modalRejectReason.value = '';
                 modalRejectError.classList.add('hidden');
+                modalUrgentBox?.classList.add('hidden');
+                if (modalUrgentCheckbox) modalUrgentCheckbox.checked = false;
             }
 
             reviewButtons.forEach(button => {
@@ -631,6 +680,9 @@
 
             modalForwardBtn?.addEventListener('click', () => {
                 if (!modalRequestId.value) return;
+                if (modalForwardHiddenUrgent) {
+                    modalForwardHiddenUrgent.value = modalUrgentCheckbox?.checked ? 'true' : 'false';
+                }
                 modalForwardForm.action = `/dept-manager/leave-approval/${modalRequestId.value}/approve`;
                 modalForwardForm.submit();
             });
@@ -642,6 +694,9 @@
                     modalRejectError.classList.remove('hidden');
                     modalRejectReason.focus();
                     return;
+                }
+                if (modalRejectHiddenUrgent) {
+                    modalRejectHiddenUrgent.value = modalUrgentCheckbox?.checked ? 'true' : 'false';
                 }
                 modalRejectForm.action = `/dept-manager/leave-approval/${modalRequestId.value}/reject`;
                 modalRejectHiddenReason.value = reason;

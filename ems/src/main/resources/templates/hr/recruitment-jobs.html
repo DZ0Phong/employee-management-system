@@ -8,8 +8,8 @@
     <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
         rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
-        rel="stylesheet" />
+    <link rel="stylesheet" href="/css/app-icons.css" th:href="@{/css/app-icons.css}" />
+    <script defer src="/js/app-icons.js" th:src="@{/js/app-icons.js}"></script>
     <link rel="stylesheet" th:href="@{/css/hr/hr-common.css}">
     <!-- Flatpickr -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -243,10 +243,10 @@
 <body class="bg-bg-light font-display text-slate-900 min-h-screen">
     <div class="flex h-screen overflow-hidden">
 
-        <!-- ══════════════════ SIDEBAR ══════════════════ -->
+        <!-- Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â SIDEBAR Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â -->
         <div th:replace="~{fragments/hr-sidebar :: sidebar('recruitment')}"></div>
 
-        <!-- ══════════════════ MAIN ══════════════════ -->
+        <!-- Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â MAIN Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â -->
         <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
 
             <!-- Header -->
@@ -271,7 +271,7 @@
             <div class="flex-1 overflow-y-auto p-8 dot-grid">
                 <div class="max-w-7xl mx-auto space-y-6">
 
-                    <!-- ── Stats Row ── -->
+                    <!-- Ã¢â€â‚¬Ã¢â€â‚¬ Stats Row Ã¢â€â‚¬Ã¢â€â‚¬ -->
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 anim anim-1">
                         <div class="stat-card">
                             <div class="flex items-center gap-3 mb-2">
@@ -317,7 +317,7 @@
                         </div>
                     </div>
 
-                    <!-- ── Filters + Table ── -->
+                    <!-- Ã¢â€â‚¬Ã¢â€â‚¬ Filters + Table Ã¢â€â‚¬Ã¢â€â‚¬ -->
                     <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden anim anim-2">
 
                         <!-- Toolbar -->
@@ -402,7 +402,7 @@
                                                     <p class="text-xs font-bold text-slate-800"
                                                         th:text="${job.jobTitle}">Title</p>
                                                     <p class="text-[10px] text-slate-400"
-                                                        th:text="${job.position ?: '—'}">Position</p>
+                                                        th:text="${job.position ?: 'Ã¢â‚¬â€'}">Position</p>
                                                 </div>
                                             </div>
                                         </td>
@@ -413,7 +413,7 @@
                                         <td class="px-5 py-4">
                                             <span th:if="${job.salaryRange != null}"
                                                 class="text-xs text-slate-500 font-medium"
-                                                th:text="${job.salaryRange}">—</span>
+                                                th:text="${job.salaryRange}">Ã¢â‚¬â€</span>
                                             <span th:if="${job.salaryRange == null}"
                                                 class="text-xs text-slate-300">Negotiable</span>
                                         </td>
@@ -434,10 +434,10 @@
                                             <span
                                                 th:if="${job.closeDateFormatted != null and !job.closeDateFormatted.isEmpty()}"
                                                 th:classappend="${job.daysUntilClose != null and job.daysUntilClose <= 7} ? 'text-rose-500 font-semibold' : 'text-slate-500'"
-                                                class="text-xs" th:text="${job.closeDateFormatted}">—</span>
+                                                class="text-xs" th:text="${job.closeDateFormatted}">Ã¢â‚¬â€</span>
                                             <span
                                                 th:if="${job.closeDateFormatted == null or job.closeDateFormatted.isEmpty()}"
-                                                class="text-xs text-slate-300">—</span>
+                                                class="text-xs text-slate-300">Ã¢â‚¬â€</span>
                                         </td>
                                         <td class="px-5 py-4 text-center" onclick="event.stopPropagation()">
                                             <div class="flex items-center justify-center gap-1">
@@ -476,7 +476,7 @@
                         <!-- Pagination -->
                         <div id="jobsPaginationBar"
                             class="p-4 border-t border-slate-100 flex items-center justify-between flex-wrap gap-3">
-                            <p class="text-xs text-slate-400" id="jobsPageInfo">Showing 0–0 of 0</p>
+                            <p class="text-xs text-slate-400" id="jobsPageInfo">Showing 0Ã¢â‚¬â€œ0 of 0</p>
                             <div class="flex items-center gap-1" id="jobsPageButtons"></div>
                         </div>
                     </div>
@@ -486,7 +486,7 @@
         </main>
     </div>
 
-    <!-- ══════════════════ MODAL: New Job Post ══════════════════ -->
+    <!-- Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â MODAL: New Job Post Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â -->
     <div id="newJobModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="modal-backdrop absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeNewJobModal()">
         </div>
@@ -580,7 +580,7 @@
         </div>
     </div>
 
-    <!-- ══════════════════ MODAL: Edit Job Post ══════════════════ -->
+    <!-- Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â MODAL: Edit Job Post Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â -->
     <div id="editJobModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4">
         <div class="modal-backdrop absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeEditJobModal()">
         </div>
@@ -676,7 +676,7 @@
         </div>
     </div>
 
-    <!-- ══════════════════ MODAL: Delete Confirm ══════════════════ -->
+    <!-- Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â MODAL: Delete Confirm Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â -->
     <div id="deleteJobModal" class="hidden fixed inset-0 z-[70] flex items-center justify-center p-4">
         <div class="modal-backdrop absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="closeDeleteModal()">
         </div>
@@ -719,11 +719,11 @@
     <div th:if="${errorMessage}" class="hidden" id="serverError" th:data-msg="${errorMessage}"></div>
 
     <script>
-        // ── New Job Modal ────────────────────────────────────────────────────
+        // Ã¢â€â‚¬Ã¢â€â‚¬ New Job Modal Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
         function openNewJobModal() { document.getElementById('newJobModal').classList.remove('hidden'); document.body.style.overflow = 'hidden'; }
         function closeNewJobModal() { document.getElementById('newJobModal').classList.add('hidden'); document.body.style.overflow = ''; }
 
-        // ── Edit Job Modal ───────────────────────────────────────────────────
+        // Ã¢â€â‚¬Ã¢â€â‚¬ Edit Job Modal Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
         function openEditDirect(d) {
             document.getElementById('editJobId').value = d.id || '';
             document.getElementById('editJobTitle').value = d.title || '';
@@ -737,9 +737,9 @@
             document.getElementById('editSalaryMin').value = parseFloat(d.salaryMin) > 0 ? d.salaryMin : '';
             document.getElementById('editSalaryMax').value = parseFloat(d.salaryMax) > 0 ? d.salaryMax : '';
 
-            // Convert "dd/MM/yyyy" → "yyyy-MM-dd"
+            // Convert "dd/MM/yyyy" Ã¢â€ â€™ "yyyy-MM-dd"
             const parseDate = (str) => {
-                if (!str || str === '—' || str.trim() === '') return '';
+                if (!str || str === 'Ã¢â‚¬â€' || str.trim() === '') return '';
                 try {
                     const [d, m, y] = str.split('/');
                     if (!d || !m || !y) return '';
@@ -769,7 +769,7 @@
             document.body.style.overflow = '';
         }
 
-        // ── Delete Job Modal ─────────────────────────────────────────────────
+        // Ã¢â€â‚¬Ã¢â€â‚¬ Delete Job Modal Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
         function openDeleteDirect(d) {
             document.getElementById('deleteJobId').value = d.id || '';
             document.getElementById('deleteJobName').textContent = '"' + (d.title || 'this job') + '"';
@@ -781,7 +781,7 @@
             document.body.style.overflow = '';
         }
 
-        // ── Filtering & Pagination ────────────────────────────────────────────
+        // Ã¢â€â‚¬Ã¢â€â‚¬ Filtering & Pagination Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
         const PAGE_SIZE = 10;
         let allJobRows = [];
         let filteredJobs = [];
@@ -825,7 +825,7 @@
             const totalPages = Math.ceil(total / PAGE_SIZE) || 1;
 
             document.getElementById('jobsPageInfo').textContent =
-                total === 0 ? 'No results' : `Showing ${start + 1}–${end} of ${total}`;
+                total === 0 ? 'No results' : `Showing ${start + 1}Ã¢â‚¬â€œ${end} of ${total}`;
 
             const btnContainer = document.getElementById('jobsPageButtons');
             btnContainer.innerHTML = '';
@@ -835,14 +835,14 @@
             }
             bar.style.display = 'flex';
 
-            const prev = mkBtn('‹', currentJobPage === 1);
+            const prev = mkBtn('Ã¢â‚¬Â¹', currentJobPage === 1);
             prev.onclick = () => { if (currentJobPage > 1) { currentJobPage--; renderJobPage(); } };
             btnContainer.appendChild(prev);
 
             pageRange(currentJobPage, totalPages).forEach(p => {
                 if (p === '...') {
                     const el = document.createElement('span');
-                    el.className = 'pagination-btn'; el.textContent = '…'; el.style.cursor = 'default';
+                    el.className = 'pagination-btn'; el.textContent = 'Ã¢â‚¬Â¦'; el.style.cursor = 'default';
                     btnContainer.appendChild(el);
                 } else {
                     const b = mkBtn(p, false, p === currentJobPage);
@@ -851,7 +851,7 @@
                 }
             });
 
-            const next = mkBtn('›', currentJobPage === totalPages);
+            const next = mkBtn('Ã¢â‚¬Âº', currentJobPage === totalPages);
             next.onclick = () => { if (currentJobPage < totalPages) { currentJobPage++; renderJobPage(); } };
             btnContainer.appendChild(next);
         }
@@ -870,7 +870,7 @@
             return [1, '...', cur - 1, cur, cur + 1, '...', total];
         }
 
-        // ── Toast ─────────────────────────────────────────────────────────────
+        // Ã¢â€â‚¬Ã¢â€â‚¬ Toast Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
         function showToast(msg, ok = true) {
             const t = document.getElementById('toast');
             const icon = document.getElementById('toastIcon');
@@ -881,7 +881,7 @@
             setTimeout(() => t.classList.add('hidden'), 3000);
         }
 
-        // ── Escape key to close modals ───────────────────────────────────────
+        // Ã¢â€â‚¬Ã¢â€â‚¬ Escape key to close modals Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
         document.addEventListener('keydown', e => {
             if (e.key === 'Escape') {
                 ['newJobModal', 'editJobModal', 'deleteJobModal'].forEach(id => {
@@ -894,7 +894,7 @@
             }
         });
 
-        // ── Init ─────────────────────────────────────────────────────────────
+        // Ã¢â€â‚¬Ã¢â€â‚¬ Init Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
         window.addEventListener('DOMContentLoaded', () => {
             allJobRows = Array.from(document.querySelectorAll('.job-row'));
             applyJobFilters();

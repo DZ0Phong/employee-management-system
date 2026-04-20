@@ -48,7 +48,7 @@
             </div>
 
             <!-- Top Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Current Rating -->
                 <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col">
                     <div class="flex items-center justify-between mb-4">
@@ -72,49 +72,18 @@
                     </div>
                 </div>
 
-                <!-- Talent Matrix -->
                 <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
                     <div class="flex items-center justify-between mb-4">
-                        <p class="text-sm font-medium text-slate-500">Talent Matrix</p>
+                        <p class="text-sm font-medium text-slate-500">Total Reviews</p>
                         <div class="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
-                            <span class="material-symbols-outlined">grade</span>
-                        </div>
-                    </div>
-                    <h3 class="text-2xl font-black text-primary" th:text="${summary.talentMatrix ?: 'N/A'}">N/A</h3>
-                    <p class="text-xs text-slate-400 mt-2" th:text="'Total reviews: ' + ${summary.totalReviews}">Total reviews: 0</p>
-                </div>
-
-                <!-- KPI Progress -->
-                <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col">
-                    <div class="flex items-center justify-between mb-4">
-                        <p class="text-sm font-medium text-slate-500">KPI Progress</p>
-                        <div class="w-10 h-10 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center">
-                            <span class="material-symbols-outlined">task_alt</span>
+                            <span class="material-symbols-outlined">history</span>
                         </div>
                     </div>
                     <div class="flex items-baseline gap-2">
-                        <h3 class="text-4xl font-black" th:text="${summary.kpisMet}">0</h3>
-                        <span class="text-lg font-medium text-slate-400" th:text="'/' + ${summary.kpisTotal}">/ 0</span>
+                        <h3 class="text-4xl font-black text-primary" th:text="${summary.totalReviews}">0</h3>
+                        <span class="text-lg font-medium text-slate-400">reviews</span>
                     </div>
-                    <div class="mt-3 w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                        <div class="h-full bg-amber-500 rounded-full transition-all"
-                             th:style="${summary.kpisTotal > 0 ? 'width: ' + (summary.kpisMet * 100 / summary.kpisTotal) + '%' : 'width: 0%'}"></div>
-                    </div>
-                    <p class="text-xs text-slate-400 mt-1">KPIs completed</p>
-                </div>
-
-                <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col">
-                    <div class="flex items-center justify-between mb-4">
-                        <p class="text-sm font-medium text-slate-500">Verified Skills</p>
-                        <div class="w-10 h-10 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
-                            <span class="material-symbols-outlined">workspace_premium</span>
-                        </div>
-                    </div>
-                    <div class="flex items-baseline gap-2">
-                        <h3 class="text-4xl font-black" th:text="${summary.skillsCount}">0</h3>
-                        <span class="text-lg font-medium text-slate-400">skills</span>
-                    </div>
-                    <p class="text-xs text-slate-400 mt-3">Validated from your employee skill records</p>
+                    <p class="text-xs text-slate-400 mt-3">All recorded performance reviews on your profile</p>
                 </div>
             </div>
 
@@ -130,13 +99,12 @@
                             <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Review Period</th>
                             <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Reviewer</th>
                             <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Rating</th>
-                            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Talent Matrix</th>
                             <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
                         </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
                         <tr th:if="${#lists.isEmpty(reviews)}">
-                            <td colspan="5" class="px-6 py-8 text-center text-slate-400">No performance reviews found</td>
+                            <td colspan="4" class="px-6 py-8 text-center text-slate-400">No performance reviews found</td>
                         </tr>
                         <tr th:each="r : ${reviews}" class="performance-row hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
                             <td class="px-6 py-4">
@@ -149,10 +117,6 @@
                             <td class="px-6 py-4 text-center">
                                 <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-primary text-white"
                                       th:text="${r.performanceScore}">-</span>
-                            </td>
-                            <td class="px-6 py-4">
-                                <span class="text-sm text-slate-600 dark:text-slate-300"
-                                      th:text="${r.talentMatrix ?: '—'}">—</span>
                             </td>
                             <td class="px-6 py-4">
                                 <span class="inline-flex items-center gap-1.5 text-xs font-bold px-2 py-1 rounded-md"

@@ -8,8 +8,8 @@
     <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
           rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
-          rel="stylesheet" />
+    <link rel="stylesheet" href="/css/app-icons.css" th:href="@{/css/app-icons.css}" />
+    <script defer src="/js/app-icons.js" th:src="@{/js/app-icons.js}"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <link rel="stylesheet" th:href="@{/css/hr/hr-common.css}">
     <script th:src="@{/js/hr/hr-common.js}"></script>
@@ -33,23 +33,23 @@
 <body class="bg-bg-light font-display text-slate-900 min-h-screen">
 <div class="flex h-screen overflow-hidden">
 
-    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â -->
     <!-- SIDEBAR                                                   -->
-    <!-- ══════════════════════════════════════════════════════════ -->
-    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â -->
+    <!-- Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â -->
         <!-- SIDEBAR                                                   -->
-        <!-- ══════════════════════════════════════════════════════════ -->
+        <!-- Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â -->
         <div th:replace="~{fragments/hr-sidebar :: sidebar('dashboard')}"></div>
 
-    <!-- ─── Main ───────────────────────────────────────────────── -->
+    <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Main Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
     <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
 
         <!-- Topbar -->
         <header class="h-16 bg-white border-b border-slate-100 flex items-center justify-between px-8 shrink-0">
             <div>
                 <h2 class="text-base font-black text-slate-900 leading-tight"
-                    th:text="${currentUser != null ? 'Good morning, ' + currentUser.firstName + ' 👋' : 'Good morning 👋'}">
-                    Good morning 👋
+                    th:text="${currentUser != null ? 'Good morning, ' + currentUser.firstName + ' Ã°Å¸â€˜â€¹' : 'Good morning Ã°Å¸â€˜â€¹'}">
+                    Good morning Ã°Å¸â€˜â€¹
                 </h2>
                 <p class="text-xs text-slate-400"
                    th:text="${#dates.format(#dates.createNow(), 'dd/MM/yyyy')}">
@@ -85,7 +85,7 @@
         <div class="flex-1 overflow-y-auto p-8 dot-grid">
             <div class="max-w-7xl mx-auto space-y-6">
 
-                <!-- ─── Overview Hero Cards ─── -->
+                <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Overview Hero Cards Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
                 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
 
                     <!-- Headcount (Active) -->
@@ -179,7 +179,7 @@
                     </div>
                 </div>
 
-                <!-- ─── Second Row: Split ─── -->
+                <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Second Row: Split Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
                     <!-- Recruitment Pipeline (Doughnut) -->
@@ -255,7 +255,7 @@
                     </div>
                 </div>
 
-                <!-- ─── Third Row: Actions & Events ─── -->
+                <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Third Row: Actions & Events Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
                     <!-- Upcoming Events Widget -->
@@ -383,7 +383,7 @@
         </div><!-- /scrollable -->
 
         <script th:inline="javascript">
-            // ─── Recruitment Pipeline Chart (Doughnut) ───
+            // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Recruitment Pipeline Chart (Doughnut) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
             const pApplied = /*[[${dashMetrics?.pipelineApplied() ?: 0}]]*/ 0;
             const pReviewing = /*[[${dashMetrics?.pipelineReviewing() ?: 0}]]*/ 0;
             const pInterviewing = /*[[${dashMetrics?.pipelineInterviewing() ?: 0}]]*/ 0;
@@ -418,7 +418,7 @@
                 },
             });
 
-            // ─── Attendance Overview (Stacked Bar) ───
+            // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Attendance Overview (Stacked Bar) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
             const attCtx = document.getElementById('attendanceChart').getContext('2d');
             const attLabels = /*[[${dashMetrics?.attendanceLabels()}]]*/ [];
             const attPresent = /*[[${dashMetrics?.attendancePresent()}]]*/ [];
@@ -519,7 +519,7 @@
                                                 <div class="flex justify-between items-center">
                                                     <div>
                                                         <p class="text-sm font-bold text-slate-800 group-hover:text-primary transition-colors">${emp.fullName}</p>
-                                                        <p class="text-xs text-slate-400 mt-0.5">${emp.position || 'Employee'} • ${emp.code}</p>
+                                                        <p class="text-xs text-slate-400 mt-0.5">${emp.position || 'Employee'} Ã¢â‚¬Â¢ ${emp.code}</p>
                                                     </div>
                                                     <span class="material-symbols-outlined text-[18px] text-slate-300 group-hover:text-primary transition-colors">chevron_right</span>
                                                 </div>

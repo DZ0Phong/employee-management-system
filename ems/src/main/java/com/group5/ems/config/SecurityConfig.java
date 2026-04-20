@@ -28,11 +28,11 @@ public class SecurityConfig {
                         .frameOptions(frame -> frame.sameOrigin()))
 
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/guest/**", "/forgot-password/**", "/activate/**",
+                        .ignoringRequestMatchers("/home/**", "/forgot-password/**", "/activate/**",
                                 "/home/apply-full", "/home/contact/send", "/home/application/delete/**"))
 
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/home", "/home/**", "/login", "/error", "/guest", "/guest/**",
+                        .requestMatchers("/", "/home", "/home/**", "/login", "/error",
                                 "/access-denied",
                                 "/forgot-password", "/forgot-password/**", "/reset-password",
                                 "/activate", "/activate/**",

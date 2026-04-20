@@ -649,12 +649,12 @@
         document.getElementById('field-password').value = '';
         document.getElementById('field-fullName').value = '';
         document.getElementById('field-phone').value    = '';
-        document.getElementById('field-status').value   = 'Active';
+        document.getElementById('field-status').value   = 'Inactive';
         document.getElementById('field-role').value     = '';
         document.getElementById('field-password').required = true;
         document.getElementById('pwd-required').classList.remove('hidden');
         document.getElementById('pwd-hint').classList.add('hidden');
-        updateStatusHint('Active');
+        updateStatusHint('Inactive');
         document.getElementById('modal-overlay').classList.remove('hidden');
     }
 

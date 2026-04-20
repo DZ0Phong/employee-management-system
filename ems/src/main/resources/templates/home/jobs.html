@@ -1303,7 +1303,7 @@
         btn.disabled = true;
         if (spin) spin.style.display = 'inline-block';
 
-        // Build multipart/form-data — matches POST /guest/apply-full
+        // Build multipart/form-data — matches POST /home/apply-full
         const fd = new FormData();
         fd.append('fullName', document.getElementById('a-name').value.trim());
         fd.append('email', document.getElementById('a-email').value.trim());

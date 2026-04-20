@@ -101,7 +101,7 @@ public class HrPerformanceService {
                 .reviewPeriod(r.getReviewPeriod())
                 .performanceScore(r.getPerformanceScore())
                 .potentialScore(r.getPotentialScore())
-                .talentMatrix(r.getTalentMatrix())
+                .talentMatrix(computeTalentMatrix(r.getPerformanceScore(), r.getPotentialScore()))
                 .strengths(r.getStrengths())
                 .areasToImprove(r.getAreasToImprove())
                 .createdAt(r.getCreatedAt())
@@ -116,5 +116,18 @@ public class HrPerformanceService {
         if (val >= 2.5) return "C";
         if (val >= 1.5) return "D";
         return "F";
+    }
+
+    private String computeTalentMatrix(BigDecimal performanceScore, BigDecimal potentialScore) {
+        if (performanceScore == null || potentialScore == null) return "N/A";
+        if (performanceScore.compareTo(BigDecimal.valueOf(4.0)) >= 0 && potentialScore.compareTo(BigDecimal.valueOf(4.0)) >= 0) return "Star";
+        if (performanceScore.compareTo(BigDecimal.valueOf(4.0)) >= 0 && potentialScore.compareTo(BigDecimal.valueOf(2.5)) >= 0) return "High Performer";
+        if (performanceScore.compareTo(BigDecimal.valueOf(4.0)) >= 0) return "Workhorse";
+        if (performanceScore.compareTo(BigDecimal.valueOf(2.5)) >= 0 && potentialScore.compareTo(BigDecimal.valueOf(4.0)) >= 0) return "High Potential";
+        if (performanceScore.compareTo(BigDecimal.valueOf(2.5)) >= 0 && potentialScore.compareTo(BigDecimal.valueOf(2.5)) >= 0) return "Core Employee";
+        if (performanceScore.compareTo(BigDecimal.valueOf(2.5)) >= 0) return "Effective";
+        if (potentialScore.compareTo(BigDecimal.valueOf(4.0)) >= 0) return "Problem Child";
+        if (potentialScore.compareTo(BigDecimal.valueOf(2.5)) >= 0) return "Inconsistent";
+        return "Underperformer";
     }
 }

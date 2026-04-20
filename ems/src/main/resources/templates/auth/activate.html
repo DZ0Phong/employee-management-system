@@ -66,12 +66,15 @@ tailwind.config = {
   <div class="w-full max-w-[440px] flex flex-col gap-6">
 
     <!-- Branding -->
-    <div class="flex flex-col items-center text-center gap-2">
-      <div class="flex items-center justify-center w-12 h-12 rounded-xl bg-primary mb-2">
+    <a th:href="@{/home}" class="flex flex-col items-center text-center gap-2 group rounded-2xl focus:outline-none">
+      <div class="flex items-center justify-center w-12 h-12 rounded-xl bg-primary mb-2 shadow-md shadow-primary/20 transition-all group-hover:scale-[1.03] group-hover:shadow-lg group-hover:shadow-primary/25">
         <span class="material-symbols-outlined text-white text-3xl">corporate_fare</span>
       </div>
-      <h1 class="text-slate-900 dark:text-slate-100 text-3xl font-bold tracking-tight">EMS Pro</h1>
-    </div>
+      <div>
+        <h1 class="text-slate-900 dark:text-slate-100 text-3xl font-bold tracking-tight group-hover:text-primary transition-colors">EMS Pro</h1>
+        <p class="text-slate-400 dark:text-slate-500 text-xs font-medium mt-1">Workforce Management Platform</p>
+      </div>
+    </a>
 
     <!-- Card -->
     <div class="bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-primary/10 overflow-hidden">
@@ -166,15 +169,23 @@ tailwind.config = {
       <div class="bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 p-4 text-center">
         <p class="text-slate-500 dark:text-slate-400 text-xs">
           Didn't receive an email? Check your spam folder or
-          <a class="text-primary font-bold hover:underline" href="#">Contact Admin</a>
+          <button id="copy-admin-email-btn"
+                  type="button"
+                  data-admin-email="admin@hrm.local"
+                  class="text-primary font-bold hover:underline">
+            Contact Admin
+          </button>
+        </p>
+        <p id="copy-admin-email-note" class="mt-2 text-[11px] text-primary hidden">
+          Admin email copied to clipboard.
         </p>
       </div>
     </div>
 
     <div class="flex justify-center gap-6 text-slate-400 dark:text-slate-500 text-xs font-medium">
-      <a class="hover:text-primary transition-colors" href="#">Privacy Policy</a>
-      <a class="hover:text-primary transition-colors" href="#">Terms of Service</a>
-      <a class="hover:text-primary transition-colors" href="#">Help Center</a>
+      <a class="hover:text-primary transition-colors" th:href="@{/home/about}">About Us</a>
+      <a class="hover:text-primary transition-colors" th:href="@{/home/jobs}">Open Jobs</a>
+      <a class="hover:text-primary transition-colors" th:href="@{/home/contact}">Contact</a>
     </div>
 
   </div>
@@ -182,6 +193,36 @@ tailwind.config = {
 
 <script th:inline="javascript">
 document.fonts.ready.then(function(){ document.body.classList.add('icons-ready'); });
+
+(function () {
+  var copyButton = document.getElementById('copy-admin-email-btn');
+  var note = document.getElementById('copy-admin-email-note');
+
+  if (!copyButton || !note) {
+    return;
+  }
+
+  copyButton.addEventListener('click', async function () {
+    var email = copyButton.dataset.adminEmail || '';
+
+    if (!email) {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(email);
+      note.textContent = 'Admin email copied: ' + email;
+      note.classList.remove('hidden');
+      window.clearTimeout(note._hideTimer);
+      note._hideTimer = window.setTimeout(function () {
+        note.classList.add('hidden');
+      }, 2200);
+    } catch (error) {
+      note.textContent = 'Could not copy automatically. Admin email: ' + email;
+      note.classList.remove('hidden');
+    }
+  });
+})();
 
 let timerInterval = null;
 let currentEmail  = null;

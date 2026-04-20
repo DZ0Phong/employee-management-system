@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
 
@@ -138,7 +139,8 @@ public class DeptManagerController {
                                         @RequestParam(required = false) String strengths,
                                         @RequestParam(required = false) String areasToImprove,
                                         @RequestParam(defaultValue = "DRAFT") String status,
-                                        Authentication authentication) {
+                                        Authentication authentication,
+                                        RedirectAttributes redirectAttributes) {
         if (!hasDepartmentAccess(authentication)) {
             return "redirect:/dept-manager/dashboard";
         }
@@ -153,18 +155,22 @@ public class DeptManagerController {
                     areasToImprove,
                     status
             );
-            return "redirect:/dept-manager/performance-review?success=saved";
+            redirectAttributes.addFlashAttribute("successMessage", "Performance review has been saved successfully.");
+            return "redirect:/dept-manager/performance-review";
         } catch (IllegalArgumentException | IllegalStateException ex) {
-            return "redirect:/dept-manager/performance-review?error=save";
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+            return "redirect:/dept-manager/performance-review";
         }
     }
 
     @PostMapping("/leave-approval/{id}/approve")
-    public String approveLeave(@PathVariable Long id, Authentication authentication) {
+    public String approveLeave(@PathVariable Long id,
+                               @RequestParam(name = "urgent", defaultValue = "false") boolean urgent,
+                               Authentication authentication) {
         if (!hasDepartmentAccess(authentication)) {
             return "redirect:/dept-manager/dashboard";
         }
-        boolean success = leaveService.approveLeaveRequest(id);
+        boolean success = leaveService.approveLeaveRequest(id, urgent);
         return success
                 ? "redirect:/dept-manager/leave-approval?success=forwarded"
                 : "redirect:/dept-manager/leave-approval?error=forbidden";
@@ -173,11 +179,12 @@ public class DeptManagerController {
     @PostMapping("/leave-approval/{id}/reject")
     public String rejectLeave(@PathVariable Long id,
                               @RequestParam(name = "rejectionReason", required = false) String rejectionReason,
+                              @RequestParam(name = "urgent", defaultValue = "false") boolean urgent,
                               Authentication authentication) {
         if (!hasDepartmentAccess(authentication)) {
             return "redirect:/dept-manager/dashboard";
         }
-        boolean success = leaveService.rejectLeaveRequest(id, rejectionReason);
+        boolean success = leaveService.rejectLeaveRequest(id, rejectionReason, urgent);
         return success
                 ? "redirect:/dept-manager/leave-approval?success=rejected"
                 : "redirect:/dept-manager/leave-approval?error=forbidden";
@@ -192,8 +199,8 @@ public class DeptManagerController {
         }
         boolean success = deptManagerService.createRemovalRequest(employeeId, reason);
         return success
-                ? "redirect:/dept-manager/my-team?success=removal"
-                : "redirect:/dept-manager/my-team?error=invalidremoval";
+                ? "redirect:/dept-manager/my-department?success=removal"
+                : "redirect:/dept-manager/my-department?error=invalidremoval";
     }
 
     @PostMapping("/team/request-add")
@@ -206,8 +213,25 @@ public class DeptManagerController {
         }
         boolean success = deptManagerService.createAddMemberRequest(requestType, role, description);
         if (!success) {
-            return "redirect:/dept-manager/my-team?error=addrequest";
+            return "redirect:/dept-manager/my-department?error=addrequest";
         }
-        return "redirect:/dept-manager/my-team?success=add";
+        return "redirect:/dept-manager/my-department?success=add";
+    }
+
+    @PostMapping("/my-department/staffing-updates/{id}/cancel")
+    public String cancelStaffingUpdate(@PathVariable Long id,
+                                       @RequestParam String sourceType,
+                                       Authentication authentication) {
+        if (!hasDepartmentAccess(authentication)) {
+            return "redirect:/dept-manager/dashboard";
+        }
+
+        boolean success = "REMOVAL".equalsIgnoreCase(sourceType)
+                ? deptManagerService.cancelRemovalRequest(id)
+                : deptManagerService.cancelStaffingRequest(id);
+
+        return success
+                ? "redirect:/dept-manager/my-department?success=cancelled"
+                : "redirect:/dept-manager/my-department?error=cancel";
     }
 }
