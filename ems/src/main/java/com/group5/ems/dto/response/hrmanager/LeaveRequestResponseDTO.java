@@ -73,12 +73,18 @@ public class LeaveRequestResponseDTO {
         this.rejectedReason = request.getRejectedReason();
         this.reason = request.getContent() != null ? request.getContent() : request.getTitle();
         this.createdAt = request.getCreatedAt();
+        this.approvedAt = request.getApprovedAt();
+        
+        // Priority info
+        this.priority = request.getPriority() != null ? request.getPriority() : "NORMAL";
+        this.priorityScore = request.getPriorityScore() != null ? request.getPriorityScore() : 0;
 
         // Employee info
         if (request.getEmployee() != null && request.getEmployee().getUser() != null) {
             String fullName = request.getEmployee().getUser().getFullName();
             this.employeeName = fullName != null ? fullName : "Unknown Employee";
             this.employeeInitials = getInitials(fullName);
+            this.employeeId = request.getEmployee().getId();
             
             if (request.getEmployee().getPosition() != null) {
                 this.employeePosition = request.getEmployee().getPosition().getName();
