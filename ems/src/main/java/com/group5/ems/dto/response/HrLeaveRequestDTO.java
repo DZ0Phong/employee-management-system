@@ -10,6 +10,7 @@ public record HrLeaveRequestDTO(
         Long id,
         String employeeName,
         String initials,
+        String avatarUrl,
         String department,
         Long departmentId,
         String employeeCode,

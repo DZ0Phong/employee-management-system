@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Custom HR Report</title>
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 15mm;
+            @bottom-center {
+                content: "Page " counter(page) " of " counter(pages);
+                font-size: 9pt;
+                color: #64748b;
+                font-family: 'Helvetica', 'Arial', sans-serif;
+            }
+        }
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #1e293b;
+            font-size: 10pt;
+        }
+        .header {
+            border-bottom: 2px solid #1414b8;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .brand-title {
+            color: #1414b8;
+            font-size: 20pt;
+            font-weight: bold;
+            margin: 0 0 5px 0;
+        }
+        .report-meta {
+            color: #64748b;
+            font-size: 10pt;
+            margin: 0;
+        }
+        .watermark {
+            color: #f1f5f9;
+            font-size: 60pt;
+            position: absolute;
+            top: 40%;
+            left: 20%;
+            transform: rotate(-30deg);
+            z-index: -1;
+            white-space: nowrap;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            page-break-inside: auto;
+        }
+        tr {
+            page-break-inside: avoid;
+            page-break-after: auto;
+        }
+        th {
+            background-color: #f8fafc;
+            color: #475569;
+            font-weight: bold;
+            text-align: left;
+            padding: 10px;
+            border-bottom: 2px solid #e2e8f0;
+            font-size: 9pt;
+            text-transform: uppercase;
+        }
+        td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #334155;
+            font-size: 9pt;
+        }
+        .row-even {
+            background-color: #f8fafc;
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 8pt;
+            color: #94a3b8;
+            text-align: center;
+        }
+    </style>
+
+</head>
+<body>
+    <div class="watermark">CONFIDENTIAL</div>
+    
+    <div class="header">
+        <h1 class="brand-title" th:text="${title}">Custom HR Report</h1>
+        <p class="report-meta">
+            Generated on: <span th:text="${exportDate}"></span> &nbsp;|&nbsp; 
+            Total Records: <span th:text="${rows.size()}"></span>
+            <th:block th:if="${limitReached}">
+                &nbsp;|&nbsp; <span style="color: #ef4444; font-weight: bold;">(Truncated to 1000 records)</span>
+            </th:block>
+        </p>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th th:each="header : ${headers}" th:text="${header}">Header</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="row, iter : ${rows}" th:class="${iter.even} ? 'row-even' : ''">
+                <td th:each="cell : ${row}" th:text="${cell}">Value</td>
+            </tr>
+            <tr th:if="${rows.isEmpty()}">
+                <td th:colspan="${headers.size()}" style="text-align: center; padding: 20px; color: #94a3b8;">No records found for the selected criteria.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="footer">
+        © EMS Pro HR Management System. This document contains confidential workforce data.
+    </div>
+</body>
+</html>
+

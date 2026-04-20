@@ -10,6 +10,7 @@ public record HrEmployeeDetailDTO(
         // Info
         Long id,
         String initials,
+        String avatarUrl,
         String fullName,
         String code,
         String department,

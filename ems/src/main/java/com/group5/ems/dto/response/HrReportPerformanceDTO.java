@@ -11,7 +11,7 @@ public record HrReportPerformanceDTO(
         Double avgPerformanceScore,
         Double avgPotentialScore,
         long totalReviews,
-        Map<String, Long> talentMatrixDistribution,
+        Map<String, Long> performanceGradeDistribution,
         List<String> scoreLabels,
         List<Long> scoreCounts,
         List<TopPerformer> topPerformers

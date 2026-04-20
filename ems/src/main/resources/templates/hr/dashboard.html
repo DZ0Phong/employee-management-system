@@ -8,9 +8,7 @@
     <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
           rel="stylesheet" />
-    <link rel="stylesheet" href="/css/app-icons.css" th:href="@{/css/app-icons.css}" />
-    <script defer src="/js/app-icons.js" th:src="@{/js/app-icons.js}"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <link rel="stylesheet" th:href="@{/css/hr/hr-common.css}">
     <script th:src="@{/js/hr/hr-common.js}"></script>
     <script>
@@ -28,6 +26,8 @@
             },
         };
     </script>
+    <link rel="stylesheet" href="/css/app-icons.css" th:href="@{/css/app-icons.css}" />
+    <script defer src="/js/app-icons.js" th:src="@{/js/app-icons.js}"></script>
 </head>
 
 <body class="bg-bg-light font-display text-slate-900 min-h-screen">
@@ -75,9 +75,13 @@
                     <span
                             class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 border-2 border-white"></span>
                 </button>
-                <div
-                        class="w-8 h-8 rounded-full bg-primary/10 text-primary border border-primary/20 font-bold text-xs flex items-center justify-center ml-1">
-                    HR</div>
+                <div class="w-8 h-8 rounded-full overflow-hidden bg-primary/10 text-primary border border-primary/20 font-bold text-xs flex items-center justify-center ml-1">
+                    <img th:if="${currentUser?.avatarUrl != null and !currentUser.avatarUrl.isEmpty()}" 
+                         th:src="${currentUser.avatarUrl}"
+                         th:alt="${currentUser.fullName}" class="w-full h-full object-cover">
+                    <span th:if="${currentUser?.avatarUrl == null or currentUser.avatarUrl.isEmpty()}" 
+                          th:text="${currentUser?.initials ?: 'HR'}">HR</span>
+                </div>
             </div>
         </header>
 
@@ -257,42 +261,6 @@
 
                 <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Third Row: Actions & Events Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-                    <!-- Upcoming Events Widget -->
-                    <div class="anim anim-7 bg-white rounded-2xl border border-slate-100 shadow-sm p-6 overflow-hidden flex flex-col">
-                        <div class="flex items-center justify-between mb-4">
-                            <div>
-                                <h3 class="text-sm font-black text-slate-800">Upcoming Events</h3>
-                                <p class="text-[10px] text-slate-400 mt-0.5 uppercase font-bold tracking-tight">Organization Schedule</p>
-                            </div>
-                            <a th:href="@{/hr/calendar}" class="w-8 h-8 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 hover:text-primary transition-all">
-                                <span class="material-symbols-outlined text-sm">calendar_month</span>
-                            </a>
-                        </div>
-                        
-                        <div class="space-y-4 flex-1">
-                            <div th:if="${dashMetrics?.upcomingEvents()?.isEmpty()}" class="py-8 text-center">
-                                <span class="material-symbols-outlined text-slate-200 text-3xl">event_available</span>
-                                <p class="text-[10px] font-bold text-slate-300 uppercase mt-2">No upcoming events</p>
-                            </div>
-
-                            <div th:each="event : ${dashMetrics?.upcomingEvents()}" class="flex items-center gap-4 group cursor-pointer">
-                                <div class="w-10 h-12 rounded-xl flex flex-col items-center justify-center shrink-0 transition-all group-hover:scale-105 border border-slate-100 shadow-sm"
-                                     th:classappend="${event.getColorClass()}">
-                                    <span class="text-[9px] font-black uppercase leading-none" th:text="${event.getMonthLabel()}">APR</span>
-                                    <span class="text-base font-black leading-none mt-1" th:text="${event.getDayLabel()}">15</span>
-                                </div>
-                                <div class="min-w-0 flex-1">
-                                    <h4 class="text-xs font-bold text-slate-800 truncate line-clamp-1 group-hover:text-primary transition-colors" th:text="${event.title()}">Strategic Quarterly Review</h4>
-                                    <p class="text-[10px] text-slate-400 mt-0.5 font-medium" th:text="${event.getTimeLabel()}">09:00 - 11:30</p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <a th:href="@{/hr/calendar}" class="mt-6 w-full py-2.5 rounded-xl border border-slate-100 text-[10px] font-black uppercase text-slate-400 hover:bg-slate-50 hover:text-primary text-center transition-all">
-                            Open Full Calendar
-                        </a>
-                    </div>
 
                     <!-- Pending Workflow Tasks / Requests -->
                     <div class="anim anim-8 lg:col-span-2 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
@@ -517,9 +485,14 @@
                                         <li>
                                             <a href="/hr/employees?viewId=${emp.id}" class="block px-4 py-3 hover:bg-slate-50 transition-colors cursor-pointer group">
                                                 <div class="flex justify-between items-center">
-                                                    <div>
-                                                        <p class="text-sm font-bold text-slate-800 group-hover:text-primary transition-colors">${emp.fullName}</p>
-                                                        <p class="text-xs text-slate-400 mt-0.5">${emp.position || 'Employee'} Ã¢â‚¬Â¢ ${emp.code}</p>
+                                                    <div class="flex items-center gap-3">
+                                                        <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-500 text-[10px] overflow-hidden border border-slate-100 transition-transform group-hover:scale-105">
+                                                            ${emp.avatarUrl ? `<img src="${emp.avatarUrl}" class="w-full h-full object-cover" alt="Avatar">` : `<span>${emp.initials}</span>`}
+                                                        </div>
+                                                        <div>
+                                                            <p class="text-sm font-bold text-slate-800 group-hover:text-primary transition-colors">${emp.fullName}</p>
+                                                            <p class="text-xs text-slate-400 mt-0.5">${emp.position || 'Employee'} • ${emp.code}</p>
+                                                        </div>
                                                     </div>
                                                     <span class="material-symbols-outlined text-[18px] text-slate-300 group-hover:text-primary transition-colors">chevron_right</span>
                                                 </div>
@@ -543,3 +516,4 @@
 </body>
 
 </html>
+

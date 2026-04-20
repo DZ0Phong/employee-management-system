@@ -34,6 +34,9 @@
             .join(' ');
 
         const filled = span.classList.contains('fill-icon');
+        if (filled) {
+            span.setAttribute('data-filled', 'true');
+        }
         span.textContent = '';
         span.appendChild(buildIcon(iconName, inheritedClasses, filled));
     }
@@ -58,9 +61,40 @@
     window.hydrateAppIcons = hydrate;
     window.setAppIcon = setIcon;
 
+    function watchMutations() {
+        if (typeof MutationObserver === 'undefined' || !document.body) {
+            return;
+        }
+
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                mutation.addedNodes.forEach((node) => {
+                    if (!(node instanceof Element)) {
+                        return;
+                    }
+
+                    if (node.matches('.material-symbols-outlined')) {
+                        hydrateIconSpan(node);
+                    }
+
+                    hydrate(node);
+                });
+            });
+        });
+
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+    }
+
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => hydrate(document));
+        document.addEventListener('DOMContentLoaded', () => {
+            hydrate(document);
+            watchMutations();
+        });
     } else {
         hydrate(document);
+        watchMutations();
     }
 })();

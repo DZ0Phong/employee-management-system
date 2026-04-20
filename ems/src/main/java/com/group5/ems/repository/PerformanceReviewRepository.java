@@ -22,32 +22,36 @@ public interface PerformanceReviewRepository extends JpaRepository<PerformanceRe
     // ── New methods for HR role ──────────────────────────────────
 
     /** Search + status + advanced filters with pagination */
-    @Query(value = "SELECT pr FROM PerformanceReview pr " +
-           "JOIN FETCH pr.employee e " +
-           "JOIN FETCH e.user u " +
-           "LEFT JOIN FETCH e.department d " +
-           "LEFT JOIN FETCH pr.reviewer r " +
-           "LEFT JOIN FETCH r.user ru " +
-           "WHERE (:search IS NULL OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :search, '%'))) " +
-           "AND (:status IS NULL OR pr.status = :status) " +
-           "AND (:departmentId IS NULL OR e.department.id = :departmentId) " +
-           "AND (:reviewerId IS NULL OR pr.reviewerId = :reviewerId) " +
-           "AND (:reviewPeriod IS NULL OR pr.reviewPeriod = :reviewPeriod) " +
-           "AND (:minScore IS NULL OR pr.performanceScore >= :minScore) " +
-           "AND (:maxScore IS NULL OR pr.performanceScore <= :maxScore) " +
-           "AND (:minPotential IS NULL OR pr.potentialScore >= :minPotential) " +
-           "AND (:maxPotential IS NULL OR pr.potentialScore <= :maxPotential)",
-           countQuery = "SELECT count(pr) FROM PerformanceReview pr " +
-           "JOIN pr.employee e JOIN e.user u " +
-           "WHERE (:search IS NULL OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :search, '%'))) " +
-           "AND (:status IS NULL OR pr.status = :status) " +
-           "AND (:departmentId IS NULL OR e.department.id = :departmentId) " +
-           "AND (:reviewerId IS NULL OR pr.reviewerId = :reviewerId) " +
-           "AND (:reviewPeriod IS NULL OR pr.reviewPeriod = :reviewPeriod) " +
-           "AND (:minScore IS NULL OR pr.performanceScore >= :minScore) " +
-           "AND (:maxScore IS NULL OR pr.performanceScore <= :maxScore) " +
-           "AND (:minPotential IS NULL OR pr.potentialScore >= :minPotential) " +
-           "AND (:maxPotential IS NULL OR pr.potentialScore <= :maxPotential)")
+    @Query(value = """
+           SELECT pr FROM PerformanceReview pr 
+           JOIN FETCH pr.employee e 
+           JOIN FETCH e.user u 
+           LEFT JOIN FETCH e.department d 
+           LEFT JOIN FETCH pr.reviewer r 
+           LEFT JOIN FETCH r.user ru 
+           WHERE (:search IS NULL OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :search, '%'))) 
+           AND (:status IS NULL OR pr.status = :status) 
+           AND (:departmentId IS NULL OR e.department.id = :departmentId) 
+           AND (:reviewerId IS NULL OR pr.reviewerId = :reviewerId) 
+           AND (:reviewPeriod IS NULL OR pr.reviewPeriod = :reviewPeriod) 
+           AND (:minScore IS NULL OR pr.performanceScore >= :minScore) 
+           AND (:maxScore IS NULL OR pr.performanceScore <= :maxScore) 
+           AND (:minPotential IS NULL OR pr.potentialScore >= :minPotential) 
+           AND (:maxPotential IS NULL OR pr.potentialScore <= :maxPotential)
+           """,
+           countQuery = """
+           SELECT count(pr) FROM PerformanceReview pr 
+           JOIN pr.employee e JOIN e.user u 
+           WHERE (:search IS NULL OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :search, '%'))) 
+           AND (:status IS NULL OR pr.status = :status) 
+           AND (:departmentId IS NULL OR e.department.id = :departmentId) 
+           AND (:reviewerId IS NULL OR pr.reviewerId = :reviewerId) 
+           AND (:reviewPeriod IS NULL OR pr.reviewPeriod = :reviewPeriod) 
+           AND (:minScore IS NULL OR pr.performanceScore >= :minScore) 
+           AND (:maxScore IS NULL OR pr.performanceScore <= :maxScore) 
+           AND (:minPotential IS NULL OR pr.potentialScore >= :minPotential) 
+           AND (:maxPotential IS NULL OR pr.potentialScore <= :maxPotential)
+           """)
     Page<PerformanceReview> searchAdvanced(
             @Param("search") String search,
             @Param("status") String status,
@@ -64,11 +68,15 @@ public interface PerformanceReviewRepository extends JpaRepository<PerformanceRe
     long countByStatus(String status);
 
     /** Get all distinct review periods for filtering */
-    @Query("SELECT DISTINCT pr.reviewPeriod FROM PerformanceReview pr ORDER BY pr.reviewPeriod DESC")
+    @Query("""
+        SELECT DISTINCT pr.reviewPeriod FROM PerformanceReview pr ORDER BY pr.reviewPeriod DESC
+    """)
     List<String> findDistinctReviewPeriods();
 
     /** Get all distinct statuses for filtering */
-    @Query("SELECT DISTINCT pr.status FROM PerformanceReview pr ORDER BY pr.status")
+    @Query("""
+        SELECT DISTINCT pr.status FROM PerformanceReview pr ORDER BY pr.status
+    """)
     List<String> findDistinctStatuses();
 
     // ── New methods for Dept Manager role ────────────────────────
@@ -85,9 +93,34 @@ public interface PerformanceReviewRepository extends JpaRepository<PerformanceRe
 
     // ── HR Reports: Aggregation Queries (read-only) ──────────────────────────
 
-    @Query("SELECT AVG(pr.performanceScore), AVG(pr.potentialScore) FROM PerformanceReview pr " +
-           "WHERE pr.status = 'COMPLETED'")
+    @Query("""
+        SELECT AVG(pr.performanceScore), AVG(pr.potentialScore) FROM PerformanceReview pr 
+        WHERE pr.status IN ('COMPLETED', 'PUBLISHED')
+    """)
     List<Object[]> getAvgScores();
+
+    @Query("""
+        SELECT 
+            CASE 
+                WHEN pr.performanceScore >= 4.5 THEN 'A'
+                WHEN pr.performanceScore >= 3.5 THEN 'B'
+                WHEN pr.performanceScore >= 2.5 THEN 'C'
+                WHEN pr.performanceScore >= 1.5 THEN 'D'
+                ELSE 'F'
+            END, 
+            COUNT(pr) 
+        FROM PerformanceReview pr 
+        WHERE pr.status IN ('COMPLETED', 'PUBLISHED') 
+        GROUP BY 
+            CASE 
+                WHEN pr.performanceScore >= 4.5 THEN 'A'
+                WHEN pr.performanceScore >= 3.5 THEN 'B'
+                WHEN pr.performanceScore >= 2.5 THEN 'C'
+                WHEN pr.performanceScore >= 1.5 THEN 'D'
+                ELSE 'F'
+            END
+    """)
+    List<Object[]> countByPerformanceGradeGrouped();
 
     @Query("""
            SELECT
@@ -125,4 +158,14 @@ public interface PerformanceReviewRepository extends JpaRepository<PerformanceRe
            "WHERE pr.status = 'COMPLETED' " +
            "ORDER BY pr.performanceScore DESC")
     List<Object[]> findTopPerformers(Pageable pageable);
+
+    @Query("""
+        SELECT new com.group5.ems.dto.response.hr.TopPerformerDTO(e.id, AVG(pr.performanceScore))
+        FROM PerformanceReview pr
+        JOIN pr.employee e
+        WHERE pr.status IN ('COMPLETED', 'PUBLISHED') AND function('YEAR', pr.createdAt) = :year
+        GROUP BY e.id
+        ORDER BY AVG(pr.performanceScore) DESC
+    """)
+    List<com.group5.ems.dto.response.hr.TopPerformerDTO> findTopPerformersByYear(@Param("year") int year);
 }

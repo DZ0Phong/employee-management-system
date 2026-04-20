@@ -66,11 +66,14 @@ import com.group5.ems.service.hr.HrRecruitmentService;
 import com.group5.ems.service.hr.HrRequestService;
 import com.group5.ems.service.hr.HrReportService;
 import com.group5.ems.service.common.LogService;
+/*
 import com.group5.ems.service.hr.HrCalendarService;
 import com.group5.ems.dto.request.hr.HrEventCreateDTO;
 import com.group5.ems.dto.request.hr.HrEventUpdateDTO;
 import com.group5.ems.dto.response.hr.HrEventResponseDTO;
+*/
 import com.group5.ems.exception.ReportExportException;
+import com.group5.ems.exception.ValidationException;
 
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
@@ -108,7 +111,7 @@ public class HrController {
     private final LogService logService;
     private final TemplateEngine templateEngine;
     private final SkillRepository skillRepository;
-    private final HrCalendarService calendarService;
+    // private final HrCalendarService calendarService;
 
     @GetMapping({ "", "/", "/dashboard" })
     public String dashboard(Model model) {
@@ -219,13 +222,29 @@ public class HrController {
             @RequestParam(required = false) String search,
             @RequestParam(required = false) Long departmentId,
             @RequestParam(required = false) String status,
-            @RequestParam(defaultValue = "0") int page) {
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "checkIn:asc") String sort) {
 
         LocalDate queryDate = (date != null) ? date : LocalDate.now();
 
         model.addAttribute("stats", attendanceService.getAttendanceStats(queryDate));
 
-        Pageable pageable = PageRequest.of(page, EMPLOYEE_PAGE_SIZE);
+        String sortBy = "checkIn";
+        String direction = "asc";
+        if (sort != null && sort.contains(":")) {
+            String[] parts = sort.split(":");
+            sortBy = parts[0];
+            direction = parts[1];
+        }
+
+        String sortField = "checkIn";
+        if ("checkOut".equals(sortBy)) {
+            sortField = "checkOut";
+        }
+        
+        Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, EMPLOYEE_PAGE_SIZE, Sort.by(sortDirection, "a." + sortField));
+
         org.springframework.data.domain.Page<com.group5.ems.dto.response.HrAttendanceDetailDTO> attendancePage = attendanceService
                 .getAttendanceRecords(queryDate, search, departmentId, status, pageable);
 
@@ -238,6 +257,7 @@ public class HrController {
         model.addAttribute("search", search);
         model.addAttribute("departmentId", departmentId);
         model.addAttribute("status", status);
+        model.addAttribute("sort", sort);
         model.addAttribute("departments", departmentRepository.findAll());
 
         return "hr/attendance";
@@ -516,6 +536,18 @@ public class HrController {
             @RequestParam(required = false) BigDecimal minPotential,
             @RequestParam(required = false) BigDecimal maxPotential) {
 
+        if (reviewYear != null && !reviewYear.isEmpty()) {
+            try {
+                int year = Integer.parseInt(reviewYear);
+                int currentYear = LocalDate.now().getYear();
+                if (year < 2025 || year > currentYear) {
+                    throw new ValidationException("Review year must be between 2025 and " + currentYear);
+                }
+            } catch (NumberFormatException e) {
+                throw new ValidationException("Invalid year format");
+            }
+        }
+
         if (minScore != null && maxScore != null && minScore.compareTo(maxScore) > 0) {
             BigDecimal temp = minScore;
             minScore = maxScore;
@@ -602,10 +634,8 @@ public class HrController {
         model.addAttribute("totalItems", historyPage.getTotalElements());
 
         // Tab 3: Create request form data
-        model.addAttribute("requestTypes", requestService.getCreatableRequestTypes());
+        model.addAttribute("requestTypes", requestService.getGroupedRequestTypes());
 
-        // Tab 4: Analytics
-        model.addAttribute("stats", requestService.getRequestStats());
 
         // Rejection modal data
         model.addAttribute("rejectionCategories", requestService.getRejectionCategories());
@@ -652,9 +682,10 @@ public class HrController {
             @RequestParam Long requestTypeId,
             @RequestParam String title,
             @RequestParam String content,
+            @RequestParam(defaultValue = "false") boolean urgent,
             RedirectAttributes redirectAttributes) {
         try {
-            requestService.createRequest(requestTypeId, title, content);
+            requestService.createRequest(requestTypeId, title, content, urgent);
             redirectAttributes.addFlashAttribute("successMessage", "Request created successfully.");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
@@ -1176,6 +1207,7 @@ public class HrController {
     }
 */
 
+    /*
     // ═══════════════════════════════════════════════════════════════════════════
     // CALENDAR MANAGEMENT
     // ═══════════════════════════════════════════════════════════════════════════
@@ -1243,6 +1275,7 @@ public class HrController {
         }
         return "redirect:/hr/calendar";
     }
+    */
 
     // ═══════════════════════════════════════════════════════════════════════════
     // REPORTS & ANALYTICS
@@ -1330,6 +1363,22 @@ public class HrController {
         }
     }
 
+    @GetMapping("/reports/builder/export")
+    public void exportCustomReport(
+            @RequestParam String dataSource,
+            @RequestParam(required = false) List<String> columns,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo,
+            @RequestParam String format,
+            jakarta.servlet.http.HttpServletResponse response) throws java.io.IOException {
+            
+        if (columns == null || columns.isEmpty()) {
+            throw new IllegalArgumentException("At least one column must be selected.");
+        }
+        
+        reportService.exportCustomReport(dataSource, columns, dateFrom, dateTo, format, response);
+    }
+
     @PostMapping("/reports/prepare")
     public String prepareReport(
             @RequestParam String tab,
@@ -1371,8 +1420,21 @@ public class HrController {
     public ResponseEntity<byte[]> downloadSavedReport(@PathVariable Long id) {
         byte[] bytes = reportService.getReportFileBytes(id);
         
+        logService.log(com.group5.ems.enums.AuditAction.EXPORT, com.group5.ems.enums.AuditEntityType.HR_REPORTS, id);
+
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"HR_Report_" + id + ".pdf\"")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(bytes);
+    }
+
+    @GetMapping("/reports/preview/{id}")
+    public ResponseEntity<byte[]> previewReport(@PathVariable Long id) {
+        byte[] bytes = reportService.getReportFileBytes(id);
+        
+        // Use inline disposition for browser preview
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"HR_Report_Preview_" + id + ".pdf\"")
                 .contentType(MediaType.APPLICATION_PDF)
                 .body(bytes);
     }

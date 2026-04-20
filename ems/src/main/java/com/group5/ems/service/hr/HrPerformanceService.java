@@ -72,6 +72,9 @@ public class HrPerformanceService {
         String employeeCode = "N/A";
         String departmentName = "N/A";
         String reviewerName = "N/A";
+        String reviewerCode = "N/A";
+        String performanceGrade = "N/A";
+        String potentialGrade = "N/A";
 
         if (r.getEmployee() != null) {
             if (r.getEmployee().getUser() != null && r.getEmployee().getUser().getFullName() != null) {
@@ -82,26 +85,31 @@ public class HrPerformanceService {
             }
             employeeCode = r.getEmployee().getEmployeeCode();
         }
-        if (r.getReviewer() != null && r.getReviewer().getUser() != null
-                && r.getReviewer().getUser().getFullName() != null) {
-            reviewerName = r.getReviewer().getUser().getFullName();
+        if (r.getReviewer() != null) {
+            if (r.getReviewer().getUser() != null && r.getReviewer().getUser().getFullName() != null) {
+                reviewerName = r.getReviewer().getUser().getFullName();
+            }
+            reviewerCode = r.getReviewer().getEmployeeCode();
         }
 
-        // Map numeric performance score to letter grade for display
-        String letterScore = mapToLetterGrade(r.getPerformanceScore());
+        // Map numeric scores to letter grades for display
+        performanceGrade = mapToLetterGrade(r.getPerformanceScore());
+        potentialGrade = mapToLetterGrade(r.getPotentialScore());
 
         return HrPerformanceDTO.builder()
                 .id(r.getId())
                 .employeeName(employeeName)
                 .employeeCode(employeeCode)
+                .avatarUrl(r.getEmployee() != null && r.getEmployee().getUser() != null ? r.getEmployee().getUser().getAvatarUrl() : null)
                 .department(departmentName)
                 .reviewerName(reviewerName)
+                .reviewerCode(reviewerCode)
                 .status(r.getStatus())
-                .score(letterScore)
+                .performanceGrade(performanceGrade)
+                .potentialGrade(potentialGrade)
                 .reviewPeriod(r.getReviewPeriod())
                 .performanceScore(r.getPerformanceScore())
                 .potentialScore(r.getPotentialScore())
-                .talentMatrix(computeTalentMatrix(r.getPerformanceScore(), r.getPotentialScore()))
                 .strengths(r.getStrengths())
                 .areasToImprove(r.getAreasToImprove())
                 .createdAt(r.getCreatedAt())

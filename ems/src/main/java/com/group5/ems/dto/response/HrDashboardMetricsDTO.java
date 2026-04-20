@@ -1,6 +1,5 @@
 package com.group5.ems.dto.response;
 
-import com.group5.ems.dto.response.hr.HrEventDTO;
 import lombok.Builder;
 
 import java.util.List;
@@ -20,7 +19,6 @@ public record HrDashboardMetricsDTO(
         int pipelineApplied,
         int pipelineReviewing,
         int pipelineInterviewing,
-        int pipelineOfferSent,
-        List<HrEventDTO> upcomingEvents
+        int pipelineOfferSent
 ) {
 }

@@ -2,7 +2,7 @@ package com.group5.ems.service.hr;
 
 import com.group5.ems.dto.request.RecruitmentTicketDTO;
 import com.group5.ems.dto.response.HrRequestDTO;
-import com.group5.ems.dto.response.HrRequestStatsDTO;
+
 import com.group5.ems.constants.WorkflowConstants;
 import com.group5.ems.entity.BenefitType;
 import com.group5.ems.entity.Department;
@@ -44,6 +44,7 @@ import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -105,12 +106,18 @@ public class HrRequestService {
             String status, String categoryCode, String search,
             LocalDateTime dateFrom, LocalDateTime dateTo, Pageable pageable) {
 
+        Long currentUserId = getCurrentUserId();
+        if (currentUserId == null) return Page.empty();
+
+        Employee currentEmployee = employeeRepository.findByUserId(currentUserId)
+                .orElseThrow(() -> new IllegalArgumentException("No employee record found for current user"));
+
         String safeStatus = (status != null && !status.isBlank()) ? status.trim() : null;
         String safeCategoryCode = (categoryCode != null && !categoryCode.isBlank()) ? categoryCode.trim() : null;
         String safeSearch = (search != null && !search.isBlank()) ? search.trim() : null;
 
         Page<Request> page = requestRepository.findWorkflowRequestsFiltered(
-                safeStatus, safeCategoryCode, safeSearch, dateFrom, dateTo, pageable);
+                currentEmployee.getId(), safeStatus, safeCategoryCode, safeSearch, dateFrom, dateTo, pageable);
 
         List<HrRequestDTO> dtos = page.getContent().stream()
                 .map(this::mapToDTO)
@@ -199,7 +206,7 @@ public class HrRequestService {
     // ══════════════════════════════════════════════════════════════════
 
     @Transactional
-    public void createRequest(Long requestTypeId, String title, String content) {
+    public void createRequest(Long requestTypeId, String title, String content, boolean urgent) {
         if (title == null || title.isBlank()) {
             throw new IllegalArgumentException("Request title cannot be empty");
         }
@@ -219,6 +226,8 @@ public class HrRequestService {
         request.setRequestTypeId(requestType.getId());
         request.setTitle(title.trim());
         request.setContent(content.trim());
+        request.setUrgent(urgent);
+        request.setPriority(urgent ? "URGENT" : "NORMAL");
         
         // Option B: Skip DM/HR -> DIRECT TO HRM
         request.setStatus(WorkflowConstants.STATUS_PENDING);
@@ -226,7 +235,7 @@ public class HrRequestService {
         
         Request saved = requestRepository.save(request);
 
-        saveHistory(saved.getId(), currentUserId, "SUBMITTED", "Created by HR - Escalated to HR Manager");
+        saveHistory(saved.getId(), currentUserId, "SUBMITTED", "Created by HR - Escalated to HR Manager" + (urgent ? " (URGENT)" : ""));
         logService.log(AuditAction.CREATE, AuditEntityType.REQUEST, saved.getId());
     }
 
@@ -317,37 +326,7 @@ public class HrRequestService {
         logService.log(AuditAction.CREATE, AuditEntityType.REQUEST, saved.getId());
     }
 
-    // ══════════════════════════════════════════════════════════════════
-    // STATISTICS (Tab 4)
-    // ══════════════════════════════════════════════════════════════════
 
-    public HrRequestStatsDTO getRequestStats() {
-        YearMonth currentMonth = YearMonth.now();
-        LocalDateTime monthStart = currentMonth.atDay(1).atStartOfDay();
-
-        long totalPending = requestRepository.countPendingWorkflowRequests();
-        long approvedThisMonth = requestRepository.countWorkflowByStatusSince("APPROVED", monthStart);
-        long rejectedThisMonth = requestRepository.countWorkflowByStatusSince("REJECTED", monthStart);
-        Double avgHours = requestRepository.avgWorkflowProcessingHoursSince(monthStart);
-
-        List<Object[]> topTypes = requestRepository.findTopWorkflowTypes();
-        String topRequestType = "N/A";
-        long topRequestTypeCount = 0;
-        if (topTypes != null && !topTypes.isEmpty()) {
-            Object[] top = topTypes.get(0);
-            topRequestType = top[0] != null ? top[0].toString() : "N/A";
-            topRequestTypeCount = top[1] != null ? ((Number) top[1]).longValue() : 0;
-        }
-
-        return HrRequestStatsDTO.builder()
-                .totalPending(totalPending)
-                .approvedThisMonth(approvedThisMonth)
-                .rejectedThisMonth(rejectedThisMonth)
-                .avgProcessingHours(avgHours != null ? avgHours : 0.0)
-                .topRequestType(topRequestType)
-                .topRequestTypeCount(topRequestTypeCount)
-                .build();
-    }
 
     // ══════════════════════════════════════════════════════════════════
     // LOOKUP DATA
@@ -358,6 +337,15 @@ public class HrRequestService {
      */
     public List<RequestType> getCreatableRequestTypes() {
         return requestTypeRepository.findByCategoryNotInOrderByCategoryAscNameAsc(LEAVE_CATEGORIES);
+    }
+
+    public Map<String, List<RequestType>> getGroupedRequestTypes() {
+        return getCreatableRequestTypes().stream()
+                .collect(Collectors.groupingBy(
+                        RequestType::getCategory,
+                        LinkedHashMap::new,
+                        Collectors.toList()
+                ));
     }
 
     public Map<String, String> getRejectionCategories() {
@@ -371,6 +359,7 @@ public class HrRequestService {
     private HrRequestDTO mapToDTO(Request request) {
         String empName = "Unknown";
         String initials = "?";
+        String avatarUrl = null;
         String deptName = "N/A";
         Long deptId = null;
         String empCode = "N/A";
@@ -382,6 +371,7 @@ public class HrRequestService {
             if (emp.getUser() != null) {
                 empName = emp.getUser().getFullName();
                 initials = buildInitials(empName);
+                avatarUrl = emp.getUser().getAvatarUrl();
             }
             if (emp.getDepartment() != null) {
                 deptName = emp.getDepartment().getName();
@@ -405,9 +395,13 @@ public class HrRequestService {
             approverName = request.getApprovedByUser().getFullName();
         }
 
+        String approverEmployeeCode = null;
+        if (request.getApprovedByUser() != null && request.getApprovedByUser().getEmployee() != null) {
+            approverEmployeeCode = request.getApprovedByUser().getEmployee().getEmployeeCode();
+        }
+
         String statusClass = "border-slate-200 bg-slate-50 text-slate-500";
         String statusDisplay = request.getStatus();
-        String stepDisplay = workflowService.getStepDisplayName(request.getStep());
 
         if (WorkflowConstants.STATUS_PENDING.equals(request.getStatus())) {
             statusClass = "border-amber-200 bg-amber-50 text-amber-600";
@@ -458,6 +452,7 @@ public class HrRequestService {
                 .id(request.getId())
                 .requestedBy(empName)
                 .initials(initials)
+                .avatarUrl(avatarUrl)
                 .department(deptName)
                 .departmentId(deptId)
                 .employeeCode(empCode)
@@ -472,14 +467,15 @@ public class HrRequestService {
                 .submittedAtDisplay(request.getCreatedAt() != null ? request.getCreatedAt().format(DTF_FULL) : "N/A")
                 .processedAt(processedAt)
                 .approverName(approverName)
+                .approverEmployeeCode(approverEmployeeCode)
                 .statusClass(statusClass)
                 .statusDisplay(statusDisplay)
-                .stepDisplay(stepDisplay)
                 .leaveBalanceRemaining(balanceRemaining)
                 .leaveBalanceTotal(balanceTotal)
                 .leaveBalancePercentage(balancePercentage)
                 .overlapCount(overlapCount)
                 .isLeaveRequest(isLeaveRequest)
+                .urgentFlag(request.isUrgent())
                 .build();
 
     }

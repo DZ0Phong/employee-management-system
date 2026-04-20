@@ -8,6 +8,7 @@ public record HrAttendanceDetailDTO(
     String employeeCode,
     String fullName,
     String initials,
+    String avatarUrl,
     String departmentName,
     LocalDate workDate,
     LocalTime checkIn,
@@ -15,8 +16,8 @@ public record HrAttendanceDetailDTO(
     String status,
     String note
 ) {
-    public HrAttendanceDetailDTO(Long id, String employeeCode, String fullName, String departmentName, LocalDate workDate, LocalTime checkIn, LocalTime checkOut, String status, String note) {
-        this(id, employeeCode, fullName, calculateInitials(fullName), departmentName, workDate, checkIn, checkOut, status, note);
+    public HrAttendanceDetailDTO(Long id, String employeeCode, String fullName, String avatarUrl, String departmentName, LocalDate workDate, LocalTime checkIn, LocalTime checkOut, String status, String note) {
+        this(id, employeeCode, fullName, calculateInitials(fullName), avatarUrl, departmentName, workDate, checkIn, checkOut, status, note);
     }
 
     private static String calculateInitials(String fullName) {

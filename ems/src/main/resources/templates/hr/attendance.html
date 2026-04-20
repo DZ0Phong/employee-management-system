@@ -6,9 +6,7 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>EMS Pro - Attendance & Time</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="/css/app-icons.css" th:href="@{/css/app-icons.css}" />
-    <script defer src="/js/app-icons.js" th:src="@{/js/app-icons.js}"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
 <link rel="stylesheet" th:href="@{/css/hr/hr-common.css}">
     <!-- Flatpickr -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -29,20 +27,22 @@
             },
         };
     </script>
+    <link rel="stylesheet" href="/css/app-icons.css" th:href="@{/css/app-icons.css}" />
+    <script defer src="/js/app-icons.js" th:src="@{/js/app-icons.js}"></script>
 </head>
 
 <body class="bg-bg-light font-display text-slate-900 min-h-screen">
     <div class="flex h-screen overflow-hidden">
 
-        <!-- Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â -->
+        <!-- ══════════════════════════════════════════════════════════ -->
         <!-- SIDEBAR                                                   -->
-        <!-- Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â -->
-        <!-- Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â -->
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <!-- ══════════════════════════════════════════════════════════ -->
         <!-- SIDEBAR                                                   -->
-        <!-- Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â -->
+        <!-- ══════════════════════════════════════════════════════════ -->
         <div th:replace="~{fragments/hr-sidebar :: sidebar('attendance')}"></div>
 
-        <!-- Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Main Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ -->
+        <!-- ─── Main ───────────────────────────────────────────────── -->
         <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
             <form method="get" th:action="@{/hr/attendance}" id="filterForm" class="flex flex-col h-full m-0 p-0">
                 <header class="h-16 bg-white border-b border-slate-100 flex items-center justify-between px-8 shrink-0">
@@ -104,46 +104,64 @@
                         </div>
 
                         <!-- Filters and Summary -->
-                        <div class="flex items-center justify-between anim anim-1 flex-wrap gap-3">
-                            <div class="flex gap-2 flex-wrap">
-                                <div class="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 py-1.5 w-64 shadow-sm">
-                                    <span class="material-symbols-outlined text-slate-400 text-base">search</span>
+                        <div class="flex items-start justify-between anim anim-1 flex-wrap gap-4 mb-2">
+                            <div class="flex flex-col gap-4">
+                                <!-- Top row: Filters -->
+                                <div class="flex gap-2 flex-wrap items-center">
+                                    <div class="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 py-1.5 w-64 shadow-sm">
+                                        <span class="material-symbols-outlined text-slate-400 text-base">search</span>
+                                        <label>
+                                            <input type="text" name="search" th:value="${search}"
+                                                placeholder="Search name or ID..."
+                                                class="bg-transparent border-none text-sm w-full focus:ring-0 p-0 text-slate-700 placeholder-slate-400">
+                                        </label>
+                                    </div>
                                     <label>
-                                        <input type="text" name="search" th:value="${search}"
-                                            placeholder="Search name or ID..."
-                                            class="bg-transparent border-none text-sm w-full focus:ring-0 p-0 text-slate-700 placeholder-slate-400">
+                                        <select name="departmentId"
+                                            class="text-sm border-slate-200 rounded-xl focus:ring-primary focus:border-primary pl-3 pr-8 py-1.5 bg-white text-slate-600 font-medium shadow-sm">
+                                            <option value="">All Departments</option>
+                                            <option th:each="dept : ${departments}" th:value="${dept.id}"
+                                                th:text="${dept.name}" th:selected="${dept.id == departmentId}"></option>
+                                        </select>
                                     </label>
+                                    <label>
+                                        <select name="status"
+                                            class="text-sm border-slate-200 rounded-xl focus:ring-primary focus:border-primary pl-3 pr-8 py-1.5 bg-white text-slate-600 font-medium shadow-sm">
+                                            <option value="">All Status</option>
+                                            <option value="PRESENT" th:selected="${status == 'PRESENT'}">Present</option>
+                                            <option value="LATE" th:selected="${status == 'LATE'}">Late In</option>
+                                            <option value="ABSENT" th:selected="${status == 'ABSENT'}">Absent</option>
+                                        </select>
+                                    </label>
+                                    <button type="submit"
+                                        class="flex items-center gap-1.5 bg-primary text-white px-4 py-1.5 rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors shadow-sm shadow-primary/30">
+                                        <span class="material-symbols-outlined text-[16px]">filter_alt</span>
+                                        Filter
+                                    </button>
+                                    <a th:href="@{/hr/attendance(date=${#temporals.format(date, 'yyyy-MM-dd')})}"
+                                        class="flex items-center gap-1.5 bg-white border border-slate-200 text-slate-600 px-3 py-1.5 rounded-xl text-sm font-medium hover:bg-slate-50 transition-colors">
+                                        <span class="material-symbols-outlined text-[16px]">clear_all</span>
+                                        Clear
+                                    </a>
                                 </div>
-                                <label>
-                                    <select name="departmentId"
-                                        class="text-sm border-slate-200 rounded-xl focus:ring-primary focus:border-primary pl-3 pr-8 py-1.5 bg-white text-slate-600 font-medium shadow-sm">
-                                        <option value="">All Departments</option>
-                                        <option th:each="dept : ${departments}" th:value="${dept.id}"
-                                            th:text="${dept.name}" th:selected="${dept.id == departmentId}"></option>
+                                
+                                <!-- Bottom row: Sort -->
+                                <div class="flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-slate-400 text-[18px]">sort</span>
+                                    <span class="text-sm font-medium text-slate-500">Sort by:</span>
+                                    <select name="sort" onchange="document.getElementById('filterForm').submit()" class="text-sm border-slate-200 rounded-lg hover:border-primary focus:ring-primary focus:border-primary py-1.5 pl-3 pr-8 text-slate-700 font-semibold cursor-pointer shadow-sm bg-white min-w-[160px]">
+                                        <option value="checkIn:asc" th:selected="${sort == 'checkIn:asc'}">Earliest Clock In</option>
+                                        <option value="checkOut:asc" th:selected="${sort == 'checkOut:asc'}">Earliest Clock Out</option>
+                                        <option value="checkIn:desc" th:selected="${sort == 'checkIn:desc'}">Latest Clock In</option>
+                                        <option value="checkOut:desc" th:selected="${sort == 'checkOut:desc'}">Latest Clock Out</option>
                                     </select>
-                                </label>
-                                <label>
-                                    <select name="status"
-                                        class="text-sm border-slate-200 rounded-xl focus:ring-primary focus:border-primary pl-3 pr-8 py-1.5 bg-white text-slate-600 font-medium shadow-sm">
-                                        <option value="">All Status</option>
-                                        <option value="PRESENT" th:selected="${status == 'PRESENT'}">Present</option>
-                                        <option value="LATE" th:selected="${status == 'LATE'}">Late In</option>
-                                        <option value="ABSENT" th:selected="${status == 'ABSENT'}">Absent</option>
-                                    </select>
-                                </label>
-                                <button type="submit"
-                                    class="flex items-center gap-1.5 bg-primary text-white px-4 py-1.5 rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors shadow-sm shadow-primary/30">
-                                    <span class="material-symbols-outlined text-[16px]">filter_alt</span>
-                                    Filter
-                                </button>
-                                <a th:href="@{/hr/attendance(date=${#temporals.format(date, 'yyyy-MM-dd')})}"
-                                    class="flex items-center gap-1.5 bg-white border border-slate-200 text-slate-600 px-3 py-1.5 rounded-xl text-sm font-medium hover:bg-slate-50 transition-colors">
-                                    <span class="material-symbols-outlined text-[16px]">clear_all</span>
-                                    Clear
-                                </a>
+                                </div>
                             </div>
-                            <p class="text-sm font-semibold text-slate-500">Showing <span class="text-slate-800"
-                                    th:text="${totalItems}">0</span> entries</p>
+                            
+                            <!-- Right Side: Total entries -->
+                            <div class="flex flex-col justify-end h-full mt-auto">
+                                <p class="text-sm font-semibold text-slate-500 mb-2">Showing <span class="text-slate-800" th:text="${totalItems}">0</span> entries</p>
+                            </div>
                         </div>
 
                         <!-- Attendance Table -->
@@ -165,18 +183,21 @@
                                     <tbody class="divide-y divide-slate-50">
                                         <!-- Empty State -->
                                         <tr th:if="${#lists.isEmpty(attendances)}">
-                                            <td colspan="6" class="px-5 py-8 text-center text-slate-500">
-                                                <span class="material-symbols-outlined text-4xl text-slate-300 mb-2 block">event_busy</span>
-                                                <p class="text-sm font-medium">No attendance records found.</p>
-                                                <p class="text-xs text-slate-400 mt-1">Try adjusting your search criteria or date.</p>
+                                            <td colspan="5" class="px-5 py-24 text-center text-slate-500">
+                                                <div class="flex flex-col items-center justify-center anim anim-1">
+                                                    <span class="material-symbols-outlined text-6xl text-slate-300 mb-4">event_busy</span>
+                                                    <p class="text-base font-bold text-slate-600">No attendance records found</p>
+                                                    <p class="text-sm text-slate-400 mt-2">Try adjusting your search criteria or date.</p>
+                                                </div>
                                             </td>
                                         </tr>
                                         <!-- Log Items -->
                                         <tr th:each="att : ${attendances}" class="hover:bg-primary/[2%] transition-colors group">
                                             <td class="px-5 py-3">
                                                 <div class="flex items-center gap-3">
-                                                    <div class="w-8 h-8 rounded-full bg-slate-100 font-bold text-slate-400 text-[10px] flex items-center justify-center shrink-0 border border-slate-200">
-                                                        <span th:text="${att.initials()}">JD</span>
+                                                    <div class="w-8 h-8 rounded-full bg-slate-100 font-bold text-slate-400 text-[10px] flex items-center justify-center shrink-0 border border-slate-200 overflow-hidden transition-transform group-hover:scale-105">
+                                                        <img th:if="${att.avatarUrl() != null}" th:src="${att.avatarUrl()}" class="w-full h-full object-cover" alt="Avatar">
+                                                        <span th:if="${att.avatarUrl() == null}" th:text="${att.initials()}">JD</span>
                                                     </div>
                                                     <div>
                                                         <p class="text-sm font-semibold text-slate-800 leading-tight group-hover:text-primary transition-colors" th:text="${att.fullName()}">Jane Doe</p>
@@ -284,7 +305,7 @@
                     form.submit();
                 }
 
-                // Ã¢â€â‚¬Ã¢â€â‚¬ Export CSV Modal Ã¢â€â‚¬Ã¢â€â‚¬
+                // ── Export CSV Modal ──
                 function openExportModal() {
                     const modal = document.getElementById('exportModal');
                     const modalForm = document.getElementById('exportCsvForm');
@@ -329,4 +350,5 @@
     </div>
 </body>
 </html>
+
 

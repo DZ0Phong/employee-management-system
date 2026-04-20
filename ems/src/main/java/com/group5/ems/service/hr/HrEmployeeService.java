@@ -26,7 +26,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.jpa.domain.Specification;
 import jakarta.persistence.criteria.*;
 import java.util.ArrayList;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -151,7 +150,7 @@ public class HrEmployeeService {
                 
                 dtos.set(i, new HrEmployeeDTO(
                     dto.id(), dto.initials(), dto.fullName(), dto.position(), dto.department(), 
-                    dto.code(), dto.status(), dto.email(), dto.phone(), matchingSkills
+                    dto.code(), dto.status(), dto.email(), dto.phone(), dto.avatarUrl(), matchingSkills
                 ));
             }
         }
@@ -264,6 +263,7 @@ public class HrEmployeeService {
         HrEmployeeDetailDTO dto = HrEmployeeDetailDTO.builder()
                 .id(employee.getId())
                 .initials(initials.toUpperCase())
+                .avatarUrl(employee.getUser() != null ? employee.getUser().getAvatarUrl() : null)
                 .fullName(fullName)
                 .code(employee.getEmployeeCode())
                 .department(departmentName)
@@ -352,6 +352,7 @@ public class HrEmployeeService {
                 .status(employee.getStatus())
                 .email(email)
                 .phone(phone)
+                .avatarUrl(employee.getUser() != null ? employee.getUser().getAvatarUrl() : null)
                 .build();
     }
 }

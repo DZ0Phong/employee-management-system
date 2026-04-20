@@ -3,8 +3,18 @@ package com.group5.ems.service.common;
 import com.group5.ems.entity.Request;
 import com.group5.ems.entity.User;
 import com.group5.ems.repository.*;
+import com.group5.ems.service.hr.HrBackblazeStorageService;
+import com.group5.ems.entity.EmailTemplate;
+import com.group5.ems.entity.HrReport;
+import jakarta.mail.util.ByteArrayDataSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+
+import java.time.format.DateTimeFormatter;
+import java.util.Map;
+import com.group5.ems.enums.AuditAction;
+import com.group5.ems.enums.AuditEntityType;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -44,53 +54,84 @@ public class EmailNotificationService {
     @Autowired
     private LogService logService;
 
+    @Autowired
+    private HrBackblazeStorageService backblazeStorageService;
+
     /**
      * Send notification to HR Manager when a report is finalized and published
      */
-    public void sendReportPublishedNotification(com.group5.ems.entity.HrReport report) {
-        if (report == null || !report.isPublished()) {
-            return;
-        }
-
+    public void sendReportPublishedNotification(HrReport report) {
         try {
-            // Find all HR Managers
+            // 1. Get recipients (HR Managers)
             List<com.group5.ems.entity.Employee> hrManagers = employeeRepository
                     .findEmployeesByRoleCodes(List.of("HR_MANAGER"));
-            
-            if (hrManagers.isEmpty()) return;
 
-            // Fetch Template
-            String templateCode = "REPORT_PUBLISHED";
-            com.group5.ems.entity.EmailTemplate template = emailTemplateRepository
-                    .findByCode(templateCode)
-                    .orElseThrow(() -> new RuntimeException("Email template not found: " + templateCode));
+            if (hrManagers.isEmpty()) {
+                System.err.println("No HR Managers found to notify for report: " + report.getTitle());
+                return;
+            }
 
-            for (com.group5.ems.entity.Employee manager : hrManagers) {
-                if (manager.getUser() == null || manager.getUser().getEmail() == null) continue;
-                
-                String recipientEmail = manager.getUser().getEmail();
-                
-                // Prepare Variables for template
-                java.util.Map<String, String> vars = new java.util.HashMap<>();
-                vars.put("fullName", manager.getUser().getFullName());
-                vars.put("reportTitle", report.getTitle());
-                vars.put("reportType", report.getReportType());
-                vars.put("format", report.getFormat());
-                vars.put("publishedAt", report.getPublishedAt() != null ? report.getPublishedAt().toString() : java.time.LocalDateTime.now().toString());
-                vars.put("remarks", report.getRemarks() != null ? report.getRemarks() : "No executive summary provided.");
+            // 2. Fetch template
+            EmailTemplate template = emailTemplateRepository.findByCode("REPORT_PUBLISHED")
+                    .orElse(null);
 
+            if (template == null) {
+                System.err.println("REPORT_PUBLISHED email template not found");
+                return;
+            }
+
+            // 3. Prepare variables
+            String reportDate = report.getGeneratedAt() != null 
+                    ? report.getGeneratedAt().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+                    : "";
+
+            java.util.Map<String, String> vars = new java.util.HashMap<>();
+            vars.put("reportTitle", report.getTitle());
+            vars.put("reportType", report.getReportType().toString());
+            vars.put("publishedDate", reportDate);
+            vars.put("remarks", report.getRemarks() != null ? report.getRemarks() : "No executive summary provided.");
+            vars.put("reportId", String.valueOf(report.getId()));
+
+            // 4. Fetch PDF bytes from Backblaze
+            byte[] pdfBytes = null;
+            if (report.getFilePath() != null) {
                 try {
-                    sendHtmlEmail(recipientEmail, template, vars);
-                    saveEmailLog(recipientEmail, templateCode, "SUCCESS");
+                    pdfBytes = backblazeStorageService.downloadReport(report.getFilePath()).orElse(null);
                 } catch (Exception e) {
-                    System.err.println("Failed to send email to " + recipientEmail + ": " + e.getMessage());
-                    saveEmailLog(recipientEmail, templateCode, "FAILED");
+                    System.err.println("Failed to fetch PDF for email attachment: " + e.getMessage());
+                }
+            }
+
+            // 5. Generate filename: Report_{Type}_{Title}_{Date}.pdf
+            String dateSuffix = report.getGeneratedAt() != null
+                    ? report.getGeneratedAt().format(DateTimeFormatter.ofPattern("ddMMyyyy"))
+                    : java.time.LocalDate.now().format(DateTimeFormatter.ofPattern("ddMMyyyy"));
+            
+            String safeTitle = report.getTitle().replaceAll("[^a-zA-Z0-9]", "_");
+            String fileName = String.format("Report_%s_%s_%s.pdf", 
+                    report.getReportType(), safeTitle, dateSuffix);
+
+            // 6. Send to each manager
+            for (com.group5.ems.entity.Employee manager : hrManagers) {
+                try {
+                    if (manager.getUser() == null) continue;
+                    
+                    vars.put("managerName", manager.getUser().getFullName());
+                    sendHtmlEmail(manager.getUser().getEmail(), template, vars, pdfBytes, fileName);
+                    
+                    // Log to DB
+                    saveEmailLog(manager.getUser().getEmail(), "REPORT_PUBLISHED", "SUCCESS");
+                } catch (Exception e) {
+                    String email = manager.getUser() != null ? manager.getUser().getEmail() : "unknown";
+                    System.err.println("Failed to send report notification to " + email);
+                    e.printStackTrace();
+                    saveEmailLog(email, "REPORT_PUBLISHED", "FAILED");
                 }
             }
 
             // Global Audit Log for the report publication event
-            logService.log(com.group5.ems.enums.AuditAction.UPDATE, 
-                           com.group5.ems.enums.AuditEntityType.HR_REPORTS, 
+            logService.log(AuditAction.UPDATE, 
+                           AuditEntityType.HR_REPORTS, 
                            report.getId());
 
         } catch (Exception e) {
@@ -99,17 +140,24 @@ public class EmailNotificationService {
         }
     }
 
-    private void sendHtmlEmail(String to, com.group5.ems.entity.EmailTemplate template, java.util.Map<String, String> variables) throws Exception {
+    private void sendHtmlEmail(String to, EmailTemplate template, Map<String, String> variables) throws Exception {
+        sendHtmlEmail(to, template, variables, null, null);
+    }
+
+    private void sendHtmlEmail(String to, EmailTemplate template, Map<String, String> variables, byte[] attachment, String fileName) throws Exception {
         String subject = replacePlaceholders(template.getSubject(), variables);
         String htmlBody = replacePlaceholders(template.getBody(), variables);
 
         jakarta.mail.internet.MimeMessage message = mailSender.createMimeMessage();
-        org.springframework.mail.javamail.MimeMessageHelper helper = 
-                new org.springframework.mail.javamail.MimeMessageHelper(message, true, "UTF-8");
+        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
         helper.setTo(to);
         helper.setSubject(subject);
         helper.setText(htmlBody, true); // true = HTML
+
+        if (attachment != null && fileName != null) {
+            helper.addAttachment(fileName, new ByteArrayDataSource(attachment, "application/pdf"));
+        }
 
         mailSender.send(message);
     }
