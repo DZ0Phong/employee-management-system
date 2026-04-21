@@ -403,16 +403,6 @@
                         <span class="material-symbols-outlined text-[16px]">download</span>
                         Export
                     </button>
-                    <button
-                        class="relative w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-50 text-slate-500 transition-colors">
-                        <span class="material-symbols-outlined text-[20px]">notifications</span>
-                        <span class="notification-bell-badge hidden absolute top-1.5 right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center border-2 border-white">0</span>
-                    </button>
-                    </button>
-                    <button
-                        class="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-50 text-slate-500 transition-colors">
-                        <span class="material-symbols-outlined text-[20px]">help_outline</span>
-                    </button>
                 </div>
             </header>
 
@@ -543,8 +533,6 @@
                                         <th class="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">
                                             Title</th>
                                         <th class="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">
-                                            Duration</th>
-                                        <th class="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">
                                             Priority</th>
                                         <th class="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">
                                             Status</th>
@@ -555,7 +543,7 @@
                                 <!-- ── NO DATA MESSAGE ── -->
                                 <th:block th:if="${leaveRequests == null or #lists.isEmpty(leaveRequests)}">
                                     <tr>
-                                        <td colspan="6" class="px-6 py-12 text-center">
+                                        <td colspan="5" class="px-6 py-12 text-center">
                                             <div class="flex flex-col items-center gap-3">
                                                 <span class="material-symbols-outlined text-emerald-400 text-[48px]">check_circle</span>
                                                 <p class="text-slate-600 font-bold text-lg">All caught up!</p>
@@ -598,8 +586,6 @@
                                                     <p class="text-sm font-medium text-slate-700 truncate max-w-[200px]" 
                                                        th:text="${req.title != null and !req.title.isEmpty() ? req.title : 'No title'}">Request Title</p>
                                                 </td>
-                                                <td class="px-4 py-4 text-sm font-semibold"
-                                                    th:text="${req.durationLabel}">5 Days</td>
                                                 
                                                 <!-- Priority Column - Phase 3 -->
                                                 <td class="px-4 py-4">
@@ -650,7 +636,7 @@
                                                 
                                             </tr>
                                             <tr th:id="'detail-' + ${req.id}" class="detail-row bg-slate-50/60">
-                                                <td colspan="6">
+                                                <td colspan="5">
                                                     <div class="detail-inner">
                                                         <div>
                                                             <div
@@ -1452,7 +1438,7 @@
             var blob = new Blob([csv], { type: 'text/csv' });
             var url = URL.createObjectURL(blob);
             var a = document.createElement('a');
-            a.href = url; a.download = 'leave-requests.csv'; a.click();
+            a.href = url; a.download = 'request-exports.csv'; a.click();
             URL.revokeObjectURL(url);
             showToast('Exported successfully', 'success');
         }
