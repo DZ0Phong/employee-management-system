@@ -1,11 +1,21 @@
 package com.group5.ems.entity;
 
-import jakarta.persistence.*;
+import java.time.LocalDateTime;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -52,6 +62,10 @@ public class StaffingRequest {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Size(max = 500)
+    @Column(name = "rejected_reason", length = 500)
+    private String rejectedReason;
 
     // Relationships
     @ManyToOne(fetch = FetchType.LAZY)

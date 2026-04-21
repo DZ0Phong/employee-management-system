@@ -355,13 +355,12 @@ public class HrRecruitmentService {
                 .requestedByName(submitter)
                 .departmentName(department)
                 // staffing_request không có rejected_reason — để null
-                .rejectedReason(null)
+                .rejectedReason(req.getRejectedReason())
                 .submittedAtFormatted(req.getCreatedAt() != null ? req.getCreatedAt().format(DATETIME_FMT) : "")
                 .updatedAtFormatted(req.getUpdatedAt() != null ? req.getUpdatedAt().format(DATETIME_FMT) : "")
                 .build();
     }
 
-    // SAU
     @Transactional
     public void approveJobRequest(Long staffingRequestId, Long approverId) {
         StaffingRequest req = staffingRequestRepository.findById(staffingRequestId)
@@ -380,8 +379,7 @@ public class HrRecruitmentService {
         req.setStatus("REJECTED");
         req.setProcessedByUserId(approverId != null ? approverId : 0L);
         req.setProcessedAt(LocalDateTime.now());
-        // Nếu entity có field rejectedReason thì set, nếu không thì bỏ dòng này
-        // req.setRejectedReason(reason);
+        req.setRejectedReason(reason);
         staffingRequestRepository.save(req);
         logService.log(AuditAction.UPDATE, AuditEntityType.REQUEST, staffingRequestId);
     }
