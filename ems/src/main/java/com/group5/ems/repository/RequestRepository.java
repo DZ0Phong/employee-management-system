@@ -58,31 +58,35 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
         @Query("SELECT COUNT(r) FROM Request r WHERE r.status = :status")
         Long countByStatus(@Param("status") String status);
 
-    @Query("SELECT r FROM Request r JOIN FETCH r.employee e JOIN FETCH e.user u " +
-            "LEFT JOIN FETCH e.department d JOIN FETCH r.requestType rt " +
-            "LEFT JOIN FETCH d.manager dm LEFT JOIN FETCH dm.user dmu " +
-            "LEFT JOIN FETCH e.position p " +
-            "WHERE r.status = 'PENDING' AND r.step = 'WAITING_HR' AND rt.category = 'ATTENDANCE' " +
-            "AND (:departmentId IS NULL OR d.id = :departmentId) " +
-            "AND (:leaveType IS NULL OR rt.code = :leaveType) " +
-            "AND (:search IS NULL OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :search, '%')) " +
-            "     OR LOWER(e.employeeCode) LIKE LOWER(CONCAT('%', :search, '%'))) " +
-            "ORDER BY r.createdAt DESC")
+    @Query("""
+			SELECT r FROM Request r JOIN FETCH r.employee e JOIN FETCH e.user u
+			LEFT JOIN FETCH e.department d JOIN FETCH r.requestType rt
+			LEFT JOIN FETCH d.manager dm LEFT JOIN FETCH dm.user dmu
+			LEFT JOIN FETCH e.position p
+			WHERE r.status = 'PENDING' AND r.step = 'WAITING_HR' AND rt.category = 'ATTENDANCE'
+			AND (:departmentId IS NULL OR d.id = :departmentId)
+			AND (:leaveType IS NULL OR rt.code = :leaveType)
+			AND (:search IS NULL OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :search, '%'))
+			     OR LOWER(e.employeeCode) LIKE LOWER(CONCAT('%', :search, '%')))
+			ORDER BY r.urgent DESC, r.createdAt DESC
+			""")
     List<Request> findPendingLeaveRequests(
             @Param("departmentId") Long departmentId,
             @Param("leaveType") String leaveType,
             @Param("search") String search);
 
-    @Query("SELECT r FROM Request r JOIN FETCH r.employee e JOIN FETCH e.user u " +
-            "LEFT JOIN FETCH e.department d JOIN FETCH r.requestType rt " +
-            "LEFT JOIN FETCH d.manager dm LEFT JOIN FETCH dm.user dmu " +
-            "LEFT JOIN FETCH e.position p " +
-            "WHERE r.status = 'PENDING' AND r.step = 'WAITING_HRM' AND rt.category = 'ATTENDANCE' " +
-            "AND (:departmentId IS NULL OR d.id = :departmentId) " +
-            "AND (:leaveType IS NULL OR rt.code = :leaveType) " +
-            "AND (:search IS NULL OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :search, '%')) " +
-            "     OR LOWER(e.employeeCode) LIKE LOWER(CONCAT('%', :search, '%'))) " +
-            "ORDER BY r.createdAt DESC")
+    @Query("""
+			SELECT r FROM Request r JOIN FETCH r.employee e JOIN FETCH e.user u
+			LEFT JOIN FETCH e.department d JOIN FETCH r.requestType rt
+			LEFT JOIN FETCH d.manager dm LEFT JOIN FETCH dm.user dmu
+			LEFT JOIN FETCH e.position p
+			WHERE r.status = 'PENDING' AND r.step = 'WAITING_HRM' AND rt.category = 'ATTENDANCE'
+			AND (:departmentId IS NULL OR d.id = :departmentId)
+			AND (:leaveType IS NULL OR rt.code = :leaveType)
+			AND (:search IS NULL OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :search, '%'))
+			     OR LOWER(e.employeeCode) LIKE LOWER(CONCAT('%', :search, '%')))
+			ORDER BY r.urgent DESC, r.createdAt DESC
+			""")
     List<Request> findHrmPendingLeaveRequests(
             @Param("departmentId") Long departmentId,
             @Param("leaveType") String leaveType,
@@ -425,10 +429,22 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
             "GROUP BY rt.code ORDER BY cnt DESC")
     List<Object[]> findTopLeaveTypes();
 
-    @Query(value = "SELECT AVG(TIMESTAMPDIFF(HOUR, r.created_at, r.updated_at)) FROM requests r " +
-            "JOIN request_types rt ON r.request_type_id = rt.id " +
-            "WHERE rt.category = 'ATTENDANCE' AND r.status IN ('APPROVED', 'REJECTED') " +
-            "AND r.updated_at >= :since AND r.updated_at <= :until", nativeQuery = true)
+    @Query(value = """
+			SELECT rt.name, COUNT(r) as cnt FROM Request r JOIN r.requestType rt
+			WHERE rt.category = 'ATTENDANCE' AND r.status <> 'PENDING'
+			AND r.updatedAt >= :since AND r.updatedAt <= :until
+			GROUP BY rt.code ORDER BY cnt DESC
+			""")
+    List<Object[]> findTopLeaveTypesBetween(
+            @Param("since") LocalDateTime since,
+            @Param("until") LocalDateTime until);
+
+    @Query(value = """
+			SELECT AVG(TIMESTAMPDIFF(HOUR, r.created_at, r.updated_at)) FROM requests r
+			JOIN request_types rt ON r.request_type_id = rt.id
+			WHERE rt.category = 'ATTENDANCE' AND r.status IN ('APPROVED', 'REJECTED')
+			AND r.updated_at >= :since AND r.updated_at <= :until
+			""", nativeQuery = true)
     Double avgProcessingHoursBetween(@Param("since") LocalDateTime since, @Param("until") LocalDateTime until);
 
     // ── Bulk operations ──

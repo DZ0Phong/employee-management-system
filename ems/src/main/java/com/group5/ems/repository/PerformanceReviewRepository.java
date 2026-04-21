@@ -168,4 +168,53 @@ public interface PerformanceReviewRepository extends JpaRepository<PerformanceRe
         ORDER BY AVG(pr.performanceScore) DESC
     """)
     List<com.group5.ems.dto.response.hr.TopPerformerDTO> findTopPerformersByYear(@Param("year") int year);
+
+    // ── HR Reports: Filtered Aggregation Queries (by reviewPeriod) ──────────
+
+    @Query("""
+        SELECT AVG(pr.performanceScore), AVG(pr.potentialScore) FROM PerformanceReview pr
+        WHERE pr.status IN ('COMPLETED', 'PUBLISHED')
+        AND (:reviewPeriod IS NULL OR pr.reviewPeriod = :reviewPeriod)
+    """)
+    List<Object[]> getAvgScoresByReviewPeriod(@Param("reviewPeriod") String reviewPeriod);
+
+    @Query("""
+        SELECT COUNT(pr) FROM PerformanceReview pr
+        WHERE pr.status = :status
+        AND (:reviewPeriod IS NULL OR pr.reviewPeriod = :reviewPeriod)
+    """)
+    long countByStatusAndReviewPeriod(@Param("status") String status, @Param("reviewPeriod") String reviewPeriod);
+
+    @Query("""
+        SELECT
+            CASE
+                WHEN pr.performanceScore >= 4.5 THEN 'A'
+                WHEN pr.performanceScore >= 3.5 THEN 'B'
+                WHEN pr.performanceScore >= 2.5 THEN 'C'
+                WHEN pr.performanceScore >= 1.5 THEN 'D'
+                ELSE 'F'
+            END,
+            COUNT(pr)
+        FROM PerformanceReview pr
+        WHERE pr.status IN ('COMPLETED', 'PUBLISHED')
+        AND (:reviewPeriod IS NULL OR pr.reviewPeriod = :reviewPeriod)
+        GROUP BY
+            CASE
+                WHEN pr.performanceScore >= 4.5 THEN 'A'
+                WHEN pr.performanceScore >= 3.5 THEN 'B'
+                WHEN pr.performanceScore >= 2.5 THEN 'C'
+                WHEN pr.performanceScore >= 1.5 THEN 'D'
+                ELSE 'F'
+            END
+    """)
+    List<Object[]> countByPerformanceGradeGroupedByReviewPeriod(@Param("reviewPeriod") String reviewPeriod);
+
+    @Query("""
+        SELECT u.fullName, d.name, pr.performanceScore FROM PerformanceReview pr
+        JOIN pr.employee e JOIN e.user u LEFT JOIN e.department d
+        WHERE pr.status = 'COMPLETED'
+        AND (:reviewPeriod IS NULL OR pr.reviewPeriod = :reviewPeriod)
+        ORDER BY pr.performanceScore DESC
+    """)
+    List<Object[]> findTopPerformersByReviewPeriod(@Param("reviewPeriod") String reviewPeriod, Pageable pageable);
 }

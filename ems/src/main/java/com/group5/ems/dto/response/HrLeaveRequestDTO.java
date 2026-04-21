@@ -37,6 +37,7 @@ public record HrLeaveRequestDTO(
         Integer overlapCount,
         String managerName,
         String managerEmployeeCode,
-        long workingDays
+        long workingDays,
+        boolean urgentFlag
 ) {
 }

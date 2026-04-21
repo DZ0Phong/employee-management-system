@@ -28,6 +28,74 @@
             },
         };
     </script>
+    <style>
+        /* Modern Year Grid Picker Styling */
+        .year-only-picker {
+            width: 280px !important;
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(16px) !important;
+            border-radius: 24px !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15) !important;
+            padding: 16px !important;
+        }
+        .year-only-picker .flatpickr-months,
+        .year-only-picker .flatpickr-innerContainer {
+            display: none !important;
+        }
+        .year-grid-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            padding: 8px;
+        }
+        .year-grid-item {
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 14px;
+            font-size: 14px;
+            font-weight: 800;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid transparent;
+        }
+        .year-grid-item:hover {
+            background: #f8fafc;
+            color: #4f46e5;
+            transform: scale(1.05);
+            border-color: #e2e8f0;
+        }
+        .year-grid-item.active {
+            background: #4f46e5;
+            color: white;
+            box-shadow: 0 8px 15px -3px rgba(79, 70, 229, 0.3);
+        }
+        .year-current-shortcut {
+            margin-top: 12px;
+            width: 100%;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f1f5f9;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 800;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+        .year-current-shortcut:hover {
+            background: #4f46e5;
+            color: white;
+        }
+    </style>
     <link rel="stylesheet" href="/css/app-icons.css" th:href="@{/css/app-icons.css}" />
     <script defer src="/js/app-icons.js" th:src="@{/js/app-icons.js}"></script>
 </head>
@@ -107,7 +175,7 @@
                id="tabPayroll">
                 <span class="material-symbols-outlined text-sm align-middle mr-1">payments</span> Payroll
             </a>
-            <a th:href="@{/hr/reports(tab='performance')}"
+            <a th:href="@{/hr/reports(tab='performance', year=${selectedYear})}"
                th:class="${activeTab == 'performance'} ? 'leave-tab active px-4 py-3 text-xs font-bold' : 'leave-tab px-4 py-3 text-xs font-bold'"
                id="tabPerformance">
                 <span class="material-symbols-outlined text-sm align-middle mr-1">military_tech</span> Performance
@@ -123,13 +191,16 @@
                 <span class="material-symbols-outlined text-sm align-middle mr-1">history_edu</span> Saved Reports
             </a>
 
-            <!-- Year Filter (for overview/leave tabs) -->
-            <div class="ml-auto flex items-center gap-2" th:if="${activeTab == 'overview' || activeTab == 'leave'}">
-                <form th:action="@{/hr/reports}" method="get" class="flex items-center gap-2">
+            <!-- Year Filter (for overview/leave/performance tabs) -->
+            <div class="ml-auto flex items-center gap-2" th:if="${activeTab == 'overview' || activeTab == 'leave' || activeTab == 'performance'}">
+                <form th:action="@{/hr/reports}" method="get" id="yearFilterForm" class="flex items-center gap-2">
                     <input type="hidden" name="tab" th:value="${activeTab}" />
-                    <select name="year" class="text-xs border-slate-200 rounded-lg py-1.5 px-2 focus:ring-primary/20 focus:border-primary" onchange="this.form.submit()">
-                        <option th:each="y : ${#numbers.sequence(currentYear, currentYear - 4)}" th:value="${y}" th:text="${y}" th:selected="${y == selectedYear}"></option>
-                    </select>
+                    <div class="relative group">
+                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm group-focus-within:text-primary transition-colors">calendar_month</span>
+                        <input type="text" id="reportYearPicker" name="year" th:value="${selectedYear}"
+                               placeholder="Select Year..." readonly
+                               class="bg-slate-50 border-transparent rounded-xl pl-9 pr-3 py-2 text-xs font-bold text-slate-700 focus:ring-primary/20 focus:border-primary focus:bg-white transition-all cursor-pointer min-w-[140px]">
+                    </div>
                 </form>
             </div>
 
@@ -1067,6 +1138,56 @@
                     }
                 });
             });
+
+            // Premium Year Grid Picker Initialization
+            const yearPickerEl = document.getElementById('reportYearPicker');
+            if (yearPickerEl) {
+                const currentYear = new Date().getFullYear();
+                flatpickr(yearPickerEl, {
+                    dateFormat: "Y",
+                    minDate: "2025",
+                    maxDate: currentYear.toString(),
+                    onReady: function(selectedDates, dateStr, instance) {
+                        const cont = instance.calendarContainer;
+                        cont.classList.add('year-only-picker');
+
+                        // Create and Inject the Modern Grid
+                        const gridHtml = `
+                            <div class="p-1">
+                                <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-2 text-center">Report Year</div>
+                                <div class="year-grid-container" id="reportYearGrid"></div>
+                                <div class="year-current-shortcut" id="reportQuickCurrent">
+                                    Current Year
+                                </div>
+                            </div>
+                        `;
+                        cont.innerHTML = gridHtml;
+
+                        const grid = cont.querySelector('#reportYearGrid');
+                        const selectedYear = instance.input.value;
+
+                        // Populate Grid (2025 to Current)
+                        for (let y = 2025; y <= currentYear; y++) {
+                            const item = document.createElement('div');
+                            item.className = `year-grid-item ${selectedYear == y ? 'active' : ''}`;
+                            item.textContent = y;
+                            item.onclick = () => {
+                                instance.setDate(y.toString(), true);
+                                instance.close();
+                                document.getElementById('yearFilterForm').submit();
+                            };
+                            grid.appendChild(item);
+                        }
+
+                        // Shortcut Handler
+                        cont.querySelector('#reportQuickCurrent').onclick = () => {
+                            instance.setDate(currentYear.toString(), true);
+                            instance.close();
+                            document.getElementById('yearFilterForm').submit();
+                        };
+                    }
+                });
+            }
         });
     </script>
 
