@@ -10,19 +10,27 @@ import com.group5.ems.enums.AuditEntityType;
 import com.group5.ems.repository.*;
 import com.group5.ems.repository.spec.UserSpecification;
 import com.group5.ems.service.common.LogService;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -35,13 +43,24 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class AdminService {
 
+    private static final int    TEMP_PWD_LENGTH  = 12;
+    private static final String CHARS_UPPER   = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+    private static final String CHARS_LOWER   = "abcdefghjkmnpqrstuvwxyz";
+    private static final String CHARS_DIGITS  = "23456789";
+    private static final String CHARS_SPECIAL = "@#$%&*!";
+    private static final String CHARS_ALL     = CHARS_UPPER + CHARS_LOWER + CHARS_DIGITS + CHARS_SPECIAL;
+
     private final UserRepository userRepository;
     private final UserRoleRepository userRoleRepository;
     private final RoleRepository roleRepository;
     private final DepartmentRepository departmentRepository;
     private final EmployeeRepository employeeRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JavaMailSender  mailSender;
     private final LogService logService;
+
+    @Value("${spring.mail.username}")
+    private String mailFrom;
 
     @Transactional
     public void saveDepartment(DepartmentFormDTO form) {
@@ -330,6 +349,203 @@ public class AdminService {
         if ("Lock5".equalsIgnoreCase(uiStatus))        return "LOCK5";    // brute-force
         throw new IllegalArgumentException("Invalid status: " + uiStatus);
     }
+
+    // ── Email-based bulk user creation ───────────────────────────────────────
+
+    /**
+     * Create one or more accounts from a raw string of emails (comma / newline separated).
+     * Each account is created as INACTIVE with an auto-generated password sent by email.
+     * Returns a human-readable summary string.
+     */
+    @Transactional
+    public String createUsersByEmail(String rawEmails, String roleCode) {
+        if (isBlank(rawEmails)) {
+            throw new IllegalArgumentException("At least one email address is required");
+        }
+
+        String[] parts = rawEmails.split("[,;\\n\\r]+");
+        List<String> created        = new ArrayList<>();
+        List<String> emailFailed    = new ArrayList<>();
+        List<String> failed         = new ArrayList<>();
+
+        for (String part : parts) {
+            String email = part.trim().toLowerCase();
+            if (email.isEmpty()) continue;
+
+            try {
+                String tempPwd = generateTempPassword();
+                boolean emailSent = createSingleUserByEmail(email, roleCode, tempPwd);
+                if (emailSent) {
+                    created.add(email);
+                } else {
+                    emailFailed.add(email);
+                }
+            } catch (Exception e) {
+                String reason = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
+                failed.add(email + " (" + reason + ")");
+            }
+        }
+
+        if (created.isEmpty() && emailFailed.isEmpty() && failed.isEmpty()) {
+            throw new IllegalArgumentException("No valid email addresses found");
+        }
+
+        StringBuilder sb = new StringBuilder();
+        if (!created.isEmpty()) {
+            sb.append(created.size()).append(" account(s) created — credentials sent to email");
+        }
+        if (!emailFailed.isEmpty()) {
+            if (sb.length() > 0) sb.append(". ");
+            sb.append(emailFailed.size()).append(" account(s) created but email delivery failed: ")
+              .append(String.join(", ", emailFailed));
+        }
+        if (!failed.isEmpty()) {
+            if (sb.length() > 0) sb.append(". ");
+            sb.append(failed.size()).append(" skipped: ").append(String.join("; ", failed));
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Creates a single user account. Returns true if the welcome email was sent successfully,
+     * false if the account was created but the email could not be delivered.
+     * Throws IllegalArgumentException if the account itself could not be created.
+     */
+    private boolean createSingleUserByEmail(String email, String roleCode, String tempPassword) {
+        if (!email.matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) {
+            throw new IllegalArgumentException("invalid email format");
+        }
+        if (userRepository.existsByEmail(email)) {
+            throw new IllegalArgumentException("email already exists");
+        }
+
+        String username = generateUsernameFromEmail(email);
+        String fullName = deriveFullNameFromEmail(email);
+
+        User user = new User();
+        user.setEmail(email);
+        user.setUsername(username);
+        user.setFullName(fullName);
+        user.setPasswordHash(passwordEncoder.encode(tempPassword));
+        user.setStatus("INACTIVE");
+        user.setAvatarUrl(null);
+        userRepository.save(user);
+
+        createEmployeeProfileIfMissing(user);
+        assignRole(user, roleCode);
+        logService.log(AuditAction.CREATE, AuditEntityType.USER, user.getId());
+
+        try {
+            sendWelcomeEmail(email, fullName, username, tempPassword);
+            return true;
+        } catch (Exception ex) {
+            String err = ex.getMessage() != null ? ex.getMessage() : ex.getClass().getSimpleName();
+            System.err.println("[AdminService] Welcome email failed for " + email + ": " + err);
+            return false;
+        }
+    }
+
+    private String generateUsernameFromEmail(String email) {
+        String base = email.toLowerCase().split("@")[0];
+        base = base.replaceAll("[^a-z0-9._]", "");
+        if (base.isEmpty()) base = "user";
+        while (base.length() < 6) base = base + "0";
+        if (base.length() > 45) base = base.substring(0, 45);
+
+        String username = base;
+        int counter = 1;
+        while (userRepository.existsByUsername(username)) {
+            username = base + counter++;
+        }
+        return username;
+    }
+
+    private String deriveFullNameFromEmail(String email) {
+        String prefix = email.split("@")[0];
+        String[] tokens = prefix.split("[._\\-]+");
+        StringBuilder sb = new StringBuilder();
+        for (String t : tokens) {
+            if (t.isEmpty()) continue;
+            if (sb.length() > 0) sb.append(" ");
+            sb.append(Character.toUpperCase(t.charAt(0)));
+            if (t.length() > 1) sb.append(t.substring(1).toLowerCase());
+        }
+        return sb.length() > 0 ? sb.toString() : prefix;
+    }
+
+    private String generateTempPassword() {
+        SecureRandom rng = new SecureRandom();
+        char[] pwd = new char[TEMP_PWD_LENGTH];
+        pwd[0] = CHARS_UPPER.charAt(rng.nextInt(CHARS_UPPER.length()));
+        pwd[1] = CHARS_LOWER.charAt(rng.nextInt(CHARS_LOWER.length()));
+        pwd[2] = CHARS_DIGITS.charAt(rng.nextInt(CHARS_DIGITS.length()));
+        pwd[3] = CHARS_SPECIAL.charAt(rng.nextInt(CHARS_SPECIAL.length()));
+        for (int i = 4; i < TEMP_PWD_LENGTH; i++) {
+            pwd[i] = CHARS_ALL.charAt(rng.nextInt(CHARS_ALL.length()));
+        }
+        for (int i = TEMP_PWD_LENGTH - 1; i > 0; i--) {
+            int j = rng.nextInt(i + 1);
+            char tmp = pwd[i]; pwd[i] = pwd[j]; pwd[j] = tmp;
+        }
+        return new String(pwd);
+    }
+
+    private void sendWelcomeEmail(String toEmail, String fullName, String username, String tempPassword)
+            throws MessagingException {
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(
+                message, MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED, StandardCharsets.UTF_8.name());
+
+        helper.setFrom(mailFrom);
+        helper.setTo(toEmail);
+        helper.setSubject("EMS Pro — Your Account Has Been Created");
+
+        String safePwd  = escapeHtml(tempPassword);
+        String safeName = escapeHtml(fullName);
+
+        String html =
+            "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"UTF-8\"/></head>" +
+            "<body style=\"font-family:Arial,sans-serif;background:#f6f6f8;margin:0;padding:24px;\">" +
+            "<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\" width=\"100%\" style=\"max-width:560px;margin:0 auto;background:#fff;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,.08);\">" +
+            "<tr><td style=\"padding:28px 32px 12px;text-align:center;\">" +
+            "<div style=\"display:inline-block;padding:8px 20px;background:#1414b8;border-radius:10px;margin-bottom:12px;\">" +
+            "<span style=\"color:#fff;font-size:16px;font-weight:900;letter-spacing:.05em;\">EMS Pro</span></div>" +
+            "<h2 style=\"margin:8px 0 0;font-size:18px;color:#0f172a;\">Your account is ready</h2>" +
+            "</td></tr>" +
+            "<tr><td style=\"padding:16px 32px 8px;\">" +
+            "<p style=\"font-size:14px;color:#374151;margin:0;\">Hi <strong>" + safeName + "</strong>,</p>" +
+            "<p style=\"font-size:14px;color:#374151;margin:12px 0 0;\">An administrator has created an account for you on <strong>EMS Pro</strong>. Here are your login credentials:</p>" +
+            "</td></tr>" +
+            "<tr><td style=\"padding:12px 32px;\">" +
+            "<table width=\"100%\" style=\"background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;\">" +
+            "<tr><td style=\"padding:14px 20px;border-bottom:1px solid #e2e8f0;\">" +
+            "<span style=\"font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;\">Login Email</span><br/>" +
+            "<span style=\"font-size:14px;font-weight:600;color:#1e293b;\">" + escapeHtml(toEmail) + "</span>" +
+            "</td></tr>" +
+            "<tr><td style=\"padding:14px 20px;\">" +
+            "<span style=\"font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;\">Temporary Password</span><br/>" +
+            "<span style=\"display:inline-block;margin-top:6px;padding:10px 24px;background:#1414b8;color:#fff;font-size:18px;font-weight:700;letter-spacing:.15em;border-radius:9999px;\">" +
+            safePwd + "</span>" +
+            "</td></tr></table>" +
+            "</td></tr>" +
+            "<tr><td style=\"padding:12px 32px 28px;\">" +
+            "<p style=\"font-size:13px;color:#6b7280;margin:0;\">Your account is currently <strong>inactive</strong>. An administrator will activate it shortly.</p>" +
+            "<p style=\"font-size:13px;color:#6b7280;margin:12px 0 0;\">Once active, please log in and <strong>change your password immediately</strong>.</p>" +
+            "<p style=\"font-size:12px;color:#9ca3af;margin:12px 0 0;\">If you did not expect this email, please contact your system administrator.</p>" +
+            "</td></tr>" +
+            "</table></body></html>";
+
+        helper.setText(html, true);
+        mailSender.send(message);
+    }
+
+    private String escapeHtml(String input) {
+        if (input == null) return "";
+        return input.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                    .replace("\"", "&quot;").replace("'", "&#39;");
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
 
     private boolean isBlank(String s) {
         return s == null || s.trim().isEmpty();

@@ -30,8 +30,10 @@ public class AppUserDetailService implements UserDetailsService {
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User existingUser = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("Username not found: " + username));
+        // Support login by email OR username
+        User existingUser = userRepository.findByEmail(username)
+                .or(() -> userRepository.findByUsername(username))
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 
         String status = existingUser.getStatus();
         if (status != null) {

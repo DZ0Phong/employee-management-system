@@ -67,10 +67,16 @@ public class LoginFailureHandler extends SimpleUrlAuthenticationFailureHandler {
      * Sau khi sai mật khẩu, `LoginEventListener` đã cập nhật DB rồi.
      * Nếu user vừa bị khoá ngay attempt này → hiển thị thông báo đúng.
      */
+    private Optional<User> findByEmailOrUsername(String input) {
+        if (input == null || input.isBlank()) return Optional.empty();
+        String t = input.trim();
+        return userRepository.findByEmail(t).or(() -> userRepository.findByUsername(t));
+    }
+
     private String resolveAfterBadCredentials(String username) {
         if (username == null || username.isBlank()) return "/login?error";
 
-        Optional<User> opt = userRepository.findByUsername(username.trim());
+        Optional<User> opt = findByEmailOrUsername(username);
         if (opt.isEmpty()) return "/login?error";
 
         User user = opt.get();
@@ -107,7 +113,7 @@ public class LoginFailureHandler extends SimpleUrlAuthenticationFailureHandler {
         if (username == null || username.isBlank()) {
             return "/login?disabled";
         }
-        return userRepository.findByUsername(username.trim())
+        return findByEmailOrUsername(username)
                 .filter(u -> {
                     String st = u.getStatus();
                     if (st != null) {

@@ -30,7 +30,7 @@ public class DepartmentController {
                              @RequestParam(defaultValue = "name") String sort,
                              @RequestParam(defaultValue = "asc") String dir,
                              @RequestParam(defaultValue = "0") int page,
-                             @RequestParam(defaultValue = "10") int pageSize,
+                             @RequestParam(defaultValue = "9") int pageSize,
                              Model model) {
         model.addAttribute("keyword", keyword);
         model.addAttribute("sortField", sort);

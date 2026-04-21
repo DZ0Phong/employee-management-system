@@ -50,14 +50,22 @@ public class UserAccountController {
 
     private String handleAction(Long id, RedirectAttributes ra, String action) {
         try {
-            switch (action) {
-                case "lock"           -> userAccountService.lockUser(id);
-                case "unlock"         -> userAccountService.unlockUser(id);
-                case "activate"       -> userAccountService.activateUser(id);
-                case "deactivate"     -> userAccountService.deactivateUser(id);
-                case "reset-password" -> userAccountService.adminResetPassword(id);
+            if ("reset-password".equals(action)) {
+                String emailWarning = userAccountService.adminResetPassword(id);
+                if (emailWarning == null) {
+                    ra.addFlashAttribute("message", "Password reset — temporary password sent to user's email");
+                } else {
+                    ra.addFlashAttribute("message", emailWarning);
+                }
+            } else {
+                switch (action) {
+                    case "lock"      -> userAccountService.lockUser(id);
+                    case "unlock"    -> userAccountService.unlockUser(id);
+                    case "activate"  -> userAccountService.activateUser(id);
+                    case "deactivate"-> userAccountService.deactivateUser(id);
+                }
+                ra.addFlashAttribute("message", successMsg(action));
             }
-            ra.addFlashAttribute("message", successMsg(action));
         } catch (IllegalArgumentException e) {
             ra.addFlashAttribute("message", e.getMessage());
         }
@@ -66,12 +74,11 @@ public class UserAccountController {
 
     private String successMsg(String action) {
         return switch (action) {
-            case "lock"           -> "Account has been locked";
-            case "unlock"         -> "Account has been unlocked";
-            case "activate"       -> "Account has been activated";
-            case "deactivate"     -> "Account has been deactivated";
-            case "reset-password" -> "Password reset — temporary password sent to user's email";
-            default               -> "Action completed";
+            case "lock"      -> "Account has been locked";
+            case "unlock"    -> "Account has been unlocked";
+            case "activate"  -> "Account has been activated";
+            case "deactivate"-> "Account has been deactivated";
+            default          -> "Action completed";
         };
     }
 }

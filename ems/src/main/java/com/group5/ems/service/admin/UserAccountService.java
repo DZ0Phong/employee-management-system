@@ -16,6 +16,8 @@ public interface UserAccountService {
 
     /**
      * Admin reset mật khẩu: sinh mật khẩu tạm, set hash, gửi email thông báo.
+     * Returns null if email was sent successfully, or a warning message if email failed
+     * (password is still reset regardless).
      */
-    void adminResetPassword(Long userId);
+    String adminResetPassword(Long userId);
 }

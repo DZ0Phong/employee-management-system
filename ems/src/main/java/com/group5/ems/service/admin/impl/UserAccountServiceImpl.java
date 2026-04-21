@@ -9,6 +9,7 @@ import com.group5.ems.service.common.LogService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -33,6 +34,9 @@ public class UserAccountServiceImpl implements UserAccountService {
     private final PasswordEncoder  passwordEncoder;
     private final JavaMailSender   mailSender;
     private final LogService       logService;
+
+    @Value("${spring.mail.username}")
+    private String mailFrom;
 
     @Override
     @Transactional
@@ -77,10 +81,8 @@ public class UserAccountServiceImpl implements UserAccountService {
 
     @Override
     @Transactional
-    public void adminResetPassword(Long userId) {
+    public String adminResetPassword(Long userId) {
         User user = findOrThrow(userId);
-        // Reset password cho admin thường phải cho phép user đăng nhập ngay với mật khẩu tạm.
-        // Nếu user đang bị LOCK5/LOCKED mà không đổi status về ACTIVE thì có thể bị chặn hoặc lỗi runtime.
         String status = user.getStatus();
         if ("LOCK5".equalsIgnoreCase(status) || "LOCKED".equalsIgnoreCase(status)) {
             user.setStatus("ACTIVE");
@@ -94,9 +96,11 @@ public class UserAccountServiceImpl implements UserAccountService {
 
         try {
             sendTempPasswordEmail(user.getEmail(), user.getFullName(), tempPassword);
+            return null; // email gửi thành công
         } catch (Exception e) {
-            // email failure không roll back transaction — log và tiếp tục
-            System.err.println("[UserAccountService] Failed to send reset-password email: " + e.getMessage());
+            String err = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
+            System.err.println("[UserAccountService] Email failed for " + user.getEmail() + ": " + err);
+            return "Password was reset but the email could not be sent — " + err;
         }
     }
 
@@ -132,32 +136,47 @@ public class UserAccountServiceImpl implements UserAccountService {
         MimeMessageHelper helper = new MimeMessageHelper(
                 message, MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED, StandardCharsets.UTF_8.name());
 
+        helper.setFrom(mailFrom);
         helper.setTo(toEmail);
-        helper.setSubject("EMS Pro — Your Temporary Password");
+        helper.setSubject("EMS Pro — Your Password Has Been Reset");
 
-        // Escape để tránh tình huống copy mật khẩu sai nếu password có ký tự HTML đặc biệt.
-        String safePassword = escapeHtml(tempPassword);
+        String safePwd  = escapeHtml(tempPassword);
+        String safeName = escapeHtml(fullName != null ? fullName : "there");
 
-        String html = "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"UTF-8\"/></head>" +
-                "<body style=\"font-family:Arial,sans-serif;background:#f6f6f8;margin:0;padding:24px;\">" +
-                "<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\" width=\"100%\" style=\"max-width:560px;margin:0 auto;background:#fff;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,.08);\">" +
-                "<tr><td style=\"padding:28px 32px 12px;text-align:center;\">" +
-                "<div style=\"width:48px;height:48px;background:#1414b8;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:12px;\"></div>" +
-                "<h2 style=\"margin:0;font-size:18px;color:#0f172a;\">EMS Pro — Temporary Password</h2>" +
-                "</td></tr>" +
-                "<tr><td style=\"padding:8px 32px;\">" +
-                "<p style=\"font-size:14px;color:#374151;\">Hi <strong>" + fullName + "</strong>,</p>" +
-                "<p style=\"font-size:14px;color:#374151;\">An administrator has reset your account password. Your temporary password is:</p>" +
-                "</td></tr>" +
-                "<tr><td style=\"padding:8px 32px;text-align:center;\">" +
-                "<div style=\"display:inline-block;padding:14px 32px;background:#1414b8;color:#fff;font-size:20px;font-weight:700;letter-spacing:.15em;border-radius:9999px;\">" +
-                safePassword + "</div>" +
-                "</td></tr>" +
-                "<tr><td style=\"padding:12px 32px 28px;\">" +
-                "<p style=\"font-size:13px;color:#6b7280;\">Please log in and <strong>change your password immediately</strong> after receiving this email.</p>" +
-                "<p style=\"font-size:12px;color:#9ca3af;\">If you did not request this, please contact your system administrator immediately.</p>" +
-                "</td></tr>" +
-                "</table></body></html>";
+        String html =
+            "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"UTF-8\"/></head>" +
+            "<body style=\"font-family:Arial,sans-serif;background:#f6f6f8;margin:0;padding:24px;\">" +
+            "<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\" width=\"100%\" style=\"max-width:560px;margin:0 auto;background:#fff;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,.08);\">" +
+            // ── header ──────────────────────────────────────────────────────────
+            "<tr><td style=\"padding:28px 32px 12px;text-align:center;\">" +
+            "<div style=\"display:inline-block;padding:8px 20px;background:#1414b8;border-radius:10px;margin-bottom:12px;\">" +
+            "<span style=\"color:#fff;font-size:16px;font-weight:900;letter-spacing:.05em;\">EMS Pro</span></div>" +
+            "<h2 style=\"margin:8px 0 0;font-size:18px;color:#0f172a;\">Your password has been reset</h2>" +
+            "</td></tr>" +
+            // ── greeting ────────────────────────────────────────────────────────
+            "<tr><td style=\"padding:16px 32px 8px;\">" +
+            "<p style=\"font-size:14px;color:#374151;margin:0;\">Hi <strong>" + safeName + "</strong>,</p>" +
+            "<p style=\"font-size:14px;color:#374151;margin:12px 0 0;\">An administrator has reset your password on <strong>EMS Pro</strong>. Use the credentials below to log in:</p>" +
+            "</td></tr>" +
+            // ── credentials card ────────────────────────────────────────────────
+            "<tr><td style=\"padding:12px 32px;\">" +
+            "<table width=\"100%\" style=\"background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;\">" +
+            "<tr><td style=\"padding:14px 20px;border-bottom:1px solid #e2e8f0;\">" +
+            "<span style=\"font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;\">Login Email</span><br/>" +
+            "<span style=\"font-size:14px;font-weight:600;color:#1e293b;\">" + escapeHtml(toEmail) + "</span>" +
+            "</td></tr>" +
+            "<tr><td style=\"padding:14px 20px;\">" +
+            "<span style=\"font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;\">Temporary Password</span><br/>" +
+            "<span style=\"display:inline-block;margin-top:6px;padding:10px 24px;background:#1414b8;color:#fff;font-size:18px;font-weight:700;letter-spacing:.15em;border-radius:9999px;\">" +
+            safePwd + "</span>" +
+            "</td></tr></table>" +
+            "</td></tr>" +
+            // ── footer ──────────────────────────────────────────────────────────
+            "<tr><td style=\"padding:12px 32px 28px;\">" +
+            "<p style=\"font-size:13px;color:#6b7280;margin:0;\">Please log in and <strong>change your password immediately</strong>.</p>" +
+            "<p style=\"font-size:12px;color:#9ca3af;margin:12px 0 0;\">If you did not request this reset, contact your system administrator immediately.</p>" +
+            "</td></tr>" +
+            "</table></body></html>";
 
         helper.setText(html, true);
         mailSender.send(message);

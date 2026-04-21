@@ -61,7 +61,9 @@ public class LoginEventListener {
         if (username == null || username.isBlank()) {
             return;
         }
-        Optional<User> opt = userRepository.findByUsername(username.trim());
+        // The form may submit an email address as "username", so try email first
+        String t = username.trim();
+        Optional<User> opt = userRepository.findByEmail(t).or(() -> userRepository.findByUsername(t));
         if (opt.isEmpty()) return;
 
         User user = opt.get();

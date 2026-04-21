@@ -87,6 +87,25 @@ public class UserListController {
         return "redirect:/admin/users";
     }
 
+    /**
+     * Create one or more accounts by email only.
+     * Password is auto-generated and sent to each email address.
+     * Accounts are created as INACTIVE by default.
+     */
+    @PostMapping("/users/create-by-email")
+    public String createUsersByEmail(
+            @RequestParam("emails") String emails,
+            @RequestParam(value = "role", defaultValue = "") String role,
+            RedirectAttributes redirectAttributes) {
+        try {
+            String result = adminService.createUsersByEmail(emails, role);
+            redirectAttributes.addFlashAttribute("message", result);
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("message", e.getMessage());
+        }
+        return "redirect:/admin/users";
+    }
+
 
 
 

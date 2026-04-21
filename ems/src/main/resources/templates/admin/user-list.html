@@ -516,11 +516,108 @@
     </main>
 </div>
 
-<!-- ADD / EDIT MODAL -->
+<!-- ═══════════════════════════════════════════════════════════════
+     ADD NEW USER MODAL  (email-only, single or bulk)
+     ═══════════════════════════════════════════════════════════════ -->
+<div id="add-user-modal" class="overlay hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+    <div class="modal-box bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden border border-slate-100">
+
+        <!-- Header -->
+        <div class="flex items-center justify-between px-6 py-5 border-b border-slate-100">
+            <div>
+                <h3 class="text-base font-black text-slate-800">Add New User</h3>
+                <p class="text-xs text-slate-400 mt-0.5">Password auto-generated &amp; sent to email</p>
+            </div>
+            <button onclick="closeAddUserModal()" class="px-2 py-1 text-xs text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors">✕</button>
+        </div>
+
+        <!-- Mode toggle -->
+        <div class="px-6 pt-5">
+            <div class="flex bg-slate-100 rounded-xl p-1 gap-1">
+                <button type="button" id="tab-single" onclick="setAddMode('single')"
+                        class="flex-1 py-2 text-xs font-bold rounded-lg bg-white text-slate-800 shadow-sm transition-all">
+                    <span class="material-symbols-outlined text-[14px] align-middle mr-0.5">person</span>Single Account
+                </button>
+                <button type="button" id="tab-bulk" onclick="setAddMode('bulk')"
+                        class="flex-1 py-2 text-xs font-bold rounded-lg text-slate-500 hover:text-slate-700 transition-all">
+                    <span class="material-symbols-outlined text-[14px] align-middle mr-0.5">group_add</span>Bulk Import
+                </button>
+            </div>
+        </div>
+
+        <form id="add-user-form" th:action="@{/admin/users/create-by-email}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <!-- populated by JS before submit -->
+            <input type="hidden" id="submitted-emails" name="emails"/>
+
+            <div class="px-6 pt-4 pb-2 space-y-4">
+
+                <!-- Single mode: one email input -->
+                <div id="section-single">
+                    <label class="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">
+                        Email Address <span class="text-rose-400">*</span>
+                    </label>
+                    <input type="email" id="single-email" autocomplete="off"
+                           class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-primary focus:border-transparent transition-all placeholder:text-slate-300"
+                           placeholder="employee@company.com"/>
+                </div>
+
+                <!-- Bulk mode: textarea -->
+                <div id="section-bulk" class="hidden">
+                    <label class="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">
+                        Email Addresses <span class="text-rose-400">*</span>
+                    </label>
+                    <textarea id="bulk-emails" rows="6"
+                              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-primary focus:border-transparent transition-all placeholder:text-slate-300 resize-none font-mono"
+                              placeholder="employee1@company.com&#10;employee2@company.com&#10;employee3@company.com"></textarea>
+                    <p class="text-[11px] text-slate-400 mt-1">One email per line or comma-separated</p>
+                </div>
+
+                <!-- Role -->
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">
+                        Role <span class="text-rose-400">*</span>
+                    </label>
+                    <select name="role" id="add-role"
+                            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-primary">
+                        <option value="">Select role</option>
+                        <option th:each="r : ${roles}" th:value="${r.code}" th:text="${r.name}">Role</option>
+                    </select>
+                </div>
+
+                <!-- Info box -->
+                <div class="flex items-start gap-3 px-4 py-3.5 bg-primary/5 rounded-xl border border-primary/10">
+                    <span class="material-symbols-outlined text-primary text-[18px] mt-0.5 shrink-0">info</span>
+                    <div>
+                        <p class="text-xs font-semibold text-primary">Auto-provisioned accounts</p>
+                        <p class="text-[11px] text-slate-500 mt-0.5 leading-relaxed">
+                            Each account is created as <strong>Inactive</strong>.
+                            A secure password is auto-generated and sent to the email.
+                            The user logs in with their <strong>email address</strong>.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-100 bg-slate-50/50">
+                <button type="button" onclick="closeAddUserModal()"
+                        class="px-5 py-2.5 text-sm font-semibold text-slate-500 hover:bg-slate-100 rounded-xl transition-colors">Cancel</button>
+                <button type="submit" id="add-submit-btn"
+                        class="px-5 py-2.5 bg-primary text-white text-sm font-bold rounded-xl shadow-md shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95">
+                    <span id="add-submit-label">Create Account</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     EDIT USER MODAL
+     ═══════════════════════════════════════════════════════════════ -->
 <div id="modal-overlay" class="overlay hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
     <div id="modal-box" class="modal-box bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden border border-slate-100">
         <div class="flex items-center justify-between px-6 py-5 border-b border-slate-100">
-            <h3 id="modal-title" class="text-base font-black text-slate-800">Add New User</h3>
+            <h3 id="modal-title" class="text-base font-black text-slate-800">Edit User</h3>
             <button onclick="closeModal()" class="px-2 py-1 text-xs text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors">
                 ✕
             </button>
@@ -538,9 +635,9 @@
                     <input th:field="*{email}" th:id="'field-email'" type="email" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-primary focus:border-transparent transition-all placeholder:text-slate-300" placeholder="john.doe@company.com"/>
                 </div>
                 <div>
-                    <label class="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Password <span id="pwd-required" class="text-rose-400">*</span></label>
+                    <label class="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Password <span id="pwd-required" class="text-rose-400 hidden">*</span></label>
                     <input th:field="*{password}" th:id="'field-password'" type="password" autocomplete="new-password" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-primary focus:border-transparent transition-all placeholder:text-slate-300" placeholder="••••••••"/>
-                    <p id="pwd-hint" class="text-[11px] text-slate-400 mt-1 hidden">Leave blank to keep current password</p>
+                    <p id="pwd-hint" class="text-[11px] text-slate-400 mt-1">Leave blank to keep current password</p>
                 </div>
                 <div>
                     <label class="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Full Name <span class="text-rose-400">*</span></label>
@@ -574,7 +671,7 @@
             <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-100 bg-slate-50/50">
                 <button type="button" onclick="closeModal()" class="px-5 py-2.5 text-sm font-semibold text-slate-500 hover:bg-slate-100 rounded-xl transition-colors">Cancel</button>
                 <button type="submit" class="px-5 py-2.5 bg-primary text-white text-sm font-bold rounded-xl shadow-md shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95">
-                    Save User
+                    Save Changes
                 </button>
             </div>
         </form>
@@ -640,23 +737,73 @@
         setTimeout(function(){el.classList.add('out');setTimeout(function(){el.remove();},280);},3500);
     }
 
-    // ── Add modal ─────────────────────────────────────────────────
+    // ── Add New User modal (email-only) ──────────────────────────
+    var _addMode = 'single';
+
     function openAddModal() {
-        document.getElementById('modal-title').textContent = 'Add New User';
-        document.getElementById('field-id').value       = '';
-        document.getElementById('field-username').value = '';
-        document.getElementById('field-email').value    = '';
-        document.getElementById('field-password').value = '';
-        document.getElementById('field-fullName').value = '';
-        document.getElementById('field-phone').value    = '';
-        document.getElementById('field-status').value   = 'Inactive';
-        document.getElementById('field-role').value     = '';
-        document.getElementById('field-password').required = true;
-        document.getElementById('pwd-required').classList.remove('hidden');
-        document.getElementById('pwd-hint').classList.add('hidden');
-        updateStatusHint('Inactive');
-        document.getElementById('modal-overlay').classList.remove('hidden');
+        document.getElementById('single-email').value = '';
+        document.getElementById('bulk-emails').value  = '';
+        document.getElementById('add-role').value     = '';
+        setAddMode('single');
+        document.getElementById('add-user-modal').classList.remove('hidden');
     }
+
+    function closeAddUserModal() {
+        document.getElementById('add-user-modal').classList.add('hidden');
+    }
+
+    function setAddMode(mode) {
+        _addMode = mode;
+        var single    = document.getElementById('section-single');
+        var bulk      = document.getElementById('section-bulk');
+        var tabSingle = document.getElementById('tab-single');
+        var tabBulk   = document.getElementById('tab-bulk');
+        var label     = document.getElementById('add-submit-label');
+
+        if (mode === 'single') {
+            single.classList.remove('hidden');
+            bulk.classList.add('hidden');
+            tabSingle.className = 'flex-1 py-2 text-xs font-bold rounded-lg bg-white text-slate-800 shadow-sm transition-all';
+            tabBulk.className   = 'flex-1 py-2 text-xs font-bold rounded-lg text-slate-500 hover:text-slate-700 transition-all';
+            label.textContent   = 'Create Account';
+        } else {
+            single.classList.add('hidden');
+            bulk.classList.remove('hidden');
+            tabBulk.className   = 'flex-1 py-2 text-xs font-bold rounded-lg bg-white text-slate-800 shadow-sm transition-all';
+            tabSingle.className = 'flex-1 py-2 text-xs font-bold rounded-lg text-slate-500 hover:text-slate-700 transition-all';
+            label.textContent   = 'Create Accounts';
+        }
+    }
+
+    document.getElementById('add-user-form').addEventListener('submit', function(e) {
+        var emailsVal;
+        if (_addMode === 'single') {
+            emailsVal = document.getElementById('single-email').value.trim();
+            if (!emailsVal) {
+                e.preventDefault();
+                showToast('Email address is required', 'error');
+                return;
+            }
+        } else {
+            emailsVal = document.getElementById('bulk-emails').value.trim();
+            if (!emailsVal) {
+                e.preventDefault();
+                showToast('Enter at least one email address', 'error');
+                return;
+            }
+        }
+        var role = document.getElementById('add-role').value;
+        if (!role) {
+            e.preventDefault();
+            showToast('Role is required', 'error');
+            return;
+        }
+        document.getElementById('submitted-emails').value = emailsVal;
+    });
+
+    document.getElementById('add-user-modal').addEventListener('click', function(e) {
+        if (e.target === e.currentTarget) closeAddUserModal();
+    });
 
     // ── Edit modal ────────────────────────────────────────────────
     function openEditModal(id, username, email, fullName, phone, status, role) {
@@ -670,8 +817,6 @@
         document.getElementById('field-status').value   = status || 'Active';
         document.getElementById('field-role').value     = role || '';
         document.getElementById('field-password').required = false;
-        document.getElementById('pwd-required').classList.add('hidden');
-        document.getElementById('pwd-hint').classList.remove('hidden');
         updateStatusHint(status || 'Active');
         document.getElementById('modal-overlay').classList.remove('hidden');
     }
@@ -831,7 +976,7 @@
     document.getElementById('modal-overlay').addEventListener('click', function(e){ if(e.target===e.currentTarget) closeModal(); });
     document.getElementById('delete-modal').addEventListener('click',  function(e){ if(e.target===e.currentTarget) closeDeleteModal(); });
 
-    // ── User form client-side validation ──────────────────────────
+    // ── Edit user form client-side validation ─────────────────────
     (function () {
         const form = document.getElementById('user-form');
         if (!form) return;
@@ -842,7 +987,6 @@
         const fullNameEl = document.getElementById('field-fullName');
         const phoneEl    = document.getElementById('field-phone');
         const roleEl     = document.getElementById('field-role');
-        const idEl       = document.getElementById('field-id');
 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         const phoneRegex = /^(0\d{9,10})$/;
@@ -856,56 +1000,41 @@
 
         form.addEventListener('submit', function (e) {
             clearErrorStyles();
-
             const errors = [];
             let firstInvalid = null;
 
-            const isEdit    = idEl && idEl.value && idEl.value.trim() !== '';
-            const username  = usernameEl.value.trim();
-            const email     = emailEl.value.trim();
-            const password  = passwordEl.value.trim();
-            const fullName  = fullNameEl.value.trim();
-            const phone     = phoneEl.value.trim();
-            const role      = roleEl.value;
+            const username = usernameEl.value.trim();
+            const email    = emailEl.value.trim();
+            const password = passwordEl.value.trim();
+            const fullName = fullNameEl.value.trim();
+            const phone    = phoneEl.value.trim();
+            const role     = roleEl.value;
 
             if (!username || username.length < 6) {
                 errors.push('Username must be at least 6 characters');
                 usernameEl.classList.add('border-rose-400');
                 firstInvalid = firstInvalid || usernameEl;
             }
-
             if (!email || !emailRegex.test(email)) {
                 errors.push('Email is required and must be valid');
                 emailEl.classList.add('border-rose-400');
                 firstInvalid = firstInvalid || emailEl;
             }
-
             if (!fullName || fullName.length < 3) {
                 errors.push('Full name must be at least 3 characters');
                 fullNameEl.classList.add('border-rose-400');
                 firstInvalid = firstInvalid || fullNameEl;
             }
-
-            if (!isEdit) {
-                if (!password || password.length < 6) {
-                    errors.push('Password is required and must be at least 6 characters for new users');
-                    passwordEl.classList.add('border-rose-400');
-                    firstInvalid = firstInvalid || passwordEl;
-                }
-            } else {
-                if (password && password.length < 6) {
-                    errors.push('If you change the password, it must be at least 6 characters');
-                    passwordEl.classList.add('border-rose-400');
-                    firstInvalid = firstInvalid || passwordEl;
-                }
+            if (password && password.length < 6) {
+                errors.push('New password must be at least 6 characters');
+                passwordEl.classList.add('border-rose-400');
+                firstInvalid = firstInvalid || passwordEl;
             }
-
             if (phone && !phoneRegex.test(phone)) {
                 errors.push('Phone must start with 0 and have 10–11 digits');
                 phoneEl.classList.add('border-rose-400');
                 firstInvalid = firstInvalid || phoneEl;
             }
-
             if (!role || role.trim() === '') {
                 errors.push('Role is required');
                 roleEl.classList.add('border-rose-400');
@@ -915,9 +1044,7 @@
             if (errors.length > 0) {
                 e.preventDefault();
                 showToast(errors[0], 'error');
-                if (firstInvalid && typeof firstInvalid.focus === 'function') {
-                    firstInvalid.focus();
-                }
+                if (firstInvalid && typeof firstInvalid.focus === 'function') firstInvalid.focus();
             }
         });
     })();
