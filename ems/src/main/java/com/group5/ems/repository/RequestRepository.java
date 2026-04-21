@@ -76,7 +76,7 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
 			AND (:leaveType IS NULL OR rt.code = :leaveType)
 			AND (:search IS NULL OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :search, '%'))
 			     OR LOWER(e.employeeCode) LIKE LOWER(CONCAT('%', :search, '%')))
-			ORDER BY r.createdAt DESC
+			ORDER BY r.urgent DESC, r.createdAt DESC
 			""")
     List<Request> findPendingLeaveRequests(
             @Param("departmentId") Long departmentId,
@@ -93,7 +93,7 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
 			AND (:leaveType IS NULL OR rt.code = :leaveType)
 			AND (:search IS NULL OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :search, '%'))
 			     OR LOWER(e.employeeCode) LIKE LOWER(CONCAT('%', :search, '%')))
-			ORDER BY r.createdAt DESC
+			ORDER BY r.urgent DESC, r.createdAt DESC
 			""")
     List<Request> findHrmPendingLeaveRequests(
             @Param("departmentId") Long departmentId,
@@ -500,6 +500,16 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
 			GROUP BY rt.code ORDER BY cnt DESC
 			""")
     List<Object[]> findTopLeaveTypes();
+
+    @Query(value = """
+			SELECT rt.name, COUNT(r) as cnt FROM Request r JOIN r.requestType rt
+			WHERE rt.category = 'ATTENDANCE' AND r.status <> 'PENDING'
+			AND r.updatedAt >= :since AND r.updatedAt <= :until
+			GROUP BY rt.code ORDER BY cnt DESC
+			""")
+    List<Object[]> findTopLeaveTypesBetween(
+            @Param("since") LocalDateTime since,
+            @Param("until") LocalDateTime until);
 
     @Query(value = """
 			SELECT AVG(TIMESTAMPDIFF(HOUR, r.created_at, r.updated_at)) FROM requests r

@@ -1299,7 +1299,13 @@ public class HrController {
             }
             case "leave" -> model.addAttribute("report", reportService.getLeaveReport(reportYear));
             case "payroll" -> model.addAttribute("report", reportService.getPayrollReport());
-            case "performance" -> model.addAttribute("report", reportService.getPerformanceReport(reviewPeriod));
+            case "performance" -> {
+                String rp = reviewPeriod;
+                if (rp == null || rp.isBlank()) {
+                    rp = "YEAR_" + reportYear;
+                }
+                model.addAttribute("report", reportService.getPerformanceReport(rp));
+            }
             case "saved" -> model.addAttribute("history", reportService.getAllReports());
             default -> model.addAttribute("report", reportService.getOverviewReport(reportYear));
         }

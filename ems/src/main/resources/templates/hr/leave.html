@@ -12,6 +12,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script th:src="@{/js/hr/hr-common.js}"></script>
+    <link rel="stylesheet" href="/css/app-icons.css" th:href="@{/css/app-icons.css}" />
+    <script defer src="/js/app-icons.js" th:src="@{/js/app-icons.js}"></script>
     <!-- FullCalendar (improvement #3) -->
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/main.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
@@ -279,9 +281,13 @@
                                                 </div>
                                             </td>
                                             <td class="px-4 py-4">
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold"
-                                                      th:classappend="${leave.leaveType == 'Annual Leave' ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' : (leave.leaveType == 'Sick Leave' ? 'bg-rose-50 text-rose-700 border border-rose-200' : (leave.leaveType == 'Unpaid Leave' ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-slate-100 text-slate-700 border border-slate-200'))}"
-                                                      th:text="${leave.leaveType}">Annual Leave</span>
+                                                <div class="flex flex-col items-start gap-1">
+                                                    <span th:if="${leave.urgentFlag}" 
+                                                          class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-500 text-white shadow-sm shadow-rose-200 animate-pulse">URGENT</span>
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold"
+                                                          th:classappend="${leave.leaveType == 'Annual Leave' ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' : (leave.leaveType == 'Sick Leave' ? 'bg-rose-50 text-rose-700 border border-rose-200' : (leave.leaveType == 'Unpaid Leave' ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-slate-100 text-slate-700 border border-slate-200'))}"
+                                                          th:text="${leave.leaveType}">Annual Leave</span>
+                                                </div>
                                             </td>
                                             <td class="px-4 py-4">
                                                 <p class="text-sm font-medium text-slate-900 truncate max-w-xs" th:title="${leave.dates}" th:text="${leave.dates}">Oct 12 – Oct 17</p>
@@ -314,6 +320,17 @@
                                             <td colspan="5">
                                                 <div class="detail-inner">
                                                     <div class="px-8 py-8 border-t border-slate-100 detail-content">
+                                                        <!-- Urgent Flag Indicator -->
+                                                        <div th:if="${leave.urgentFlag}" class="bg-rose-50 border border-rose-100 rounded-xl p-3 flex items-center gap-3 mb-6 animate-pulse">
+                                                            <div class="w-8 h-8 rounded-lg bg-rose-500 flex items-center justify-center shadow-sm shadow-rose-200">
+                                                                <span class="material-symbols-outlined text-white text-lg">notification_important</span>
+                                                            </div>
+                                                            <div>
+                                                                <p class="text-xs font-black text-rose-600 uppercase tracking-tight">Urgent Request</p>
+                                                                <p class="text-[10px] text-rose-500 font-bold">This leave requires immediate review and processing.</p>
+                                                            </div>
+                                                        </div>
+
                                                         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                                                             <!-- Col 1: Request Details -->
                                                             <div class="space-y-4">
@@ -475,6 +492,8 @@
                                         </td>
                                         <td class="px-4 py-4">
                                             <div class="flex flex-col items-start gap-1">
+                                                <span th:if="${hist.urgentFlag}" 
+                                                      class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-500 text-white shadow-sm shadow-rose-200 animate-pulse">URGENT</span>
                                                 <span th:class="'text-[10px] tracking-widest font-bold uppercase px-2 py-1 rounded-lg border ' + ${hist.statusClass}" 
                                                       th:text="${hist.statusDisplay}">Processed</span>
                                             </div>
@@ -494,7 +513,19 @@
                                         <td colspan="5">
 
                                             <div class="detail-inner">
-                                                <div class="px-8 py-8 grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-slate-100 text-left detail-content">
+                                                <div class="px-8 py-8 border-t border-slate-100 detail-content">
+                                                    <!-- Urgent Flag Indicator -->
+                                                    <div th:if="${hist.urgentFlag}" class="bg-rose-50 border border-rose-100 rounded-xl p-3 flex items-center gap-3 mb-6">
+                                                        <div class="w-8 h-8 rounded-lg bg-rose-500 flex items-center justify-center shadow-sm shadow-rose-200">
+                                                            <span class="material-symbols-outlined text-white text-lg">notification_important</span>
+                                                        </div>
+                                                        <div>
+                                                            <p class="text-xs font-black text-rose-600 uppercase tracking-tight">Urgent Historical Record</p>
+                                                            <p class="text-[10px] text-rose-500 font-bold">This request was marked as urgent at the time of submission.</p>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
                                                     <!-- Col 1: History Details -->
                                                     <div class="space-y-4">
                                                         <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-wider flex items-center gap-1.5">

@@ -338,8 +338,8 @@ public class HrReportService {
         long totalPending = requestRepository.countByStatusAndRequestTypeCategory("PENDING", "ATTENDANCE");
         Double avgProcessingHours = requestRepository.avgProcessingHoursBetween(yearStart, yearEnd);
 
-        // Leave type breakdown
-        List<Object[]> typeRows = requestRepository.findTopLeaveTypes();
+        // Leave type breakdown (filtered by year)
+        List<Object[]> typeRows = requestRepository.findTopLeaveTypesBetween(yearStart, yearEnd);
         List<String> leaveTypeLabels = new ArrayList<>();
         List<Long> leaveTypeCounts = new ArrayList<>();
         for (Object[] row : typeRows) {
@@ -421,8 +421,8 @@ public class HrReportService {
     // ═══════════════════════════════════════════════════════════
 
     public HrReportPerformanceDTO getPerformanceReport(String reviewPeriod) {
-        // Average scores
-        List<Object[]> avgRows = performanceReviewRepository.getAvgScores();
+        // Average scores (filtered by review period)
+        List<Object[]> avgRows = performanceReviewRepository.getAvgScoresByReviewPeriod(reviewPeriod);
         Double avgPerf = null;
         Double avgPot = null;
         if (!avgRows.isEmpty() && avgRows.get(0) != null) {
@@ -431,10 +431,10 @@ public class HrReportService {
             if (row[1] != null) avgPot = ((Number) row[1]).doubleValue();
         }
 
-        long totalReviews = performanceReviewRepository.countByStatus("COMPLETED");
+        long totalReviews = performanceReviewRepository.countByStatusAndReviewPeriod("COMPLETED", reviewPeriod);
 
-        // Performance grade distribution
-        List<Object[]> gradeRows = performanceReviewRepository.countByPerformanceGradeGrouped();
+        // Performance grade distribution (filtered by review period)
+        List<Object[]> gradeRows = performanceReviewRepository.countByPerformanceGradeGroupedByReviewPeriod(reviewPeriod);
         Map<String, Long> performanceGradeDistribution = new LinkedHashMap<>();
         // Initialize with default order
         performanceGradeDistribution.put("A", 0L);
@@ -457,8 +457,8 @@ public class HrReportService {
             scoreCounts.add(0L);
         }
 
-        // Top performers
-        List<Object[]> topRows = performanceReviewRepository.findTopPerformers(PageRequest.of(0, 10));
+        // Top performers (filtered by review period)
+        List<Object[]> topRows = performanceReviewRepository.findTopPerformersByReviewPeriod(reviewPeriod, PageRequest.of(0, 10));
         List<HrReportPerformanceDTO.TopPerformer> topPerformers = new ArrayList<>();
         for (Object[] row : topRows) {
             topPerformers.add(HrReportPerformanceDTO.TopPerformer.builder()

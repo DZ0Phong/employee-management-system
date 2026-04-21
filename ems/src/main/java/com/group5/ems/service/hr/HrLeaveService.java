@@ -552,6 +552,7 @@ public class HrLeaveService {
                 .managerName(managerName)
                 .managerEmployeeCode(managerEmployeeCode)
                 .workingDays(workingDays)
+                .urgentFlag(request.isUrgent())
                 .build();
     }
 
