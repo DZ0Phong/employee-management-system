@@ -17,6 +17,7 @@ import com.group5.ems.repository.RequestRepository;
 import com.group5.ems.repository.RequestTypeRepository;
 import com.group5.ems.repository.UserRepository;
 import com.group5.ems.service.common.ApprovalWorkflowService;
+import com.group5.ems.service.common.EmailNotificationService;
 import com.group5.ems.service.common.LogService;
 import com.group5.ems.util.WorkingDayUtils;
 import lombok.RequiredArgsConstructor;
@@ -50,6 +51,7 @@ public class HrLeaveService {
     private final EmployeeLeaveBalanceRepository leaveBalanceRepository;
     private final UserRepository userRepository;
     private final ApprovalWorkflowService workflowService;
+    private final EmailNotificationService emailNotificationService;
     private final LogService logService;
 
     private static final int MIN_REJECTION_REASON_LENGTH = 10;
@@ -146,6 +148,9 @@ public class HrLeaveService {
         workflowService.moveToNextStep(request, currentUserId, WorkflowConstants.ROLE_HR);
         
         logService.log(AuditAction.UPDATE, AuditEntityType.LEAVE, id);
+        
+        User approver = userRepository.findById(currentUserId).orElse(null);
+        emailNotificationService.sendApprovalNotification(request, approver);
     }
 
     @Transactional
@@ -165,6 +170,9 @@ public class HrLeaveService {
         workflowService.rejectRequest(request, currentUserId, WorkflowConstants.ROLE_HR, fullReason);
 
         logService.log(AuditAction.UPDATE, AuditEntityType.LEAVE, id);
+        
+        User approver = userRepository.findById(currentUserId).orElse(null);
+        emailNotificationService.sendRejectionNotification(request, approver, fullReason);
     }
 
     // ══════════════════════════════════════════════════════════════════
@@ -177,12 +185,14 @@ public class HrLeaveService {
 
         List<Request> requests = requestRepository.findPendingLeavesByIds(ids);
         Long currentUserId = getCurrentUserId();
+        User approver = userRepository.findById(currentUserId).orElse(null);
         int count = 0;
 
         for (Request request : requests) {
             if (workflowService.canApprove(request, WorkflowConstants.ROLE_HR)) {
                 workflowService.moveToNextStep(request, currentUserId, WorkflowConstants.ROLE_HR);
                 logService.log(AuditAction.UPDATE, AuditEntityType.LEAVE, request.getId());
+                emailNotificationService.sendApprovalNotification(request, approver);
                 count++;
             }
         }
@@ -198,12 +208,14 @@ public class HrLeaveService {
 
         List<Request> requests = requestRepository.findPendingLeavesByIds(ids);
         Long currentUserId = getCurrentUserId();
+        User approver = userRepository.findById(currentUserId).orElse(null);
         int count = 0;
 
         for (Request request : requests) {
             if (workflowService.canApprove(request, WorkflowConstants.ROLE_HR)) {
                 workflowService.rejectRequest(request, currentUserId, WorkflowConstants.ROLE_HR, fullReason);
                 logService.log(AuditAction.UPDATE, AuditEntityType.LEAVE, request.getId());
+                emailNotificationService.sendRejectionNotification(request, approver, fullReason);
                 count++;
             }
         }

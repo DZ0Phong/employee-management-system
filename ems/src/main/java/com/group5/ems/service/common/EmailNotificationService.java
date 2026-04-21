@@ -269,51 +269,45 @@ public class EmailNotificationService {
             }
             
             User employee = request.getEmployee().getUser();
-            String subject = "✅ Your Leave Request Has Been Approved";
-            String body = buildApprovalEmailBody(employee, request, approver);
+            EmailTemplate template = emailTemplateRepository.findByCode("LEAVE_APPROVED").orElse(null);
             
-            // TODO: Send actual email
-            System.out.println("=".repeat(80));
-            System.out.println("APPROVAL NOTIFICATION");
-            System.out.println("=".repeat(80));
-            System.out.println("To: " + employee.getEmail());
-            System.out.println("Subject: " + subject);
-            System.out.println("-".repeat(80));
-            System.out.println(body);
-            System.out.println("=".repeat(80));
+            if (template == null) {
+                System.err.println("LEAVE_APPROVED email template not found in database");
+                return;
+            }
+            
+            java.util.Map<String, String> vars = new java.util.HashMap<>();
+            vars.put("employeeName", employee.getFullName());
+            vars.put("leaveType", request.getLeaveType() != null ? request.getLeaveType() : "Leave");
+            vars.put("leaveFrom", request.getLeaveFrom() != null ? request.getLeaveFrom().toString() : "");
+            vars.put("leaveTo", request.getLeaveTo() != null ? request.getLeaveTo().toString() : "");
+            
+            String duration = "";
+            if (request.getLeaveFrom() != null && request.getLeaveTo() != null) {
+                long days = java.time.temporal.ChronoUnit.DAYS.between(request.getLeaveFrom(), request.getLeaveTo()) + 1;
+                duration = days + " day(s)";
+            }
+            vars.put("duration", duration);
+            vars.put("approverName", approver != null ? approver.getFullName() : "HR Manager");
+            vars.put("approvedOn", LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
+            
+            String subject = replacePlaceholders(template.getSubject(), vars);
+            String body = replacePlaceholders(template.getBody(), vars);
+            
+            org.springframework.mail.SimpleMailMessage message = new org.springframework.mail.SimpleMailMessage();
+            message.setTo(employee.getEmail());
+            message.setSubject(subject);
+            message.setText(body);
+            mailSender.send(message);
+            
+            saveEmailLog(employee.getEmail(), "LEAVE_APPROVED", "SUCCESS");
             
         } catch (Exception e) {
             System.err.println("Failed to send approval notification: " + e.getMessage());
+            if (request.getEmployee() != null && request.getEmployee().getUser() != null) {
+                saveEmailLog(request.getEmployee().getUser().getEmail(), "LEAVE_APPROVED", "FAILED");
+            }
         }
-    }
-
-    /**
-     * Build email body for approval notification
-     */
-    private String buildApprovalEmailBody(User employee, Request request, User approver) {
-        StringBuilder body = new StringBuilder();
-        
-        body.append("Dear ").append(employee.getFullName()).append(",\n\n");
-        body.append("Good news! Your leave request has been approved.\n\n");
-        body.append("Request Details:\n");
-        body.append("- Type: ").append(request.getLeaveType() != null ? request.getLeaveType() : "Leave").append("\n");
-        body.append("- From: ").append(request.getLeaveFrom()).append("\n");
-        body.append("- To: ").append(request.getLeaveTo()).append("\n");
-        body.append("- Duration: ");
-        
-        if (request.getLeaveFrom() != null && request.getLeaveTo() != null) {
-            long days = java.time.temporal.ChronoUnit.DAYS.between(
-                    request.getLeaveFrom(), request.getLeaveTo()) + 1;
-            body.append(days).append(" day(s)");
-        }
-        
-        body.append("\n- Approved by: ").append(approver != null ? approver.getFullName() : "HR Manager").append("\n");
-        body.append("- Approved on: ").append(LocalDateTime.now()).append("\n\n");
-        body.append("Enjoy your time off!\n\n");
-        body.append("Best regards,\n");
-        body.append("HR Department");
-        
-        return body.toString();
     }
 
     /**
@@ -326,45 +320,38 @@ public class EmailNotificationService {
             }
             
             User employee = request.getEmployee().getUser();
-            String subject = "❌ Your Leave Request Has Been Rejected";
-            String body = buildRejectionEmailBody(employee, request, approver, reason);
+            EmailTemplate template = emailTemplateRepository.findByCode("LEAVE_REJECTED").orElse(null);
             
-            // TODO: Send actual email
-            System.out.println("=".repeat(80));
-            System.out.println("REJECTION NOTIFICATION");
-            System.out.println("=".repeat(80));
-            System.out.println("To: " + employee.getEmail());
-            System.out.println("Subject: " + subject);
-            System.out.println("-".repeat(80));
-            System.out.println(body);
-            System.out.println("=".repeat(80));
+            if (template == null) {
+                System.err.println("LEAVE_REJECTED email template not found in database");
+                return;
+            }
+            
+            java.util.Map<String, String> vars = new java.util.HashMap<>();
+            vars.put("employeeName", employee.getFullName());
+            vars.put("leaveType", request.getLeaveType() != null ? request.getLeaveType() : "Leave");
+            vars.put("leaveFrom", request.getLeaveFrom() != null ? request.getLeaveFrom().toString() : "");
+            vars.put("leaveTo", request.getLeaveTo() != null ? request.getLeaveTo().toString() : "");
+            vars.put("approverName", approver != null ? approver.getFullName() : "HR Manager");
+            vars.put("approvedOn", LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
+            vars.put("reason", reason != null ? reason : "No reason provided");
+            
+            String subject = replacePlaceholders(template.getSubject(), vars);
+            String body = replacePlaceholders(template.getBody(), vars);
+            
+            org.springframework.mail.SimpleMailMessage message = new org.springframework.mail.SimpleMailMessage();
+            message.setTo(employee.getEmail());
+            message.setSubject(subject);
+            message.setText(body);
+            mailSender.send(message);
+            
+            saveEmailLog(employee.getEmail(), "LEAVE_REJECTED", "SUCCESS");
             
         } catch (Exception e) {
             System.err.println("Failed to send rejection notification: " + e.getMessage());
+            if (request.getEmployee() != null && request.getEmployee().getUser() != null) {
+                saveEmailLog(request.getEmployee().getUser().getEmail(), "LEAVE_REJECTED", "FAILED");
+            }
         }
-    }
-
-    /**
-     * Build email body for rejection notification
-     */
-    private String buildRejectionEmailBody(User employee, Request request, User approver, String reason) {
-        StringBuilder body = new StringBuilder();
-        
-        body.append("Dear ").append(employee.getFullName()).append(",\n\n");
-        body.append("We regret to inform you that your leave request has been rejected.\n\n");
-        body.append("Request Details:\n");
-        body.append("- Type: ").append(request.getLeaveType() != null ? request.getLeaveType() : "Leave").append("\n");
-        body.append("- From: ").append(request.getLeaveFrom()).append("\n");
-        body.append("- To: ").append(request.getLeaveTo()).append("\n");
-        body.append("- Rejected by: ").append(approver != null ? approver.getFullName() : "HR Manager").append("\n");
-        body.append("- Rejected on: ").append(LocalDateTime.now()).append("\n\n");
-        body.append("Reason for rejection:\n");
-        body.append(reason != null ? reason : "No reason provided").append("\n\n");
-        body.append("If you have any questions or would like to discuss this decision, ");
-        body.append("please contact the HR department.\n\n");
-        body.append("Best regards,\n");
-        body.append("HR Department");
-        
-        return body.toString();
     }
 }
