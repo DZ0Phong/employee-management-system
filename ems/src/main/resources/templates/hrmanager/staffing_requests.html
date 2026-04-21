@@ -43,6 +43,12 @@
         .employee-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.1); }
         .stat-card { transition: all 0.3s ease; }
         .stat-card:hover { transform: translateY(-2px); }
+        
+        /* Dot grid background */
+        .dot-grid {
+            background-image: radial-gradient(circle, #1414b820 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
     </style>
 </head>
 <body class="bg-bg-light font-display text-slate-900 min-h-screen">
@@ -72,7 +78,7 @@
             </header>
 
             <!-- Content -->
-            <div class="flex-1 overflow-y-auto p-8 space-y-6">
+            <div class="flex-1 overflow-y-auto p-8 space-y-6 dot-grid">
                 <!-- Success/Error Messages -->
                 <div th:if="${successMsg}" class="p-4 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 text-emerald-700 rounded-xl flex items-center gap-3">
                     <span class="material-symbols-outlined text-2xl">check_circle</span>
